@@ -93,6 +93,8 @@ async function connectToPi() {
     try {
         Pi.init({ version: "2.0", sandbox: true });
         
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const scopes = ['username', 'payments'];
         const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
         
@@ -482,6 +484,11 @@ function googleTranslateElementInit() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Pi !== 'undefined') {
+        Pi.init({ version: "2.0", sandbox: true });
+        console.log("Pi SDK initialisé");
+    }
+    
     if (!events.length) { events = [...demoEvents]; saveEvents(); }
     initFilters(); renderEventsByCategory(); updateUserInfo(); updateProfilePage(); initAdmin(); initChat(); initLegalModals();
     
