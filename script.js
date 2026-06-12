@@ -178,54 +178,58 @@ async function buyTicket(eventId) {
         localStorage.setItem('betix_pending_payment', JSON.stringify({
             eventId: event.id,
             amount: event.price,
+            eventTitle: event.title,
             timestamp: Date.now()
         }));
         
         const payment = await Pi.createPayment({
-            amount: event.price,
-            memo: `Achat billet: ${event.title}`,
+            amount: Number(event.price),
+            memo: `Ticket: ${event.title}`,
             metadata: { 
                 eventId: event.id,
-                eventTitle: event.title,
-                eventDate: event.date,
-                eventLocation: event.location
+                eventTitle: event.title
             }
         }, {
-            onReadyForServerApproval: async function(paymentId) {
-                console.log("Approbation requise pour:", paymentId);
-                try {
-                    const response = await fetch(`${BACKEND_URL}/api/pi/approve`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ paymentId })
-                    });
-                    const data = await response.json();
-                    console.log("Réponse approve:", data);
-                    
-                    if (paymentId) {
-                        await Pi.approvePayment(paymentId);
-                        console.log("Paiement approuvé avec succès");
-                    }
-                } catch (err) {
-                    console.error("Erreur lors de l'approbation:", err);
-                }
+            onReadyForServerApproval: function(paymentId) {
+                console.log("📝 Approval pour:", paymentId);
+                
+                fetch(`${BACKEND_URL}/api/pi/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                })
+                .then(() => {
+                    console.log("✅ Backend approve OK");
+                    return Pi.approvePayment(paymentId);
+                })
+                .then(() => {
+                    console.log("✅ Pi approvePayment OK");
+                })
+                .catch(err => {
+                    console.error("❌ Erreur approve:", err);
+                });
             },
-            onReadyForServerCompletion: async function(paymentId, txid) {
-                console.log("Complétion requise pour:", paymentId, txid);
-                try {
-                    await fetch(`${BACKEND_URL}/api/pi/complete`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            paymentId, 
-                            txid,
-                            amount: event.price,
-                            memo: `Achat billet: ${event.title}`,
-                            metadata: { eventId: event.id, eventTitle: event.title }
-                        })
-                    });
-                    
-                    await Pi.completePayment(paymentId, txid);
+            
+            onReadyForServerCompletion: function(paymentId, txid) {
+                console.log("💰 Completion pour:", paymentId, txid);
+                
+                fetch(`${BACKEND_URL}/api/pi/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        paymentId, 
+                        txid,
+                        amount: event.price,
+                        memo: `Ticket: ${event.title}`,
+                        metadata: { eventId: event.id, eventTitle: event.title }
+                    })
+                })
+                .then(() => {
+                    console.log("✅ Backend complete OK");
+                    return Pi.completePayment(paymentId, txid);
+                })
+                .then(() => {
+                    console.log("✅ Pi completePayment OK");
                     
                     event.seatsLeft--;
                     saveEvents();
@@ -249,34 +253,38 @@ async function buyTicket(eventId) {
                     renderHistory();
                     updateProfilePage();
                     
-                    alert(`Achat réussi ! Ticket pour "${event.title}" ajouté.`);
+                    alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
                     localStorage.removeItem('betix_pending_payment');
-                } catch (err) {
-                    console.error("Erreur lors de la complétion:", err);
-                }
+                })
+                .catch(err => {
+                    console.error("❌ Erreur complete:", err);
+                    alert("Erreur lors de la finalisation du paiement");
+                });
             },
+            
             onCancel: function(paymentId) {
-                console.log("Paiement annulé par l'utilisateur:", paymentId);
+                console.log("❌ Paiement annulé:", paymentId);
                 fetch(`${BACKEND_URL}/api/pi/cancel`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
-                }).catch(console.error);
+                }).catch(()=>{});
                 alert("Paiement annulé");
                 localStorage.removeItem('betix_pending_payment');
             },
+            
             onError: function(error, paymentId) {
-                console.error("Erreur paiement:", error);
-                alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet Pi"));
+                console.error("💥 Erreur Pi SDK:", error);
+                alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet"));
                 localStorage.removeItem('betix_pending_payment');
             }
         });
         
-        console.log("Paiement créé avec succès");
+        console.log("📦 Paiement créé:", payment);
         
     } catch (error) {
-        console.error("Erreur:", error);
-        alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet Pi"));
+        console.error("💥 Exception:", error);
+        alert("Erreur: " + (error.message || "Vérifiez votre connexion"));
         localStorage.removeItem('betix_pending_payment');
     }
 }
@@ -377,7 +385,7 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '</table></tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    let usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
     usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + '</td><td>' + tickets.length + '</td></tr>';
     connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + '</td><td>' + (u.wallet || 'Non connecte') + '</td><td>' + (u.ticketCount || 0) + '</td></tr>'; });
     usersHtml += '</table>';
