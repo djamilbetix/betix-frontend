@@ -6,23 +6,30 @@
     <title>Betix - Plateforme d'Événements Pi Network</title>
     <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <!-- INITIALISATION IMMÉDIATE DU SDK PI (comme dans le demo Pi devs) -->
+    <script>
+        // Configuration des variables d'environnement
+        window.__ENV = {
+            backendURL: "https://betix-backend.onrender.com",
+            sandbox: "true"
+        };
+        
+        // Initialisation immédiate du SDK Pi
+        const runSDKInSandboxMode = window.__ENV.sandbox === "true";
+        Pi.init({
+            version: "2.0",
+            sandbox: runSDKInSandboxMode
+        });
+        console.log("✅ Pi SDK initialisé immédiatement (mode sandbox)");
+    </script>
+    
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
-
-<script>
-    // ⚠️ INITIALISATION IMMÉDIATE DU SDK PI ⚠️
-    (function initPiSdk() {
-        if (typeof Pi !== 'undefined') {
-            Pi.init({ version: "2.0", sandbox: true });
-            console.log("✅ Pi SDK initialisé avec succès");
-        } else {
-            console.log("⏳ SDK Pi pas encore chargé, réessai dans 500ms...");
-            setTimeout(initPiSdk, 500);
-        }
-    })();
-</script>
 
 <div id="loader" class="loader-container">
     <div class="loader-spinner"></div>
@@ -248,6 +255,18 @@
 <div id="ratingModal" class="modal"><div class="modal-content rating-modal-content"><span class="modal-close" id="ratingModalClose">&times;</span><h3>Noter l'evenement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3"></textarea><button id="submitRatingBtn" class="btn-primary">Envoyer</button></div></div>
 
 </div>
+
+<script>
+    // Récupérer la configuration depuis window.__ENV (comme dans le demo Pi devs)
+    const BACKEND_URL_CONFIG = window.__ENV && window.__ENV.backendURL ? window.__ENV.backendURL : "https://betix-backend.onrender.com";
+    
+    // Passer la config au script.js
+    window.BETIX_CONFIG = {
+        backendURL: BACKEND_URL_CONFIG
+    };
+</script>
+
 <script src="script.js"></script>
+
 </body>
 </html>
