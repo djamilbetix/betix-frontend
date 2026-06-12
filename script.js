@@ -12,36 +12,6 @@ let selectedRating = 0;
 
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
-// ========== DÉTECTION DU NAVIGATEUR ==========
-if (!window.location.href.includes('pi://') && !window.navigator.userAgent.includes('PiBrowser')) {
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
-    modal.style.zIndex = '10000';
-    modal.style.display = 'flex';
-    modal.style.flexDirection = 'column';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.color = 'white';
-    modal.style.textAlign = 'center';
-    modal.style.padding = '20px';
-    modal.innerHTML = `
-        <h2>⚠️ Navigateur non supporté</h2>
-        <p>Betix fonctionne uniquement dans <strong>Pi Browser</strong>.</p>
-        <br>
-        <p>Veuillez ouvrir cette page dans :</p>
-        <p><strong>👉 Pi Browser 👈</strong></p>
-        <br>
-        <button onclick="location.href='https://minepi.com/download'" style="background:#3B82F6;color:white;border:none;padding:12px 24px;border-radius:8px;margin-top:20px;">Télécharger Pi Browser</button>
-    `;
-    document.body.innerHTML = '';
-    document.body.appendChild(modal);
-}
-
 const eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
     Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
@@ -137,8 +107,6 @@ async function connectToPi() {
             renderEventsByCategory();
             alert(`Wallet Pi connecté ! Bienvenue ${piUser.username}`);
             closeSidebar();
-        } else if (auth && auth.error) {
-            alert("Erreur d'authentification: " + auth.error.message);
         }
     } catch (error) {
         console.error("Erreur connexion Pi:", error);
@@ -360,10 +328,10 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '<table></table><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    let usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
     usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + '</td><td>' + tickets.length + '</td></tr>';
-    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + '</td><td>' + (u.wallet || 'Non connecte') + '</td><td>' + (u.ticketCount || 0) + '</td></tr>'; });
-    usersHtml += '</table';
+    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + '</td></tr>'; });
+    usersHtml += '</table>';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
     document.getElementById('adminEventsList').innerHTML = events.map(e => `<div class="admin-event-item"><div><strong>${escapeHtml(e.title)}</strong><br><small>${e.category} | ${e.seatsLeft}/${e.seatsTotal}</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button></div>`).join('');
 }
