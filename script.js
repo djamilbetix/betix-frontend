@@ -10,7 +10,7 @@ let connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) |
 let adminCode = 'BETIX2026';
 let selectedRating = 0;
 
-const BACKEND_URL = "https://betix-backend.onrender.com";
+const BACKEND_URL = window.BETIX_CONFIG?.backendURL || "https://betix-backend.onrender.com";
 
 const eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
@@ -90,7 +90,6 @@ async function connectToPi() {
     }
     
     try {
-        Pi.init({ version: "2.0", sandbox: true });
         await new Promise(resolve => setTimeout(resolve, 500));
         
         const scopes = ['username', 'payments'];
@@ -173,8 +172,6 @@ async function buyTicket(eventId) {
     if (!confirm(`Acheter "${event.title}" pour ${event.price} Pi ?`)) return;
     
     try {
-        Pi.init({ version: "2.0", sandbox: true });
-        
         localStorage.setItem('betix_pending_payment', JSON.stringify({
             eventId: event.id,
             amount: event.price,
@@ -192,48 +189,33 @@ async function buyTicket(eventId) {
         }, {
             onReadyForServerApproval: function(paymentId) {
                 console.log("📝 Approval pour:", paymentId);
-                
                 fetch(`${BACKEND_URL}/api/pi/approve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
                 })
-                .then(() => {
-                    console.log("✅ Backend approve OK");
-                    return Pi.approvePayment(paymentId);
-                })
-                .then(() => {
-                    console.log("✅ Pi approvePayment OK");
-                })
-                .catch(err => {
-                    console.error("❌ Erreur approve:", err);
-                });
+                .then(() => Pi.approvePayment(paymentId))
+                .then(() => console.log("✅ Pi approvePayment OK"))
+                .catch(err => console.error("❌ Erreur approve:", err));
             },
             
             onReadyForServerCompletion: function(paymentId, txid) {
                 console.log("💰 Completion pour:", paymentId, txid);
-                
                 fetch(`${BACKEND_URL}/api/pi/complete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        paymentId, 
-                        txid,
+                        paymentId, txid,
                         amount: event.price,
                         memo: `Ticket: ${event.title}`,
                         metadata: { eventId: event.id, eventTitle: event.title }
                     })
                 })
+                .then(res => res.json())
+                .then(() => Pi.completePayment(paymentId, txid))
                 .then(() => {
-                    console.log("✅ Backend complete OK");
-                    return Pi.completePayment(paymentId, txid);
-                })
-                .then(() => {
-                    console.log("✅ Pi completePayment OK");
-                    
                     event.seatsLeft--;
                     saveEvents();
-                    
                     tickets.push({
                         id: Date.now().toString(),
                         eventId: event.id,
@@ -247,12 +229,10 @@ async function buyTicket(eventId) {
                         qrCode: `BETIX-${Date.now()}`
                     });
                     saveTickets();
-                    
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
-                    
                     alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
                     localStorage.removeItem('betix_pending_payment');
                 })
@@ -263,28 +243,23 @@ async function buyTicket(eventId) {
             },
             
             onCancel: function(paymentId) {
-                console.log("❌ Paiement annulé:", paymentId);
-                fetch(`${BACKEND_URL}/api/pi/cancel`, {
-                    method: 'POST',
+                fetch(`${BACKEND_URL}/api/pi/cancel`, { 
+                    method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
+                    body: JSON.stringify({ paymentId }) 
                 }).catch(()=>{});
                 alert("Paiement annulé");
                 localStorage.removeItem('betix_pending_payment');
             },
             
-            onError: function(error, paymentId) {
-                console.error("💥 Erreur Pi SDK:", error);
+            onError: function(error) {
                 alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet"));
                 localStorage.removeItem('betix_pending_payment');
             }
         });
         
-        console.log("📦 Paiement créé:", payment);
-        
     } catch (error) {
-        console.error("💥 Exception:", error);
-        alert("Erreur: " + (error.message || "Vérifiez votre connexion"));
+        alert("Erreur: " + error.message);
         localStorage.removeItem('betix_pending_payment');
     }
 }
@@ -386,8 +361,8 @@ function loadAdminPage() {
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
     let usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
-    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + '</td><td>' + tickets.length + '</td></tr>';
-    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + '</td><td>' + (u.wallet || 'Non connecte') + '</td><td>' + (u.ticketCount || 0) + '</td></tr>'; });
+    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + '</td></tr>';
+    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + '</td><td>' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + '</td></tr>'; });
     usersHtml += '</table>';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
     document.getElementById('adminEventsList').innerHTML = events.map(e => `<div class="admin-event-item"><div><strong>${escapeHtml(e.title)}</strong><br><small>${e.category} | ${e.seatsLeft}/${e.seatsTotal}</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button></div>`).join('');
@@ -482,11 +457,6 @@ function googleTranslateElementInit() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof Pi !== 'undefined') {
-        Pi.init({ version: "2.0", sandbox: true });
-        console.log("Pi SDK initialisé");
-    }
-    
     if (!events.length) { events = [...demoEvents]; saveEvents(); }
     initFilters(); renderEventsByCategory(); updateUserInfo(); updateProfilePage(); initAdmin(); initChat(); initLegalModals();
     
