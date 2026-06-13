@@ -149,6 +149,19 @@ async function onIncompletePaymentFound(payment) {
     }
 }
 
+async function wakeUpBackend() {
+    try {
+        console.log("⏳ Réveil du backend...");
+        const response = await fetch('https://betix-backend.onrender.com/api/health');
+        const data = await response.json();
+        console.log("✅ Backend réveillé:", data);
+        return true;
+    } catch(e) {
+        console.log("❌ Erreur réveil:", e);
+        return false;
+    }
+}
+
 async function buyTicket(eventId) {
     if (typeof Pi === 'undefined') {
         alert("Veuillez ouvrir dans Pi Browser pour payer");
@@ -169,6 +182,14 @@ async function buyTicket(eventId) {
     
     if (!confirm(`Acheter "${event.title}" pour ${event.price} Pi ?`)) return;
     
+    // RÉVEILLE LE BACKEND AVANT L'ACHAT
+    const statusDiv = document.getElementById('status');
+    if (statusDiv) statusDiv.innerHTML = '⏳ Réveil du serveur...';
+    
+    await wakeUpBackend();
+    
+    if (statusDiv) statusDiv.innerHTML = '📝 Création du paiement...';
+    
     try {
         const payment = await Pi.createPayment({
             amount: Number(event.price),
@@ -177,6 +198,7 @@ async function buyTicket(eventId) {
         }, {
             onReadyForServerApproval: function(paymentId) {
                 console.log("📝 Approval:", paymentId);
+                if (statusDiv) statusDiv.innerHTML = '📝 Approbation...';
                 fetch(`${BACKEND_URL}/api/pi/approve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -189,6 +211,7 @@ async function buyTicket(eventId) {
             
             onReadyForServerCompletion: function(paymentId, txid) {
                 console.log("💰 Completion:", paymentId, txid);
+                if (statusDiv) statusDiv.innerHTML = '💰 Finalisation...';
                 fetch(`${BACKEND_URL}/api/pi/complete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -216,6 +239,7 @@ async function buyTicket(eventId) {
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
+                    if (statusDiv) statusDiv.innerHTML = '✅ Achat réussi !';
                     alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
                 })
                 .catch(err => console.error("Erreur complete:", err));
@@ -223,6 +247,7 @@ async function buyTicket(eventId) {
             
             onCancel: function(paymentId) {
                 console.log("❌ Annulé:", paymentId);
+                if (statusDiv) statusDiv.innerHTML = '❌ Paiement annulé';
                 fetch(`${BACKEND_URL}/api/pi/cancel`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -233,11 +258,13 @@ async function buyTicket(eventId) {
             
             onError: function(error, paymentId) {
                 console.error("💥 Erreur:", error);
+                if (statusDiv) statusDiv.innerHTML = '❌ Erreur: ' + error.message;
                 alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet"));
             }
         });
     } catch (error) {
         console.error("Exception:", error);
+        if (statusDiv) statusDiv.innerHTML = '❌ Exception: ' + error.message;
         alert("Erreur: " + error.message);
     }
 }
@@ -336,7 +363,7 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '<table></tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    let usersHtml = '<tr></table><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
     usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + '</td></tr>';
     connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + '</td></tr>'; });
     usersHtml += '</table>';
