@@ -4,9 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Betix - Plateforme d'Événements Pi Network</title>
-    <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network. Créez, découvrez et réservez des événements en toute simplicité.">
+    <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <!-- INITIALISATION IMMÉDIATE ET FORCÉE DU SDK PI -->
+    <script>
+        (function initPi() {
+            if (typeof Pi !== 'undefined') {
+                Pi.init({ version: "2.0", sandbox: true });
+                console.log("✅ Pi SDK initialisé avec succès");
+                window.piSDKReady = true;
+            } else {
+                console.log("⏳ En attente du SDK Pi...");
+                setTimeout(initPi, 200);
+            }
+        })();
+    </script>
+    
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -273,23 +290,6 @@
     window.BETIX_CONFIG = {
         backendURL: "https://betix-backend.onrender.com"
     };
-    
-    // Bouton de test pour vérifier le backend
-    document.addEventListener('DOMContentLoaded', function() {
-        const testBtn = document.getElementById('testBackendBtn');
-        if (testBtn) {
-            testBtn.onclick = async function() {
-                alert("Test en cours...");
-                try {
-                    const response = await fetch('https://betix-backend.onrender.com/api/health');
-                    const data = await response.json();
-                    alert("✅ Backend répond: " + JSON.stringify(data));
-                } catch(e) {
-                    alert("❌ Erreur: " + e.message);
-                }
-            };
-        }
-    });
 </script>
 
 <script src="script.js"></script>
