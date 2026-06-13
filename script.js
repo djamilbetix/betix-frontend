@@ -182,46 +182,72 @@ async function buyTicket(eventId) {
     
     if (!confirm(`Acheter "${event.title}" pour ${event.price} Pi ?`)) return;
     
-    // RÉVEILLE LE BACKEND AVANT L'ACHAT
     const statusDiv = document.getElementById('status');
     if (statusDiv) statusDiv.innerHTML = '⏳ Réveil du serveur...';
     
     await wakeUpBackend();
     
-    if (statusDiv) statusDiv.innerHTML = '📝 Création du paiement...';
+    if (statusDiv) statusDiv.innerHTML = '⏳ Création du paiement...';
     
     try {
         const payment = await Pi.createPayment({
             amount: Number(event.price),
             memo: `Ticket: ${event.title}`,
-            metadata: { eventId: event.id, eventTitle: event.title }
+            metadata: { 
+                eventId: event.id,
+                eventTitle: event.title,
+                eventDate: event.date
+            }
         }, {
             onReadyForServerApproval: function(paymentId) {
-                console.log("📝 Approval:", paymentId);
-                if (statusDiv) statusDiv.innerHTML = '📝 Approbation...';
+                console.log("📝 Approval reçu:", paymentId);
+                if (statusDiv) statusDiv.innerHTML = '📝 Approbation en cours...';
+                
                 fetch(`${BACKEND_URL}/api/pi/approve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
                 })
                 .then(res => res.json())
-                .then(() => Pi.approvePayment(paymentId))
-                .catch(err => console.error("Erreur approve:", err));
+                .then(() => {
+                    console.log("✅ Approbation envoyée à Pi");
+                    return Pi.approvePayment(paymentId);
+                })
+                .then(() => {
+                    console.log("✅ Pi.approvePayment terminé");
+                })
+                .catch(err => {
+                    console.error("❌ Erreur approve:", err);
+                    if (statusDiv) statusDiv.innerHTML = '❌ Erreur approbation';
+                });
             },
             
             onReadyForServerCompletion: function(paymentId, txid) {
-                console.log("💰 Completion:", paymentId, txid);
-                if (statusDiv) statusDiv.innerHTML = '💰 Finalisation...';
+                console.log("💰 Completion reçue:", paymentId, txid);
+                if (statusDiv) statusDiv.innerHTML = '💰 Finalisation en cours...';
+                
                 fetch(`${BACKEND_URL}/api/pi/complete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId, txid, amount: event.price, metadata: { eventId: event.id } })
+                    body: JSON.stringify({ 
+                        paymentId, 
+                        txid,
+                        amount: event.price,
+                        memo: `Ticket: ${event.title}`,
+                        metadata: { eventId: event.id }
+                    })
                 })
                 .then(res => res.json())
-                .then(() => Pi.completePayment(paymentId, txid))
                 .then(() => {
+                    console.log("✅ Completion envoyée à Pi");
+                    return Pi.completePayment(paymentId, txid);
+                })
+                .then(() => {
+                    console.log("✅ Pi.completePayment terminé");
+                    
                     event.seatsLeft--;
                     saveEvents();
+                    
                     tickets.push({
                         id: Date.now().toString(),
                         eventId: event.id,
@@ -235,18 +261,23 @@ async function buyTicket(eventId) {
                         qrCode: `BETIX-${Date.now()}`
                     });
                     saveTickets();
+                    
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
+                    
                     if (statusDiv) statusDiv.innerHTML = '✅ Achat réussi !';
                     alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
                 })
-                .catch(err => console.error("Erreur complete:", err));
+                .catch(err => {
+                    console.error("❌ Erreur complete:", err);
+                    if (statusDiv) statusDiv.innerHTML = '❌ Erreur finalisation';
+                });
             },
             
             onCancel: function(paymentId) {
-                console.log("❌ Annulé:", paymentId);
+                console.log("❌ Paiement annulé:", paymentId);
                 if (statusDiv) statusDiv.innerHTML = '❌ Paiement annulé';
                 fetch(`${BACKEND_URL}/api/pi/cancel`, {
                     method: 'POST',
@@ -257,13 +288,16 @@ async function buyTicket(eventId) {
             },
             
             onError: function(error, paymentId) {
-                console.error("💥 Erreur:", error);
+                console.error("💥 Erreur Pi SDK:", error);
                 if (statusDiv) statusDiv.innerHTML = '❌ Erreur: ' + error.message;
                 alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet"));
             }
         });
+        
+        console.log("📦 Paiement créé avec succès");
+        
     } catch (error) {
-        console.error("Exception:", error);
+        console.error("💥 Exception:", error);
         if (statusDiv) statusDiv.innerHTML = '❌ Exception: ' + error.message;
         alert("Erreur: " + error.message);
     }
@@ -363,10 +397,10 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '<tr></table><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
-    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + '</td></tr>';
-    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + '</td></tr>'; });
-    usersHtml += '</table>';
+    let usersHtml = '<table></tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</td></tr>';
+    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '</tr>'; });
+    usersHtml += '</tr>';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
     document.getElementById('adminEventsList').innerHTML = events.map(e => `<div class="admin-event-item"><div><strong>${escapeHtml(e.title)}</strong><br><small>${e.category} | ${e.seatsLeft}/${e.seatsTotal}</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button></div>`).join('');
 }
