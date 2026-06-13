@@ -2,271 +2,119 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Betix - Plateforme d'Événements Pi Network</title>
-    <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Pi Network SDK -->
+    <title>Betix - Test Paiement Pi</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    
-    <!-- INITIALISATION IMMÉDIATE DU SDK PI (comme dans le demo Pi devs) -->
-    <script>
-        // Configuration des variables d'environnement
-        window.__ENV = {
-            backendURL: "https://betix-backend.onrender.com",
-            sandbox: "true"
-        };
-        
-        // Initialisation immédiate du SDK Pi
-        const runSDKInSandboxMode = window.__ENV.sandbox === "true";
-        Pi.init({
-            version: "2.0",
-            sandbox: runSDKInSandboxMode
-        });
-        console.log("✅ Pi SDK initialisé immédiatement (mode sandbox)");
-    </script>
-    
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; background: #f5f5f5; }
+        button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; background: #3B82F6; color: white; border: none; border-radius: 8px; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #status { margin-top: 20px; padding: 10px; background: white; border-radius: 8px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .ticket { background: #e0f7fa; padding: 15px; margin: 10px auto; max-width: 400px; border-radius: 8px; }
+        h1 { color: #1e3a8a; }
+    </style>
 </head>
 <body>
 
-<div id="loader" class="loader-container">
-    <div class="loader-spinner"></div>
-    <p class="loader-text">Chargement...</p>
-</div>
+<h1>🎫 Betix - Test Pi Network</h1>
 
-<div id="main-content" style="display: none;">
+<button id="connectBtn">🔌 Connexion wallet Pi</button>
+<button id="buyBtn" style="display:none;">💳 Acheter un ticket (0.0003 Pi)</button>
 
-<header class="header">
-    <div class="logo" onclick="showPage('home')">
-        <img src="image/logo.png" alt="Logo Betix" style="height: 40px; width: auto;" onerror="this.style.display='none'">
-        <span>Betix</span>
-    </div>
-    <button class="menu-btn" id="menuBtn">☰</button>
-</header>
-
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <button class="close-sidebar" id="closeSidebarBtn">×</button>
-        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
-        <h3 id="sidebarName">Invité</h3>
-        <p id="sidebarWallet">Non connecté</p>
-        <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connexion</button>
-    </div>
-    <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home">Accueil</button>
-        <button class="sidebar-item" data-page="profile">Mon profil</button>
-        <button class="sidebar-item" data-page="tickets">Mes tickets</button>
-        <button class="sidebar-item" data-page="history">Historique</button>
-        <button class="sidebar-item" data-page="ratings">Mes évaluations</button>
-        <button class="sidebar-item" data-page="whitepaper">Livre blanc</button>
-        <button class="sidebar-item" data-page="faq">FAQ</button>
-        <button class="sidebar-item" data-page="social">Réseaux sociaux</button>
-        <button class="sidebar-item" data-page="settings">Paramètres</button>
-        <button class="sidebar-item" data-page="admin" id="adminMenuItem" style="display: none;">Administration</button>
-    </div>
-</div>
-<div class="overlay" id="overlay"></div>
-
-<button class="chat-float-btn" id="chatFloatBtn"><span class="chat-icon">💬</span></button>
-
-<div id="chatWidget" class="chat-widget">
-    <div class="chat-header" id="chatHeader">
-        <div class="chat-header-info"><span class="chat-logo">Support Betix</span><span class="chat-status">En ligne</span></div>
-        <button class="chat-close" id="chatCloseBtn">×</button>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Ecrivez votre message..." maxlength="500">
-        <button id="chatSendBtn">Envoyer</button>
-    </div>
-</div>
-
-<div id="homePage">
-    <section class="hero">
-        <div class="hero-content">
-            <h1>La première plateforme de billetterie propulsée par Pi Network</h1>
-            <p>Decouvrez et reservez des experiences uniques. Payez avec votre crypto Pi.</p>
-            <button onclick="showPage('create')">Creer un evenement</button>
-        </div>
-    </section>
-    <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..."></div>
-    <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
-    <div class="events-container">
-        <h2 class="events-title">Evenements a venir</h2>
-        <p class="events-sub">Rejoignez la communaute et vivez des experiences uniques</p>
-        <div id="eventsByCategory"></div>
-    </div>
-</div>
-
-<div id="createPage" class="hidden-page">
-    <div class="events-container" style="max-width:600px">
-        <h2 class="events-title">Creer un evenement</h2>
-        <form id="eventForm" class="create-form">
-            <div class="form-group"><label>Titre</label><input type="text" id="eventTitle" required></div>
-            <div class="form-group"><label>Categorie</label><select id="eventCategory"><option>Concert</option><option>Sport</option><option>Conference</option><option>Formation</option><option>Cinema</option><option>Festival</option></select></div>
-            <div class="form-group"><label>Date</label><input type="datetime-local" id="eventDate" required></div>
-            <div class="form-group"><label>Lieu</label><input type="text" id="eventLocation" required></div>
-            <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3"></textarea></div>
-            <div class="form-group"><label>Prix (en Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
-            <div class="form-group"><label>Nombre de places</label><input type="number" id="eventSeats" required></div>
-            <div class="form-group"><label>URL de l'image</label><input type="text" id="eventImage" placeholder="https://..."></div>
-            <button type="submit" class="btn-primary">Publier</button>
-        </form>
-        <button class="btn-back" onclick="showPage('home')">Retour</button>
-    </div>
-</div>
-
-<div id="ticketsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title">Mes tickets actifs</h2><p class="events-sub">Vos billets valides</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
-</div>
-
-<div id="historyPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title">Historique des tickets</h2><p class="events-sub">Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
-</div>
-
-<div id="ratingsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title">Mes evaluations</h2><p class="events-sub">Evenements que vous avez notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
-</div>
-
-<div id="profilePage" class="hidden-page">
-    <div class="page-content">
-        <h2>Mon profil</h2>
-        <p><strong>Nom :</strong> <span id="profileName">Invité</span></p>
-        <p><strong>Wallet :</strong> <span id="profileWallet">Non connecté</span></p>
-        <p><strong>Membre depuis :</strong> <span id="memberSince">2026</span></p>
-        <p><strong>Tickets :</strong> <span id="ticketCount">0</span></p>
-        <p><strong>Evenements notes :</strong> <span id="ratedCount">0</span></p>
-        <button class="btn-primary" id="profileConnectBtn">Connexion</button>
-    </div>
-</div>
-
-<div id="whitepaperPage" class="hidden-page">
-    <div class="page-content">
-        <div class="whitepaper-lang-switch"><button class="lang-btn active" onclick="showWhitepaperLang('fr')">Francais</button><button class="lang-btn" onclick="showWhitepaperLang('en')">English</button></div>
-        <div id="whitepaper-fr"><h2>Livre blanc</h2><p>Betix est une plateforme d'evenements decentralisee sur Pi Network.</p><br><p><strong>Mission :</strong> Rendre l'acces aux evenements simple avec Pi.</p><br><p><strong>Fonctionnalites :</strong> Creation sans commission, Paiement securise en Pi, Billets QR code, Gestion des places, Tokenisation.</p></div>
-        <div id="whitepaper-en" style="display:none"><h2>White Paper</h2><p>Betix is a decentralized event platform on Pi Network.</p><br><p><strong>Mission :</strong> Make event access simple with Pi.</p><br><p><strong>Features :</strong> Zero commission, Secure Pi payment, QR tickets, Seat management, Tokenization.</p></div>
-    </div>
-</div>
-
-<div id="faqPage" class="hidden-page">
-    <div class="page-content">
-        <h2>FAQ</h2>
-        <div class="faq-list">
-            <div class="faq-item"><p><strong>Qu'est-ce que Betix ?</strong></p><p>Plateforme d'evenements decentralisee sur Pi Network.</p></div>
-            <div class="faq-item"><p><strong>Comment acheter ?</strong></p><p>Connectez votre wallet Pi, parcourez et cliquez sur "Acheter".</p></div>
-            <div class="faq-item"><p><strong>Frais ?</strong></p><p>0% commission !</p></div>
-            <div class="faq-item"><p><strong>Ou sont mes tickets ?</strong></p><p>Dans "Mes tickets" et "Historique".</p></div>
-            <div class="faq-item"><p><strong>Support ?</strong></p><p>betixservices@gmail.com ou chat en ligne.</p></div>
-        </div>
-    </div>
-</div>
-
-<div id="socialPage" class="hidden-page">
-    <div class="page-content">
-        <h2>Reseaux sociaux</h2>
-        <p>Suivez-nous et rejoignez notre communaute !</p>
-        <div class="social-grid">
-            <div class="social-card" onclick="window.open('https://x.com/betix_app', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div><div class="social-name">Twitter (X)</div><div class="social-follow">Suivre</div></div>
-            <div class="social-card" onclick="window.open('https://t.me/betix', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.6-1.38-.97-2.23-1.56-.99-.69-.35-1.07.22-1.69.15-.15 2.77-2.54 2.82-2.76.01-.03.02-.14-.05-.2-.07-.06-.18-.04-.26-.02-.11.02-1.87 1.19-5.28 3.49-.5.34-.95.51-1.36.5-.45-.01-1.31-.25-1.95-.46-.78-.25-1.4-.38-1.35-.81.03-.22.34-.45.94-.68 3.7-1.61 6.17-2.67 7.41-3.17 3.53-1.42 4.26-1.67 4.74-1.67.11 0 .35.02.51.16.13.11.17.27.18.43.01.14.01.28-.01.43z"/></svg></div><div class="social-name">Telegram</div><div class="social-follow">Rejoindre</div></div>
-            <div class="social-card" onclick="window.open('https://discord.gg/betix', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0 12.6 12.6 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.8 19.8 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.128 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.106c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.8 19.8 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></div><div class="social-name">Discord</div><div class="social-follow">Rejoindre</div></div>
-            <div class="social-card" onclick="window.open('https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12.032 2.002c-5.525 0-10 4.476-10 9.998 0 1.785.47 3.515 1.364 5.003l-1.347 4.92 5.058-1.317c1.466.802 3.133 1.23 4.87 1.23 5.505 0 9.999-4.477 9.999-10 0-5.523-4.476-9.999-10-9.999zm0 18.396c-1.523 0-3.018-.41-4.286-1.182l-3.067 1.086.82-2.992c-.87-1.335-1.33-2.89-1.33-4.48 0-4.632 3.77-8.402 8.4-8.402 4.63 0 8.396 3.77 8.396 8.402 0 4.63-3.77 8.4-8.396 8.4zm4.592-6.292c-.16-.08-1.09-.536-1.26-.597-.17-.06-.293-.09-.416.09-.123.18-.478.597-.586.72-.108.12-.216.14-.376.06-.16-.08-.676-.248-1.287-.793-.475-.424-.795-.947-.888-1.107-.093-.16-.01-.246.07-.326.07-.07.16-.18.24-.27.08-.09.107-.16.16-.27.053-.11.027-.2-.013-.28-.04-.08-.376-.905-.515-1.24-.136-.33-.273-.286-.376-.29-.097-.004-.207-.004-.317-.004-.11 0-.29.04-.44.2-.15.16-.586.572-.586 1.396 0 .823.6 1.618.683 1.73.083.11 1.19 1.82 2.88 2.55.4.174.714.278.96.357.404.13.77.112 1.06.068.324-.05 1.09-.446 1.244-.876.154-.43.154-.798.108-.875-.046-.078-.17-.125-.33-.205z"/></svg></div><div class="social-name">WhatsApp</div><div class="social-follow">Suivre</div></div>
-            <div class="social-card" onclick="window.open('https://instagram.com/betix_app', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 0 12.324 0 6.162 6.162 0 0 0-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/></svg></div><div class="social-name">Instagram</div><div class="social-follow">Suivre</div></div>
-            <div class="social-card" onclick="window.open('https://facebook.com/betix_app', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z"/></svg></div><div class="social-name">Facebook</div><div class="social-follow">Aimer</div></div>
-            <div class="social-card" onclick="window.open('https://youtube.com/c/betix', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.376.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.376-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div><div class="social-name">YouTube</div><div class="social-follow">S'abonner</div></div>
-            <div class="social-card" onclick="window.open('https://linkedin.com/company/betix', '_blank')"><div class="social-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.205 0 22.225 0z"/></svg></div><div class="social-name">LinkedIn</div><div class="social-follow">Suivre</div></div>
-        </div>
-    </div>
-</div>
-
-<div id="settingsPage" class="hidden-page">
-    <div class="page-content">
-        <h2>Parametres</h2>
-        <div class="settings-group">
-            <p><strong>Langue / Language</strong></p>
-            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 0.8rem;">Choisissez votre langue - Choose your language</p>
-            <div id="google_translate_element" class="google-translate-container"></div>
-        </div>
-        <div class="settings-group">
-            <p><strong>Theme</strong></p>
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <input type="checkbox" id="darkModeToggle"> Mode sombre / Dark mode
-            </label>
-        </div>
-        <div class="settings-group">
-            <p><strong>Donnees</strong></p>
-            <button id="clearDataBtn" class="btn-danger">Effacer mes donnees / Clear my data</button>
-        </div>
-    </div>
-</div>
-
-<div id="adminPage" class="hidden-page">
-    <div class="page-content admin-content">
-        <h2>Administration</h2>
-        <div class="admin-stats">
-            <div class="stat-card"><h3>Utilisateurs</h3><p id="adminUserCount">0</p></div>
-            <div class="stat-card"><h3>Tickets vendus</h3><p id="adminTicketCount">0</p></div>
-            <div class="stat-card"><h3>Evenements</h3><p id="adminEventCount">0</p></div>
-        </div>
-        <div class="admin-section"><h3>Utilisateurs connectes</h3><div class="admin-users-table" id="adminUsersList"></div></div>
-        <div class="admin-section"><h3>Tous les evenements</h3><div class="admin-events-list" id="adminEventsList"></div></div>
-        <button class="btn-back" onclick="showPage('home')">Retour</button>
-    </div>
-</div>
-
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-section">
-            <h4>Betix</h4>
-            <p>Plateforme d'evenements decentralisee sur Pi Network.</p>
-            <p>Email : betixservices@gmail.com</p>
-            <p>© 2026 Betix - Tous droits reserves</p>
-        </div>
-        <div class="footer-section">
-            <h4>Liens rapides</h4>
-            <a onclick="showPage('home')">Accueil</a>
-            <a onclick="showPage('create')">Creer un evenement</a>
-            <a onclick="showPage('tickets')">Mes tickets</a>
-            <a onclick="showPage('history')">Historique</a>
-        </div>
-        <div class="footer-section">
-            <h4>Legal</h4>
-            <a href="privacy.html" target="_blank">Confidentialite</a>
-            <a href="terms.html" target="_blank">Conditions d'utilisation</a>
-            <a href="#" id="legalNoticeLink">Mentions legales</a>
-            <a href="#" id="cookiesLink">Politique des cookies</a>
-        </div>
-        <div class="footer-section">
-            <h4>Newsletter</h4>
-            <p>Recevez nos actualites</p>
-            <div class="newsletter-form">
-                <input type="email" placeholder="Votre email" id="newsletterEmail">
-                <button onclick="subscribeNewsletter()">S'inscrire</button>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>Paiements securises par Pi Network | 0% commission | Plateforme decentralisee</p>
-    </div>
-</footer>
-
-<div id="legalModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><div id="modalContent"></div></div></div>
-<div id="ratingModal" class="modal"><div class="modal-content rating-modal-content"><span class="modal-close" id="ratingModalClose">&times;</span><h3>Noter l'evenement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3"></textarea><button id="submitRatingBtn" class="btn-primary">Envoyer</button></div></div>
-
-</div>
+<div id="status">⏳ En attente...</div>
+<div id="tickets"></div>
 
 <script>
-    // Récupérer la configuration depuis window.__ENV (comme dans le demo Pi devs)
-    const BACKEND_URL_CONFIG = window.__ENV && window.__ENV.backendURL ? window.__ENV.backendURL : "https://betix-backend.onrender.com";
-    
-    // Passer la config au script.js
-    window.BETIX_CONFIG = {
-        backendURL: BACKEND_URL_CONFIG
-    };
-</script>
+    const BACKEND_URL = "https://betix-backend.onrender.com";
+    let piUser = null;
+    let tickets = JSON.parse(localStorage.getItem('betix_tickets_test')) || [];
 
-<script src="script.js"></script>
+    function afficherTickets() {
+        const div = document.getElementById('tickets');
+        if (tickets.length === 0) {
+            div.innerHTML = '<p>Aucun ticket pour le moment</p>';
+            return;
+        }
+        div.innerHTML = '<h3>🎟️ Mes tickets :</h3>' + tickets.map(t => `<div class="ticket">✅ ${t.title} - ${t.date}</div>`).join('');
+    }
+
+    async function connecterWallet() {
+        if (typeof Pi === 'undefined') {
+            document.getElementById('status').innerHTML = '❌ Veuillez ouvrir dans Pi Browser';
+            return;
+        }
+        try {
+            Pi.init({ version: "2.0", sandbox: true });
+            const auth = await Pi.authenticate(['username', 'payments'], null);
+            if (auth && auth.user) {
+                piUser = auth.user;
+                document.getElementById('status').innerHTML = `✅ Connecté en tant que : ${piUser.username}`;
+                document.getElementById('buyBtn').style.display = 'inline-block';
+                document.getElementById('connectBtn').disabled = true;
+            }
+        } catch(e) {
+            document.getElementById('status').innerHTML = '❌ Erreur: ' + e.message;
+        }
+    }
+
+    async function acheterTicket() {
+        if (!piUser) {
+            alert("Connectez d'abord votre wallet");
+            return;
+        }
+        
+        document.getElementById('status').innerHTML = '⏳ Création du paiement...';
+        
+        try {
+            const payment = await Pi.createPayment({
+                amount: 0.0003,
+                memo: "Ticket test Betix",
+                metadata: { product: "ticket", price: 0.0003 }
+            }, {
+                onReadyForServerApproval: function(paymentId) {
+                    document.getElementById('status').innerHTML = '📝 Approbation en cours...';
+                    fetch(`${BACKEND_URL}/api/pi/approve`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId })
+                    }).then(() => Pi.approvePayment(paymentId));
+                },
+                
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    document.getElementById('status').innerHTML = '💰 Finalisation...';
+                    fetch(`${BACKEND_URL}/api/pi/complete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId, txid })
+                    }).then(() => Pi.completePayment(paymentId, txid));
+                },
+                
+                onCancel: function() {
+                    document.getElementById('status').innerHTML = '❌ Paiement annulé';
+                },
+                
+                onError: function(error) {
+                    document.getElementById('status').innerHTML = '❌ Erreur: ' + error.message;
+                }
+            });
+            
+            // Ajout du ticket
+            setTimeout(() => {
+                tickets.push({ title: "Ticket de test", date: new Date().toLocaleString() });
+                localStorage.setItem('betix_tickets_test', JSON.stringify(tickets));
+                afficherTickets();
+                document.getElementById('status').innerHTML = '✅ Ticket acheté avec succès !';
+            }, 2000);
+            
+        } catch(e) {
+            document.getElementById('status').innerHTML = '❌ Erreur: ' + e.message;
+        }
+    }
+
+    document.getElementById('connectBtn').onclick = connecterWallet;
+    document.getElementById('buyBtn').onclick = acheterTicket;
+    
+    afficherTickets();
+</script>
 
 </body>
 </html>
