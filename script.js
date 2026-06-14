@@ -1,6 +1,6 @@
 let events = JSON.parse(localStorage.getItem('betix_events')) || [];
 let tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
-let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invite', wallet: null, memberSince: '2026' };
+let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 };
 let currentFilter = 'Tous';
 let searchQuery = '';
 let piUser = null;
@@ -24,11 +24,11 @@ const eventImagesList = {
 
 const demoEvents = [
     { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux. Venez profiter d\'une ambiance unique.', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre équipes locales. Ambiance garantie !', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales. Ambiance garantie', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir de la blockchain et du Web3 avec des experts du secteur.', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies en toute securite.', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere suivi d\'un debat avec le realisateur.', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes sur scene. Billets valables pour les 3 jours.', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes sur scene.', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -38,10 +38,29 @@ function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(even
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); }
 function saveUser() { localStorage.setItem('betix_user', JSON.stringify(currentUser)); }
 
+function calculateLoyaltyPoints() {
+    var points = 0;
+    for (var i = 0; i < ratings.length; i++) {
+        if (ratings[i].userWallet === (currentUser.wallet || currentUser.name)) {
+            points += ratings[i].rating;
+        }
+    }
+    currentUser.loyaltyPoints = points;
+    saveUser();
+    return points;
+}
+
+function updateLoyaltyPointsDisplay() {
+    var pointsSpan = document.getElementById('loyaltyPoints');
+    if (pointsSpan) {
+        pointsSpan.innerText = currentUser.loyaltyPoints || 0;
+    }
+}
+
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
 function isSessionExpired() { const last = parseInt(localStorage.getItem('betix_last_activity') || 0); const now = Date.now(); return (now - last) > 86400000; }
-function logout() { if (confirm('Etes-vous sur de vouloir vous deconnecter ?')) { currentUser = { name: 'Invite', wallet: null, memberSince: '2026' }; piUser = null; saveUser(); localStorage.removeItem('betix_last_activity'); localStorage.removeItem('betix_pending_payment'); updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); alert('Vous etes deconnecte'); closeSidebar(); } }
-function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { console.log("Session expiree apres 24h d'inactivite"); logout(); alert('Session expiree pour inactivite. Veuillez vous reconnecter.'); } }, 60000); }
+function logout() { if (confirm('Etes-vous sur de vouloir vous deconnecter ?')) { currentUser = { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 }; piUser = null; saveUser(); localStorage.removeItem('betix_last_activity'); localStorage.removeItem('betix_pending_payment'); updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); alert('Vous etes deconnecte'); closeSidebar(); } }
+function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { logout(); alert('Session expiree pour inactivite. Veuillez vous reconnecter.'); } }, 60000); }
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
 function showPage(pageName) {
@@ -72,7 +91,7 @@ function openGallery(eventId, startIndex) {
         modal = document.createElement('div');
         modal.id = 'fullGalleryModal';
         modal.className = 'gallery-modal';
-        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">◀ Précédent</button><button id="galleryNext">Suivant ▶</button></div>';
+        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">Precedent</button><button id="galleryNext">Suivant</button></div>';
         document.body.appendChild(modal);
         document.querySelector('#fullGalleryModal .gallery-close').onclick = function() { document.getElementById('fullGalleryModal').classList.remove('show'); };
     }
@@ -97,43 +116,54 @@ function renderEventCard(event) {
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
         galleryHtml = '<div class="event-gallery">';
-        for (var i = 0; i < event.images.length; i++) {
+        for (var i = 0; i < Math.min(event.images.length, 4); i++) {
             galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="openGallery(\'' + event.id + '\', ' + i + ')">';
         }
+        if (event.images.length > 4) { galleryHtml += '<div class="event-gallery-img" style="background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:0.8rem;">+' + (event.images.length - 4) + '</div>'; }
         galleryHtml += '</div>';
-        galleryHtml += '<div class="photo-count">📸 ' + event.images.length + ' photo(s) — glissez pour voir plus</div>';
     } else {
-        galleryHtml = '<img src="' + eventImagesList[event.category] + '" class="event-main-image" onclick="openGallery(\'' + event.id + '\', 0)">';
-        galleryHtml += '<div class="photo-count">📸 1 photo</div>';
+        galleryHtml = '<img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:160px;" onclick="openGallery(\'' + event.id + '\', 0)">';
     }
     
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
     var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     
-    var descriptionHtml = '';
-    if (event.description && event.description.trim() !== '') {
-        descriptionHtml = '<div class="event-description"><strong>📖 Description</strong><br>' + escapeHtml(event.description) + '</div>';
+    var ratingStars = '';
+    var fullStars = Math.floor(avgRating);
+    for (var i = 0; i < fullStars; i++) ratingStars += '★';
+    for (var i = fullStars; i < 5; i++) ratingStars += '☆';
+    
+    var ratingHtml = avgRating > 0 ? '<span class="event-rating">' + ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')</span>' : '<span class="event-rating">Nouveau</span>';
+    
+    var descriptionShort = event.description ? event.description.substring(0, 100) + (event.description.length > 100 ? '...' : '') : '';
+    
+    var ratingButtonHtml = '';
+    if (!hasRated && hasTicket) {
+        ratingButtonHtml = '<button class="rating-btn" onclick="openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">⭐ Noter cet événement</button>';
+    } else if (hasRated) {
+        ratingButtonHtml = '<div class="rated-badge">✓ Vous avez noté ' + (userRating ? userRating.rating : '') + '/5</div>';
     }
     
-    return '<div class="event-card" data-event-id="' + event.id + '">' +
+    return '<div class="event-card">' +
         galleryHtml +
         '<div class="event-info">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
-            '<div class="event-date">📅 ' + dateFormatted + '</div>' +
-            '<div class="event-time">⏰ ' + timeFormatted + '</div>' +
-            '<div class="event-location">📍 ' + escapeHtml(event.location || 'Lieu') + '</div>' +
-            descriptionHtml +
-            '<div class="event-price">💰 ' + event.price + ' Pi</div>' +
-            '<div class="event-seats">🎟️ ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
-            (avgRating > 0 ? '<div class="event-rating">⭐ ' + avgRating.toFixed(1) + '/5 (' + eventRatings.length + ' avis)</div>' : '') +
-            '<div class="boost-count">⭐ ' + (event.boosts || 0) + ' boost(s)</div>' +
-            '<div class="event-actions">' +
-                '<button class="buy-btn" onclick="buyTicket(\'' + event.id + '\')">Acheter</button>' +
-                '<button class="boost-btn" onclick="boostEvent(\'' + event.id + '\')">⭐ Booster</button>' +
+            '<div class="event-meta">' +
+                '<div class="event-meta-item">📅 ' + dateFormatted + ' à ' + timeFormatted + '</div>' +
+                '<div class="event-meta-item">📍 ' + escapeHtml(event.location || 'En ligne') + '</div>' +
             '</div>' +
-            (!hasRated && hasTicket ? '<button class="rating-btn" onclick="openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter</button>' : '') +
-            (hasRated ? '<div class="rated-badge">Note: ' + (userRating ? userRating.rating : '') + '/5</div>' : '') +
+            (descriptionShort ? '<div class="event-description">' + escapeHtml(descriptionShort) + '</div>' : '') +
+            '<div class="event-stats">' +
+                ratingHtml +
+                '<span class="boost-count">⭐ ' + (event.boosts || 0) + ' boosts</span>' +
+            '</div>' +
+            '<div class="event-footer">' +
+                '<div class="event-price">' + event.price + ' Pi</div>' +
+                '<div class="event-seats">🎟️ ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
+                '<button class="buy-btn" onclick="buyTicket(\'' + event.id + '\')">Acheter</button>' +
+                ratingButtonHtml +
+            '</div>' +
         '</div>' +
     '</div>';
 }
@@ -172,6 +202,7 @@ async function connectToPi() {
             piUser = auth.user;
             currentUser.wallet = piUser.username;
             currentUser.name = piUser.username;
+            if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             saveUser();
             updateActivity();
             updateUserInfo();
@@ -275,6 +306,7 @@ function updateProfilePage() {
     if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Non connecte';
     if (ticketCount) ticketCount.innerText = tickets.length;
     if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
+    updateLoyaltyPointsDisplay();
 }
 
 function renderTickets() {
@@ -283,7 +315,7 @@ function renderTickets() {
     var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun ticket actif</p>'; return; }
-    container.innerHTML = active.map(function(t) { return '<div class="ticket-card" style="border-left: 4px solid #10b981; margin-bottom: 15px;"><h3 style="color: #1e3a8a;"> ' + escapeHtml(t.eventTitle) + '</h3><p><strong> Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong> Prix :</strong> ' + t.price + ' Pi</p><p><strong> Date de l\'evenement :</strong> ' + formatDate(t.eventDate) + '</p><p><strong> Lieu :</strong> ' + escapeHtml(t.eventLocation || 'Non specifie') + '</p><p><strong> Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong> Code Betix :</strong> <code style="background:#f0f0f0;padding:4px 8px;border-radius:6px;">' + t.qrCode + '</code></p><p><strong> Transaction ID :</strong> <small>' + t.transactionId + '</small></p></div>'; }).join('');
+    container.innerHTML = active.map(function(t) { return '<div class="ticket-card"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Prix :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Lieu :</strong> ' + escapeHtml(t.eventLocation || 'Non specifie') + '</p><p><strong>Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong>Code :</strong> <code>' + t.qrCode + '</code></p></div>'; }).join('');
 }
 
 function renderHistory() {
@@ -292,7 +324,7 @@ function renderHistory() {
     var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
     old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun historique</p>'; return; }
-    container.innerHTML = old.map(function(t) { return '<div class="ticket-card" style="border-left: 4px solid #6b7280; margin-bottom: 15px; opacity: 0.85;"><h3 style="color: #374151;"> ' + escapeHtml(t.eventTitle) + '</h3><p><strong> Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong> Prix :</strong> ' + t.price + ' Pi</p><p><strong> Date de l\'evenement :</strong> ' + formatDate(t.eventDate) + '</p><p><strong> Lieu :</strong> ' + escapeHtml(t.eventLocation || 'Non specifie') + '</p><p><strong> Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong> Code Betix :</strong> <code style="background:#f0f0f0;padding:4px 8px;border-radius:6px;">' + t.qrCode + '</code></p><p><strong> Transaction ID :</strong> <small>' + t.transactionId + '</small></p><p style="color: #ef4444; font-size: 0.8rem;"> Evenement passe</p></div>'; }).join('');
+    container.innerHTML = old.map(function(t) { return '<div class="ticket-card" style="opacity:0.8;"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Prix :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p style="color:#ef4444;">Evenement passe</p></div>'; }).join('');
 }
 
 function createEvent(e) {
@@ -301,7 +333,7 @@ function createEvent(e) {
     var imageInputs = document.querySelectorAll('.eventImageUrl');
     var images = [];
     for (var i = 0; i < imageInputs.length; i++) { var url = imageInputs[i].value.trim(); if (url) images.push(url); }
-    if (images.length < 2) { alert('Veuillez ajouter au moins 2 photos pour votre evenement (minimum requis)'); return; }
+    if (images.length < 2) { alert('Veuillez ajouter au moins 2 photos pour votre evenement'); return; }
     var category = document.getElementById('eventCategory').value;
     var newEvent = {
         id: Date.now().toString(), title: document.getElementById('eventTitle').value, category: category,
@@ -333,7 +365,10 @@ function openRatingModal(eventId, eventTitle) {
         if (selectedRating === 0) { alert('Choisissez une note'); return; }
         ratings.push({ id: Date.now(), eventId: eventId, eventTitle: eventTitle, rating: selectedRating, comment: document.getElementById('ratingComment').value || '', userWallet: currentUser.wallet || currentUser.name, userName: currentUser.name, date: new Date().toISOString() });
         localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-        alert('Note ' + selectedRating + '/5 enregistree');
+        currentUser.loyaltyPoints = (currentUser.loyaltyPoints || 0) + selectedRating;
+        saveUser();
+        updateLoyaltyPointsDisplay();
+        alert('Note ' + selectedRating + '/5 enregistree ! Vous gagnez ' + selectedRating + ' points de fidelite.');
         modal.classList.remove('show');
         renderEventsByCategory(); renderMyRatings(); updateProfilePage();
     };
@@ -363,10 +398,10 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    var usersHtml = '<table><table><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
-    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</td></tr>';
-    for (var i = 0; i < connectedUsers.length; i++) { var u = connectedUsers[i]; usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '<tr></tr>'; }
-    usersHtml += '</table>';
+    var usersHtml = '<table border="1" cellpadding="5"><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</tr>';
+    for (var i = 0; i < connectedUsers.length; i++) { var u = connectedUsers[i]; usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '</tr>'; }
+    usersHtml += '</table';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
     document.getElementById('adminEventsList').innerHTML = events.map(function(e) { return '<div class="admin-event-item"><div><strong>' + escapeHtml(e.title) + '</strong><br><small>' + e.category + ' | ' + e.seatsLeft + '/' + e.seatsTotal + '</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Supprimer</button></div>'; }).join('');
 }
@@ -434,7 +469,7 @@ function googleTranslateElementInit() {
     }, 'google_translate_element');
     setTimeout(function() {
         var select = document.querySelector('.goog-te-combo');
-        if (select) { select.style.width = '100%'; select.style.maxWidth = '320px'; select.style.padding = '10px'; select.style.fontSize = '14px'; select.style.backgroundColor = 'var(--betix-degrade)'; select.style.color = 'white'; select.style.border = 'none'; select.style.borderRadius = '8px'; select.style.cursor = 'pointer'; }
+        if (select) { select.style.width = '100%'; select.style.maxWidth = '320px'; select.style.padding = '10px'; select.style.fontSize = '14px'; select.style.background = 'var(--gradient)'; select.style.color = 'white'; select.style.border = 'none'; select.style.borderRadius = '8px'; }
         var iframes = document.querySelectorAll('iframe');
         for (var i = 0; i < iframes.length; i++) { var iframe = iframes[i]; if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') { iframe.style.display = 'none'; iframe.style.visibility = 'hidden'; iframe.style.height = '0px'; iframe.style.width = '0px'; } }
         document.body.style.top = '0px'; document.body.style.position = 'relative';
@@ -442,8 +477,9 @@ function googleTranslateElementInit() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof Pi !== 'undefined') { Pi.init({ version: "2.0", sandbox: true }); console.log("Pi SDK initialise"); }
+    if (typeof Pi !== 'undefined') { Pi.init({ version: "2.0", sandbox: true }); }
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
+    calculateLoyaltyPoints();
     initFilters(); renderEventsByCategory(); updateUserInfo(); updateProfilePage(); initAdmin(); initChat(); initLegalModals();
     var dark = document.getElementById('darkModeToggle');
     if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
