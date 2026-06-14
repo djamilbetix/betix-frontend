@@ -6,7 +6,26 @@
     <title>Betix - Plateforme d'Événements Pi Network</title>
     <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <!-- Initialisation forcée du SDK Pi -->
+    <script>
+        (function initPiSDK() {
+            if (typeof Pi !== 'undefined') {
+                Pi.init({ version: "2.0", sandbox: true });
+                console.log("Pi SDK initialise");
+                window.piSDKReady = true;
+            } else {
+                console.log("Attente du SDK Pi...");
+                setTimeout(initPiSDK, 200);
+            }
+        })();
+        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 1000);
+        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
+    </script>
+    
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -98,7 +117,7 @@
                     <input type="url" class="eventImageUrl" placeholder="URL de l'image 1" required>
                     <input type="url" class="eventImageUrl" placeholder="URL de l'image 2" required>
                 </div>
-                <button type="button" id="addImageBtn" class="btn-secondary" style="margin-top: 8px;">+ Ajouter une image</button>
+                <button type="button" id="addImageBtn" class="btn-secondary">+ Ajouter une image</button>
                 <p style="font-size: 0.7rem; color: #6b7280; margin-top: 5px;">Utilisez des URLs d'images (Unsplash, Imgur, etc.)</p>
             </div>
             
@@ -232,14 +251,6 @@
 
 <script>
     window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
-    (function initPi() {
-        if (typeof Pi !== 'undefined') {
-            Pi.init({ version: "2.0", sandbox: true });
-            console.log("Pi SDK initialise");
-        } else {
-            setTimeout(initPi, 200);
-        }
-    })();
 </script>
 
 <script src="script.js"></script>
