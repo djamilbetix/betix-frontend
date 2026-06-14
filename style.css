@@ -402,12 +402,6 @@ body {
     margin-bottom: 8px;
 }
 
-.event-price small {
-    font-size: 0.7rem;
-    font-weight: normal;
-    color: var(--gray);
-}
-
 .event-seats {
     font-size: 0.7rem;
     color: var(--gray);
