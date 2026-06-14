@@ -113,53 +113,6 @@ async function connectToPi() {
 
 async function onIncompletePaymentFound(payment) {
     console.log("Paiement incomplet trouvé:", payment);
-    const pendingPayment = JSON.parse(localStorage.getItem('betix_pending_payment') || '{}');
-    
-    if (pendingPayment.eventId && payment.metadata?.eventId === pendingPayment.eventId) {
-        try {
-            await Pi.completePayment(payment.paymentId, payment.txid);
-            alert("Paiement complété avec succès !");
-            
-            const event = events.find(e => e.id === pendingPayment.eventId);
-            if (event) {
-                event.seatsLeft--;
-                saveEvents();
-                tickets.push({
-                    id: Date.now().toString(),
-                    eventId: event.id,
-                    eventTitle: event.title,
-                    eventDate: event.date,
-                    eventLocation: event.location,
-                    price: event.price,
-                    buyerWallet: piUser?.username || currentUser.wallet,
-                    purchaseDate: new Date().toISOString(),
-                    transactionId: payment.txid,
-                    qrCode: `BETIX-${Date.now()}`
-                });
-                saveTickets();
-                renderEventsByCategory();
-                renderTickets();
-                updateProfilePage();
-                alert("Ticket ajouté à votre compte !");
-            }
-            localStorage.removeItem('betix_pending_payment');
-        } catch (error) {
-            console.error("Erreur complétion paiement:", error);
-        }
-    }
-}
-
-async function wakeUpBackend() {
-    try {
-        console.log("⏳ Réveil du backend...");
-        const response = await fetch('https://betix-backend.onrender.com/api/health');
-        const data = await response.json();
-        console.log("✅ Backend réveillé:", data);
-        return true;
-    } catch(e) {
-        console.log("❌ Erreur réveil:", e);
-        return false;
-    }
 }
 
 async function buyTicket(eventId) {
@@ -182,72 +135,30 @@ async function buyTicket(eventId) {
     
     if (!confirm(`Acheter "${event.title}" pour ${event.price} Pi ?`)) return;
     
-    const statusDiv = document.getElementById('status');
-    if (statusDiv) statusDiv.innerHTML = '⏳ Réveil du serveur...';
-    
-    await wakeUpBackend();
-    
-    if (statusDiv) statusDiv.innerHTML = '⏳ Création du paiement...';
-    
     try {
         const payment = await Pi.createPayment({
             amount: Number(event.price),
             memo: `Ticket: ${event.title}`,
-            metadata: { 
-                eventId: event.id,
-                eventTitle: event.title,
-                eventDate: event.date
-            }
+            metadata: { eventId: event.id, eventTitle: event.title }
         }, {
             onReadyForServerApproval: function(paymentId) {
-                console.log("📝 Approval reçu:", paymentId);
-                if (statusDiv) statusDiv.innerHTML = '📝 Approbation en cours...';
-                
+                console.log("📝 Envoi au backend pour approbation:", paymentId);
                 fetch(`${BACKEND_URL}/api/pi/approve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
-                })
-                .then(res => res.json())
-                .then(() => {
-                    console.log("✅ Approbation envoyée à Pi");
-                    return Pi.approvePayment(paymentId);
-                })
-                .then(() => {
-                    console.log("✅ Pi.approvePayment terminé");
-                })
-                .catch(err => {
-                    console.error("❌ Erreur approve:", err);
-                    if (statusDiv) statusDiv.innerHTML = '❌ Erreur approbation';
                 });
             },
             
             onReadyForServerCompletion: function(paymentId, txid) {
-                console.log("💰 Completion reçue:", paymentId, txid);
-                if (statusDiv) statusDiv.innerHTML = '💰 Finalisation en cours...';
-                
+                console.log("💰 Envoi au backend pour complétion:", paymentId, txid);
                 fetch(`${BACKEND_URL}/api/pi/complete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        paymentId, 
-                        txid,
-                        amount: event.price,
-                        memo: `Ticket: ${event.title}`,
-                        metadata: { eventId: event.id }
-                    })
-                })
-                .then(res => res.json())
-                .then(() => {
-                    console.log("✅ Completion envoyée à Pi");
-                    return Pi.completePayment(paymentId, txid);
-                })
-                .then(() => {
-                    console.log("✅ Pi.completePayment terminé");
-                    
+                    body: JSON.stringify({ paymentId, txid, amount: event.price, metadata: { eventId: event.id } })
+                }).then(() => {
                     event.seatsLeft--;
                     saveEvents();
-                    
                     tickets.push({
                         id: Date.now().toString(),
                         eventId: event.id,
@@ -261,44 +172,26 @@ async function buyTicket(eventId) {
                         qrCode: `BETIX-${Date.now()}`
                     });
                     saveTickets();
-                    
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
-                    
-                    if (statusDiv) statusDiv.innerHTML = '✅ Achat réussi !';
                     alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
-                })
-                .catch(err => {
-                    console.error("❌ Erreur complete:", err);
-                    if (statusDiv) statusDiv.innerHTML = '❌ Erreur finalisation';
                 });
             },
             
             onCancel: function(paymentId) {
                 console.log("❌ Paiement annulé:", paymentId);
-                if (statusDiv) statusDiv.innerHTML = '❌ Paiement annulé';
-                fetch(`${BACKEND_URL}/api/pi/cancel`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
-                }).catch(()=>{});
                 alert("Paiement annulé");
             },
             
-            onError: function(error, paymentId) {
-                console.error("💥 Erreur Pi SDK:", error);
-                if (statusDiv) statusDiv.innerHTML = '❌ Erreur: ' + error.message;
-                alert("Erreur de paiement: " + (error.message || "Vérifiez votre wallet"));
+            onError: function(error) {
+                console.error("💥 Erreur:", error);
+                alert("Erreur de paiement: " + error.message);
             }
         });
-        
-        console.log("📦 Paiement créé avec succès");
-        
     } catch (error) {
-        console.error("💥 Exception:", error);
-        if (statusDiv) statusDiv.innerHTML = '❌ Exception: ' + error.message;
+        console.error("Exception:", error);
         alert("Erreur: " + error.message);
     }
 }
@@ -397,10 +290,10 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '<table></tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
-    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</td></tr>';
+    let usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</tr>';
     connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '</tr>'; });
-    usersHtml += '</tr>';
+    usersHtml += '</table>';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
     document.getElementById('adminEventsList').innerHTML = events.map(e => `<div class="admin-event-item"><div><strong>${escapeHtml(e.title)}</strong><br><small>${e.category} | ${e.seatsLeft}/${e.seatsTotal}</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button></div>`).join('');
 }
@@ -496,7 +389,7 @@ function googleTranslateElementInit() {
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Pi !== 'undefined') {
         Pi.init({ version: "2.0", sandbox: true });
-        console.log("✅ Pi SDK initialisé dans DOMContentLoaded");
+        console.log("✅ Pi SDK initialisé");
     }
     
     if (!events.length) { events = [...demoEvents]; saveEvents(); }
