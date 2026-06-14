@@ -23,12 +23,12 @@ const eventImagesList = {
 };
 
 const demoEvents = [
-    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux. Venez profiter d\'une ambiance unique.', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre équipes locales. Ambiance garantie !', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir de la blockchain et du Web3 avec des experts du secteur.', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies en toute securite.', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere suivi d\'un debat avec le realisateur.', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes sur scene. Billets valables pour les 3 jours.', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -97,12 +97,11 @@ function renderEventCard(event) {
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
         galleryHtml = '<div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 4); i++) {
+        for (var i = 0; i < event.images.length; i++) {
             galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="openGallery(\'' + event.id + '\', ' + i + ')">';
         }
-        if (event.images.length > 4) { galleryHtml += '<div class="event-gallery-img" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;">+' + (event.images.length - 4) + '</div>'; }
         galleryHtml += '</div>';
-        galleryHtml += '<div class="photo-count">📸 ' + event.images.length + ' photo(s)</div>';
+        galleryHtml += '<div class="photo-count">📸 ' + event.images.length + ' photo(s) — glissez pour voir plus</div>';
     } else {
         galleryHtml = '<img src="' + eventImagesList[event.category] + '" class="event-main-image" onclick="openGallery(\'' + event.id + '\', 0)">';
         galleryHtml += '<div class="photo-count">📸 1 photo</div>';
@@ -112,6 +111,11 @@ function renderEventCard(event) {
     var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
     var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     
+    var descriptionHtml = '';
+    if (event.description && event.description.trim() !== '') {
+        descriptionHtml = '<div class="event-description"><strong>📖 Description</strong><br>' + escapeHtml(event.description) + '</div>';
+    }
+    
     return '<div class="event-card" data-event-id="' + event.id + '">' +
         galleryHtml +
         '<div class="event-info">' +
@@ -119,6 +123,7 @@ function renderEventCard(event) {
             '<div class="event-date">📅 ' + dateFormatted + '</div>' +
             '<div class="event-time">⏰ ' + timeFormatted + '</div>' +
             '<div class="event-location">📍 ' + escapeHtml(event.location || 'Lieu') + '</div>' +
+            descriptionHtml +
             '<div class="event-price">💰 ' + event.price + ' Pi</div>' +
             '<div class="event-seats">🎟️ ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
             (avgRating > 0 ? '<div class="event-rating">⭐ ' + avgRating.toFixed(1) + '/5 (' + eventRatings.length + ' avis)</div>' : '') +
@@ -226,7 +231,7 @@ async function boostEvent(eventId) {
     if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre wallet Pi"); await connectToPi(); return; }
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) return;
-    if (!confirm('Booster "' + event.title + '" pour 0.001 Pi ? Cela aide le créateur a gagner en visibilite.')) return;
+    if (!confirm('Booster "' + event.title + '" pour 0.001 Pi ? Cela aide le createur a gagner en visibilite.')) return;
     try {
         var payment = await Pi.createPayment({
             amount: 0.001,
@@ -358,7 +363,7 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    var usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    var usersHtml = '<table><table><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
     usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</td></tr>';
     for (var i = 0; i < connectedUsers.length; i++) { var u = connectedUsers[i]; usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '<tr></tr>'; }
     usersHtml += '</table>';
