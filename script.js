@@ -1,6 +1,6 @@
 let events = JSON.parse(localStorage.getItem('betix_events')) || [];
 let tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
-let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invité', wallet: null, memberSince: '2026' };
+let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invite', wallet: null, memberSince: '2026' };
 let currentFilter = 'Tous';
 let searchQuery = '';
 let piUser = null;
@@ -9,6 +9,7 @@ let chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || []
 let connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
 let adminCode = 'BETIX2026';
 let selectedRating = 0;
+let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
 
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
@@ -22,25 +23,33 @@ const eventImagesList = {
 };
 
 const demoEvents = [
-    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz', price: 0.0003, seatsTotal: 100, seatsLeft: 100, image: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString() },
-    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical', price: 0.0003, seatsTotal: 500, seatsLeft: 500, image: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString() },
-    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir', price: 0.0003, seatsTotal: 200, seatsLeft: 200, image: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString() },
-    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader', price: 0.0003, seatsTotal: 50, seatsLeft: 50, image: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString() },
-    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif', price: 0.0003, seatsTotal: 300, seatsLeft: 300, image: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString() },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, image: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString() }
+    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { const date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('fr-FR') : 'Date a definir'; }
+function formatDateTime(dateStr) { const date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('fr-FR') : 'Date inconnue'; }
 function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); }
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); }
 function saveUser() { localStorage.setItem('betix_user', JSON.stringify(currentUser)); }
 
+function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
+function isSessionExpired() { const last = parseInt(localStorage.getItem('betix_last_activity') || 0); const now = Date.now(); return (now - last) > 86400000; }
+function logout() { if (confirm('Etes-vous sur de vouloir vous deconnecter ?')) { currentUser = { name: 'Invite', wallet: null, memberSince: '2026' }; piUser = null; saveUser(); localStorage.removeItem('betix_last_activity'); localStorage.removeItem('betix_pending_payment'); updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); alert('Vous etes deconnecte'); closeSidebar(); } }
+function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { console.log("Session expiree apres 24h d'inactivite"); logout(); alert('Session expiree pour inactivite. Veuillez vous reconnecter.'); } }, 60000); }
+function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
+
 function showPage(pageName) {
-    const pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'socialPage', 'settingsPage', 'ratingsPage', 'adminPage'];
-    pages.forEach(page => { const el = document.getElementById(page); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
+    updateActivity();
+    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'socialPage', 'settingsPage', 'ratingsPage', 'adminPage'];
+    for (var i = 0; i < pages.length; i++) { var el = document.getElementById(pages[i]); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } }
     if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); }
-    else { const target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } }
+    else { var target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } }
     if (pageName === 'tickets') renderTickets();
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') updateProfilePage();
@@ -50,238 +59,297 @@ function showPage(pageName) {
     window.scrollTo(0, 0);
 }
 
-function closeSidebar() { document.getElementById('sidebar')?.classList.remove('open'); document.getElementById('overlay')?.classList.remove('active'); }
-function openSidebar() { document.getElementById('sidebar')?.classList.add('open'); document.getElementById('overlay')?.classList.add('active'); }
+function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.remove('open'); var o = document.getElementById('overlay'); if (o) o.classList.remove('active'); }
+function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
+
+function openGallery(eventId, startIndex) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) return;
+    var images = event.images && event.images.length ? event.images : [eventImagesList[event.category]];
+    var currentIndex = startIndex || 0;
+    var modal = document.getElementById('fullGalleryModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'fullGalleryModal';
+        modal.className = 'gallery-modal';
+        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">◀ Précédent</button><button id="galleryNext">Suivant ▶</button></div>';
+        document.body.appendChild(modal);
+        document.querySelector('#fullGalleryModal .gallery-close').onclick = function() { document.getElementById('fullGalleryModal').classList.remove('show'); };
+    }
+    var imgElement = document.getElementById('galleryCurrentImage');
+    var prevBtn = document.getElementById('galleryPrev');
+    var nextBtn = document.getElementById('galleryNext');
+    function updateImage(index) { if (index < 0) index = images.length - 1; if (index >= images.length) index = 0; currentIndex = index; imgElement.src = images[currentIndex]; }
+    updateImage(currentIndex);
+    prevBtn.onclick = function() { updateImage(currentIndex - 1); };
+    nextBtn.onclick = function() { updateImage(currentIndex + 1); };
+    modal.classList.add('show');
+}
 
 function renderEventCard(event) {
-    const hasRated = ratings.some(r => r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name));
-    const userRating = ratings.find(r => r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name));
-    let avgRating = 0;
-    const eventRatings = ratings.filter(r => r.eventId === event.id);
-    if (eventRatings.length > 0) avgRating = eventRatings.reduce((a, r) => a + r.rating, 0) / eventRatings.length;
-    const hasTicket = tickets.some(t => t.eventId === event.id && t.buyerWallet === (currentUser.wallet || currentUser.name));
-    return `<div class="event-card"><img src="${event.image}" class="event-image" onerror="this.src='${eventImagesList[event.category] || eventImagesList.Concert}'"><div class="event-info"><div class="event-title">${escapeHtml(event.title)}</div><div class="event-date">${formatDate(event.date)}</div><div class="event-location">${escapeHtml(event.location || 'Lieu')}</div><div class="event-price">${event.price} Pi</div><div class="event-seats">${event.seatsLeft}/${event.seatsTotal} places</div>${avgRating > 0 ? `<div class="event-rating">Note: ${avgRating.toFixed(1)}/5 (${eventRatings.length} avis)</div>` : ''}<button class="buy-btn" onclick="buyTicket('${event.id}')">Acheter</button>${!hasRated && hasTicket ? `<button class="rating-btn" onclick="openRatingModal('${event.id}', '${escapeHtml(event.title)}')">Noter</button>` : ''}${hasRated ? `<div class="rated-badge">Note: ${userRating?.rating}/5</div>` : ''}</div></div>`;
+    var hasRated = ratings.some(function(r) { return r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name); });
+    var userRating = ratings.find(function(r) { return r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name); });
+    var avgRating = 0;
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
+    var hasTicket = tickets.some(function(t) { return t.eventId === event.id && t.buyerWallet === (currentUser.wallet || currentUser.name); });
+    
+    var galleryHtml = '';
+    if (event.images && event.images.length > 0) {
+        galleryHtml = '<div class="event-gallery">';
+        for (var i = 0; i < Math.min(event.images.length, 4); i++) {
+            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="openGallery(\'' + event.id + '\', ' + i + ')">';
+        }
+        if (event.images.length > 4) { galleryHtml += '<div class="event-gallery-img" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;">+' + (event.images.length - 4) + '</div>'; }
+        galleryHtml += '</div>';
+        galleryHtml += '<div class="photo-count">📸 ' + event.images.length + ' photo(s)</div>';
+    } else {
+        galleryHtml = '<img src="' + eventImagesList[event.category] + '" class="event-main-image" onclick="openGallery(\'' + event.id + '\', 0)">';
+        galleryHtml += '<div class="photo-count">📸 1 photo</div>';
+    }
+    
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
+    var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    return '<div class="event-card" data-event-id="' + event.id + '">' +
+        galleryHtml +
+        '<div class="event-info">' +
+            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-date">📅 ' + dateFormatted + '</div>' +
+            '<div class="event-time">⏰ ' + timeFormatted + '</div>' +
+            '<div class="event-location">📍 ' + escapeHtml(event.location || 'Lieu') + '</div>' +
+            '<div class="event-price">💰 ' + event.price + ' Pi</div>' +
+            '<div class="event-seats">🎟️ ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
+            (avgRating > 0 ? '<div class="event-rating">⭐ ' + avgRating.toFixed(1) + '/5 (' + eventRatings.length + ' avis)</div>' : '') +
+            '<div class="boost-count">⭐ ' + (event.boosts || 0) + ' boost(s)</div>' +
+            '<div class="event-actions">' +
+                '<button class="buy-btn" onclick="buyTicket(\'' + event.id + '\')">Acheter</button>' +
+                '<button class="boost-btn" onclick="boostEvent(\'' + event.id + '\')">⭐ Booster</button>' +
+            '</div>' +
+            (!hasRated && hasTicket ? '<button class="rating-btn" onclick="openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter</button>' : '') +
+            (hasRated ? '<div class="rated-badge">Note: ' + (userRating ? userRating.rating : '') + '/5</div>' : '') +
+        '</div>' +
+    '</div>';
 }
 
 function renderEventsByCategory() {
-    const container = document.getElementById('eventsByCategory');
+    var container = document.getElementById('eventsByCategory');
     if (!container) return;
-    let filtered = events.filter(e => (currentFilter === 'Tous' || e.category === currentFilter) && (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery))));
+    var filtered = events.filter(function(e) { return (currentFilter === 'Tous' || e.category === currentFilter) && (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery))); });
     if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun evenement</p>'; return; }
-    if (currentFilter !== 'Tous') { container.innerHTML = `<div class="category-section"><div class="events-grid">${filtered.map(e => renderEventCard(e)).join('')}</div></div>`; return; }
-    const cats = ['Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
-    let html = '';
-    cats.forEach(cat => { const catEvents = filtered.filter(e => e.category === cat); if (catEvents.length) html += `<div class="category-section"><div class="category-header">${cat}</div><div class="events-grid">${catEvents.map(e => renderEventCard(e)).join('')}</div></div>`; });
+    if (currentFilter !== 'Tous') { container.innerHTML = '<div class="category-section"><div class="events-grid">' + filtered.map(function(e) { return renderEventCard(e); }).join('') + '</div></div>'; return; }
+    var cats = ['Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
+    var html = '';
+    for (var i = 0; i < cats.length; i++) {
+        var cat = cats[i];
+        var catEvents = filtered.filter(function(e) { return e.category === cat; });
+        if (catEvents.length) html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid">' + catEvents.map(function(e) { return renderEventCard(e); }).join('') + '</div></div>';
+    }
     container.innerHTML = html;
 }
 
 function initFilters() {
-    const cats = ['Tous', 'Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
-    const container = document.getElementById('filtersContainer');
+    var cats = ['Tous', 'Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
+    var container = document.getElementById('filtersContainer');
     if (!container) return;
-    container.innerHTML = cats.map(c => `<div class="filter-chip ${c === currentFilter ? 'active' : ''}" data-category="${c}">${c}</div>`).join('');
-    document.querySelectorAll('.filter-chip').forEach(chip => { chip.addEventListener('click', () => { currentFilter = chip.dataset.category; initFilters(); renderEventsByCategory(); }); });
+    container.innerHTML = cats.map(function(c) { return '<div class="filter-chip ' + (c === currentFilter ? 'active' : '') + '" data-category="' + c + '">' + c + '</div>'; }).join('');
+    var chips = document.querySelectorAll('.filter-chip');
+    for (var i = 0; i < chips.length; i++) { chips[i].addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }); }
 }
 
 async function connectToPi() {
-    if (typeof Pi === 'undefined') { 
-        alert("Veuillez ouvrir cette page dans Pi Browser");
-        return;
-    }
-    
+    if (typeof Pi === 'undefined') { alert("Veuillez ouvrir cette page dans Pi Browser"); return; }
     try {
-        const scopes = ['username', 'payments'];
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        
+        var scopes = ['username', 'payments'];
+        var auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
         if (auth && auth.user) {
             piUser = auth.user;
             currentUser.wallet = piUser.username;
             currentUser.name = piUser.username;
             saveUser();
+            updateActivity();
             updateUserInfo();
             updateProfilePage();
             trackUserConnection();
             renderEventsByCategory();
-            alert(`Wallet Pi connecté ! Bienvenue ${piUser.username}`);
+            alert('Wallet Pi connecte ! Bienvenue ' + piUser.username);
             closeSidebar();
         }
-    } catch (error) {
-        console.error("Erreur connexion Pi:", error);
-        alert("Erreur de connexion: " + (error.message || "Veuillez réessayer"));
-    }
+    } catch (error) { console.error("Erreur connexion Pi:", error); alert("Erreur de connexion: " + (error.message || "Veuillez reessayer")); }
 }
 
-async function onIncompletePaymentFound(payment) {
-    console.log("Paiement incomplet trouvé:", payment);
-}
+async function onIncompletePaymentFound(payment) { console.log("Paiement incomplet trouve:", payment); }
 
 async function buyTicket(eventId) {
-    if (typeof Pi === 'undefined') {
-        alert("Veuillez ouvrir dans Pi Browser pour payer");
-        return;
-    }
-    
-    if (!piUser && !currentUser.wallet) {
-        alert("Veuillez d'abord connecter votre wallet Pi");
-        await connectToPi();
-        return;
-    }
-    
-    const event = events.find(e => e.id === eventId);
-    if (!event || event.seatsLeft <= 0) {
-        alert("Plus de places disponibles");
-        return;
-    }
-    
-    if (!confirm(`Acheter "${event.title}" pour ${event.price} Pi ?`)) return;
-    
+    updateActivity();
+    if (typeof Pi === 'undefined') { alert("Veuillez ouvrir dans Pi Browser pour payer"); return; }
+    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre wallet Pi"); await connectToPi(); return; }
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event || event.seatsLeft <= 0) { alert("Plus de places disponibles"); return; }
+    if (!confirm('Acheter "' + event.title + '" pour ' + event.price + ' Pi ?')) return;
     try {
-        const payment = await Pi.createPayment({
+        var payment = await Pi.createPayment({
             amount: Number(event.price),
-            memo: `Ticket: ${event.title}`,
+            memo: 'Ticket: ' + event.title,
             metadata: { eventId: event.id, eventTitle: event.title }
         }, {
             onReadyForServerApproval: function(paymentId) {
-                console.log("📝 Envoi au backend pour approbation:", paymentId);
-                fetch(`${BACKEND_URL}/api/pi/approve`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
-                });
+                fetch(BACKEND_URL + '/api/pi/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId }) });
             },
-            
             onReadyForServerCompletion: function(paymentId, txid) {
-                console.log("💰 Envoi au backend pour complétion:", paymentId, txid);
-                fetch(`${BACKEND_URL}/api/pi/complete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId, txid, amount: event.price, metadata: { eventId: event.id } })
-                }).then(() => {
-                    event.seatsLeft--;
-                    saveEvents();
-                    tickets.push({
-                        id: Date.now().toString(),
-                        eventId: event.id,
-                        eventTitle: event.title,
-                        eventDate: event.date,
-                        eventLocation: event.location,
-                        price: event.price,
-                        buyerWallet: piUser?.username || currentUser.wallet,
-                        purchaseDate: new Date().toISOString(),
-                        transactionId: txid,
-                        qrCode: `BETIX-${Date.now()}`
-                    });
-                    saveTickets();
-                    renderEventsByCategory();
-                    renderTickets();
-                    renderHistory();
-                    updateProfilePage();
-                    alert(`✅ Achat réussi ! Ticket pour "${event.title}" ajouté.`);
+                fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid, amount: event.price, metadata: { eventId: event.id } }) }).then(function() {
+                    var ticketExiste = tickets.some(function(t) { return t.transactionId === txid; });
+                    if (!ticketExiste) {
+                        event.seatsLeft--;
+                        saveEvents();
+                        tickets.push({
+                            id: Date.now().toString(), eventId: event.id, eventTitle: event.title, eventDate: event.date, eventLocation: event.location,
+                            price: event.price, buyerWallet: piUser ? piUser.username : currentUser.wallet, buyerName: piUser ? piUser.username : currentUser.name,
+                            purchaseDate: new Date().toISOString(), purchaseDateTime: new Date().toLocaleString('fr-FR'), transactionId: txid,
+                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8)
+                        });
+                        saveTickets();
+                    }
+                    renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
+                    alert('Achat reussi ! Ticket pour "' + event.title + '" ajoute.');
                 });
             },
-            
-            onCancel: function(paymentId) {
-                console.log("❌ Paiement annulé:", paymentId);
-                alert("Paiement annulé");
-            },
-            
-            onError: function(error) {
-                console.error("💥 Erreur:", error);
-                alert("Erreur de paiement: " + error.message);
-            }
+            onCancel: function() { alert("Paiement annule"); },
+            onError: function(error) { alert("Erreur de paiement: " + error.message); }
         });
-    } catch (error) {
-        console.error("Exception:", error);
-        alert("Erreur: " + error.message);
-    }
+    } catch (error) { alert("Erreur: " + error.message); }
+}
+
+async function boostEvent(eventId) {
+    if (typeof Pi === 'undefined') { alert("Veuillez ouvrir dans Pi Browser"); return; }
+    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre wallet Pi"); await connectToPi(); return; }
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) return;
+    if (!confirm('Booster "' + event.title + '" pour 0.001 Pi ? Cela aide le créateur a gagner en visibilite.')) return;
+    try {
+        var payment = await Pi.createPayment({
+            amount: 0.001,
+            memo: 'Boost: ' + event.title,
+            metadata: { eventId: event.id, type: 'boost' }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId }) });
+            },
+            onReadyForServerCompletion: function(paymentId, txid) {
+                fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid }) }).then(function() {
+                    event.boosts = (event.boosts || 0) + 1;
+                    saveEvents();
+                    renderEventsByCategory();
+                    alert('Merci ! L\'evenement a maintenant ' + event.boosts + ' boost(s)');
+                });
+            },
+            onCancel: function() { alert('Boost annule'); },
+            onError: function(error) { alert('Erreur: ' + error.message); }
+        });
+    } catch(error) { alert('Erreur: ' + error.message); }
 }
 
 function connectWallet() { connectToPi(); }
 
 function updateUserInfo() {
-    const sidebarName = document.getElementById('sidebarName');
-    const sidebarWallet = document.getElementById('sidebarWallet');
-    const sidebarAvatar = document.getElementById('sidebarAvatar');
+    var sidebarName = document.getElementById('sidebarName');
+    var sidebarWallet = document.getElementById('sidebarWallet');
+    var sidebarAvatar = document.getElementById('sidebarAvatar');
     if (sidebarName) sidebarName.innerText = currentUser.name;
     if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Non connecte';
     if (sidebarAvatar) sidebarAvatar.innerText = currentUser.name.substring(0, 2).toUpperCase();
 }
 
 function updateProfilePage() {
-    const profileName = document.getElementById('profileName');
-    const profileWallet = document.getElementById('profileWallet');
-    const ticketCount = document.getElementById('ticketCount');
-    const ratedCount = document.getElementById('ratedCount');
+    var profileName = document.getElementById('profileName');
+    var profileWallet = document.getElementById('profileWallet');
+    var ticketCount = document.getElementById('ticketCount');
+    var ratedCount = document.getElementById('ratedCount');
     if (profileName) profileName.innerText = currentUser.name;
     if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Non connecte';
     if (ticketCount) ticketCount.innerText = tickets.length;
-    if (ratedCount) ratedCount.innerText = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name)).length;
+    if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
 }
 
 function renderTickets() {
-    const container = document.getElementById('ticketsList');
+    var container = document.getElementById('ticketsList');
     if (!container) return;
-    const active = tickets.filter(t => new Date(t.eventDate) > new Date());
+    var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
+    active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun ticket actif</p>'; return; }
-    container.innerHTML = active.map(t => `<div class="ticket-card"><h3>${escapeHtml(t.eventTitle)}</h3><p>Date: ${formatDate(t.eventDate)}</p><p>Lieu: ${escapeHtml(t.eventLocation)}</p><p>Prix: ${t.price} Pi</p><p>Code: ${t.qrCode}</p></div>`).join('');
+    container.innerHTML = active.map(function(t) { return '<div class="ticket-card" style="border-left: 4px solid #10b981; margin-bottom: 15px;"><h3 style="color: #1e3a8a;"> ' + escapeHtml(t.eventTitle) + '</h3><p><strong> Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong> Prix :</strong> ' + t.price + ' Pi</p><p><strong> Date de l\'evenement :</strong> ' + formatDate(t.eventDate) + '</p><p><strong> Lieu :</strong> ' + escapeHtml(t.eventLocation || 'Non specifie') + '</p><p><strong> Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong> Code Betix :</strong> <code style="background:#f0f0f0;padding:4px 8px;border-radius:6px;">' + t.qrCode + '</code></p><p><strong> Transaction ID :</strong> <small>' + t.transactionId + '</small></p></div>'; }).join('');
 }
 
 function renderHistory() {
-    const container = document.getElementById('historyList');
+    var container = document.getElementById('historyList');
     if (!container) return;
-    const old = tickets.filter(t => new Date(t.eventDate) <= new Date());
+    var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
+    old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun historique</p>'; return; }
-    container.innerHTML = old.map(t => `<div class="ticket-card"><h3>${escapeHtml(t.eventTitle)}</h3><p>Date: ${formatDate(t.eventDate)}</p><p>Achete: ${new Date(t.purchaseDate).toLocaleDateString()}</p></div>`).join('');
+    container.innerHTML = old.map(function(t) { return '<div class="ticket-card" style="border-left: 4px solid #6b7280; margin-bottom: 15px; opacity: 0.85;"><h3 style="color: #374151;"> ' + escapeHtml(t.eventTitle) + '</h3><p><strong> Acheteur :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong> Prix :</strong> ' + t.price + ' Pi</p><p><strong> Date de l\'evenement :</strong> ' + formatDate(t.eventDate) + '</p><p><strong> Lieu :</strong> ' + escapeHtml(t.eventLocation || 'Non specifie') + '</p><p><strong> Achete le :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong> Code Betix :</strong> <code style="background:#f0f0f0;padding:4px 8px;border-radius:6px;">' + t.qrCode + '</code></p><p><strong> Transaction ID :</strong> <small>' + t.transactionId + '</small></p><p style="color: #ef4444; font-size: 0.8rem;"> Evenement passe</p></div>'; }).join('');
 }
 
 function createEvent(e) {
     e.preventDefault();
-    if (!currentUser.wallet) { alert('Connectez wallet d\'abord'); return; }
-    const category = document.getElementById('eventCategory').value;
-    const newEvent = {
+    if (!currentUser.wallet) { alert('Connectez votre wallet d\'abord'); return; }
+    var imageInputs = document.querySelectorAll('.eventImageUrl');
+    var images = [];
+    for (var i = 0; i < imageInputs.length; i++) { var url = imageInputs[i].value.trim(); if (url) images.push(url); }
+    if (images.length < 2) { alert('Veuillez ajouter au moins 2 photos pour votre evenement (minimum requis)'); return; }
+    var category = document.getElementById('eventCategory').value;
+    var newEvent = {
         id: Date.now().toString(), title: document.getElementById('eventTitle').value, category: category,
         date: document.getElementById('eventDate').value, location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value, price: parseFloat(document.getElementById('eventPrice').value) || 0.0003,
         seatsTotal: parseInt(document.getElementById('eventSeats').value), seatsLeft: parseInt(document.getElementById('eventSeats').value),
-        image: document.getElementById('eventImage').value || eventImagesList[category], organizer: currentUser.wallet, createdAt: new Date().toISOString()
+        images: images, coverImage: images[0], organizer: currentUser.wallet, createdAt: new Date().toISOString(), boosts: 0
     };
     if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { alert('Champs requis'); return; }
-    events.push(newEvent); saveEvents(); document.getElementById('eventForm').reset(); alert('Evenement cree !'); showPage('home');
+    events.push(newEvent); saveEvents();
+    document.getElementById('eventForm').reset();
+    var container = document.getElementById('imageUrlsContainer');
+    container.innerHTML = '<input type="url" class="eventImageUrl" placeholder="URL de l\'image 1" required><input type="url" class="eventImageUrl" placeholder="URL de l\'image 2" required>';
+    alert('Evenement cree avec ' + images.length + ' photos !');
+    showPage('home');
 }
 
 function openRatingModal(eventId, eventTitle) {
     selectedRating = 0;
-    const modal = document.getElementById('ratingModal');
-    document.getElementById('ratingEventInfo').innerHTML = `<p><strong>${escapeHtml(eventTitle)}</strong></p>`;
+    var modal = document.getElementById('ratingModal');
+    document.getElementById('ratingEventInfo').innerHTML = '<p><strong>' + escapeHtml(eventTitle) + '</strong></p>';
     document.getElementById('ratingComment').value = '';
-    const stars = document.querySelectorAll('#ratingModal .star');
-    stars.forEach(star => { star.classList.remove('active'); star.onclick = () => { selectedRating = parseInt(star.dataset.rating); stars.forEach(s => { if (parseInt(s.dataset.rating) <= selectedRating) s.classList.add('active'); else s.classList.remove('active'); }); }; });
-    document.getElementById('submitRatingBtn').onclick = () => {
+    var stars = document.querySelectorAll('#ratingModal .star');
+    for (var i = 0; i < stars.length; i++) {
+        stars[i].classList.remove('active');
+        stars[i].onclick = function() { selectedRating = parseInt(this.dataset.rating); for (var j = 0; j < stars.length; j++) { if (parseInt(stars[j].dataset.rating) <= selectedRating) stars[j].classList.add('active'); else stars[j].classList.remove('active'); } };
+    }
+    document.getElementById('submitRatingBtn').onclick = function() {
         if (selectedRating === 0) { alert('Choisissez une note'); return; }
         ratings.push({ id: Date.now(), eventId: eventId, eventTitle: eventTitle, rating: selectedRating, comment: document.getElementById('ratingComment').value || '', userWallet: currentUser.wallet || currentUser.name, userName: currentUser.name, date: new Date().toISOString() });
         localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-        alert(`Note ${selectedRating}/5 enregistree`);
+        alert('Note ' + selectedRating + '/5 enregistree');
         modal.classList.remove('show');
         renderEventsByCategory(); renderMyRatings(); updateProfilePage();
     };
     modal.classList.add('show');
-    document.getElementById('ratingModalClose').onclick = () => modal.classList.remove('show');
+    document.getElementById('ratingModalClose').onclick = function() { modal.classList.remove('show'); };
 }
 
 function renderMyRatings() {
-    const container = document.getElementById('myRatingsList');
+    var container = document.getElementById('myRatingsList');
     if (!container) return;
-    const myRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
+    var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucune evaluation</p>'; return; }
-    container.innerHTML = myRatings.map(r => { let stars = ''; for (let i = 0; i < r.rating; i++) stars += '★'; for (let i = r.rating; i < 5; i++) stars += '☆'; return `<div class="ticket-card"><h3>${escapeHtml(r.eventTitle)}</h3><div>Note: ${r.rating}/5 ${stars}</div>${r.comment ? `<p>"${escapeHtml(r.comment)}"</p>` : ''}<small>${new Date(r.date).toLocaleDateString()}</small></div>`; }).join('');
+    container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Note: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
 }
 
 function initAdmin() {
-    const adminItem = document.getElementById('adminMenuItem');
+    var adminItem = document.getElementById('adminMenuItem');
     if (!adminItem) return;
-    const logo = document.querySelector('.logo');
-    let clicks = 0;
-    logo?.addEventListener('click', () => { clicks++; if (clicks === 5) { const pwd = prompt('Code admin:'); if (pwd === adminCode) { localStorage.setItem('betix_admin_password', pwd); adminItem.style.display = 'block'; alert('Admin active'); } clicks = 0; } setTimeout(() => { clicks = 0; }, 2000); });
+    var logo = document.querySelector('.logo');
+    var clicks = 0;
+    if (logo) logo.addEventListener('click', function() { clicks++; if (clicks === 5) { var pwd = prompt('Code admin:'); if (pwd === adminCode) { localStorage.setItem('betix_admin_password', pwd); adminItem.style.display = 'block'; alert('Admin active'); } clicks = 0; } setTimeout(function() { clicks = 0; }, 2000); });
     if (localStorage.getItem('betix_admin_password') === adminCode) adminItem.style.display = 'block';
 }
 
@@ -290,56 +358,57 @@ function loadAdminPage() {
     document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
-    let usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
-    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</tr>';
-    connectedUsers.forEach(u => { usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '</tr>'; });
+    var usersHtml = '<table><tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th></tr>';
+    usersHtml += '<tr><td>' + escapeHtml(currentUser.name) + '</td><td>' + (currentUser.wallet || 'Non connecte') + 'NonNullable?' + tickets.length + 'NonNullable?' + '</td></tr>';
+    for (var i = 0; i < connectedUsers.length; i++) { var u = connectedUsers[i]; usersHtml += '<tr><td>' + escapeHtml(u.name) + 'NonNullable?' + (u.wallet || 'Non connecte') + 'NonNullable?' + (u.ticketCount || 0) + 'NonNullable?' + '<tr></tr>'; }
     usersHtml += '</table>';
     document.getElementById('adminUsersList').innerHTML = usersHtml;
-    document.getElementById('adminEventsList').innerHTML = events.map(e => `<div class="admin-event-item"><div><strong>${escapeHtml(e.title)}</strong><br><small>${e.category} | ${e.seatsLeft}/${e.seatsTotal}</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button></div>`).join('');
+    document.getElementById('adminEventsList').innerHTML = events.map(function(e) { return '<div class="admin-event-item"><div><strong>' + escapeHtml(e.title) + '</strong><br><small>' + e.category + ' | ' + e.seatsLeft + '/' + e.seatsTotal + '</small></div><button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Supprimer</button></div>'; }).join('');
 }
-function adminDeleteEvent(id) { if (confirm('Supprimer ?')) { events = events.filter(e => e.id !== id); saveEvents(); loadAdminPage(); renderEventsByCategory(); alert('Supprime'); } }
+function adminDeleteEvent(id) { if (confirm('Supprimer ?')) { events = events.filter(function(e) { return e.id !== id; }); saveEvents(); loadAdminPage(); renderEventsByCategory(); alert('Supprime'); } }
 
 function initChat() {
-    const widget = document.getElementById('chatWidget'), btn = document.getElementById('chatFloatBtn'), close = document.getElementById('chatCloseBtn'), send = document.getElementById('chatSendBtn'), input = document.getElementById('chatInput'), msgs = document.getElementById('chatMessages');
+    var widget = document.getElementById('chatWidget'), btn = document.getElementById('chatFloatBtn'), close = document.getElementById('chatCloseBtn'), send = document.getElementById('chatSendBtn'), input = document.getElementById('chatInput'), msgs = document.getElementById('chatMessages');
     if (!widget) return;
-    function load() { if (!msgs) return; msgs.innerHTML = ''; if (!chatMessages.length) add({ text: "Bonjour ! Comment pouvons-nous vous aider ?", sender: 'Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }); else chatMessages.forEach(m => add(m)); }
-    function add(m) { if (!msgs) return; const d = document.createElement('div'); d.className = `chat-message ${m.isUser ? 'user' : 'support'}`; d.innerHTML = `<div class="message-bubble">${escapeHtml(m.text)}</div><span class="message-time">${m.time}</span>`; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; }
-    btn?.addEventListener('click', () => widget.classList.toggle('open'));
-    close?.addEventListener('click', () => widget.classList.remove('open'));
-    function sendMsg() { const msg = input.value.trim(); if (!msg) return; const newMsg = { id: Date.now(), text: msg, sender: currentUser.wallet || currentUser.name, isUser: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(newMsg); chatMessages.push(newMsg); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); input.value = ''; setTimeout(() => { let resp = "Merci ! Reponse rapide par email: betixservices@gmail.com"; if (msg.toLowerCase().includes('ticket')) resp = "Vos tickets dans l'onglet 'Mes tickets'."; else if (msg.toLowerCase().includes('paiement')) resp = "Paiements securises via Pi Network."; const auto = { id: Date.now() + 1, text: resp, sender: 'Support Betix', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(auto); chatMessages.push(auto); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }, 1000); }
-    send?.addEventListener('click', sendMsg);
-    input?.addEventListener('keypress', e => { if (e.key === 'Enter') sendMsg(); });
+    function load() { if (!msgs) return; msgs.innerHTML = ''; if (!chatMessages.length) add({ text: "Bonjour ! Comment pouvons-nous vous aider ?", sender: 'Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }); else for (var i = 0; i < chatMessages.length; i++) add(chatMessages[i]); }
+    function add(m) { if (!msgs) return; var d = document.createElement('div'); d.className = 'chat-message ' + (m.isUser ? 'user' : 'support'); d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>'; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; }
+    if (btn) btn.addEventListener('click', function() { widget.classList.toggle('open'); });
+    if (close) close.addEventListener('click', function() { widget.classList.remove('open'); });
+    function sendMsg() { var msg = input.value.trim(); if (!msg) return; var newMsg = { id: Date.now(), text: msg, sender: currentUser.wallet || currentUser.name, isUser: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(newMsg); chatMessages.push(newMsg); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); input.value = ''; setTimeout(function() { var resp = "Merci ! Reponse rapide par email: betixservices@gmail.com"; if (msg.toLowerCase().includes('ticket')) resp = "Vos tickets dans l'onglet 'Mes tickets'."; else if (msg.toLowerCase().includes('paiement')) resp = "Paiements securises via Pi Network."; var auto = { id: Date.now() + 1, text: resp, sender: 'Support Betix', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(auto); chatMessages.push(auto); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }, 1000); }
+    if (send) send.addEventListener('click', sendMsg);
+    if (input) input.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMsg(); });
     load();
 }
 
 function initLegalModals() {
-    const modal = document.getElementById('legalModal'), content = document.getElementById('modalContent'), close = document.querySelector('#legalModal .modal-close');
-    const privacy = '<div class="legal-content"><h1>Confidentialite</h1><p>Betix collecte les donnees necessaires.</p><p>betixservices@gmail.com</p></div>';
-    const terms = '<div class="legal-content"><h1>Conditions</h1><p>Paiements irreversibles.</p><p>betixservices@gmail.com</p></div>';
-    const legal = '<div class="legal-content"><h1>Mentions</h1><p>Betix - Plateforme decentralisee</p><p>betixservices@gmail.com</p></div>';
-    const cookies = '<div class="legal-content"><h1>Cookies</h1><p>Cookies pour ameliorer l\'experience.</p></div>';
+    var modal = document.getElementById('legalModal'), content = document.getElementById('modalContent'), close = document.querySelector('#legalModal .modal-close');
+    var privacy = '<div class="legal-content"><h1>Confidentialite</h1><p>Betix collecte les donnees necessaires.</p><p>betixservices@gmail.com</p></div>';
+    var terms = '<div class="legal-content"><h1>Conditions</h1><p>Paiements irreversibles.</p><p>betixservices@gmail.com</p></div>';
+    var legal = '<div class="legal-content"><h1>Mentions</h1><p>Betix - Plateforme decentralisee</p><p>betixservices@gmail.com</p></div>';
+    var cookies = '<div class="legal-content"><h1>Cookies</h1><p>Cookies pour ameliorer l\'experience.</p></div>';
     function show(c) { content.innerHTML = c; modal.classList.add('show'); }
-    close.onclick = () => modal.classList.remove('show');
-    window.onclick = e => { if (e.target === modal) modal.classList.remove('show'); };
-    const privacyLink = document.getElementById('privacyLink');
-    const termsLink = document.getElementById('termsLink');
-    const legalNoticeLink = document.getElementById('legalNoticeLink');
-    const cookiesLink = document.getElementById('cookiesLink');
-    if (privacyLink) privacyLink.addEventListener('click', e => { e.preventDefault(); show(privacy); });
-    if (termsLink) termsLink.addEventListener('click', e => { e.preventDefault(); show(terms); });
-    if (legalNoticeLink) legalNoticeLink.addEventListener('click', e => { e.preventDefault(); show(legal); });
-    if (cookiesLink) cookiesLink.addEventListener('click', e => { e.preventDefault(); show(cookies); });
+    if (close) close.onclick = function() { modal.classList.remove('show'); };
+    window.onclick = function(e) { if (e.target === modal) modal.classList.remove('show'); };
+    var privacyLink = document.getElementById('privacyLink');
+    var termsLink = document.getElementById('termsLink');
+    var legalNoticeLink = document.getElementById('legalNoticeLink');
+    var cookiesLink = document.getElementById('cookiesLink');
+    if (privacyLink) privacyLink.addEventListener('click', function(e) { e.preventDefault(); show(privacy); });
+    if (termsLink) termsLink.addEventListener('click', function(e) { e.preventDefault(); show(terms); });
+    if (legalNoticeLink) legalNoticeLink.addEventListener('click', function(e) { e.preventDefault(); show(legal); });
+    if (cookiesLink) cookiesLink.addEventListener('click', function(e) { e.preventDefault(); show(cookies); });
 }
 
 function subscribeNewsletter() {
-    const email = document.getElementById('newsletterEmail')?.value;
-    if (email && email.includes('@')) { let subs = JSON.parse(localStorage.getItem('betix_newsletter')) || []; if (!subs.includes(email)) { subs.push(email); localStorage.setItem('betix_newsletter', JSON.stringify(subs)); alert('Inscrit !'); document.getElementById('newsletterEmail').value = ''; } else alert('Deja inscrit'); }
+    var email = document.getElementById('newsletterEmail') ? document.getElementById('newsletterEmail').value : null;
+    if (email && email.includes('@')) { var subs = JSON.parse(localStorage.getItem('betix_newsletter')) || []; if (subs.indexOf(email) === -1) { subs.push(email); localStorage.setItem('betix_newsletter', JSON.stringify(subs)); alert('Inscrit !'); if (document.getElementById('newsletterEmail')) document.getElementById('newsletterEmail').value = ''; } else alert('Deja inscrit'); }
     else alert('Email valide requis');
 }
 
 function trackUserConnection() {
     if (currentUser.wallet) {
-        const existing = connectedUsers.find(u => u.wallet === currentUser.wallet);
+        var existing = null;
+        for (var i = 0; i < connectedUsers.length; i++) { if (connectedUsers[i].wallet === currentUser.wallet) { existing = connectedUsers[i]; break; } }
         if (!existing) connectedUsers.push({ name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString() });
         else { existing.lastSeen = new Date().toLocaleString(); existing.ticketCount = tickets.length; }
         localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
@@ -348,7 +417,7 @@ function trackUserConnection() {
 
 function clearAllData() { if (confirm('Supprimer toutes vos donnees ?')) { localStorage.clear(); location.reload(); } }
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
-function showWhitepaperLang(lang) { const fr = document.getElementById('whitepaper-fr'), en = document.getElementById('whitepaper-en'); if (lang === 'fr') { fr.style.display = 'block'; en.style.display = 'none'; } else { fr.style.display = 'none'; en.style.display = 'block'; } }
+function showWhitepaperLang(lang) { var fr = document.getElementById('whitepaper-fr'), en = document.getElementById('whitepaper-en'); if (lang === 'fr') { fr.style.display = 'block'; en.style.display = 'none'; } else { fr.style.display = 'none'; en.style.display = 'block'; } }
 
 function googleTranslateElementInit() {
     new google.translate.TranslateElement({
@@ -358,67 +427,41 @@ function googleTranslateElementInit() {
         autoDisplay: false,
         multilanguagePage: true
     }, 'google_translate_element');
-    
     setTimeout(function() {
-        const select = document.querySelector('.goog-te-combo');
-        if (select) {
-            select.style.width = '100%';
-            select.style.maxWidth = '320px';
-            select.style.padding = '10px';
-            select.style.fontSize = '14px';
-            select.style.backgroundColor = 'var(--betix-degrade)';
-            select.style.color = 'white';
-            select.style.border = 'none';
-            select.style.borderRadius = '8px';
-            select.style.cursor = 'pointer';
-        }
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') {
-                iframe.style.display = 'none';
-                iframe.style.visibility = 'hidden';
-                iframe.style.height = '0px';
-                iframe.style.width = '0px';
-            }
-        });
-        document.body.style.top = '0px';
-        document.body.style.position = 'relative';
+        var select = document.querySelector('.goog-te-combo');
+        if (select) { select.style.width = '100%'; select.style.maxWidth = '320px'; select.style.padding = '10px'; select.style.fontSize = '14px'; select.style.backgroundColor = 'var(--betix-degrade)'; select.style.color = 'white'; select.style.border = 'none'; select.style.borderRadius = '8px'; select.style.cursor = 'pointer'; }
+        var iframes = document.querySelectorAll('iframe');
+        for (var i = 0; i < iframes.length; i++) { var iframe = iframes[i]; if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') { iframe.style.display = 'none'; iframe.style.visibility = 'hidden'; iframe.style.height = '0px'; iframe.style.width = '0px'; } }
+        document.body.style.top = '0px'; document.body.style.position = 'relative';
     }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof Pi !== 'undefined') {
-        Pi.init({ version: "2.0", sandbox: true });
-        console.log("✅ Pi SDK initialisé");
-    }
-    
-    if (!events.length) { events = [...demoEvents]; saveEvents(); }
+    if (typeof Pi !== 'undefined') { Pi.init({ version: "2.0", sandbox: true }); console.log("Pi SDK initialise"); }
+    if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     initFilters(); renderEventsByCategory(); updateUserInfo(); updateProfilePage(); initAdmin(); initChat(); initLegalModals();
-    
-    const dark = document.getElementById('darkModeToggle');
+    var dark = document.getElementById('darkModeToggle');
     if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
     if (dark) dark.addEventListener('change', toggleDarkMode);
-    
-    const menuBtn = document.getElementById('menuBtn');
-    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-    const overlay = document.getElementById('overlay');
-    const sidebarWalletBtn = document.getElementById('sidebarWalletBtn');
-    const profileConnectBtn = document.getElementById('profileConnectBtn');
-    const eventForm = document.getElementById('eventForm');
-    const searchInput = document.getElementById('searchInput');
-    const clearDataBtn = document.getElementById('clearDataBtn');
-    
+    var menuBtn = document.getElementById('menuBtn'); var closeSidebarBtn = document.getElementById('closeSidebarBtn'); var overlay = document.getElementById('overlay');
+    var sidebarWalletBtn = document.getElementById('sidebarWalletBtn'); var profileConnectBtn = document.getElementById('profileConnectBtn');
+    var eventForm = document.getElementById('eventForm'); var searchInput = document.getElementById('searchInput'); var clearDataBtn = document.getElementById('clearDataBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
     if (menuBtn) menuBtn.addEventListener('click', openSidebar);
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
     if (overlay) overlay.addEventListener('click', closeSidebar);
     if (sidebarWalletBtn) sidebarWalletBtn.addEventListener('click', connectToPi);
     if (profileConnectBtn) profileConnectBtn.addEventListener('click', connectToPi);
     if (eventForm) eventForm.addEventListener('submit', createEvent);
-    if (searchInput) searchInput.addEventListener('input', e => { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
+    if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
     if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
-    
-    document.querySelectorAll('.sidebar-item').forEach(btn => { btn.addEventListener('click', () => { showPage(btn.dataset.page); closeSidebar(); }); });
-    
-    const loader = document.getElementById('loader'), main = document.getElementById('main-content');
-    if (loader && main) { setTimeout(() => { loader.style.opacity = '0'; setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; }, 500); }, 800); }
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    var addImageBtn = document.getElementById('addImageBtn');
+    if (addImageBtn) { addImageBtn.addEventListener('click', function() { var container = document.getElementById('imageUrlsContainer'); var newInput = document.createElement('input'); newInput.type = 'url'; newInput.className = 'eventImageUrl'; newInput.placeholder = 'URL de l\'image'; container.appendChild(newInput); }); }
+    var sidebarItems = document.querySelectorAll('.sidebar-item');
+    for (var i = 0; i < sidebarItems.length; i++) { sidebarItems[i].addEventListener('click', function() { showPage(this.dataset.page); closeSidebar(); }); }
+    bindActivityListeners(); startSessionMonitor();
+    if (currentUser.wallet && isSessionExpired()) { logout(); }
+    var loader = document.getElementById('loader'), main = document.getElementById('main-content');
+    if (loader && main) { setTimeout(function() { loader.style.opacity = '0'; setTimeout(function() { loader.style.display = 'none'; main.style.display = 'block'; }, 500); }, 800); }
 });
