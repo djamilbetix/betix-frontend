@@ -343,14 +343,16 @@ function renderEventCard(event) {
     
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery" onclick="event.stopPropagation();">';
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery" onclick="event.stopPropagation();">';
         for (var i = 0; i < Math.min(event.images.length, 4); i++) {
             galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
         }
-        if (event.images.length > 4) { galleryHtml += '<div class="event-gallery-img" style="background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:0.8rem;">+' + (event.images.length - 4) + '</div>'; }
-        galleryHtml += '</div>';
+        if (event.images.length > 4) { 
+            galleryHtml += '<div class="event-gallery-img" style="background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">+' + (event.images.length - 4) + '</div>'; 
+        }
+        galleryHtml += '</div></div>';
     } else {
-        galleryHtml = '<img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:160px;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)">';
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery" onclick="event.stopPropagation();"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:160px;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
     }
     
     var dateEvent = new Date(event.date);
