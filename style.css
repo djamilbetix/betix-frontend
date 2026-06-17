@@ -10,6 +10,7 @@ body {
     color: #1f2937;
     line-height: 1.5;
     transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
 }
 
 :root {
@@ -744,19 +745,31 @@ body {
     opacity: 1;
 }
 
+/* ===== EVENT GALLERY - Version stable sans scroll parasite ===== */
+.event-gallery-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
 .event-gallery {
     display: flex;
     gap: 4px;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     padding: 8px;
     background: #f3f4f6;
-    cursor: grab;
+    cursor: default;
     pointer-events: auto;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
 }
 
-.event-gallery:active {
-    cursor: grabbing;
+.event-gallery::-webkit-scrollbar {
+    height: 0px;
+    display: none;
 }
 
 .event-gallery-img {
@@ -767,10 +780,52 @@ body {
     scroll-snap-align: start;
     cursor: pointer;
     transition: transform 0.2s;
+    flex-shrink: 0;
 }
 
 .event-gallery-img:hover {
     transform: scale(1.02);
+}
+
+/* Indicateur de scroll */
+.event-gallery-scroll-hint {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.event-gallery-wrapper:hover .event-gallery-scroll-hint {
+    opacity: 1;
+}
+
+/* Empêcher le scroll horizontal de la page */
+body {
+    overflow-x: hidden;
+}
+
+/* Sur mobile */
+@media (max-width: 768px) {
+    .event-gallery-img {
+        min-width: 150px;
+        height: 110px;
+    }
+    
+    .event-gallery {
+        cursor: grab;
+    }
+    
+    .event-gallery:active {
+        cursor: grabbing;
+    }
 }
 
 .event-info {
@@ -1349,7 +1404,7 @@ body {
     color: var(--warning);
 }
 
-/* ===== GALLERY ===== */
+/* ===== GALLERY MODAL ===== */
 .gallery-modal {
     position: fixed;
     top: 0;
