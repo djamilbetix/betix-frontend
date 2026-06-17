@@ -745,7 +745,7 @@ body {
     opacity: 1;
 }
 
-/* ===== EVENT GALLERY - Version stable sans scroll parasite ===== */
+/* ===== EVENT GALLERY - Version stable ===== */
 .event-gallery-wrapper {
     position: relative;
     overflow: hidden;
@@ -785,31 +785,6 @@ body {
 
 .event-gallery-img:hover {
     transform: scale(1.02);
-}
-
-/* Indicateur de scroll */
-.event-gallery-scroll-hint {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
-    font-size: 0.6rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.event-gallery-wrapper:hover .event-gallery-scroll-hint {
-    opacity: 1;
-}
-
-/* Empêcher le scroll horizontal de la page */
-body {
-    overflow-x: hidden;
 }
 
 /* Sur mobile */
