@@ -2,6 +2,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    max-width: 100%;
+}
+
+html {
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 body {
@@ -11,6 +17,7 @@ body {
     line-height: 1.5;
     transition: background-color 0.3s, color 0.3s;
     overflow-x: hidden;
+    max-width: 100vw;
 }
 
 :root {
@@ -329,6 +336,7 @@ body {
     width: 100%;
     background: #ffffff;
     color: #1f2937;
+    overflow: hidden;
 }
 
 .hero-slider-container {
@@ -629,6 +637,7 @@ body {
 /* ===== EVENTS ===== */
 .events-container {
     padding: 2rem 5%;
+    overflow: hidden;
 }
 
 .events-title {
@@ -647,6 +656,7 @@ body {
 
 .category-section {
     margin-bottom: 3rem;
+    overflow: hidden;
 }
 
 .category-header {
@@ -664,6 +674,7 @@ body {
     gap: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 @media (min-width: 1200px) {
@@ -684,6 +695,7 @@ body {
     }
 }
 
+/* ===== EVENT CARD ===== */
 .event-card {
     background: white;
     border-radius: 20px;
@@ -692,6 +704,7 @@ body {
     transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
     position: relative;
+    max-width: 100%;
 }
 
 .event-card:hover {
@@ -745,26 +758,36 @@ body {
     opacity: 1;
 }
 
-/* ===== EVENT GALLERY - Version stable ===== */
+/* ===== EVENT GALLERY - Version corrigée sans scroll parasite ===== */
 .event-gallery-wrapper {
     position: relative;
     overflow: hidden;
+    border-radius: 12px;
 }
 
 .event-gallery {
     display: flex;
     gap: 4px;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
-    scroll-snap-type: x mandatory;
     padding: 8px;
     background: #f3f4f6;
     cursor: default;
-    pointer-events: auto;
+    pointer-events: none;
     border-radius: 12px;
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
+}
+
+.event-gallery:hover {
+    overflow-x: auto;
+    cursor: grab;
+    pointer-events: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #e5e7eb;
+}
+
+.event-gallery:active {
+    cursor: grabbing;
 }
 
 .event-gallery::-webkit-scrollbar {
@@ -772,34 +795,71 @@ body {
     display: none;
 }
 
+.event-gallery:hover::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+}
+
+.event-gallery:hover::-webkit-scrollbar-track {
+    background: #e5e7eb;
+    border-radius: 4px;
+}
+
+.event-gallery:hover::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
 .event-gallery-img {
     min-width: 200px;
     height: 140px;
     object-fit: cover;
     border-radius: 12px;
-    scroll-snap-align: start;
+    flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s;
-    flex-shrink: 0;
+    pointer-events: auto;
 }
 
 .event-gallery-img:hover {
     transform: scale(1.02);
 }
 
-/* Sur mobile */
 @media (max-width: 768px) {
+    .event-gallery {
+        overflow-x: hidden !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+    
+    .event-gallery:hover {
+        overflow-x: hidden !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+    
+    .event-gallery::-webkit-scrollbar {
+        height: 0px !important;
+        display: none !important;
+    }
+    
     .event-gallery-img {
         min-width: 150px;
         height: 110px;
     }
     
-    .event-gallery {
-        cursor: grab;
-    }
-    
-    .event-gallery:active {
-        cursor: grabbing;
+    .event-gallery-wrapper::after {
+        content: '↔';
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 8px;
+        opacity: 0.5;
+        pointer-events: none;
     }
 }
 
@@ -1150,6 +1210,7 @@ body {
     background: white;
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
 }
 
 /* ===== FAQ ===== */
@@ -2125,11 +2186,6 @@ body.dark-mode #detailConditions p {
     
     .events-grid-centered {
         grid-template-columns: 1fr;
-    }
-    
-    .event-gallery-img {
-        min-width: 150px;
-        height: 110px;
     }
     
     .image-upload-area {
