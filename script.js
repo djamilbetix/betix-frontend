@@ -126,7 +126,7 @@ function goBack() {
 
 function showPage(pageName) {
     updateActivity();
-    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage'];
+    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage', 'transactionsPage', 'feedPage'];
     for (var i = 0; i < pages.length; i++) { 
         var el = document.getElementById(pages[i]); 
         if (el) { 
@@ -160,6 +160,8 @@ function showPage(pageName) {
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'slides') renderSlidesManager();
+    if (pageName === 'transactions') renderTransactions();
+    if (pageName === 'feed') renderFeed();
     closeSidebar();
     window.scrollTo(0, 0);
 }
@@ -214,7 +216,6 @@ function openEventDetails(eventId) {
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('fr-FR');
     document.getElementById('detailBoosts').textContent = event.boosts || 0;
     
-    // Afficher les conditions personnalisées
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -341,6 +342,10 @@ function renderEventCard(event) {
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
     var hasTicket = tickets.some(function(t) { return t.eventId === event.id && t.buyerWallet === (currentUser.wallet || currentUser.name); });
     
+    var starCount = getStarCount(event.id);
+    var userStarred = userHasStarred(event.id);
+    var starButtonHtml = '<button class="star-btn ' + (userStarred ? 'starred' : '') + '" onclick="event.stopPropagation(); toggleStar(\'' + event.id + '\')">⭐ ' + starCount + '</button>';
+    
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
         galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery" onclick="event.stopPropagation();">';
@@ -370,7 +375,7 @@ function renderEventCard(event) {
     
     var ratingButtonHtml = '';
     if (!hasRated && hasTicket) {
-        ratingButtonHtml = '<button class="rating-btn" onclick="event.stopPropagation(); openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter cet evenement</button>';
+        ratingButtonHtml = '<button class="rating-btn" onclick="event.stopPropagation(); openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter</button>';
     } else if (hasRated) {
         ratingButtonHtml = '<div class="rated-badge" onclick="event.stopPropagation();">Vous avez note ' + (userRating ? userRating.rating : '') + '/5</div>';
     }
@@ -390,7 +395,10 @@ function renderEventCard(event) {
                 '<div class="event-price">' + event.price + ' Pi</div>' +
                 '<div class="event-seats"> ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
                 '<button class="buy-btn" onclick="event.stopPropagation(); buyTicket(\'' + event.id + '\')">Acheter</button>' +
-                ratingButtonHtml +
+                '<div class="event-actions-row">' +
+                    starButtonHtml +
+                    ratingButtonHtml +
+                '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
@@ -786,8 +794,9 @@ async function buyTicket(eventId) {
                             qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8)
                         });
                         saveTickets();
+                        addFeedPost('ticket', event.id, event.title, 'a acheté un ticket pour ' + event.title);
                     }
-                    renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
+                    renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage(); renderTransactions(); renderFeed();
                     alert('Achat reussi ! Ticket pour "' + event.title + '" ajoute.');
                 });
             },
@@ -816,7 +825,8 @@ async function boostEvent(eventId) {
                 fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid }) }).then(function() {
                     event.boosts = (event.boosts || 0) + 1;
                     saveEvents();
-                    renderEventsByCategory();
+                    addFeedPost('boost', event.id, event.title, 'a boosté l\'événement ' + event.title);
+                    renderEventsByCategory(); renderTransactions(); renderFeed();
                     alert('Merci ! L\'evenement a maintenant ' + event.boosts + ' boost(s)');
                 });
             },
@@ -1012,6 +1022,139 @@ function googleTranslateElementInit() {
         for (var i = 0; i < iframes.length; i++) { var iframe = iframes[i]; if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') { iframe.style.display = 'none'; iframe.style.visibility = 'hidden'; iframe.style.height = '0px'; iframe.style.width = '0px'; } }
         document.body.style.top = '0px'; document.body.style.position = 'relative';
     }, 500);
+}
+
+// ===== SYSTÈME DE TRANSACTIONS =====
+let transactions = JSON.parse(localStorage.getItem('betix_transactions')) || [];
+
+function addTransaction(type, eventId, eventTitle, amount, status, details) {
+    var transaction = {
+        id: Date.now().toString(),
+        type: type,
+        eventId: eventId,
+        eventTitle: eventTitle,
+        amount: amount,
+        status: status || 'completed',
+        details: details || '',
+        date: new Date().toISOString(),
+        dateFormatted: new Date().toLocaleString('fr-FR'),
+        userWallet: currentUser.wallet || currentUser.name,
+        userName: currentUser.name
+    };
+    transactions.unshift(transaction);
+    localStorage.setItem('betix_transactions', JSON.stringify(transactions));
+    return transaction;
+}
+
+function renderTransactions() {
+    var container = document.getElementById('transactionsList');
+    if (!container) return;
+    var userTransactions = transactions.filter(function(t) {
+        return t.userWallet === (currentUser.wallet || currentUser.name);
+    });
+    if (userTransactions.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucune transaction</p>';
+        return;
+    }
+    container.innerHTML = userTransactions.map(function(t) {
+        var typeIcon = '';
+        var typeColor = '';
+        var statusText = '';
+        var statusColor = '';
+        switch(t.type) {
+            case 'achat': typeIcon = 'Achat'; typeColor = 'var(--primary)'; break;
+            case 'boost': typeIcon = 'Boost'; typeColor = 'var(--warning)'; break;
+            case 'remboursement': typeIcon = 'Remboursement'; typeColor = 'var(--success)'; break;
+            default: typeIcon = 'Transaction'; typeColor = 'var(--gray)';
+        }
+        switch(t.status) {
+            case 'completed': statusText = 'Complété'; statusColor = 'var(--success)'; break;
+            case 'pending': statusText = 'En attente'; statusColor = 'var(--warning)'; break;
+            case 'failed': statusText = 'Échoué'; statusColor = 'var(--danger)'; break;
+            default: statusText = 'Complété'; statusColor = 'var(--success)';
+        }
+        return '<div class="transaction-card"><div class="transaction-header"><div class="transaction-type" style="color:' + typeColor + '">' + typeIcon + '</div><div class="transaction-status" style="color:' + statusColor + '">' + statusText + '</div></div><div class="transaction-body"><h4>' + escapeHtml(t.eventTitle) + '</h4><p><strong>Montant :</strong> ' + t.amount + ' Pi</p>' + (t.details ? '<p><strong>Détails :</strong> ' + escapeHtml(t.details) + '</p>' : '') + '<p class="transaction-date">' + t.dateFormatted + '</p></div></div>';
+    }).join('');
+}
+
+// ===== SYSTÈME D'ÉTOILES =====
+let starVotes = JSON.parse(localStorage.getItem('betix_star_votes')) || [];
+
+function toggleStar(eventId) {
+    var userWallet = currentUser.wallet || currentUser.name;
+    var existingIndex = starVotes.findIndex(function(s) { 
+        return s.eventId === eventId && s.userWallet === userWallet; 
+    });
+    
+    if (existingIndex !== -1) {
+        starVotes.splice(existingIndex, 1);
+    } else {
+        starVotes.push({
+            eventId: eventId,
+            userWallet: userWallet,
+            userName: currentUser.name,
+            date: new Date().toISOString()
+        });
+        var event = events.find(function(e) { return e.id === eventId; });
+        if (event) {
+            addFeedPost('star', event.id, event.title, 'a donné une étoile à ' + event.title);
+        }
+    }
+    localStorage.setItem('betix_star_votes', JSON.stringify(starVotes));
+    renderEventsByCategory();
+    renderFeed();
+}
+
+function getStarCount(eventId) {
+    return starVotes.filter(function(s) { return s.eventId === eventId; }).length;
+}
+
+function userHasStarred(eventId) {
+    var userWallet = currentUser.wallet || currentUser.name;
+    return starVotes.some(function(s) { 
+        return s.eventId === eventId && s.userWallet === userWallet; 
+    });
+}
+
+// ===== SYSTÈME DE FIL D'ACTUALITÉ =====
+let feedPosts = JSON.parse(localStorage.getItem('betix_feed_posts')) || [];
+
+function addFeedPost(type, eventId, eventTitle, message) {
+    var post = {
+        id: Date.now().toString(),
+        type: type,
+        eventId: eventId,
+        eventTitle: eventTitle,
+        message: message,
+        userWallet: currentUser.wallet || currentUser.name,
+        userName: currentUser.name,
+        date: new Date().toISOString(),
+        dateFormatted: new Date().toLocaleString('fr-FR')
+    };
+    feedPosts.unshift(post);
+    if (feedPosts.length > 50) feedPosts = feedPosts.slice(0, 50);
+    localStorage.setItem('betix_feed_posts', JSON.stringify(feedPosts));
+    return post;
+}
+
+function renderFeed() {
+    var container = document.getElementById('feedList');
+    if (!container) return;
+    if (feedPosts.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucune activité pour le moment</p>';
+        return;
+    }
+    container.innerHTML = feedPosts.map(function(post) {
+        var typeLabel = '';
+        switch(post.type) {
+            case 'ticket': typeLabel = 'Ticket'; break;
+            case 'boost': typeLabel = 'Boost'; break;
+            case 'event': typeLabel = 'Événement'; break;
+            case 'star': typeLabel = 'Étoile'; break;
+            default: typeLabel = 'Publication';
+        }
+        return '<div class="feed-post"><div class="post-header"><div class="post-user"><div class="post-avatar">' + (post.userName ? post.userName.substring(0, 2).toUpperCase() : 'U') + '</div><div><strong>' + escapeHtml(post.userName || 'Anonyme') + '</strong> <span style="font-size:0.7rem;color:var(--gray);">' + typeLabel + '</span></div></div><span class="post-date">' + post.dateFormatted + '</span></div><div class="post-body"><p>' + escapeHtml(post.message) + '</p></div></div>';
+    }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
