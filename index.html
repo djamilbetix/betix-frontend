@@ -43,6 +43,7 @@
             </svg>
         </button>
         <div class="logo" onclick="showPage('home')">
+            <img src="image/logo.png" alt="Betix" class="logo-img">
             <span>Betix</span>
         </div>
     </div>
@@ -65,6 +66,8 @@
         <button class="sidebar-item" data-page="settings">Paramètres</button>
         <button class="sidebar-item" data-page="tickets">Mes tickets</button>
         <button class="sidebar-item" data-page="history">Historique des tickets</button>
+        <button class="sidebar-item" data-page="transactions">Transactions</button>
+        <button class="sidebar-item" data-page="feed">Fil d'actualité</button>
         <button class="sidebar-item" data-page="whitepaper">Livre blanc</button>
         <button class="sidebar-item" data-page="faq">FAQ</button>
         <button class="sidebar-item" data-page="slides">Gestion du carrousel</button>
@@ -213,6 +216,24 @@
     <div class="events-container"><h2 class="events-title">Historique des tickets</h2><p class="events-sub">Tous vos tickets achetés</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
 </div>
 
+<div id="transactionsPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">Historique des transactions</h2>
+        <p class="events-sub">Toutes vos transactions effectuées sur Betix</p>
+        <div id="transactionsList"></div>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
+    </div>
+</div>
+
+<div id="feedPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">Fil d'actualité</h2>
+        <p class="events-sub">Suivez l'activité de la communauté</p>
+        <div id="feedList"></div>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
+    </div>
+</div>
+
 <div id="ratingsPage" class="hidden-page">
     <div class="events-container"><h2 class="events-title">Mes évaluations</h2><p class="events-sub">Événements que vous avez notés</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
 </div>
@@ -233,9 +254,9 @@
 <div id="whitepaperPage" class="hidden-page">
     <div class="page-content">
         <h2>Livre blanc</h2>
-        <p>Betix.</p>
-        <p><strong>Version Anglaise :</strong> Encours!</p>
-        <p><strong>Version Française :</strong> Encours!</p>
+        <p>Betix est une plateforme d'événements décentralisée sur Pi Network.</p>
+        <p><strong>Mission :</strong> Rendre l'accès aux événements simple avec Pi.</p>
+        <p><strong>Fonctionnalités :</strong> Création sans commission, Paiement sécurisé en Pi, Billets QR code, Gestion des places, Tokenisation.</p>
     </div>
 </div>
 
