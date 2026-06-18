@@ -131,6 +131,9 @@ body {
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
@@ -139,6 +142,18 @@ body {
     background-clip: text;
     color: transparent;
     padding: 4px 0;
+}
+
+.logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 480px) {
+    .logo-img {
+        height: 24px;
+    }
 }
 
 .menu-btn {
@@ -718,7 +733,8 @@ body {
 
 .event-card .buy-btn,
 .event-card .rating-btn,
-.event-card .rated-badge {
+.event-card .rated-badge,
+.event-card .star-btn {
     pointer-events: auto;
     position: relative;
     z-index: 2;
@@ -758,7 +774,7 @@ body {
     opacity: 1;
 }
 
-/* ===== EVENT GALLERY - Version corrigée sans scroll parasite ===== */
+/* ===== EVENT GALLERY ===== */
 .event-gallery-wrapper {
     position: relative;
     overflow: hidden;
@@ -933,6 +949,49 @@ body {
 
 .buy-btn:hover {
     opacity: 0.9;
+}
+
+.event-actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.event-actions-row .rating-btn {
+    margin-top: 0;
+    flex: 1;
+    min-width: 80px;
+}
+
+.event-actions-row .star-btn {
+    flex: 0 0 auto;
+}
+
+.star-btn {
+    background: none;
+    border: 1px solid #e5e7eb;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--gray);
+}
+
+.star-btn:hover {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
+}
+
+.star-btn.starred {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
 }
 
 .rating-btn {
@@ -1900,6 +1959,102 @@ body {
     color: var(--gray);
 }
 
+/* ===== TRANSACTIONS ===== */
+.transaction-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-left: 4px solid var(--primary);
+    transition: transform 0.2s;
+}
+
+.transaction-card:hover {
+    transform: translateX(4px);
+}
+
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.transaction-type {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.transaction-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.transaction-body h4 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--primary-dark);
+}
+
+.transaction-body p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin: 2px 0;
+}
+
+.transaction-date {
+    font-size: 0.7rem;
+    color: var(--gray);
+    margin-top: 6px !important;
+}
+
+/* ===== FEED ===== */
+.feed-post {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.post-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.post-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.post-date {
+    font-size: 0.7rem;
+    color: var(--gray);
+}
+
+.post-body p {
+    font-size: 0.95rem;
+    margin: 4px 0;
+}
+
 /* ===== DARK MODE ===== */
 body.dark-mode {
     background-color: #111827;
@@ -1915,7 +2070,9 @@ body.dark-mode .create-form,
 body.dark-mode .social-card,
 body.dark-mode .modal-content,
 body.dark-mode .faq-item,
-body.dark-mode .slide-item {
+body.dark-mode .slide-item,
+body.dark-mode .transaction-card,
+body.dark-mode .feed-post {
     background-color: #1f2937;
     color: #f3f4f6;
 }
@@ -2117,6 +2274,31 @@ body.dark-mode #detailConditions .conditions-list li::before {
 
 body.dark-mode #detailConditions p {
     color: #d1d5db;
+}
+
+body.dark-mode .transaction-card {
+    border-left-color: var(--primary-light);
+}
+
+body.dark-mode .transaction-body h4 {
+    color: white;
+}
+
+body.dark-mode .feed-post {
+    border-color: #374151;
+}
+
+body.dark-mode .star-btn {
+    background: transparent;
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+
+body.dark-mode .star-btn:hover,
+body.dark-mode .star-btn.starred {
+    background: #374151;
+    border-color: #f59e0b;
+    color: #fbbf24;
 }
 
 /* ===== RESPONSIVE ===== */
