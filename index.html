@@ -7,8 +7,10 @@
     <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
     <link rel="stylesheet" href="style.css">
     
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
+    <!-- Initialisation forcée du SDK Pi -->
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -36,20 +38,10 @@
 <div id="main-content" style="display: none;">
 
 <header class="header">
-    <div class="header-left">
-        <button class="back-btn" id="backBtn" style="display: none;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <div class="logo" onclick="showPage('home')">
-            <img src="image/logo.png" alt="Betix" class="logo-img">
-            <span>Betix</span>
-        </div>
+    <div class="logo" onclick="showPage('home')">
+        <span>🎫 Betix</span>
     </div>
-    <div class="header-right">
-        <button class="menu-btn" id="menuBtn">☰</button>
-    </div>
+    <button class="menu-btn" id="menuBtn">☰</button>
 </header>
 
 <div class="sidebar" id="sidebar">
@@ -62,45 +54,21 @@
     </div>
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home">Accueil</button>
-        <button class="sidebar-item" data-page="profile">Profil</button>
-        <button class="sidebar-item" data-page="settings">Paramètres</button>
+        <button class="sidebar-item" data-page="profile">Mon profil</button>
         <button class="sidebar-item" data-page="tickets">Mes tickets</button>
-        <button class="sidebar-item" data-page="history">Historique des tickets</button>
-        <button class="sidebar-item" data-page="transactions">Transactions</button>
-        <button class="sidebar-item" data-page="feed">Fil d'actualité</button>
+        <button class="sidebar-item" data-page="history">Historique</button>
+        <button class="sidebar-item" data-page="ratings">Mes évaluations</button>
         <button class="sidebar-item" data-page="whitepaper">Livre blanc</button>
         <button class="sidebar-item" data-page="faq">FAQ</button>
-        <button class="sidebar-item" data-page="slides">Gestion du carrousel</button>
+        <button class="sidebar-item" data-page="social">Réseaux sociaux</button>
+        <button class="sidebar-item" data-page="settings">Paramètres</button>
+        <button class="sidebar-item" data-page="admin" id="adminMenuItem" style="display: none;">Administration</button>
         <button class="sidebar-item" id="logoutBtn" style="color: #ef4444;">Déconnexion</button>
-    </div>
-    
-    <div class="sidebar-social">
-        <div class="sidebar-social-title">Suivez-nous</div>
-        <div class="sidebar-social-icons">
-            <a href="https://x.com/betix_app" target="_blank" class="social-link" title="Twitter (X)">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </a>
-            <a href="https://t.me/betix" target="_blank" class="social-link" title="Telegram">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-            </a>
-            <a href="https://discord.gg/betix" target="_blank" class="social-link" title="Discord">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3847-.3973-.8742-.6083-1.2495a.0717.0717 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.5152.0727.0727 0 0 0-.0325.027 20.3735 20.3735 0 0 0-2.6896 4.6124.0815.0815 0 0 0 .0128.0777 17.891 17.891 0 0 0 2.7862 3.2797.0713.0713 0 0 0 .0801.0101 19.1645 19.1645 0 0 0 3.4552-1.1051.0746.0746 0 0 0 .044-.0825.1153.1153 0 0 0-.0128-.0455 2.8513 2.8513 0 0 1-.3256-.5085.0711.0711 0 0 1 .043-.0962 12.7066 12.7066 0 0 0 3.6004-.5557.0708.0708 0 0 1 .0708.0504 13.1785 13.1785 0 0 1 0 2.1616.071.071 0 0 1-.0708.0504c-1.1395.1353-2.2365.2777-3.3075.6315-.037.012-.0524.0545-.0324.0852.0274.0408.0554.0832.084.1243.0416.058.0875.1225.1345.187.0714.0975.1653.2253.2646.3439.037.0445.0884.0657.1427.0563 2.0924-.6443 4.115-1.2328 6.1075-1.7243a.0764.0764 0 0 0 .0615-.0636 13.6822 13.6822 0 0 0 .4973-5.1363.0745.0745 0 0 0-.0286-.0525.0812.0812 0 0 0-.0487-.0182zM8.7108 15.2075c-1.1286 0-2.0563-1.0461-2.0563-2.333 0-1.2868.9086-2.334 2.0563-2.334 1.1484 0 2.0754 1.0472 2.0563 2.334 0 1.2869-.9086 2.333-2.0563 2.333zm6.5784 0c-1.1286 0-2.0563-1.0461-2.0563-2.333 0-1.2868.9086-2.334 2.0563-2.334 1.1484 0 2.0754 1.0472 2.0563 2.334 0 1.2869-.9086 2.333-2.0563 2.333z"/></svg>
-            </a>
-            <a href="https://instagram.com/betix_app" target="_blank" class="social-link" title="Instagram">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-            </a>
-            <a href="https://facebook.com/betix_app" target="_blank" class="social-link" title="Facebook">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            </a>
-            <a href="https://youtube.com/c/betix" target="_blank" class="social-link" title="YouTube">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-            </a>
-        </div>
     </div>
 </div>
 <div class="overlay" id="overlay"></div>
 
-<button class="chat-float-btn" id="chatFloatBtn">💬</button>
+<button class="chat-float-btn" id="chatFloatBtn"><span class="chat-icon">💬</span></button>
 
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header" id="chatHeader">
@@ -109,40 +77,25 @@
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Écrivez votre message..." maxlength="500">
+        <input type="text" id="chatInput" placeholder="Ecrivez votre message..." maxlength="500">
         <button id="chatSendBtn">Envoyer</button>
     </div>
 </div>
 
 <div id="homePage">
     <section class="hero">
-        <div class="hero-slider-container">
-            <div class="hero-slider">
-                <div class="hero-slides" id="heroSlides">
-                </div>
-                <button class="hero-slider-btn prev" id="heroPrev">‹</button>
-                <button class="hero-slider-btn next" id="heroNext">›</button>
-                <div class="hero-dots" id="heroDots"></div>
-            </div>
-        </div>
-        
-        <div class="hero-divider"></div>
-        
-        <div class="hero-content-bottom">
-            <div class="hero-text">
-                <h1>La première plateforme de billetterie propulsée par Pi Network</h1>
-                <p>Découvrez et réservez des expériences uniques. Payez avec votre crypto Pi.</p>
-                <button class="btn-hero" onclick="showPage('create')">Créer un événement</button>
-            </div>
+        <div class="hero-content">
+            <h1>La première plateforme de billetterie propulsée par Pi Network</h1>
+            <p>Découvrez et réservez des expériences uniques. Payez avec votre crypto Pi.</p>
+            <button class="btn-hero" onclick="showPage('create')">Créer un événement</button>
         </div>
     </section>
-    
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un événement..."></div>
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
     <div class="events-container">
         <h2 class="events-title">Événements à venir</h2>
         <p class="events-sub">Rejoignez la communauté et vivez des expériences uniques</p>
-        <div id="eventsByCategory" class="events-grid-centered"></div>
+        <div id="eventsByCategory"></div>
     </div>
 </div>
 
@@ -150,59 +103,25 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Créer un événement</h2>
         <form id="eventForm" class="create-form">
-            <div class="form-group"><label>Titre de l'événement</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required></div>
+            <div class="form-group"><label>Titre</label><input type="text" id="eventTitle" required></div>
             <div class="form-group"><label>Catégorie</label><select id="eventCategory"><option>Concert</option><option>Sport</option><option>Conférence</option><option>Formation</option><option>Cinéma</option><option>Festival</option></select></div>
             <div class="form-group"><label>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
-            <div class="form-group"><label>Lieu</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
+            <div class="form-group"><label>Lieu</label><input type="text" id="eventLocation" required></div>
             <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Décrivez votre événement..."></textarea></div>
-            
-            <div class="form-group">
-                <label>Conditions de participation</label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi, Présenter son ticket à l'entrée, etc. (250 mots maximum)" maxlength="1500"></textarea>
-                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;">Décrivez les conditions de participation à votre événement (250 mots maximum)</p>
-            </div>
-            
             <div class="form-group"><label>Prix (en Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
-            <div class="form-group"><label>Nombre de places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
+            <div class="form-group"><label>Nombre de places</label><input type="number" id="eventSeats" required></div>
             
             <div class="form-group">
-                <label>Photos de l'événement (2 à 5 photos)</label>
-                <div id="imageUploadContainer" class="image-upload-area">
-                    <div class="upload-box" id="uploadBox1">
-                        <span class="upload-icon">📷</span>
-                        <p>Photo 1</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="0">
-                        <img class="preview-image" id="preview0" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox2">
-                        <span class="upload-icon">📷</span>
-                        <p>Photo 2</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="1">
-                        <img class="preview-image" id="preview1" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox3">
-                        <span class="upload-icon">➕</span>
-                        <p>Photo 3 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="2">
-                        <img class="preview-image" id="preview2" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox4">
-                        <span class="upload-icon">➕</span>
-                        <p>Photo 4 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="3">
-                        <img class="preview-image" id="preview3" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox5">
-                        <span class="upload-icon">➕</span>
-                        <p>Photo 5 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="4">
-                        <img class="preview-image" id="preview4" style="display:none;">
-                    </div>
+                <label>Images de l'événement (minimum 2 photos)</label>
+                <div id="imageUrlsContainer">
+                    <input type="file" class="eventImageFile" accept="image/*" style="margin-bottom:8px; padding:6px;" required>
+                    <input type="file" class="eventImageFile" accept="image/*" style="margin-bottom:8px; padding:6px;" required>
                 </div>
-                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 5px;">Sélectionnez 2 à 5 photos depuis votre appareil</p>
+                <button type="button" id="addImageBtn" class="btn-secondary" style="margin-top: 8px;">+ Ajouter une photo</button>
+                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 5px;">Téléchargez vos photos (JPG, PNG, GIF) - minimum 2 photos</p>
             </div>
             
-            <button type="submit" class="btn-primary">Publier l'événement</button>
+            <button type="submit" class="btn-primary">Publier</button>
         </form>
         <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
@@ -214,24 +133,6 @@
 
 <div id="historyPage" class="hidden-page">
     <div class="events-container"><h2 class="events-title">Historique des tickets</h2><p class="events-sub">Tous vos tickets achetés</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
-</div>
-
-<div id="transactionsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">Historique des transactions</h2>
-        <p class="events-sub">Toutes vos transactions effectuées sur Betix</p>
-        <div id="transactionsList"></div>
-        <button class="btn-back" onclick="showPage('home')">Retour</button>
-    </div>
-</div>
-
-<div id="feedPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">Fil d'actualité</h2>
-        <p class="events-sub">Suivez l'activité de la communauté</p>
-        <div id="feedList"></div>
-        <button class="btn-back" onclick="showPage('home')">Retour</button>
-    </div>
 </div>
 
 <div id="ratingsPage" class="hidden-page">
@@ -246,7 +147,7 @@
         <p><strong>Membre depuis :</strong> <span id="memberSince">2026</span></p>
         <p><strong>Tickets :</strong> <span id="ticketCount">0</span></p>
         <p><strong>Événements notés :</strong> <span id="ratedCount">0</span></p>
-        <p><strong>Points de loyauté :</strong> <span id="loyaltyPoints">0</span></p>
+        <p><strong>Points de loyauté :</strong> <span id="loyaltyPoints">0</span> ⭐</p>
         <button class="btn-primary" id="profileConnectBtn">Connexion</button>
     </div>
 </div>
@@ -265,10 +166,25 @@
         <h2>FAQ</h2>
         <div class="faq-list">
             <div class="faq-item"><p><strong>Qu'est-ce que Betix ?</strong></p><p>Plateforme d'événements décentralisée sur Pi Network.</p></div>
-            <div class="faq-item"><p><strong>Comment acheter ?</strong></p><p>Connectez votre Compte Pi, parcourez et cliquez sur "Acheter".</p></div>
+            <div class="faq-item"><p><strong>Comment acheter ?</strong></p><p>Connectez votre wallet Pi, parcourez et cliquez sur "Acheter".</p></div>
             <div class="faq-item"><p><strong>Frais ?</strong></p><p>0% commission !</p></div>
             <div class="faq-item"><p><strong>Où sont mes tickets ?</strong></p><p>Dans "Mes tickets" et "Historique".</p></div>
             <div class="faq-item"><p><strong>Support ?</strong></p><p>betixservices@gmail.com ou chat en ligne.</p></div>
+        </div>
+    </div>
+</div>
+
+<div id="socialPage" class="hidden-page">
+    <div class="page-content">
+        <h2>Réseaux sociaux</h2>
+        <p>Suivez-nous et rejoignez notre communauté !</p>
+        <div class="social-grid">
+            <div class="social-card" onclick="window.open('https://x.com/betix_app', '_blank')"><div class="social-icon">𝕏</div><div class="social-name">Twitter (X)</div><div class="social-follow">Suivre</div></div>
+            <div class="social-card" onclick="window.open('https://t.me/betix', '_blank')"><div class="social-icon">📱</div><div class="social-name">Telegram</div><div class="social-follow">Rejoindre</div></div>
+            <div class="social-card" onclick="window.open('https://discord.gg/betix', '_blank')"><div class="social-icon">🎮</div><div class="social-name">Discord</div><div class="social-follow">Rejoindre</div></div>
+            <div class="social-card" onclick="window.open('https://instagram.com/betix_app', '_blank')"><div class="social-icon">📷</div><div class="social-name">Instagram</div><div class="social-follow">Suivre</div></div>
+            <div class="social-card" onclick="window.open('https://facebook.com/betix_app', '_blank')"><div class="social-icon">📘</div><div class="social-name">Facebook</div><div class="social-follow">Aimer</div></div>
+            <div class="social-card" onclick="window.open('https://youtube.com/c/betix', '_blank')"><div class="social-icon">▶️</div><div class="social-name">YouTube</div><div class="social-follow">S'abonner</div></div>
         </div>
     </div>
 </div>
@@ -288,46 +204,6 @@
             <p><strong>Données</strong></p>
             <button id="clearDataBtn" class="btn-danger">Effacer mes données</button>
         </div>
-    </div>
-</div>
-
-<div id="slidesPage" class="hidden-page">
-    <div class="page-content">
-        <h2>Gestion du carrousel</h2>
-        <p class="events-sub">Ajoutez, modifiez ou supprimez les slides publicitaires</p>
-        
-        <div id="slidesManager">
-            <button class="btn-primary" id="addSlideBtn" style="margin-bottom: 16px;">+ Ajouter un slide</button>
-            <div id="slidesList"></div>
-        </div>
-        
-        <div id="slideFormContainer" style="display:none; margin-top: 20px; padding: 20px; background: #f9fafb; border-radius: 16px;">
-            <h3 id="slideFormTitle">Ajouter un slide</h3>
-            <div class="form-group">
-                <label>URL de l'image</label>
-                <input type="url" id="slideImageUrl" placeholder="https://images.unsplash.com/...">
-                <p style="font-size:0.7rem; color:#6b7280; margin-top:4px;">Utilisez une image de qualité (1200x600 recommandé)</p>
-            </div>
-            <div class="form-group">
-                <label>Badge (catégorie)</label>
-                <input type="text" id="slideBadge" placeholder="Ex: Concert, Sport, Festival...">
-            </div>
-            <div class="form-group">
-                <label>Titre</label>
-                <input type="text" id="slideTitle" placeholder="Titre de l'événement">
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <input type="text" id="slideDesc" placeholder="Description courte">
-            </div>
-            <div style="display:flex; gap:12px;">
-                <button class="btn-primary" id="saveSlideBtn" style="flex:1;">Enregistrer</button>
-                <button class="btn-secondary" id="cancelSlideBtn" style="flex:1;">Annuler</button>
-            </div>
-            <input type="hidden" id="editSlideIndex" value="-1">
-        </div>
-        
-        <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
 </div>
 
@@ -362,86 +238,14 @@
         </div>
         <div class="footer-section">
             <h4>Légal</h4>
-            <a href="#" onclick="showLegal('privacy')">Confidentialité</a>
-            <a href="#" onclick="showLegal('terms')">Conditions d'utilisation</a>
+            <a href="privacy.html" target="_blank">Confidentialité</a>
+            <a href="terms.html" target="_blank">Conditions d'utilisation</a>
         </div>
     </div>
 </footer>
 
 <div id="legalModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><div id="modalContent"></div></div></div>
-
 <div id="ratingModal" class="modal"><div class="modal-content"><span class="modal-close" id="ratingModalClose">&times;</span><h3>Noter l'événement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3"></textarea><button id="submitRatingBtn" class="btn-primary">Envoyer</button></div></div>
-
-<div id="eventDetailModal" class="modal">
-    <div class="modal-content event-detail-modal">
-        <span class="modal-close" id="eventDetailClose">&times;</span>
-        <div id="eventDetailContent">
-            <div class="event-detail-header">
-                <div class="event-detail-gallery" id="detailGallery"></div>
-                <div class="event-detail-info">
-                    <h2 id="detailTitle">Titre</h2>
-                    <div class="detail-meta">
-                        <span class="detail-category" id="detailCategory">Catégorie</span>
-                        <span class="detail-date" id="detailDate">Date</span>
-                        <span class="detail-location" id="detailLocation">Lieu</span>
-                    </div>
-                    <div class="detail-price-seats">
-                        <span class="detail-price" id="detailPrice">0 Pi</span>
-                        <span class="detail-seats" id="detailSeats">0/0 places</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="event-detail-body">
-                <div class="detail-section">
-                    <h3>Description</h3>
-                    <p id="detailDescription">Description de l'événement</p>
-                </div>
-                
-                <div class="detail-section">
-                    <h3>Conditions de participation</h3>
-                    <div id="detailConditions">
-                        <p style="color: var(--gray);">Chargement des conditions...</p>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3>Informations complémentaires</h3>
-                    <div class="detail-grid">
-                        <div class="detail-grid-item">
-                            <span class="label">Organisateur</span>
-                            <span class="value" id="detailOrganizer">-</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label">Créé le</span>
-                            <span class="value" id="detailCreated">-</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label">Boosts</span>
-                            <span class="value" id="detailBoosts">0</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label">Note moyenne</span>
-                            <span class="value" id="detailRating">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3>Avis des participants</h3>
-                    <div id="detailReviews">
-                        <p style="color: var(--gray); font-size: 0.9rem;">Aucun avis pour le moment</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="event-detail-footer">
-                <button class="btn-primary" id="detailBuyBtn">Acheter un ticket</button>
-                <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;">Booster l'événement</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 </div>
 
