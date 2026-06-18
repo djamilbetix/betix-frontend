@@ -12,41 +12,39 @@ let selectedRating = 0;
 let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
 let pageHistory = ['home'];
 
-// Slides du carrousel
 let heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
 
-// Slides par défaut si vide
 if (heroSlides.length === 0) {
     heroSlides = [
         {
             image: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200&h=600&fit=crop',
             badge: 'Concert',
             title: 'Concert de Jazz',
-            description: 'Soirée exceptionnelle avec les meilleurs artistes'
+            description: 'Soiree exceptionnelle avec les meilleurs artistes'
         },
         {
             image: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=1200&h=600&fit=crop',
             badge: 'Sport',
             title: 'Match de Football',
-            description: 'Vivez l\'émotion du sport en direct'
+            description: 'Vivez l emotion du sport en direct'
         },
         {
             image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop',
-            badge: 'Conférence',
+            badge: 'Conference',
             title: 'Blockchain Summit',
-            description: 'L\'avenir de la technologie décentralisée'
+            description: 'L avenir de la technologie decentralisee'
         },
         {
             image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&h=600&fit=crop',
-            badge: 'Cinéma',
-            title: 'Avant-Première',
-            description: 'Découvrez les films en exclusivité'
+            badge: 'Cinema',
+            title: 'Avant-Premiere',
+            description: 'Decouvrez les films en exclusivite'
         },
         {
             image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&h=600&fit=crop',
             badge: 'Festival',
             title: 'Festival de Musique',
-            description: '3 jours de festivités inoubliables'
+            description: '3 jours de festivites inoubliables'
         }
     ];
     localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
@@ -64,12 +62,12 @@ const eventImagesList = {
 };
 
 const demoEvents = [
-    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)\nPrésenter son ticket à l\'entrée\nRespecter les règles de l\'événement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)\nPrésenter son ticket à l\'entrée', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l\'avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)\nPrésenter son ticket à l\'entrée', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indiqué)\nPrésenter son ticket à l\'entrée', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree\nRespecter les regles de l evenement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert, eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport, eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference, eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation, eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema, eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival, eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -214,7 +212,6 @@ function openEventDetails(eventId) {
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('fr-FR');
     document.getElementById('detailBoosts').textContent = event.boosts || 0;
     
-    // Afficher les conditions personnalisées
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -230,7 +227,7 @@ function openEventDetails(eventId) {
                 conditionsContainer.innerHTML = '<p>' + escapeHtml(event.conditions) + '</p>';
             }
         } else {
-            conditionsContainer.innerHTML = '<p style="color: var(--gray);">Aucune condition spécifiée</p>';
+            conditionsContainer.innerHTML = '<p style="color: var(--gray);">Aucune condition specifiee</p>';
         }
     }
     
@@ -421,7 +418,6 @@ function initFilters() {
     for (var i = 0; i < chips.length; i++) { chips[i].addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }); }
 }
 
-// ===== CARROUSEL =====
 function initHeroSlider() {
     var slidesContainer = document.getElementById('heroSlides');
     if (!slidesContainer) return;
@@ -430,14 +426,7 @@ function initHeroSlider() {
     heroSlides.forEach(function(slide, index) {
         var div = document.createElement('div');
         div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        div.innerHTML = `
-            <div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>
-            <div class="hero-slide-content">
-                <div class="hero-badge">${slide.badge || 'Événement'}</div>
-                <h2>${slide.title}</h2>
-                <p>${slide.description || ''}</p>
-            </div>
-        `;
+        div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div><div class="hero-slide-content"><div class="hero-badge">' + (slide.badge || 'Evenement') + '</div><h2>' + slide.title + '</h2><p>' + (slide.description || '') + '</p></div>';
         slidesContainer.appendChild(div);
     });
     
@@ -549,7 +538,6 @@ function initHeroSlider() {
     startAutoPlay();
 }
 
-// ===== GESTION DES SLIDES =====
 function renderSlidesManager() {
     var container = document.getElementById('slidesList');
     if (!container) return;
@@ -560,19 +548,7 @@ function renderSlidesManager() {
     }
     
     container.innerHTML = heroSlides.map(function(slide, index) {
-        return `
-            <div class="slide-item">
-                <img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'">
-                <div class="slide-info">
-                    <h4>${slide.title}</h4>
-                    <p>${slide.badge || 'Sans catégorie'} • ${slide.description || ''}</p>
-                </div>
-                <div class="slide-actions">
-                    <button class="edit-btn" onclick="editSlide(${index})">Modifier</button>
-                    <button class="delete-btn" onclick="deleteSlide(${index})">Supprimer</button>
-                </div>
-            </div>
-        `;
+        return '<div class="slide-item"><img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'"><div class="slide-info"><h4>' + slide.title + '</h4><p>' + (slide.badge || 'Sans categorie') + ' • ' + (slide.description || '') + '</p></div><div class="slide-actions"><button class="edit-btn" onclick="editSlide(' + index + ')">Modifier</button><button class="delete-btn" onclick="deleteSlide(' + index + ')">Supprimer</button></div></div>';
     }).join('');
 }
 
@@ -640,7 +616,7 @@ function saveSlide() {
     cancelSlideForm();
     renderSlidesManager();
     initHeroSlider();
-    alert('Slide enregistré avec succès !');
+    alert('Slide enregistre avec succes !');
 }
 
 function deleteSlide(index) {
@@ -660,7 +636,6 @@ function cancelSlideForm() {
     document.getElementById('editSlideIndex').value = '-1';
 }
 
-// ===== CREATION EVENT AVEC CONDITIONS =====
 function createEvent(e) {
     e.preventDefault();
     if (!currentUser.wallet) { alert('Connectez votre wallet d\'abord'); return; }
@@ -675,7 +650,7 @@ function createEvent(e) {
     }
     
     if (images.length < 2) { 
-        alert('Veuillez ajouter au moins 2 photos pour votre événement'); 
+        alert('Veuillez ajouter au moins 2 photos pour votre evenement'); 
         return; 
     }
     
@@ -728,11 +703,10 @@ function createEvent(e) {
         }
     }
     
-    alert('Evenement créé avec ' + images.length + ' photos !');
+    alert('Evenement cree avec ' + images.length + ' photos !');
     showPage('home');
 }
 
-// ===== PI NETWORK =====
 async function connectToPi() {
     if (typeof Pi === 'undefined') { alert("Veuillez ouvrir cette page dans Pi Browser"); return; }
     try {
@@ -871,7 +845,7 @@ function handleImageUpload(input, index) {
     var file = input.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner une image');
+        alert('Veuillez selectionner une image');
         input.value = '';
         return;
     }
@@ -994,7 +968,6 @@ function trackUserConnection() {
 }
 
 function clearAllData() { if (confirm('Supprimer toutes vos donnees ?')) { localStorage.clear(); location.reload(); } }
-
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
 
 function googleTranslateElementInit() {
@@ -1015,7 +988,6 @@ function googleTranslateElementInit() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // --- CORRECTION DU LOADER ---
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
     if (loader && main) {
@@ -1027,7 +999,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }, 800);
     }
-    // --- FIN CORRECTION ---
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     calculateLoyaltyPoints();
