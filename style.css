@@ -2307,15 +2307,15 @@ body.dark-mode #detailConditions p {
 
 /* ===== SELECTEUR DE LANGUE DANS LA SIDEBAR ===== */
 .language-selector {
-    margin-top: 0.5rem;
-    padding-top: 0.3rem;
+    margin-top: 0.3rem;
+    padding-top: 0.2rem;
 }
 
 .language-selector .lang-btn {
     font-size: 0.85rem !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.5rem 1rem 0.5rem 1.5rem !important;
     border-radius: 10px !important;
-    margin-bottom: 0.15rem !important;
+    margin-bottom: 0.1rem !important;
     transition: all 0.2s ease !important;
     background: none !important;
     border: none !important;
@@ -2347,6 +2347,12 @@ body.dark-mode .language-selector .lang-btn.active {
     color: white !important;
 }
 
+body.dark-mode .language-selector p {
+    border-top-color: #374151 !important;
+    border-bottom-color: #374151 !important;
+}
+
+/* Cacher le widget Google Translate par defaut */
 .goog-te-combo {
     display: none !important;
 }
