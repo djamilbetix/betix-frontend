@@ -1,38 +1,37 @@
 // =============================================
-// ===== TRADUCTION AVEC LIBRETRANSLATE =====
+// ===== TRADUCTION AVEC MyMemory API =====
 // =============================================
 
-// Configuration - API publique gratuite
-const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
+// Configuration
+const MYMEMORY_API_URL = 'https://api.mymemory.translated.net/get';
 
 let currentLang = localStorage.getItem('betix_language') || 'fr';
 
-// Traduire un texte
+// Traduire un texte avec MyMemory
 async function translateText(text, targetLang) {
     if (!text || text.trim() === '') return text;
     if (targetLang === 'fr') return text;
     
     try {
-        const response = await fetch(LIBRE_TRANSLATE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                q: text,
-                source: 'fr',
-                target: targetLang,
-                format: 'text'
-            })
-        });
+        const response = await fetch(
+            `${MYMEMORY_API_URL}?q=${encodeURIComponent(text)}&langpair=fr|${targetLang}&de=betix@betix.com`
+        );
         
         if (!response.ok) {
-            console.log('Erreur traduction, utilisation du texte original');
+            console.log('Erreur traduction MyMemory');
             return text;
         }
         
         const data = await response.json();
-        return data.translatedText || text;
+        
+        if (data.responseStatus === 200) {
+            return data.responseData.translatedText || text;
+        } else {
+            console.log('Erreur MyMemory:', data.responseDetails);
+            return text;
+        }
     } catch (error) {
-        console.log('Erreur:', error);
+        console.log('Erreur traduction:', error);
         return text;
     }
 }
@@ -118,7 +117,7 @@ function applySavedLanguage() {
 }
 
 // ===== INITIALISATION FORCEE =====
-console.log('Chargement du module de traduction...');
+console.log('Chargement du module de traduction MyMemory...');
 
 // Methode 1: Si le DOM est deja charge
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
