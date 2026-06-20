@@ -6,6 +6,7 @@
 const MYMEMORY_API_URL = 'https://api.mymemory.translated.net/get';
 
 let currentLang = localStorage.getItem('betix_language') || 'fr';
+let isTranslating = false;
 
 // Traduire un texte avec MyMemory
 async function translateText(text, targetLang) {
@@ -38,37 +39,70 @@ async function translateText(text, targetLang) {
 
 // Traduire tous les elements de la page
 async function translatePage(targetLang) {
-    console.log('Traduction vers:', targetLang);
+    if (isTranslating) return;
     if (!targetLang || targetLang === currentLang) return;
     
-    currentLang = targetLang;
-    localStorage.setItem('betix_language', targetLang);
+    isTranslating = true;
+    console.log('Traduction vers:', targetLang);
     
-    // Mettre a jour les boutons
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.lang === targetLang) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Traduire les textes
-    const elements = document.querySelectorAll('[data-translate]');
-    console.log('Elements a traduire:', elements.length);
-    for (let el of elements) {
-        const original = el.dataset.originalText || el.textContent;
-        el.dataset.originalText = original;
-        const translated = await translateText(original, targetLang);
-        el.textContent = translated;
-    }
-    
-    // Traduire les placeholders
-    const inputs = document.querySelectorAll('[data-translate-placeholder]');
-    for (let el of inputs) {
-        const original = el.dataset.originalPlaceholder || el.placeholder;
-        el.dataset.originalPlaceholder = original;
-        const translated = await translateText(original, targetLang);
-        el.placeholder = translated;
+    try {
+        currentLang = targetLang;
+        localStorage.setItem('betix_language', targetLang);
+        
+        // Mettre a jour les boutons
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.lang === targetLang) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Traduire les textes
+        const elements = document.querySelectorAll('[data-translate]');
+        console.log('Elements a traduire:', elements.length);
+        
+        // Traduire en parallèle pour plus de rapidité
+        const translationPromises = [];
+        const elementsToTranslate = [];
+        
+        elements.forEach(el => {
+            const original = el.dataset.originalText || el.textContent;
+            el.dataset.originalText = original;
+            translationPromises.push(translateText(original, targetLang));
+            elementsToTranslate.push(el);
+        });
+        
+        const translations = await Promise.all(translationPromises);
+        translations.forEach((translated, index) => {
+            if (translated) {
+                elementsToTranslate[index].textContent = translated;
+            }
+        });
+        
+        // Traduire les placeholders
+        const inputs = document.querySelectorAll('[data-translate-placeholder]');
+        const placeholderPromises = [];
+        const inputsToTranslate = [];
+        
+        inputs.forEach(el => {
+            const original = el.dataset.originalPlaceholder || el.placeholder;
+            el.dataset.originalPlaceholder = original;
+            placeholderPromises.push(translateText(original, targetLang));
+            inputsToTranslate.push(el);
+        });
+        
+        const placeholderTranslations = await Promise.all(placeholderPromises);
+        placeholderTranslations.forEach((translated, index) => {
+            if (translated) {
+                inputsToTranslate[index].placeholder = translated;
+            }
+        });
+        
+        console.log('Traduction terminee !');
+    } catch (error) {
+        console.log('Erreur lors de la traduction:', error);
+    } finally {
+        isTranslating = false;
     }
 }
 
@@ -83,12 +117,20 @@ function initLanguageButtons() {
         return;
     }
     
+    // Supprimer les anciens écouteurs pour éviter les doublons
     buttons.forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // Ajouter les nouveaux écouteurs
+    document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Clic sur:', this.dataset.lang);
-            translatePage(this.dataset.lang);
+            const lang = this.dataset.lang;
+            console.log('Clic sur:', lang);
+            translatePage(lang);
             if (typeof closeSidebar === 'function') {
                 closeSidebar();
             }
@@ -112,7 +154,18 @@ function applySavedLanguage() {
     if (savedLang !== 'fr') {
         setTimeout(function() {
             translatePage(savedLang);
-        }, 1500);
+        }, 800);
+    }
+}
+
+// Reinitialisation apres chargement dynamique
+function reinitTranslation() {
+    const savedLang = localStorage.getItem('betix_language') || 'fr';
+    if (savedLang !== 'fr' && !isTranslating) {
+        console.log('Reinitialisation de la traduction...');
+        setTimeout(function() {
+            translatePage(savedLang);
+        }, 500);
     }
 }
 
@@ -125,7 +178,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     setTimeout(function() {
         initLanguageButtons();
         applySavedLanguage();
-    }, 300);
+    }, 200);
 } else {
     // Methode 2: Attendre DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
@@ -133,7 +186,7 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
         setTimeout(function() {
             initLanguageButtons();
             applySavedLanguage();
-        }, 500);
+        }, 400);
     });
 }
 
@@ -142,15 +195,43 @@ window.addEventListener('load', function() {
     console.log('Window load, verification...');
     setTimeout(function() {
         initLanguageButtons();
-    }, 300);
+        reinitTranslation();
+    }, 500);
 });
 
-// Methode 4: Reinitialisation toutes les 2 secondes pour les cas complexes
+// Methode 4: Reinitialisation periodique pour les pages dynamiques
 setTimeout(function() {
     console.log('Reinitialisation de securite...');
     initLanguageButtons();
-    applySavedLanguage();
-}, 3000);
+    reinitTranslation();
+}, 2000);
+
+// Methode 5: Observer les changements de page
+const observer = new MutationObserver(function(mutations) {
+    // Verifier si des nouveaux elements ont ete ajoutes
+    for (let mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            const savedLang = localStorage.getItem('betix_language') || 'fr';
+            if (savedLang !== 'fr' && !isTranslating) {
+                setTimeout(function() {
+                    translatePage(savedLang);
+                }, 300);
+            }
+            break;
+        }
+    }
+});
+
+// Observer les changements dans le contenu principal
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        observer.observe(mainContent, {
+            childList: true,
+            subtree: true
+        });
+    }
+});
 
 // =============================================
 // ===== FIN DE LA PARTIE TRADUCTION =====
@@ -330,6 +411,11 @@ function showPage(pageName) {
     if (pageName === 'slides') renderSlidesManager();
     closeSidebar();
     window.scrollTo(0, 0);
+    
+    // Reappliquer la traduction apres le changement de page
+    setTimeout(function() {
+        reinitTranslation();
+    }, 300);
 }
 
 function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.remove('open'); var o = document.getElementById('overlay'); if (o) o.classList.remove('active'); }
