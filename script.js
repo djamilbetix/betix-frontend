@@ -90,7 +90,6 @@ function initLanguageButtons() {
             e.stopPropagation();
             console.log('Clic sur:', this.dataset.lang);
             translatePage(this.dataset.lang);
-            // Fermer la sidebar apres le clic
             if (typeof closeSidebar === 'function') {
                 closeSidebar();
             }
