@@ -1,3 +1,164 @@
+// =============================================
+// ===== TRADUCTION AVEC LIBRETRANSLATE =====
+// =============================================
+
+// Configuration - API publique gratuite
+const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
+
+let currentLang = localStorage.getItem('betix_language') || 'fr';
+
+// Traduire un texte
+async function translateText(text, targetLang) {
+    if (!text || text.trim() === '') return text;
+    if (targetLang === 'fr') return text;
+    
+    try {
+        const response = await fetch(LIBRE_TRANSLATE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                q: text,
+                source: 'fr',
+                target: targetLang,
+                format: 'text'
+            })
+        });
+        
+        if (!response.ok) {
+            console.log('Erreur traduction, utilisation du texte original');
+            return text;
+        }
+        
+        const data = await response.json();
+        return data.translatedText || text;
+    } catch (error) {
+        console.log('Erreur:', error);
+        return text;
+    }
+}
+
+// Traduire tous les elements de la page
+async function translatePage(targetLang) {
+    console.log('Traduction vers:', targetLang);
+    if (!targetLang || targetLang === currentLang) return;
+    
+    currentLang = targetLang;
+    localStorage.setItem('betix_language', targetLang);
+    
+    // Mettre a jour les boutons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.lang === targetLang) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Traduire les textes
+    const elements = document.querySelectorAll('[data-translate]');
+    console.log('Elements a traduire:', elements.length);
+    for (let el of elements) {
+        const original = el.dataset.originalText || el.textContent;
+        el.dataset.originalText = original;
+        const translated = await translateText(original, targetLang);
+        el.textContent = translated;
+    }
+    
+    // Traduire les placeholders
+    const inputs = document.querySelectorAll('[data-translate-placeholder]');
+    for (let el of inputs) {
+        const original = el.dataset.originalPlaceholder || el.placeholder;
+        el.dataset.originalPlaceholder = original;
+        const translated = await translateText(original, targetLang);
+        el.placeholder = translated;
+    }
+}
+
+// Initialiser les boutons
+function initLanguageButtons() {
+    console.log('Initialisation des boutons de langue...');
+    const buttons = document.querySelectorAll('.lang-btn');
+    console.log('Boutons trouves:', buttons.length);
+    
+    if (buttons.length === 0) {
+        console.log('Aucun bouton de langue trouve !');
+        return;
+    }
+    
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Clic sur:', this.dataset.lang);
+            translatePage(this.dataset.lang);
+            // Fermer la sidebar apres le clic
+            if (typeof closeSidebar === 'function') {
+                closeSidebar();
+            }
+        });
+    });
+    
+    // Restaurer la langue sauvegardee
+    const savedLang = localStorage.getItem('betix_language') || 'fr';
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.lang === savedLang) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// Appliquer la langue sauvegardee
+function applySavedLanguage() {
+    const savedLang = localStorage.getItem('betix_language') || 'fr';
+    console.log('Langue sauvegardee:', savedLang);
+    if (savedLang !== 'fr') {
+        setTimeout(function() {
+            translatePage(savedLang);
+        }, 1500);
+    }
+}
+
+// ===== INITIALISATION FORCEE =====
+console.log('Chargement du module de traduction...');
+
+// Methode 1: Si le DOM est deja charge
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('DOM deja charge, initialisation immediate...');
+    setTimeout(function() {
+        initLanguageButtons();
+        applySavedLanguage();
+    }, 300);
+} else {
+    // Methode 2: Attendre DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded, initialisation...');
+        setTimeout(function() {
+            initLanguageButtons();
+            applySavedLanguage();
+        }, 500);
+    });
+}
+
+// Methode 3: Initialisation supplementaire apres le chargement complet
+window.addEventListener('load', function() {
+    console.log('Window load, verification...');
+    setTimeout(function() {
+        initLanguageButtons();
+    }, 300);
+});
+
+// Methode 4: Reinitialisation toutes les 2 secondes pour les cas complexes
+setTimeout(function() {
+    console.log('Reinitialisation de securite...');
+    initLanguageButtons();
+    applySavedLanguage();
+}, 3000);
+
+// =============================================
+// ===== FIN DE LA PARTIE TRADUCTION =====
+// ===== TOUT LE CODE EXISTANT CI-DESSOUS =====
+// =============================================
+
 let events = JSON.parse(localStorage.getItem('betix_events')) || [];
 let tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
 let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 };
@@ -988,143 +1149,6 @@ function googleTranslateElementInit() {
     }, 500);
 }
 
-// =============================================
-// ===== TRADUCTION AVEC LIBRETRANSLATE =====
-// =============================================
-
-// Configuration - API publique gratuite et illimitee
-const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
-
-const SUPPORTED_LANGS = {
-    'fr': 'Francais',
-    'en': 'English', 
-    'pt': 'Portugues',
-    'zh': '中文',
-    'id': 'Bahasa Indonesia'
-};
-let currentLang = localStorage.getItem('betix_language') || 'fr';
-
-// Traduire un texte
-async function translateText(text, targetLang) {
-    if (!text || text.trim() === '') return text;
-    if (targetLang === 'fr') return text;
-    
-    try {
-        const response = await fetch(LIBRE_TRANSLATE_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                q: text,
-                source: 'fr',
-                target: targetLang,
-                format: 'text'
-            })
-        });
-        
-        if (!response.ok) {
-            console.log('Erreur traduction, utilisation du texte original');
-            return text;
-        }
-        
-        const data = await response.json();
-        return data.translatedText || text;
-    } catch (error) {
-        console.log('Erreur:', error);
-        return text;
-    }
-}
-
-// Traduire tous les elements de la page
-async function translatePage(targetLang) {
-    console.log('Traduction vers:', targetLang);
-    if (!targetLang || targetLang === currentLang) return;
-    
-    currentLang = targetLang;
-    localStorage.setItem('betix_language', targetLang);
-    
-    // Mettre a jour les boutons
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === targetLang);
-    });
-    
-    // Traduire les textes
-    const elements = document.querySelectorAll('[data-translate]');
-    console.log('Elements a traduire:', elements.length);
-    for (let el of elements) {
-        const original = el.dataset.originalText || el.textContent;
-        el.dataset.originalText = original;
-        const translated = await translateText(original, targetLang);
-        el.textContent = translated;
-    }
-    
-    // Traduire les placeholders
-    const inputs = document.querySelectorAll('[data-translate-placeholder]');
-    for (let el of inputs) {
-        const original = el.dataset.originalPlaceholder || el.placeholder;
-        el.dataset.originalPlaceholder = original;
-        const translated = await translateText(original, targetLang);
-        el.placeholder = translated;
-    }
-}
-
-// Initialiser les boutons
-function initLanguageButtons() {
-    console.log('Initialisation des boutons de langue...');
-    const buttons = document.querySelectorAll('.lang-btn');
-    console.log('Boutons trouves:', buttons.length);
-    
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Clic sur:', this.dataset.lang);
-            translatePage(this.dataset.lang);
-            if (typeof closeSidebar === 'function') closeSidebar();
-        });
-    });
-    
-    // Restaurer la langue sauvegardee
-    const savedLang = localStorage.getItem('betix_language') || 'fr';
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === savedLang);
-    });
-}
-
-// Appliquer la langue sauvegardee
-function applySavedLanguage() {
-    const savedLang = localStorage.getItem('betix_language') || 'fr';
-    console.log('Langue sauvegardee:', savedLang);
-    if (savedLang !== 'fr') {
-        setTimeout(() => translatePage(savedLang), 1000);
-    }
-}
-
-// ===== INITIALISATION AUTOMATIQUE =====
-(function autoInit() {
-    console.log('Auto-initialisation des langues...');
-    
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(function() {
-            initLanguageButtons();
-            applySavedLanguage();
-        }, 300);
-    } else {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                initLanguageButtons();
-                applySavedLanguage();
-            }, 300);
-        });
-    }
-})();
-
-document.addEventListener('load', function() {
-    setTimeout(function() {
-        initLanguageButtons();
-    }, 500);
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
@@ -1216,10 +1240,4 @@ document.addEventListener('DOMContentLoaded', function() {
     startSessionMonitor();
     
     if (currentUser.wallet && isSessionExpired()) { logout(); }
-    
-    // Initialisation supplementaire pour les boutons de langue
-    setTimeout(function() {
-        initLanguageButtons();
-        applySavedLanguage();
-    }, 500);
 });
