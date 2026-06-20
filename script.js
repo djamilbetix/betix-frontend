@@ -989,36 +989,11 @@ function googleTranslateElementInit() {
 }
 
 // =============================================
-// ===== SELECTEUR DE LANGUE EN HAUT =====
-// =============================================
-
-// Gestion du dropdown
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('langToggleBtn');
-    const dropdown = document.getElementById('langDropdown');
-    
-    if (toggleBtn && dropdown) {
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            dropdown.classList.toggle('open');
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!dropdown.contains(e.target) && e.target !== toggleBtn) {
-                dropdown.classList.remove('open');
-            }
-        });
-    }
-});
-
-// =============================================
 // ===== TRADUCTION AVEC LIBRETRANSLATE =====
 // =============================================
 
-// Configuration - URL de votre serveur Render
-const LIBRE_TRANSLATE_URL = 'https://betix-translate.onrender.com/translate';
-// En cas de probleme, utilisez l'API publique :
-// const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
+// Configuration - API publique gratuite et illimitee
+const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
 
 const SUPPORTED_LANGS = {
     'fr': 'Francais',
@@ -1070,13 +1045,9 @@ async function translatePage(targetLang) {
     localStorage.setItem('betix_language', targetLang);
     
     // Mettre a jour les boutons
-    document.querySelectorAll('.lang-option, .lang-btn').forEach(btn => {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === targetLang);
     });
-    
-    // Fermer le dropdown
-    const dropdown = document.getElementById('langDropdown');
-    if (dropdown) dropdown.classList.remove('open');
     
     // Traduire les textes
     const elements = document.querySelectorAll('[data-translate]');
@@ -1101,7 +1072,7 @@ async function translatePage(targetLang) {
 // Initialiser les boutons
 function initLanguageButtons() {
     console.log('Initialisation des boutons de langue...');
-    const buttons = document.querySelectorAll('.lang-option, .lang-btn');
+    const buttons = document.querySelectorAll('.lang-btn');
     console.log('Boutons trouves:', buttons.length);
     
     buttons.forEach(btn => {
@@ -1109,12 +1080,13 @@ function initLanguageButtons() {
             e.preventDefault();
             console.log('Clic sur:', this.dataset.lang);
             translatePage(this.dataset.lang);
+            if (typeof closeSidebar === 'function') closeSidebar();
         });
     });
     
     // Restaurer la langue sauvegardee
     const savedLang = localStorage.getItem('betix_language') || 'fr';
-    document.querySelectorAll('.lang-option, .lang-btn').forEach(btn => {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === savedLang);
     });
 }
@@ -1244,4 +1216,10 @@ document.addEventListener('DOMContentLoaded', function() {
     startSessionMonitor();
     
     if (currentUser.wallet && isSessionExpired()) { logout(); }
+    
+    // Initialisation supplementaire pour les boutons de langue
+    setTimeout(function() {
+        initLanguageButtons();
+        applySavedLanguage();
+    }, 500);
 });
