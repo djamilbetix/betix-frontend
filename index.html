@@ -48,6 +48,19 @@
         </div>
     </div>
     <div class="header-right">
+        <!-- ===== SELECTEUR DE LANGUE ===== -->
+        <div class="header-language-selector">
+            <button class="lang-toggle-btn" id="langToggleBtn" title="Changer la langue">
+                🌐
+            </button>
+            <div class="lang-dropdown" id="langDropdown">
+                <button class="lang-option active" data-lang="fr">🇫🇷 Francais</button>
+                <button class="lang-option" data-lang="en">🇬🇧 English</button>
+                <button class="lang-option" data-lang="pt">🇧🇷 Portugues</button>
+                <button class="lang-option" data-lang="zh">🇨🇳 中文</button>
+                <button class="lang-option" data-lang="id">🇮🇩 Bahasa Indonesia</button>
+            </div>
+        </div>
         <button class="menu-btn" id="menuBtn">☰</button>
     </div>
 </header>
@@ -69,17 +82,6 @@
         <button class="sidebar-item" data-page="whitepaper" data-translate>Livre blanc</button>
         <button class="sidebar-item" data-page="faq" data-translate>FAQ</button>
         <button class="sidebar-item" data-page="slides" data-translate>Gestion du carrousel</button>
-        
-        <!-- ===== SELECTEUR DE LANGUE ===== -->
-        <div class="language-selector">
-            <p style="font-size:0.75rem; color:var(--gray); padding: 0.5rem 1rem 0.3rem; margin:0; border-top: 1px solid #e5e7eb;" data-translate>Langue</p>
-            <button class="sidebar-item lang-btn active" data-lang="fr" style="font-size:0.85rem;">🇫🇷 <span data-translate>Francais</span></button>
-            <button class="sidebar-item lang-btn" data-lang="en" style="font-size:0.85rem;">🇬🇧 <span data-translate>English</span></button>
-            <button class="sidebar-item lang-btn" data-lang="pt" style="font-size:0.85rem;">🇧🇷 <span data-translate>Portugues</span></button>
-            <button class="sidebar-item lang-btn" data-lang="zh" style="font-size:0.85rem;">🇨🇳 <span data-translate>中文</span></button>
-            <button class="sidebar-item lang-btn" data-lang="id" style="font-size:0.85rem;">🇮🇩 <span data-translate>Bahasa Indonesia</span></button>
-        </div>
-        
         <button class="sidebar-item" id="logoutBtn" style="color: #ef4444;" data-translate>Deconnexion</button>
     </div>
     
@@ -267,10 +269,7 @@
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2 data-translate>Parametres</h2>
-        <div class="settings-group">
-            <p><strong data-translate>Langue / Language</strong></p>
-            <div id="google_translate_element" class="google-translate-container"></div>
-        </div>
+        <!-- Langue SUPPRIMEE -->
         <div class="settings-group">
             <p><strong data-translate>Theme</strong></p>
             <label><input type="checkbox" id="darkModeToggle"> <span data-translate>Mode sombre</span></label>
