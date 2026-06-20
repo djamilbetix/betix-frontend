@@ -2304,3 +2304,61 @@ body.dark-mode #detailConditions p {
     cursor: pointer;
     font-size: 0.85rem;
 }
+
+/* ===== SÉLECTEUR DE LANGUE ===== */
+.language-selector {
+    margin-top: 0.5rem;
+    padding-top: 0.3rem;
+}
+
+.language-selector .lang-btn {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 10px !important;
+    margin-bottom: 0.15rem !important;
+    transition: all 0.2s ease !important;
+    background: none !important;
+    border: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    color: #1f2937 !important;
+}
+
+.language-selector .lang-btn:hover {
+    background: var(--gradient) !important;
+    color: white !important;
+    transform: translateX(4px) !important;
+}
+
+.language-selector .lang-btn.active {
+    background: var(--gradient) !important;
+    color: white !important;
+}
+
+body.dark-mode .language-selector .lang-btn {
+    color: #f3f4f6 !important;
+}
+
+body.dark-mode .language-selector .lang-btn:hover,
+body.dark-mode .language-selector .lang-btn.active {
+    background: var(--gradient) !important;
+    color: white !important;
+}
+
+/* Cacher le widget Google Translate par defaut */
+.goog-te-combo {
+    display: none !important;
+}
+.goog-te-gadget {
+    display: none !important;
+}
+.goog-te-gadget-simple {
+    display: none !important;
+}
+.goog-te-banner-frame {
+    display: none !important;
+    height: 0 !important;
+    visibility: hidden !important;
+}
