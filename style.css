@@ -1,443 +1,2395 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Betix - Plateforme d'Événements Pi Network</title>
-    <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
-    <link rel="stylesheet" href="style.css">
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+html {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f9fafb;
+    color: #1f2937;
+    line-height: 1.5;
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+:root {
+    --primary: #3B82F6;
+    --primary-dark: #1E3A8A;
+    --primary-light: #93c5fd;
+    --secondary: #8B5CF6;
+    --secondary-dark: #6d28d9;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #1f2937;
+    --light: #f9fafb;
+    --gray: #6b7280;
+    --gradient: linear-gradient(135deg, #3B82F6, #1E3A8A, #8B5CF6);
+}
+
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #3B82F6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+    color: #6b7280;
+    margin-top: 20px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* ===== HEADER AVEC COULEUR PI BROWSER ===== */
+.header {
+    background: linear-gradient(135deg, #1a2a6c, #3B82F6, #8B5CF6);
+    padding: 0.8rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: none;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    cursor: pointer;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.05);
+}
+
+.back-btn:active {
+    transform: scale(0.92);
+}
+
+.back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: white;
+}
+
+.back-btn.visible {
+    display: flex !important;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+    border-radius: 8px;
+    filter: brightness(0) invert(1);
+}
+
+.menu-btn {
+    font-size: 1.5rem;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-btn:hover {
+    background: rgba(255,255,255,0.35);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 280px;
+    height: 100%;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.open {
+    right: 0;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.close-sidebar {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray);
+    transition: color 0.2s;
+}
+
+.close-sidebar:hover {
+    color: var(--dark);
+}
+
+.sidebar-avatar {
+    width: 70px;
+    height: 70px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+
+.wallet-sidebar-btn {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.wallet-sidebar-btn:hover {
+    opacity: 0.85;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-item {
+    background: none;
+    border: none;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 10px;
+    margin-bottom: 0.15rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.sidebar-item:hover {
+    background: var(--gradient);
+    color: white;
+    transform: translateX(4px);
+}
+
+.sidebar-item#logoutBtn {
+    margin-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+    color: #ef4444;
+}
+
+.sidebar-item#logoutBtn:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.sidebar-social {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    margin-top: auto;
+    flex-shrink: 0;
+    background: #f9fafb;
+}
+
+.sidebar-social-title {
+    font-size: 0.7rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.sidebar-social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: white;
+    color: var(--gray);
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+/* ===== HERO ===== */
+.hero {
+    width: 100%;
+    background: #ffffff;
+    color: #1f2937;
+    overflow: hidden;
+}
+
+.hero-slider-container {
+    width: 100%;
+    height: 320px;
+    overflow: hidden;
+    position: relative;
+    background: #0F172A;
+}
+
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-slides {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hero-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-slide-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.05);
+    transition: transform 8s ease;
+}
+
+.hero-slide.active .hero-slide-bg {
+    transform: scale(1);
+}
+
+.hero-slide-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.5) 50%, rgba(59, 130, 246, 0.3) 100%);
+}
+
+.hero-slide-content {
+    position: absolute;
+    bottom: 30px;
+    left: 40px;
+    z-index: 2;
+    max-width: 400px;
+    animation: slideUp 0.8s ease forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.hero-slide.active .hero-slide-content {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    padding: 3px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.hero-slide-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.hero-slide-content p {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.hero-slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 300;
+}
+
+.hero-slider-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.hero-slider-btn.prev {
+    left: 12px;
+}
+
+.hero-slider-btn.next {
+    right: 12px;
+}
+
+.hero-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.hero-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+}
+
+.hero-dots .dot.active {
+    background: white;
+    width: 24px;
+    border-radius: 4px;
+}
+
+.hero-dots .dot:hover {
+    background: rgba(255,255,255,0.7);
+}
+
+.hero-divider {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.hero-divider::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.hero-content-bottom {
+    padding: 2.5rem 2rem 3rem 2rem;
+    text-align: center;
+    background: #ffffff;
+}
+
+.hero-text h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #1f2937;
+}
+
+.hero-text p {
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto 1.2rem auto;
+    color: #6b7280;
+}
+
+.hero-text .btn-hero {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    font-size: 0.95rem;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.hero-text .btn-hero:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+}
+
+/* ===== SEARCH & FILTERS ===== */
+.search-bar {
+    padding: 2rem 5% 0;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 40px;
+    background: white;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.filters-wrapper {
+    padding: 1rem 5%;
+}
+
+.filters-horizontal {
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+}
+
+.filters-horizontal::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chip {
+    flex: 0 0 auto;
+    background: white;
+    border: 2px solid #e5e7eb;
+    padding: 0.5rem 1.2rem;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+
+.filter-chip:hover {
+    border-color: var(--primary);
+}
+
+.filter-chip.active {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(59,130,246,0.3);
+}
+
+/* ===== EVENTS ===== */
+.events-container {
+    padding: 2rem 5%;
+    overflow: hidden;
+}
+
+.events-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.events-sub {
+    color: var(--gray);
+    margin-bottom: 2rem;
+}
+
+.category-section {
+    margin-bottom: 3rem;
+    overflow: hidden;
+}
+
+.category-header {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--primary);
+    display: inline-block;
+}
+
+.events-grid-centered {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+@media (min-width: 1200px) {
+    .events-grid-centered {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+    .events-grid-centered {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .events-grid-centered {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== EVENT CARD ===== */
+.event-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    position: relative;
+    max-width: 100%;
+}
+
+.event-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
+}
+
+.event-card .event-info {
+    pointer-events: none;
+}
+
+.event-card .buy-btn,
+.event-card .rating-btn,
+.event-card .rated-badge {
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
+}
+
+.event-card .buy-btn:hover {
+    opacity: 0.85;
+}
+
+.event-card .event-footer {
+    pointer-events: none;
+}
+
+.event-card .event-footer > * {
+    pointer-events: auto;
+}
+
+.event-detail-hint {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    color: white;
+    font-size: 0.6rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.event-card:hover .event-detail-hint {
+    opacity: 1;
+}
+
+/* ===== EVENT GALLERY ===== */
+.event-gallery-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.event-gallery {
+    display: flex;
+    gap: 4px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    padding: 8px;
+    background: #f3f4f6;
+    cursor: default;
+    pointer-events: none;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.event-gallery:hover {
+    overflow-x: auto;
+    cursor: grab;
+    pointer-events: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) #e5e7eb;
+}
+
+.event-gallery:active {
+    cursor: grabbing;
+}
+
+.event-gallery::-webkit-scrollbar {
+    height: 0px;
+    display: none;
+}
+
+.event-gallery:hover::-webkit-scrollbar {
+    height: 4px;
+    display: block;
+}
+
+.event-gallery:hover::-webkit-scrollbar-track {
+    background: #e5e7eb;
+    border-radius: 4px;
+}
+
+.event-gallery:hover::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.event-gallery-img {
+    min-width: 200px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s;
+    pointer-events: auto;
+}
+
+.event-gallery-img:hover {
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .event-gallery {
+        overflow-x: hidden !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
     
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    .event-gallery:hover {
+        overflow-x: hidden !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
     
-    <script>
-        (function initPiSDK() {
-            if (typeof Pi !== 'undefined') {
-                Pi.init({ version: "2.0", sandbox: true });
-                console.log("Pi SDK initialise");
-                window.piSDKReady = true;
-            } else {
-                console.log("Attente du SDK Pi...");
-                setTimeout(initPiSDK, 200);
-            }
-        })();
-        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 1000);
-        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
-    </script>
+    .event-gallery::-webkit-scrollbar {
+        height: 0px !important;
+        display: none !important;
+    }
     
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-</head>
-<body>
-
-<div id="loader" class="loader-container">
-    <div class="loader-spinner"></div>
-    <p class="loader-text">Chargement...</p>
-</div>
-
-<div id="main-content" style="display: none;">
-
-<header class="header">
-    <div class="header-left">
-        <button class="back-btn" id="backBtn" style="display: none;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <div class="logo" onclick="showPage('home')">
-            <img src="logo.png" alt="Logo Betix" style="height: 40px; width: auto; border-radius: 8px; display: inline-block;" onerror="this.style.display='none'">
-            <span data-translate>Betix</span>
-        </div>
-    </div>
-    <div class="header-right">
-        <button class="menu-btn" id="menuBtn">☰</button>
-    </div>
-</header>
-
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <button class="close-sidebar" id="closeSidebarBtn">×</button>
-        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
-        <h3 id="sidebarName" data-translate>Invite</h3>
-        <p id="sidebarWallet" data-translate>Non connecte</p>
-        <button class="wallet-sidebar-btn" id="sidebarWalletBtn" data-translate>Connexion</button>
-    </div>
-    <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home" data-translate>Accueil</button>
-        <button class="sidebar-item" data-page="profile" data-translate>Profil</button>
-        <button class="sidebar-item" data-page="settings" data-translate>Parametres</button>
-        <button class="sidebar-item" data-page="tickets" data-translate>Mes tickets</button>
-        <button class="sidebar-item" data-page="history" data-translate>Historique des tickets</button>
-        <button class="sidebar-item" data-page="whitepaper" data-translate>Livre blanc</button>
-        <button class="sidebar-item" data-page="faq" data-translate>FAQ</button>
-        <button class="sidebar-item" data-page="slides" data-translate>Gestion du carrousel</button>
-        
-        <!-- ===== SELECTEUR DE LANGUE ===== -->
-        <div class="language-selector" id="languageSelector">
-            <p style="font-size:0.75rem; color:var(--gray); padding: 0.5rem 1rem 0.3rem; margin:0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;" data-translate>🌐 Langue</p>
-            <button class="sidebar-item lang-btn active" data-lang="fr" style="font-size:0.85rem; padding-left: 1.5rem;">🇫🇷 <span data-translate>Francais</span></button>
-            <button class="sidebar-item lang-btn" data-lang="en" style="font-size:0.85rem; padding-left: 1.5rem;">🇬🇧 <span data-translate>English</span></button>
-            <button class="sidebar-item lang-btn" data-lang="pt" style="font-size:0.85rem; padding-left: 1.5rem;">🇧🇷 <span data-translate>Portugues</span></button>
-            <button class="sidebar-item lang-btn" data-lang="zh" style="font-size:0.85rem; padding-left: 1.5rem;">🇨🇳 <span data-translate>中文</span></button>
-            <button class="sidebar-item lang-btn" data-lang="id" style="font-size:0.85rem; padding-left: 1.5rem;">🇮🇩 <span data-translate>Bahasa Indonesia</span></button>
-        </div>
-        
-        <button class="sidebar-item" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;" data-translate>Deconnexion</button>
-    </div>
+    .event-gallery-img {
+        min-width: 150px;
+        height: 110px;
+    }
     
-    <div class="sidebar-social">
-        <div class="sidebar-social-title" data-translate>Suivez-nous</div>
-        <div class="sidebar-social-icons">
-            <a href="https://x.com/betix_app" target="_blank" class="social-link" title="Twitter (X)">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </a>
-            <a href="https://t.me/betix" target="_blank" class="social-link" title="Telegram">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-            </a>
-            <a href="https://discord.gg/betix" target="_blank" class="social-link" title="Discord">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3847-.3973-.8742-.6083-1.2495a.0717.0717 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.5152.0727.0727 0 0 0-.0325.027 20.3735 20.3735 0 0 0-2.6896 4.6124.0815.0815 0 0 0 .0128.0777 17.891 17.891 0 0 0 2.7862 3.2797.0713.0713 0 0 0 .0801.0101 19.1645 19.1645 0 0 0 3.4552-1.1051.0746.0746 0 0 0 .044-.0825.1153.1153 0 0 0-.0128-.0455 2.8513 2.8513 0 0 1-.3256-.5085.0711.0711 0 0 1 .043-.0962 12.7066 12.7066 0 0 0 3.6004-.5557.0708.0708 0 0 1 .0708.0504 13.1785 13.1785 0 0 1 0 2.1616.071.071 0 0 1-.0708.0504c-1.1395.1353-2.2365.2777-3.3075.6315-.037.012-.0524.0545-.0324.0852.0274.0408.0554.0832.084.1243.0416.058.0875.1225.1345.187.0714.0975.1653.2253.2646.3439.037.0445.0884.0657.1427.0563 2.0924-.6443 4.115-1.2328 6.1075-1.7243a.0764.0764 0 0 0 .0615-.0636 13.6822 13.6822 0 0 0 .4973-5.1363.0745.0745 0 0 0-.0286-.0525.0812.0812 0 0 0-.0487-.0182zM8.7108 15.2075c-1.1286 0-2.0563-1.0461-2.0563-2.333 0-1.2868.9086-2.334 2.0563-2.334 1.1484 0 2.0754 1.0472 2.0563 2.334 0 1.2869-.9086 2.333-2.0563 2.333zm6.5784 0c-1.1286 0-2.0563-1.0461-2.0563-2.333 0-1.2868.9086-2.334 2.0563-2.334 1.1484 0 2.0754 1.0472 2.0563 2.334 0 1.2869-.9086 2.333-2.0563 2.333z"/></svg>
-            </a>
-            <a href="https://instagram.com/betix_app" target="_blank" class="social-link" title="Instagram">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-            </a>
-            <a href="https://facebook.com/betix_app" target="_blank" class="social-link" title="Facebook">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            </a>
-            <a href="https://youtube.com/c/betix" target="_blank" class="social-link" title="YouTube">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-            </a>
-        </div>
-    </div>
-</div>
-<div class="overlay" id="overlay"></div>
+    .event-gallery-wrapper::after {
+        content: '↔';
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 8px;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}
 
-<button class="chat-float-btn" id="chatFloatBtn">💬</button>
+.event-info {
+    padding: 1rem;
+}
 
-<div id="chatWidget" class="chat-widget">
-    <div class="chat-header" id="chatHeader">
-        <div class="chat-header-info"><span class="chat-logo" data-translate>Support Betix</span><span class="chat-status" data-translate>En ligne</span></div>
-        <button class="chat-close" id="chatCloseBtn">×</button>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Ecrivez votre message..." maxlength="500" data-translate-placeholder>
-        <button id="chatSendBtn" data-translate>Envoyer</button>
-    </div>
-</div>
+.event-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--primary-dark);
+}
 
-<div id="homePage">
-    <section class="hero">
-        <div class="hero-slider-container">
-            <div class="hero-slider">
-                <div class="hero-slides" id="heroSlides">
-                </div>
-                <button class="hero-slider-btn prev" id="heroPrev">‹</button>
-                <button class="hero-slider-btn next" id="heroNext">›</button>
-                <div class="hero-dots" id="heroDots"></div>
-            </div>
-        </div>
-        
-        <div class="hero-divider"></div>
-        
-        <div class="hero-content-bottom">
-            <div class="hero-text">
-                <h1 data-translate>La premiere plateforme de billetterie propulsee par Pi Network</h1>
-                <p data-translate>Decouvrez et reservez des experiences uniques. Payez avec votre crypto Pi.</p>
-                <button class="btn-hero" onclick="showPage('create')" data-translate>Creer un evenement</button>
-            </div>
-        </div>
-    </section>
+.event-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.event-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+.event-description {
+    font-size: 0.8rem;
+    color: #4b5563;
+    background: #f3f4f6;
+    padding: 8px 10px;
+    border-radius: 12px;
+    margin: 0.75rem 0;
+    line-height: 1.4;
+}
+
+.event-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.event-price {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.event-seats {
+    font-size: 0.7rem;
+    color: var(--gray);
+    margin-bottom: 12px;
+}
+
+.buy-btn {
+    width: 100%;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.buy-btn:hover {
+    opacity: 0.9;
+}
+
+.rating-btn {
+    background: #fef3c7;
+    color: #d97706;
+    border: none;
+    padding: 8px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.rating-btn:hover {
+    background: #fde68a;
+}
+
+.rated-badge {
+    font-size: 0.7rem;
+    color: var(--success);
+    margin-top: 8px;
+    text-align: center;
+    padding: 6px;
+    background: #d1fae5;
+    border-radius: 20px;
+}
+
+.event-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+}
+
+.event-rating {
+    color: var(--warning);
+}
+
+.boost-count {
+    color: var(--gray);
+}
+
+/* ===== FORMULAIRE ===== */
+.create-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--dark);
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    background: white;
+    font-family: inherit;
+}
+
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+}
+
+#eventConditions {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ===== CONDITIONS DISPLAY ===== */
+#detailConditions .conditions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#detailConditions .conditions-list li {
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: #4b5563;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+#detailConditions .conditions-list li:last-child {
+    border-bottom: none;
+}
+
+#detailConditions .conditions-list li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+#detailConditions p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+/* ===== UPLOAD ===== */
+.image-upload-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.upload-box {
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px dashed #e5e7eb;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: #f9fafb;
+    min-height: 120px;
+}
+
+.upload-box:hover {
+    border-color: var(--primary);
+    background: #f0f7ff;
+}
+
+.upload-box .upload-icon {
+    font-size: 2rem;
+    margin-bottom: 4px;
+}
+
+.upload-box p {
+    font-size: 0.7rem;
+    color: var(--gray);
+    margin: 0;
+    text-align: center;
+}
+
+.upload-box .image-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-box .preview-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.upload-box.has-image {
+    border-style: solid;
+    border-color: var(--success);
+    background: transparent;
+}
+
+.upload-box.has-image .upload-icon,
+.upload-box.has-image p {
+    display: none;
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 40px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: opacity 0.2s, transform 0.2s;
+    margin-top: 0.5rem;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #e5e7eb;
+    color: #1f2937;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #d1d5db;
+}
+
+.btn-back {
+    background: none;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem;
+    border-radius: 40px;
+    cursor: pointer;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+/* ===== TICKETS ===== */
+.ticket-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-left: 4px solid var(--primary);
+}
+
+/* ===== PAGES ===== */
+.hidden-page {
+    display: none;
+}
+
+.page-content {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+
+/* ===== FAQ ===== */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.faq-item {
+    padding: 1rem;
+    background: #f3f4f6;
+    border-radius: 14px;
+}
+
+/* ===== SOCIAL ===== */
+.social-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.social-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+}
+
+.social-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.social-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.social-name {
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.social-follow {
+    font-size: 0.6rem;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+/* ===== CHAT ===== */
+.chat-float-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--gradient);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    color: white;
+    font-size: 1.5rem;
+    transition: transform 0.2s;
+}
+
+.chat-float-btn:hover {
+    transform: scale(1.05);
+}
+
+.chat-widget {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 320px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-widget.open {
+    display: flex;
+}
+
+.chat-header {
+    background: var(--gradient);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    background: #f9fafb;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+}
+
+.chat-message.user {
+    text-align: right;
+}
+
+.message-bubble {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 18px;
+    max-width: 85%;
+    font-size: 0.85rem;
+}
+
+.chat-message.user .message-bubble {
+    background: var(--gradient);
+    color: white;
+}
+
+.chat-message.support .message-bubble {
+    background: white;
+    color: #1f2937;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.message-time {
+    font-size: 0.6rem;
+    color: var(--gray);
+    margin-top: 4px;
+    display: block;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 12px;
+    gap: 8px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 25px;
+    font-size: 0.85rem;
+}
+
+.chat-input-area input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.chat-input-area button {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.chat-input-area button:hover {
+    opacity: 0.9;
+}
+
+/* ===== MODALS ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 90%;
+    padding: 24px;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* ===== RATING ===== */
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    font-size: 2rem;
+}
+
+.star {
+    cursor: pointer;
+    color: #d1d5db;
+    transition: color 0.2s;
+}
+
+.star.active, .star:hover {
+    color: var(--warning);
+}
+
+/* ===== GALLERY MODAL ===== */
+.gallery-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 3000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.gallery-modal.show {
+    display: flex;
+}
+
+.gallery-modal img {
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.gallery-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.gallery-nav {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.gallery-nav button {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.gallery-nav button:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    background: #1f2937;
+    color: white;
+    padding: 2rem 5% 1.5rem;
+    margin-top: 3rem;
+    border-top: 2px solid var(--primary);
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.footer-section h4 {
+    margin-bottom: 0.8rem;
+    color: var(--primary-light);
+}
+
+.footer-section a, .footer-section p {
+    display: block;
+    color: #9ca3af;
+    text-decoration: none;
+    margin: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.footer-section a:hover {
+    color: white;
+}
+
+/* ===== ADMIN ===== */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: var(--gradient);
+    color: white;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.stat-card p {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.admin-event-item {
+    background: #f3f4f6;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.admin-delete-btn {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* ===== SLIDES MANAGEMENT ===== */
+.slide-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.slide-item .slide-preview {
+    width: 80px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #e5e7eb;
+}
+
+.slide-item .slide-info {
+    flex: 1;
+}
+
+.slide-item .slide-info h4 {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.slide-item .slide-info p {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+.slide-item .slide-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.slide-item .slide-actions button {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: opacity 0.2s;
+}
+
+.slide-item .slide-actions .edit-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.slide-item .slide-actions .delete-btn {
+    background: var(--danger);
+    color: white;
+}
+
+.slide-item .slide-actions button:hover {
+    opacity: 0.8;
+}
+
+/* ===== EVENT DETAIL MODAL ===== */
+.event-detail-modal {
+    max-width: 700px !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 0 !important;
+    border-radius: 24px !important;
+}
+
+.event-detail-modal .modal-close {
+    position: sticky;
+    top: 0;
+    right: 0;
+    float: right;
+    z-index: 10;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 0 24px 0 12px;
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--gray);
+    border: none;
+    cursor: pointer;
+}
+
+.event-detail-modal .modal-close:hover {
+    color: var(--dark);
+    background: #f3f4f6;
+}
+
+.event-detail-header {
+    display: flex;
+    gap: 20px;
+    padding: 20px 24px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.event-detail-gallery {
+    flex: 0 0 180px;
+    height: 140px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #e5e7eb;
+    position: relative;
+}
+
+.event-detail-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-detail-gallery .gallery-scroll {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    scroll-snap-type: x mandatory;
+}
+
+.event-detail-gallery .gallery-scroll .gallery-item {
+    min-width: 160px;
+    height: 100%;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.event-detail-gallery .gallery-scroll .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-detail-gallery .gallery-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.event-detail-gallery .no-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--gray);
+    font-size: 0.8rem;
+    background: #f3f4f6;
+}
+
+.event-detail-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.event-detail-info h2 {
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+    color: var(--primary-dark);
+}
+
+.detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 8px;
+}
+
+.detail-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.detail-category {
+    background: var(--gradient);
+    color: white;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.detail-price-seats {
+    display: flex;
+    gap: 20px;
+    font-weight: 600;
+}
+
+.detail-price {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.detail-seats {
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.event-detail-body {
+    padding: 20px 24px;
+}
+
+.detail-section {
+    margin-bottom: 24px;
+}
+
+.detail-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.detail-section p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.detail-grid-item {
+    background: #f9fafb;
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.detail-grid-item .label {
+    font-size: 0.7rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.detail-grid-item .value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--dark);
+    display: block;
+    margin-top: 2px;
+}
+
+.event-detail-footer {
+    padding: 16px 24px 24px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 24px 24px;
+}
+
+.event-detail-footer .btn-primary {
+    margin-top: 0;
+}
+
+.event-detail-footer .btn-secondary {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+}
+
+.review-item {
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.review-item .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.review-item .review-user {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--dark);
+}
+
+.review-item .review-stars {
+    color: var(--warning);
+    font-size: 0.85rem;
+}
+
+.review-item .review-text {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 4px 0;
+}
+
+.review-item .review-date {
+    font-size: 0.7rem;
+    color: var(--gray);
+}
+
+/* ===== DARK MODE ===== */
+body.dark-mode {
+    background-color: #111827;
+    color: #f3f4f6;
+}
+
+body.dark-mode .header {
+    background: linear-gradient(135deg, #0f172a, #1e3a5f, #1e40af);
+}
+
+body.dark-mode .header .logo {
+    color: white;
+}
+
+body.dark-mode .header .back-btn {
+    background: rgba(255,255,255,0.15);
+}
+
+body.dark-mode .header .back-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+body.dark-mode .header .menu-btn {
+    background: rgba(255,255,255,0.15);
+}
+
+body.dark-mode .header .menu-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+body.dark-mode .sidebar,
+body.dark-mode .event-card,
+body.dark-mode .page-content,
+body.dark-mode .ticket-card,
+body.dark-mode .create-form,
+body.dark-mode .social-card,
+body.dark-mode .modal-content,
+body.dark-mode .faq-item,
+body.dark-mode .slide-item {
+    background-color: #1f2937;
+    color: #f3f4f6;
+}
+
+body.dark-mode .hero {
+    background: #111827;
+}
+
+body.dark-mode .hero-content-bottom {
+    background: #111827;
+}
+
+body.dark-mode .hero-text h1 {
+    color: #f3f4f6;
+}
+
+body.dark-mode .hero-text p {
+    color: #9ca3af;
+}
+
+body.dark-mode .filter-chip {
+    background-color: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode .event-description {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+body.dark-mode .chat-messages {
+    background-color: #111827;
+}
+
+body.dark-mode .chat-message.support .message-bubble {
+    background-color: #374151;
+    color: #f3f4f6;
+}
+
+body.dark-mode .rated-badge {
+    background-color: #065f46;
+}
+
+body.dark-mode .admin-event-item {
+    background-color: #374151;
+}
+
+body.dark-mode .upload-box {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+body.dark-mode .upload-box:hover {
+    border-color: var(--primary);
+    background: #2d3748;
+}
+
+body.dark-mode .sidebar-item {
+    color: #f3f4f6;
+}
+
+body.dark-mode .sidebar-item:hover {
+    background: var(--gradient);
+    color: white;
+}
+
+body.dark-mode .sidebar-item#logoutBtn:hover {
+    background: #450a0a;
+    color: #f87171;
+}
+
+body.dark-mode .sidebar-social {
+    background: #1f2937;
+    border-top-color: #374151;
+}
+
+body.dark-mode .social-link {
+    background: #374151;
+    color: #9ca3af;
+    border-color: #4b5563;
+}
+
+body.dark-mode .social-link:hover {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+}
+
+body.dark-mode .back-btn {
+    color: var(--primary-light);
+}
+
+body.dark-mode .back-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+body.dark-mode .close-sidebar {
+    color: #9ca3af;
+}
+
+body.dark-mode .close-sidebar:hover {
+    color: white;
+}
+
+body.dark-mode .event-detail-hint {
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+
+body.dark-mode .event-detail-modal .modal-close {
+    background: #1f2937;
+    color: #9ca3af;
+}
+
+body.dark-mode .event-detail-modal .modal-close:hover {
+    background: #374151;
+    color: white;
+}
+
+body.dark-mode .event-detail-header {
+    background: #1f2937;
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .event-detail-info h2 {
+    color: white;
+}
+
+body.dark-mode .detail-section h3 {
+    color: white;
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .detail-section p {
+    color: #d1d5db;
+}
+
+body.dark-mode .detail-grid-item {
+    background: #374151;
+}
+
+body.dark-mode .detail-grid-item .value {
+    color: white;
+}
+
+body.dark-mode .event-detail-footer {
+    background: #1f2937;
+    border-top-color: #374151;
+}
+
+body.dark-mode .review-item {
+    background: #374151;
+}
+
+body.dark-mode .review-item .review-text {
+    color: #d1d5db;
+}
+
+body.dark-mode .slide-item {
+    border-color: #374151;
+}
+
+body.dark-mode .slide-item .slide-info h4 {
+    color: white;
+}
+
+body.dark-mode #slideFormContainer {
+    background: #2d3748 !important;
+}
+
+body.dark-mode #eventConditions {
+    background-color: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode #eventConditions:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.2);
+}
+
+body.dark-mode #detailConditions .conditions-list li {
+    color: #d1d5db;
+    border-bottom-color: #374151;
+}
+
+body.dark-mode #detailConditions .conditions-list li::before {
+    color: var(--primary-light);
+}
+
+body.dark-mode #detailConditions p {
+    color: #d1d5db;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .hero-slider-container {
+        height: 220px;
+    }
     
-    <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..." data-translate-placeholder></div>
-    <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
-    <div class="events-container">
-        <h2 class="events-title" data-translate>Evenements a venir</h2>
-        <p class="events-sub" data-translate>Rejoignez la communaute et vivez des experiences uniques</p>
-        <div id="eventsByCategory" class="events-grid-centered"></div>
-    </div>
-</div>
+    .hero-slide-content {
+        bottom: 20px;
+        left: 20px;
+        max-width: 80%;
+    }
+    
+    .hero-slide-content h2 {
+        font-size: 1.1rem;
+    }
+    
+    .hero-slide-content p {
+        font-size: 0.75rem;
+    }
+    
+    .hero-badge {
+        font-size: 0.6rem;
+        padding: 2px 10px;
+    }
+    
+    .hero-slider-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+    
+    .hero-slider-btn.prev {
+        left: 6px;
+    }
+    
+    .hero-slider-btn.next {
+        right: 6px;
+    }
+    
+    .hero-dots .dot {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .hero-dots .dot.active {
+        width: 18px;
+    }
+    
+    .hero-content-bottom {
+        padding: 1.5rem 1.5rem 2rem;
+    }
+    
+    .hero-text h1 {
+        font-size: 1.3rem;
+    }
+    
+    .hero-text p {
+        font-size: 0.85rem;
+    }
+    
+    .hero-text .btn-hero {
+        padding: 10px 24px;
+        font-size: 0.85rem;
+    }
+    
+    .events-grid-centered {
+        grid-template-columns: 1fr;
+    }
+    
+    .image-upload-area {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .upload-box {
+        min-height: 80px;
+    }
+    
+    .upload-box .upload-icon {
+        font-size: 1.5rem;
+    }
+    
+    .upload-box p {
+        font-size: 0.6rem;
+    }
+}
 
-<div id="createPage" class="hidden-page">
-    <div class="events-container" style="max-width:700px">
-        <h2 class="events-title" data-translate>Creer un evenement</h2>
-        <form id="eventForm" class="create-form">
-            <div class="form-group"><label data-translate>Titre de l'evenement</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required data-translate-placeholder></div>
-            <div class="form-group"><label data-translate>Categorie</label><select id="eventCategory"><option data-translate>Concert</option><option data-translate>Sport</option><option data-translate>Conference</option><option data-translate>Formation</option><option data-translate>Cinema</option><option data-translate>Festival</option></select></div>
-            <div class="form-group"><label data-translate>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
-            <div class="form-group"><label data-translate>Lieu</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required data-translate-placeholder></div>
-            <div class="form-group"><label data-translate>Description</label><textarea id="eventDescription" rows="3" placeholder="Decrivez votre evenement..." data-translate-placeholder></textarea></div>
-            
-            <div class="form-group">
-                <label data-translate>Conditions de participation</label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi, Presenter son ticket a l'entree, etc. (250 mots maximum)" maxlength="1500" data-translate-placeholder></textarea>
-                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 4px;" data-translate>Decrivez les conditions de participation a votre evenement (250 mots maximum)</p>
-            </div>
-            
-            <div class="form-group"><label data-translate>Prix (en Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
-            <div class="form-group"><label data-translate>Nombre de places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required data-translate-placeholder></div>
-            
-            <div class="form-group">
-                <label data-translate>Photos de l'evenement (2 a 5 photos)</label>
-                <div id="imageUploadContainer" class="image-upload-area">
-                    <div class="upload-box" id="uploadBox1">
-                        <span class="upload-icon">📷</span>
-                        <p data-translate>Photo 1</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="0">
-                        <img class="preview-image" id="preview0" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox2">
-                        <span class="upload-icon">📷</span>
-                        <p data-translate>Photo 2</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="1">
-                        <img class="preview-image" id="preview1" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox3">
-                        <span class="upload-icon">➕</span>
-                        <p data-translate>Photo 3 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="2">
-                        <img class="preview-image" id="preview2" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox4">
-                        <span class="upload-icon">➕</span>
-                        <p data-translate>Photo 4 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="3">
-                        <img class="preview-image" id="preview3" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox5">
-                        <span class="upload-icon">➕</span>
-                        <p data-translate>Photo 5 (optionnel)</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="4">
-                        <img class="preview-image" id="preview4" style="display:none;">
-                    </div>
-                </div>
-                <p style="font-size: 0.7rem; color: #6b7280; margin-top: 5px;" data-translate>Selectionnez 2 a 5 photos depuis votre appareil</p>
-            </div>
-            
-            <button type="submit" class="btn-primary" data-translate>Publier l'evenement</button>
-        </form>
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
-    </div>
-</div>
+@media (max-width: 480px) {
+    .hero-slider-container {
+        height: 180px;
+    }
+    
+    .hero-slide-content {
+        bottom: 14px;
+        left: 14px;
+    }
+    
+    .hero-slide-content h2 {
+        font-size: 0.9rem;
+    }
+    
+    .hero-slide-content p {
+        font-size: 0.65rem;
+    }
+    
+    .hero-badge {
+        font-size: 0.5rem;
+        padding: 1px 8px;
+        margin-bottom: 4px;
+    }
+    
+    .hero-slider-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+    
+    .hero-content-bottom {
+        padding: 1rem 1rem 1.5rem;
+    }
+    
+    .hero-text h1 {
+        font-size: 1rem;
+    }
+    
+    .hero-text p {
+        font-size: 0.75rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .hero-text .btn-hero {
+        padding: 8px 18px;
+        font-size: 0.75rem;
+    }
+    
+    .back-btn {
+        padding: 4px 4px;
+        width: 36px;
+        height: 36px;
+    }
+    
+    .back-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .header-left {
+        gap: 6px;
+    }
+    
+    .header-right {
+        gap: 6px;
+    }
+    
+    .logo {
+        font-size: 1.2rem;
+    }
+    
+    .menu-btn {
+        font-size: 1.2rem;
+        padding: 6px 10px;
+    }
+}
 
-<div id="ticketsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Mes tickets actifs</h2><p class="events-sub" data-translate>Vos billets valides</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
-</div>
+.google-translate-container {
+    margin: 10px 0;
+}
 
-<div id="historyPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Historique des tickets</h2><p class="events-sub" data-translate>Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
-</div>
+.goog-te-combo {
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
 
-<div id="ratingsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Mes evaluations</h2><p class="events-sub" data-translate>Evenements que vous avez notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
-</div>
+/* ===== SELECTEUR DE LANGUE DANS LA SIDEBAR ===== */
+.language-selector {
+    margin-top: 0.3rem;
+    padding-top: 0.2rem;
+}
 
-<div id="profilePage" class="hidden-page">
-    <div class="page-content">
-        <h2 data-translate>Mon profil</h2>
-        <p><strong data-translate>Nom :</strong> <span id="profileName" data-translate>Invite</span></p>
-        <p><strong data-translate>Wallet :</strong> <span id="profileWallet" data-translate>Non connecte</span></p>
-        <p><strong data-translate>Membre depuis :</strong> <span id="memberSince">2026</span></p>
-        <p><strong data-translate>Tickets :</strong> <span id="ticketCount">0</span></p>
-        <p><strong data-translate>Evenements notes :</strong> <span id="ratedCount">0</span></p>
-        <p><strong data-translate>Points de loyaute :</strong> <span id="loyaltyPoints">0</span></p>
-        <button class="btn-primary" id="profileConnectBtn" data-translate>Connexion</button>
-    </div>
-</div>
+.language-selector .lang-btn {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 1rem 0.5rem 1.5rem !important;
+    border-radius: 10px !important;
+    margin-bottom: 0.1rem !important;
+    transition: all 0.2s ease !important;
+    background: none !important;
+    border: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    color: #1f2937 !important;
+}
 
-<div id="whitepaperPage" class="hidden-page">
-    <div class="page-content">
-        <h2 data-translate>Livre blanc</h2>
-        <p>Betix</p>
-        <p><strong data-translate>Version Anglaise :</strong> <span data-translate>Encours.</span></p>
-        <p><strong data-translate>Version Francaise :</strong> <span data-translate>Encours</span></p>
-    </div>
-</div>
+.language-selector .lang-btn:hover {
+    background: var(--gradient) !important;
+    color: white !important;
+    transform: translateX(4px) !important;
+}
 
-<div id="faqPage" class="hidden-page">
-    <div class="page-content">
-        <h2 data-translate>FAQ</h2>
-        <div class="faq-list">
-            <div class="faq-item"><p><strong data-translate>Qu'est-ce que Betix ?</strong></p><p data-translate>Plateforme d'evenements decentralisee sur Pi Network.</p></div>
-            <div class="faq-item"><p><strong data-translate>Comment acheter ?</strong></p><p data-translate>Connectez votre Compte Pi, parcourez et cliquez sur "Acheter".</p></div>
-            <div class="faq-item"><p><strong data-translate>Frais ?</strong></p><p data-translate>0% commission !</p></div>
-            <div class="faq-item"><p><strong data-translate>Ou sont mes tickets ?</strong></p><p data-translate>Dans "Mes tickets" et "Historique".</p></div>
-            <div class="faq-item"><p><strong data-translate>Support ?</strong></p><p data-translate>betixservices@gmail.com ou chat en ligne.</p></div>
-        </div>
-    </div>
-</div>
+.language-selector .lang-btn.active {
+    background: var(--gradient) !important;
+    color: white !important;
+}
 
-<div id="settingsPage" class="hidden-page">
-    <div class="page-content">
-        <h2 data-translate>Parametres</h2>
-        <!-- La section Langue a ete SUPPRIMEE -->
-        <div class="settings-group">
-            <p><strong data-translate>Theme</strong></p>
-            <label><input type="checkbox" id="darkModeToggle"> <span data-translate>Mode sombre</span></label>
-        </div>
-        <div class="settings-group">
-            <p><strong data-translate>Donnees</strong></p>
-            <button id="clearDataBtn" class="btn-danger" data-translate>Effacer mes donnees</button>
-        </div>
-    </div>
-</div>
+body.dark-mode .language-selector .lang-btn {
+    color: #f3f4f6 !important;
+}
 
-<div id="slidesPage" class="hidden-page">
-    <div class="page-content">
-        <h2 data-translate>Gestion du carrousel</h2>
-        <p class="events-sub" data-translate>Ajoutez, modifiez ou supprimez les slides publicitaires</p>
-        
-        <div id="slidesManager">
-            <button class="btn-primary" id="addSlideBtn" style="margin-bottom: 16px;" data-translate>+ Ajouter un slide</button>
-            <div id="slidesList"></div>
-        </div>
-        
-        <div id="slideFormContainer" style="display:none; margin-top: 20px; padding: 20px; background: #f9fafb; border-radius: 16px;">
-            <h3 id="slideFormTitle" data-translate>Ajouter un slide</h3>
-            <div class="form-group">
-                <label data-translate>URL de l'image</label>
-                <input type="url" id="slideImageUrl" placeholder="https://images.unsplash.com/..." data-translate-placeholder>
-                <p style="font-size:0.7rem; color:#6b7280; margin-top:4px;" data-translate>Utilisez une image de qualite (1200x600 recommande)</p>
-            </div>
-            <div class="form-group">
-                <label data-translate>Badge (categorie)</label>
-                <input type="text" id="slideBadge" placeholder="Ex: Concert, Sport, Festival..." data-translate-placeholder>
-            </div>
-            <div class="form-group">
-                <label data-translate>Titre</label>
-                <input type="text" id="slideTitle" placeholder="Titre de l'evenement" data-translate-placeholder>
-            </div>
-            <div class="form-group">
-                <label data-translate>Description</label>
-                <input type="text" id="slideDesc" placeholder="Description courte" data-translate-placeholder>
-            </div>
-            <div style="display:flex; gap:12px;">
-                <button class="btn-primary" id="saveSlideBtn" style="flex:1;" data-translate>Enregistrer</button>
-                <button class="btn-secondary" id="cancelSlideBtn" style="flex:1;" data-translate>Annuler</button>
-            </div>
-            <input type="hidden" id="editSlideIndex" value="-1">
-        </div>
-        
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
-    </div>
-</div>
+body.dark-mode .language-selector .lang-btn:hover {
+    background: var(--gradient) !important;
+    color: white !important;
+}
 
-<div id="adminPage" class="hidden-page">
-    <div class="page-content admin-content">
-        <h2 data-translate>Administration</h2>
-        <div class="admin-stats">
-            <div class="stat-card"><h3 data-translate>Utilisateurs</h3><p id="adminUserCount">0</p></div>
-            <div class="stat-card"><h3 data-translate>Tickets vendus</h3><p id="adminTicketCount">0</p></div>
-            <div class="stat-card"><h3 data-translate>Evenements</h3><p id="adminEventCount">0</p></div>
-        </div>
-        <div class="admin-section"><h3 data-translate>Utilisateurs connectes</h3><div id="adminUsersList"></div></div>
-        <div class="admin-section"><h3 data-translate>Tous les evenements</h3><div id="adminEventsList"></div></div>
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
-    </div>
-</div>
+body.dark-mode .language-selector .lang-btn.active {
+    background: var(--gradient) !important;
+    color: white !important;
+}
 
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-section">
-            <h4 data-translate>Betix</h4>
-            <p data-translate>Plateforme d'evenements decentralisee sur Pi Network.</p>
-            <p data-translate>Email : betixservices@gmail.com</p>
-            <p data-translate>© 2026 Betix - Tous droits reserves</p>
-        </div>
-        <div class="footer-section">
-            <h4 data-translate>Liens rapides</h4>
-            <a onclick="showPage('home')" data-translate>Accueil</a>
-            <a onclick="showPage('create')" data-translate>Creer un evenement</a>
-            <a onclick="showPage('tickets')" data-translate>Mes tickets</a>
-            <a onclick="showPage('history')" data-translate>Historique</a>
-        </div>
-        <div class="footer-section">
-            <h4 data-translate>Legal</h4>
-            <a href="privacy.html" target="_blank" data-translate>Confidentialite</a>
-            <a href="terms.html" target="_blank" data-translate>Conditions d'utilisation</a>
-        </div>
-    </div>
-</footer>
+body.dark-mode .language-selector p {
+    border-top-color: #374151 !important;
+    border-bottom-color: #374151 !important;
+}
 
-<div id="legalModal" class="modal"><div class="modal-content"><span class="modal-close">&times;</span><div id="modalContent"></div></div></div>
-
-<div id="ratingModal" class="modal"><div class="modal-content"><span class="modal-close" id="ratingModalClose">&times;</span><h3 data-translate>Noter l'evenement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3" data-translate-placeholder></textarea><button id="submitRatingBtn" class="btn-primary" data-translate>Envoyer</button></div></div>
-
-<div id="eventDetailModal" class="modal">
-    <div class="modal-content event-detail-modal">
-        <span class="modal-close" id="eventDetailClose">&times;</span>
-        <div id="eventDetailContent">
-            <div class="event-detail-header">
-                <div class="event-detail-gallery" id="detailGallery"></div>
-                <div class="event-detail-info">
-                    <h2 id="detailTitle">Titre</h2>
-                    <div class="detail-meta">
-                        <span class="detail-category" id="detailCategory">Categorie</span>
-                        <span class="detail-date" id="detailDate">Date</span>
-                        <span class="detail-location" id="detailLocation">Lieu</span>
-                    </div>
-                    <div class="detail-price-seats">
-                        <span class="detail-price" id="detailPrice">0 Pi</span>
-                        <span class="detail-seats" id="detailSeats">0/0 places</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="event-detail-body">
-                <div class="detail-section">
-                    <h3 data-translate>Description</h3>
-                    <p id="detailDescription">Description de l'evenement</p>
-                </div>
-                
-                <div class="detail-section">
-                    <h3 data-translate>Conditions de participation</h3>
-                    <div id="detailConditions">
-                        <p style="color: var(--gray);" data-translate>Chargement des conditions...</p>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3 data-translate>Informations complementaires</h3>
-                    <div class="detail-grid">
-                        <div class="detail-grid-item">
-                            <span class="label" data-translate>Organisateur</span>
-                            <span class="value" id="detailOrganizer">-</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label" data-translate>Cree le</span>
-                            <span class="value" id="detailCreated">-</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label" data-translate>Boosts</span>
-                            <span class="value" id="detailBoosts">0</span>
-                        </div>
-                        <div class="detail-grid-item">
-                            <span class="label" data-translate>Note moyenne</span>
-                            <span class="value" id="detailRating">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3 data-translate>Avis des participants</h3>
-                    <div id="detailReviews">
-                        <p style="color: var(--gray); font-size: 0.9rem;" data-translate>Aucun avis pour le moment</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="event-detail-footer">
-                <button class="btn-primary" id="detailBuyBtn" data-translate>Acheter un ticket</button>
-                <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;" data-translate>Booster l'evenement</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-</div>
-
-<script>
-    window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
-</script>
-
-<script src="script.js"></script>
-
-</body>
-</html>
+/* Cacher le widget Google Translate par defaut */
+.goog-te-combo {
+    display: none !important;
+}
+.goog-te-gadget {
+    display: none !important;
+}
+.goog-te-gadget-simple {
+    display: none !important;
+}
+.goog-te-banner-frame {
+    display: none !important;
+    height: 0 !important;
+    visibility: hidden !important;
+}
