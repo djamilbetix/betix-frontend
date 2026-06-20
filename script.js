@@ -988,6 +988,111 @@ function googleTranslateElementInit() {
     }, 500);
 }
 
+// =============================================
+// ===== TRADUCTION AVEC LIBRETRANSLATE =====
+// =============================================
+
+// Configuration - URL de votre serveur Render
+const LIBRE_TRANSLATE_URL = 'https://betix-translate.onrender.com/translate';
+
+const SUPPORTED_LANGS = {
+    'fr': 'Francais',
+    'en': 'English', 
+    'pt': 'Portugues',
+    'zh': '中文',
+    'id': 'Bahasa Indonesia'
+};
+let currentLang = localStorage.getItem('betix_language') || 'fr';
+
+// Traduire un texte
+async function translateText(text, targetLang) {
+    if (!text || text.trim() === '') return text;
+    if (targetLang === 'fr') return text;
+    
+    try {
+        const response = await fetch(LIBRE_TRANSLATE_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                q: text,
+                source: 'fr',
+                target: targetLang,
+                format: 'text'
+            })
+        });
+        
+        if (!response.ok) {
+            console.log('Erreur traduction, utilisation du texte original');
+            return text;
+        }
+        
+        const data = await response.json();
+        return data.translatedText || text;
+    } catch (error) {
+        console.log('Erreur:', error);
+        return text;
+    }
+}
+
+// Traduire tous les elements de la page
+async function translatePage(targetLang) {
+    if (!targetLang || targetLang === currentLang) return;
+    
+    currentLang = targetLang;
+    localStorage.setItem('betix_language', targetLang);
+    
+    // Mettre a jour les boutons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === targetLang);
+    });
+    
+    // Traduire les textes
+    const elements = document.querySelectorAll('[data-translate]');
+    for (let el of elements) {
+        const original = el.dataset.originalText || el.textContent;
+        el.dataset.originalText = original;
+        const translated = await translateText(original, targetLang);
+        el.textContent = translated;
+    }
+    
+    // Traduire les placeholders
+    const inputs = document.querySelectorAll('[data-translate-placeholder]');
+    for (let el of inputs) {
+        const original = el.dataset.originalPlaceholder || el.placeholder;
+        el.dataset.originalPlaceholder = original;
+        const translated = await translateText(original, targetLang);
+        el.placeholder = translated;
+    }
+}
+
+// Initialiser les boutons
+function initLanguageButtons() {
+    const buttons = document.querySelectorAll('.lang-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            translatePage(this.dataset.lang);
+            if (typeof closeSidebar === 'function') closeSidebar();
+        });
+    });
+    
+    // Restaurer la langue sauvegardee
+    const savedLang = localStorage.getItem('betix_language') || 'fr';
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === savedLang);
+    });
+}
+
+// Appliquer la langue sauvegardee
+function applySavedLanguage() {
+    const savedLang = localStorage.getItem('betix_language') || 'fr';
+    if (savedLang !== 'fr') {
+        setTimeout(() => translatePage(savedLang), 1000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
@@ -1079,4 +1184,8 @@ document.addEventListener('DOMContentLoaded', function() {
     startSessionMonitor();
     
     if (currentUser.wallet && isSessionExpired()) { logout(); }
+    
+    // ===== AJOUTER CES DEUX LIGNES =====
+    initLanguageButtons();
+    applySavedLanguage();
 });
