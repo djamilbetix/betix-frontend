@@ -2,13 +2,11 @@
 // ===== TRADUCTION AVEC MyMemory API =====
 // =============================================
 
-// Configuration
 const MYMEMORY_API_URL = 'https://api.mymemory.translated.net/get';
 
 let currentLang = localStorage.getItem('betix_language') || 'fr';
 let isTranslating = false;
 
-// Traduire un texte avec MyMemory
 async function translateText(text, targetLang) {
     if (!text || text.trim() === '') return text;
     if (targetLang === 'fr') return text;
@@ -37,7 +35,6 @@ async function translateText(text, targetLang) {
     }
 }
 
-// Traduire tous les elements de la page
 async function translatePage(targetLang) {
     if (isTranslating) return;
     if (!targetLang || targetLang === currentLang) return;
@@ -49,7 +46,6 @@ async function translatePage(targetLang) {
         currentLang = targetLang;
         localStorage.setItem('betix_language', targetLang);
         
-        // Mettre a jour les boutons
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.lang === targetLang) {
@@ -57,11 +53,9 @@ async function translatePage(targetLang) {
             }
         });
         
-        // Traduire les textes
         const elements = document.querySelectorAll('[data-translate]');
         console.log('Elements a traduire:', elements.length);
         
-        // Traduire en parallele pour plus de rapidite
         const translationPromises = [];
         const elementsToTranslate = [];
         
@@ -79,7 +73,6 @@ async function translatePage(targetLang) {
             }
         });
         
-        // Traduire les placeholders
         const inputs = document.querySelectorAll('[data-translate-placeholder]');
         const placeholderPromises = [];
         const inputsToTranslate = [];
@@ -106,7 +99,6 @@ async function translatePage(targetLang) {
     }
 }
 
-// Initialiser les boutons
 function initLanguageButtons() {
     console.log('Initialisation des boutons de langue...');
     const buttons = document.querySelectorAll('.lang-btn');
@@ -117,13 +109,11 @@ function initLanguageButtons() {
         return;
     }
     
-    // Supprimer les anciens ecouteurs pour eviter les doublons
     buttons.forEach(btn => {
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
     });
     
-    // Ajouter les nouveaux ecouteurs
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -131,7 +121,6 @@ function initLanguageButtons() {
             const lang = this.dataset.lang;
             console.log('Clic sur:', lang);
             translatePage(lang);
-            // Fermer le selecteur après sélection
             const selector = document.getElementById('sidebarLangSelector');
             if (selector) {
                 selector.style.display = 'none';
@@ -139,7 +128,6 @@ function initLanguageButtons() {
         });
     });
     
-    // Restaurer la langue sauvegardee
     const savedLang = localStorage.getItem('betix_language') || 'fr';
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -149,7 +137,6 @@ function initLanguageButtons() {
     });
 }
 
-// Appliquer la langue sauvegardee
 function applySavedLanguage() {
     const savedLang = localStorage.getItem('betix_language') || 'fr';
     console.log('Langue sauvegardee:', savedLang);
@@ -160,7 +147,6 @@ function applySavedLanguage() {
     }
 }
 
-// Reinitialisation apres chargement dynamique
 function reinitTranslation() {
     const savedLang = localStorage.getItem('betix_language') || 'fr';
     if (savedLang !== 'fr' && !isTranslating) {
@@ -171,10 +157,8 @@ function reinitTranslation() {
     }
 }
 
-// ===== INITIALISATION FORCEE =====
 console.log('Chargement du module de traduction MyMemory...');
 
-// Methode 1: Si le DOM est deja charge
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     console.log('DOM deja charge, initialisation immediate...');
     setTimeout(function() {
@@ -182,7 +166,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
         applySavedLanguage();
     }, 200);
 } else {
-    // Methode 2: Attendre DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOMContentLoaded, initialisation...');
         setTimeout(function() {
@@ -192,7 +175,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
     });
 }
 
-// Methode 3: Initialisation supplementaire apres le chargement complet
 window.addEventListener('load', function() {
     console.log('Window load, verification...');
     setTimeout(function() {
@@ -201,14 +183,12 @@ window.addEventListener('load', function() {
     }, 500);
 });
 
-// Methode 4: Reinitialisation periodique pour les pages dynamiques
 setTimeout(function() {
     console.log('Reinitialisation de securite...');
     initLanguageButtons();
     reinitTranslation();
 }, 2000);
 
-// Methode 5: Observer les changements de page
 const observer = new MutationObserver(function(mutations) {
     for (let mutation of mutations) {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -233,10 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// =============================================
-// ===== FIN DE LA PARTIE TRADUCTION =====
-// =============================================
-
 // ============================================================
 // ===== VARIABLES GLOBALES =====
 // ============================================================
@@ -256,7 +232,6 @@ let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
 let pageHistory = ['home'];
 let logoClickCount = 0;
 
-// Variables admin
 let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = JSON.parse(localStorage.getItem('betix_admin_logs')) || [];
@@ -302,13 +277,19 @@ if (heroSlides.length === 0) {
 
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
+// Nouvelles catégories ajoutées
 const eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
     Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
     Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
     Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
     Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
-    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop'
+    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
+    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
+    Danse: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
+    Exposition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
+    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
+    Seminaire: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
 };
 
 const demoEvents = [
@@ -317,7 +298,13 @@ const demoEvents = [
     { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    // Nouveaux événements pour les nouvelles catégories
+    { id: '7', title: 'Piece de Theatre', category: 'Theatre', date: '2026-07-18T19:30', location: 'Paris, Theatre National', description: 'Une piece captivante sur l amour et la redemption', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0002, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Theatre], coverImage: eventImagesList.Theatre, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '8', title: 'Spectacle de Danse', category: 'Danse', date: '2026-07-22T20:00', location: 'Lyon, Opera', description: 'Un spectacle de danse contemporaine epoustouflant', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00025, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Danse], coverImage: eventImagesList.Danse, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '9', title: 'Exposition d Art Moderne', category: 'Exposition', date: '2026-07-28T10:00', location: 'Paris, Centre Pompidou', description: 'Decouvrez les oeuvres des plus grands artistes modernes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00015, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Exposition], coverImage: eventImagesList.Exposition, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '10', title: 'Gala de Bienfaisance', category: 'Gala', date: '2026-08-02T19:00', location: 'Paris, Palais des Congres', description: 'Soiree de gala au profit des associations caritatives', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nTenue de soiree exigee', price: 0.0005, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Gala], coverImage: eventImagesList.Gala, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '11', title: 'Seminaire Innovation', category: 'Seminaire', date: '2026-08-08T09:00', location: 'Paris, La Defense', description: 'Seminaire sur l innovation et les nouvelles technologies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.00035, seatsTotal: 80, seatsLeft: 80, images: [eventImagesList.Seminaire], coverImage: eventImagesList.Seminaire, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -350,8 +337,41 @@ function updateLoyaltyPointsDisplay() {
 
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
 function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 86400000; }
-function logout() { if (confirm('Etes-vous sur de vouloir vous deconnecter ?')) { currentUser = { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 }; piUser = null; saveUser(); localStorage.removeItem('betix_last_activity'); localStorage.removeItem('betix_pending_payment'); updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); alert('Vous etes deconnecte'); closeSidebar(); } }
-function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { logout(); alert('Session expiree pour inactivite. Veuillez vous reconnecter.'); } }, 60000); }
+
+function disconnectPi() {
+    if (confirm('Voulez-vous vraiment vous deconnecter de votre compte Pi ?')) {
+        currentUser = { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 };
+        piUser = null;
+        saveUser();
+        localStorage.removeItem('betix_last_activity');
+        localStorage.removeItem('betix_pending_payment');
+        updateUserInfo();
+        updateProfilePage();
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
+        
+        const connectBtn = document.getElementById('sidebarWalletBtn');
+        if (connectBtn) {
+            connectBtn.textContent = 'Connexion Pi';
+            connectBtn.classList.remove('disconnect');
+            connectBtn.onclick = function() { connectToPi(); };
+        }
+        
+        const headerBtn = document.getElementById('profileConnectBtn');
+        if (headerBtn) {
+            headerBtn.textContent = 'Connexion Pi';
+            headerBtn.onclick = function() { connectToPi(); };
+        }
+        
+        closeSidebar();
+        alert('Vous etes deconnecte');
+    }
+}
+
+function logout() { disconnectPi(); }
+
+function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert('Session expiree pour inactivite. Veuillez vous reconnecter.'); } }, 60000); }
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
 function updateBackButton(currentPage) {
@@ -424,10 +444,8 @@ function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.c
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
 
 // ============================================================
-// ===== ADMIN AVANCEE - SESSION, LOGS, MOT DE PASSE =====
+// ===== ADMIN =====
 // ============================================================
-
-// ===== JOURNAL DES CONNEXIONS ADMIN =====
 
 function addAdminLog(action, details) {
     var log = {
@@ -476,8 +494,6 @@ function adminClearLogs() {
         alert('Journal efface');
     }
 }
-
-// ===== SESSION ADMIN AVEC TIMER =====
 
 function startAdminSession() {
     addAdminLog('Connexion admin', 'Acces a l\'interface d\'administration');
@@ -556,8 +572,6 @@ function adminLogout() {
     showPage('home');
 }
 
-// ===== CHANGEMENT DE MOT DE PASSE =====
-
 function adminChangePassword() {
     var newPassword = document.getElementById('adminNewPassword').value;
     var confirmPassword = document.getElementById('adminConfirmPassword').value;
@@ -590,8 +604,6 @@ function adminChangePassword() {
         message.textContent = '';
     }, 3000);
 }
-
-// ===== LOAD ADMIN PAGE =====
 
 function loadAdminPage() {
     var storedPassword = localStorage.getItem('betix_admin_password');
@@ -633,8 +645,6 @@ function loadAdminPage() {
     }
 }
 
-// ===== FILTRE DES UTILISATEURS =====
-
 function filterAdminUsers(query) {
     var container = document.getElementById('adminUsersList');
     if (!container) return;
@@ -653,14 +663,12 @@ function filterAdminUsers(query) {
     });
 }
 
-// ===== RENDER ADMIN USERS =====
-
 function renderAdminUsers() {
     var container = document.getElementById('adminUsersList');
     if (!container) return;
     
     var html = '<table>';
-    html += '<tr><th>Utilisateur</th><th>Wallet</th><th>Tickets</th><th>Note moyenne</th><th>Derniere connexion</th></tr>';
+    html += '<tr><th>Utilisateur</th><th>Compte Pi</th><th>Tickets</th><th>Note moyenne</th><th>Derniere connexion</th></tr>';
     
     var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     var avgRating = 0;
@@ -692,8 +700,6 @@ function renderAdminUsers() {
     html += '</table>';
     container.innerHTML = html;
 }
-
-// ===== ADMIN EVENTS =====
 
 function renderAdminEvents() {
     var container = document.getElementById('adminEventsList');
@@ -740,8 +746,6 @@ function adminDeleteAllEvents() {
         alert('Tous les evenements ont ete supprimes');
     }
 }
-
-// ===== ADMIN SLIDES =====
 
 function renderAdminSlides() {
     var container = document.getElementById('adminSlidesList');
@@ -892,8 +896,6 @@ function adminCancelSlideForm() {
     document.getElementById('adminSlidePreview').src = '';
     document.getElementById('adminUploadBox').classList.remove('has-image');
 }
-
-// ===== ADMIN TABS =====
 
 function initAdminTabs() {
     var tabs = document.querySelectorAll('.admin-tab');
@@ -1083,114 +1085,12 @@ function initHeroSlider() {
 }
 
 // ============================================================
-// ===== GESTION DES SLIDES (ancienne version) =====
-// ============================================================
-
-function renderSlidesManager() {
-    var container = document.getElementById('slidesList');
-    if (!container) return;
-    
-    if (heroSlides.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucun slide. Ajoutez-en un !</p>';
-        return;
-    }
-    
-    container.innerHTML = heroSlides.map(function(slide, index) {
-        return '<div class="slide-item"><img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'"><div class="slide-info"><h4>' + slide.title + '</h4><p>' + (slide.badge || 'Sans categorie') + ' • ' + (slide.description || '') + '</p></div><div class="slide-actions"><button class="edit-btn" onclick="editSlide(' + index + ')">Modifier</button><button class="delete-btn" onclick="deleteSlide(' + index + ')">Supprimer</button></div></div>';
-    }).join('');
-}
-
-function showSlideForm(index) {
-    var container = document.getElementById('slideFormContainer');
-    var title = document.getElementById('slideFormTitle');
-    var imageInput = document.getElementById('slideImageUrl');
-    var badgeInput = document.getElementById('slideBadge');
-    var titleInput = document.getElementById('slideTitle');
-    var descInput = document.getElementById('slideDesc');
-    var editIndex = document.getElementById('editSlideIndex');
-    
-    container.style.display = 'block';
-    
-    if (index >= 0 && index < heroSlides.length) {
-        title.textContent = 'Modifier le slide';
-        imageInput.value = heroSlides[index].image || '';
-        badgeInput.value = heroSlides[index].badge || '';
-        titleInput.value = heroSlides[index].title || '';
-        descInput.value = heroSlides[index].description || '';
-        editIndex.value = index;
-    } else {
-        title.textContent = 'Ajouter un slide';
-        imageInput.value = '';
-        badgeInput.value = '';
-        titleInput.value = '';
-        descInput.value = '';
-        editIndex.value = '-1';
-    }
-    
-    container.scrollIntoView({ behavior: 'smooth' });
-}
-
-function saveSlide() {
-    var imageInput = document.getElementById('slideImageUrl');
-    var badgeInput = document.getElementById('slideBadge');
-    var titleInput = document.getElementById('slideTitle');
-    var descInput = document.getElementById('slideDesc');
-    var editIndex = document.getElementById('editSlideIndex');
-    
-    var image = imageInput.value.trim();
-    var badge = badgeInput.value.trim();
-    var title = titleInput.value.trim();
-    var description = descInput.value.trim();
-    
-    if (!image) {
-        alert('Veuillez entrer une URL d\'image');
-        return;
-    }
-    if (!title) {
-        alert('Veuillez entrer un titre');
-        return;
-    }
-    
-    var slideData = { image: image, badge: badge, title: title, description: description };
-    
-    var index = parseInt(editIndex.value);
-    if (index >= 0 && index < heroSlides.length) {
-        heroSlides[index] = slideData;
-    } else {
-        heroSlides.push(slideData);
-    }
-    
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-    cancelSlideForm();
-    renderSlidesManager();
-    initHeroSlider();
-    alert('Slide enregistre avec succes !');
-}
-
-function deleteSlide(index) {
-    if (!confirm('Supprimer ce slide ?')) return;
-    heroSlides.splice(index, 1);
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-    renderSlidesManager();
-    initHeroSlider();
-}
-
-function editSlide(index) {
-    showSlideForm(index);
-}
-
-function cancelSlideForm() {
-    document.getElementById('slideFormContainer').style.display = 'none';
-    document.getElementById('editSlideIndex').value = '-1';
-}
-
-// ============================================================
 // ===== CREATION D'EVENEMENT =====
 // ============================================================
 
 function createEvent(e) {
     e.preventDefault();
-    if (!currentUser.wallet) { alert('Connectez votre wallet d\'abord'); return; }
+    if (!currentUser.wallet) { alert('Connectez votre compte Pi d\'abord'); return; }
     
     var imageInputs = document.querySelectorAll('.image-input');
     var images = [];
@@ -1279,61 +1179,290 @@ async function connectToPi() {
             updateProfilePage();
             trackUserConnection();
             renderEventsByCategory();
-            alert('Wallet Pi connecte ! Bienvenue ' + piUser.username);
+            
+            alert('Compte Pi connecte ! Bienvenue ' + piUser.username);
+            
+            const connectBtn = document.getElementById('sidebarWalletBtn');
+            if (connectBtn) {
+                connectBtn.textContent = 'Deconnecter';
+                connectBtn.classList.add('disconnect');
+                connectBtn.onclick = function() { disconnectPi(); };
+            }
+            
+            const headerBtn = document.getElementById('profileConnectBtn');
+            if (headerBtn) {
+                headerBtn.textContent = 'Deconnecter';
+                headerBtn.onclick = function() { disconnectPi(); };
+            }
+            
             closeSidebar();
         }
-    } catch (error) { console.error("Erreur connexion Pi:", error); alert("Erreur de connexion: " + (error.message || "Veuillez reessayer")); }
+    } catch (error) { 
+        console.error("Erreur connexion Pi:", error); 
+        alert("Erreur de connexion: " + (error.message || "Veuillez reessayer")); 
+    }
 }
 
 async function onIncompletePaymentFound(payment) { console.log("Paiement incomplet trouve:", payment); }
 
 // ============================================================
-// ===== ACHAT DE TICKET =====
+// ===== POPUP QUANTITE TICKETS =====
 // ============================================================
 
-async function buyTicket(eventId) {
-    updateActivity();
-    if (typeof Pi === 'undefined') { alert("Veuillez ouvrir dans Pi Browser pour payer"); return; }
-    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre wallet Pi"); await connectToPi(); return; }
+let selectedEventForPurchase = null;
+let currentTicketQuantity = 1;
+
+function openQuantityPopup(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
-    if (!event || event.seatsLeft <= 0) { alert("Plus de places disponibles"); return; }
-    if (!confirm('Acheter "' + event.title + '" pour ' + event.price + ' Pi ?')) return;
+    if (!event) {
+        alert('Evenement non trouve');
+        return;
+    }
+    
+    if (!piUser && !currentUser.wallet) {
+        alert('Veuillez d\'abord connecter votre compte Pi');
+        connectToPi();
+        return;
+    }
+    
+    if (event.seatsLeft <= 0) {
+        alert('Plus de places disponibles pour cet evenement');
+        return;
+    }
+    
+    selectedEventForPurchase = event;
+    currentTicketQuantity = 1;
+    
+    var popup = document.getElementById('quantityPopup');
+    var titleEl = document.getElementById('quantityEventTitle');
+    var infoEl = document.getElementById('quantityEventInfo');
+    var maxInfo = document.getElementById('maxQuantityInfo');
+    var quantityInput = document.getElementById('ticketQuantity');
+    var totalDisplay = document.getElementById('totalPriceDisplay');
+    
+    if (titleEl) titleEl.textContent = event.title;
+    if (infoEl) {
+        var dateEvent = new Date(event.date);
+        infoEl.textContent = dateEvent.toLocaleDateString('fr-FR') + ' a ' + dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + ' | ' + event.location;
+    }
+    if (maxInfo) {
+        var maxQty = Math.min(event.seatsLeft, 10);
+        maxInfo.textContent = 'Maximum ' + maxQty + ' tickets disponibles';
+    }
+    if (quantityInput) {
+        quantityInput.value = 1;
+        quantityInput.max = Math.min(event.seatsLeft, 10);
+        quantityInput.min = 1;
+    }
+    if (totalDisplay) {
+        totalDisplay.textContent = event.price + ' Pi';
+    }
+    
+    popup.classList.add('show');
+}
+
+function closeQuantityPopup() {
+    document.getElementById('quantityPopup').classList.remove('show');
+    selectedEventForPurchase = null;
+}
+
+function updateQuantity(delta) {
+    var input = document.getElementById('ticketQuantity');
+    if (!input) return;
+    
+    var current = parseInt(input.value) || 1;
+    var maxVal = parseInt(input.max) || 10;
+    var newVal = current + delta;
+    
+    if (newVal < 1) newVal = 1;
+    if (newVal > maxVal) newVal = maxVal;
+    
+    input.value = newVal;
+    currentTicketQuantity = newVal;
+    updateTotalPrice();
+}
+
+function updateTotalPrice() {
+    var input = document.getElementById('ticketQuantity');
+    var totalDisplay = document.getElementById('totalPriceDisplay');
+    if (!input || !totalDisplay || !selectedEventForPurchase) return;
+    
+    var qty = parseInt(input.value) || 1;
+    var total = qty * selectedEventForPurchase.price;
+    totalDisplay.textContent = total.toFixed(6) + ' Pi';
+}
+
+// Confirmer l'achat avec la quantité choisie
+document.addEventListener('DOMContentLoaded', function() {
+    var confirmBtn = document.getElementById('confirmBuyBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (selectedEventForPurchase) {
+                var qtyInput = document.getElementById('ticketQuantity');
+                var qty = parseInt(qtyInput.value) || 1;
+                confirmPurchase(selectedEventForPurchase.id, qty);
+            }
+        });
+    }
+    
+    var qtyInput = document.getElementById('ticketQuantity');
+    if (qtyInput) {
+        qtyInput.addEventListener('change', function() {
+            var val = parseInt(this.value) || 1;
+            var maxVal = parseInt(this.max) || 10;
+            if (val < 1) this.value = 1;
+            if (val > maxVal) this.value = maxVal;
+            currentTicketQuantity = parseInt(this.value) || 1;
+            updateTotalPrice();
+        });
+    }
+});
+
+// Fermer le popup en cliquant à l'extérieur
+document.addEventListener('click', function(e) {
+    var popup = document.getElementById('quantityPopup');
+    if (popup && popup.classList.contains('show')) {
+        if (e.target === popup) {
+            closeQuantityPopup();
+        }
+    }
+});
+
+// ============================================================
+// ===== CONFIRMATION D'ACHAT AVEC QUANTITE =====
+// ============================================================
+
+async function confirmPurchase(eventId, quantity) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) {
+        alert('Evenement non trouve');
+        return;
+    }
+    
+    if (quantity > event.seatsLeft) {
+        alert('Il ne reste que ' + event.seatsLeft + ' places disponibles');
+        return;
+    }
+    
+    var totalPrice = quantity * event.price;
+    
+    if (!confirm('Acheter ' + quantity + ' ticket(s) pour "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) {
+        return;
+    }
+    
+    closeQuantityPopup();
+    
     try {
         var payment = await Pi.createPayment({
-            amount: Number(event.price),
-            memo: 'Ticket: ' + event.title,
-            metadata: { eventId: event.id, eventTitle: event.title }
+            amount: Number(totalPrice),
+            memo: quantity + ' ticket(s): ' + event.title,
+            metadata: { eventId: event.id, eventTitle: event.title, quantity: quantity }
         }, {
             onReadyForServerApproval: function(paymentId) {
                 fetch(BACKEND_URL + '/api/pi/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId }) });
             },
             onReadyForServerCompletion: function(paymentId, txid) {
-                fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid, amount: event.price, metadata: { eventId: event.id } }) }).then(function() {
-                    var ticketExiste = tickets.some(function(t) { return t.transactionId === txid; });
-                    if (!ticketExiste) {
-                        event.seatsLeft--;
-                        saveEvents();
-                        tickets.push({
-                            id: Date.now().toString(), eventId: event.id, eventTitle: event.title, eventDate: event.date, eventLocation: event.location,
-                            price: event.price, buyerWallet: piUser ? piUser.username : currentUser.wallet, buyerName: piUser ? piUser.username : currentUser.name,
-                            purchaseDate: new Date().toISOString(), purchaseDateTime: new Date().toLocaleString('fr-FR'), transactionId: txid,
-                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8)
-                        });
-                        saveTickets();
+                fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid, amount: totalPrice, metadata: { eventId: event.id, quantity: quantity } }) }).then(function() {
+                    var ticketsAdded = [];
+                    for (var i = 0; i < quantity; i++) {
+                        var ticket = {
+                            id: Date.now().toString() + '-' + i,
+                            eventId: event.id,
+                            eventTitle: event.title,
+                            eventDate: event.date,
+                            eventLocation: event.location,
+                            price: event.price,
+                            buyerWallet: piUser ? piUser.username : currentUser.wallet,
+                            buyerName: piUser ? piUser.username : currentUser.name,
+                            purchaseDate: new Date().toISOString(),
+                            purchaseDateTime: new Date().toLocaleString('fr-FR'),
+                            transactionId: txid,
+                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i
+                        };
+                        tickets.push(ticket);
+                        ticketsAdded.push(ticket);
                     }
-                    renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
-                    alert('Achat reussi ! Ticket pour "' + event.title + '" ajoute.');
+                    
+                    event.seatsLeft -= quantity;
+                    saveEvents();
+                    saveTickets();
+                    
+                    renderEventsByCategory();
+                    renderTickets();
+                    renderHistory();
+                    updateProfilePage();
+                    
+                    showSuccessPopup(event, ticketsAdded, quantity);
                 });
             },
             onCancel: function() { alert("Paiement annule"); },
             onError: function(error) { alert("Erreur de paiement: " + error.message); }
         });
-    } catch (error) { alert("Erreur: " + error.message); }
+    } catch (error) {
+        alert("Erreur: " + error.message);
+    }
 }
+
+// ============================================================
+// ===== POPUP DE SUCCES ACHAT =====
+// ============================================================
+
+function showSuccessPopup(event, ticketsList, quantity) {
+    var popup = document.getElementById('successPopup');
+    var title = document.getElementById('successTitle');
+    var message = document.getElementById('successMessage');
+    var info = document.getElementById('successTicketInfo');
+    
+    if (!popup) return;
+    
+    var qty = quantity || ticketsList.length;
+    var ticket = ticketsList[0] || {};
+    
+    title.textContent = 'Achat reussi !';
+    message.textContent = qty + ' ticket(s) ajoute(s) avec succes.';
+    
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
+    var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    var totalPrice = qty * event.price;
+    
+    var codeDisplay = ticket.qrCode || 'N/A';
+    
+    info.innerHTML = 
+        '<div class="ticket-line"><span class="ticket-label">Evenement</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' a ' + timeFormatted + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">' + escapeHtml(event.location || 'En ligne') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Quantite</span><span class="ticket-value">' + qty + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
+    
+    popup.classList.add('show');
+}
+
+function closeSuccessPopup() {
+    var popup = document.getElementById('successPopup');
+    if (popup) {
+        popup.classList.remove('show');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var popup = document.getElementById('successPopup');
+    if (popup && popup.classList.contains('show')) {
+        if (e.target === popup) {
+            closeSuccessPopup();
+        }
+    }
+});
+
+// ============================================================
+// ===== BOOST EVENT =====
+// ============================================================
 
 async function boostEvent(eventId) {
     if (typeof Pi === 'undefined') { alert("Veuillez ouvrir dans Pi Browser"); return; }
-    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre wallet Pi"); await connectToPi(); return; }
+    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre compte Pi"); await connectToPi(); return; }
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) return;
     if (!confirm('Booster "' + event.title + '" pour 0.001 Pi ?')) return;
@@ -1370,9 +1499,23 @@ function updateUserInfo() {
     var sidebarName = document.getElementById('sidebarName');
     var sidebarWallet = document.getElementById('sidebarWallet');
     var sidebarAvatar = document.getElementById('sidebarAvatar');
+    var connectBtn = document.getElementById('sidebarWalletBtn');
+    
     if (sidebarName) sidebarName.innerText = currentUser.name;
     if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Non connecte';
     if (sidebarAvatar) sidebarAvatar.innerText = currentUser.name.substring(0, 2).toUpperCase();
+    
+    if (connectBtn) {
+        if (currentUser.wallet) {
+            connectBtn.textContent = 'Deconnecter';
+            connectBtn.classList.add('disconnect');
+            connectBtn.onclick = function() { disconnectPi(); };
+        } else {
+            connectBtn.textContent = 'Connexion Pi';
+            connectBtn.classList.remove('disconnect');
+            connectBtn.onclick = function() { connectToPi(); };
+        }
+    }
 }
 
 function updateProfilePage() {
@@ -1380,10 +1523,23 @@ function updateProfilePage() {
     var profileWallet = document.getElementById('profileWallet');
     var ticketCount = document.getElementById('ticketCount');
     var ratedCount = document.getElementById('ratedCount');
+    var connectBtn = document.getElementById('profileConnectBtn');
+    
     if (profileName) profileName.innerText = currentUser.name;
     if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Non connecte';
     if (ticketCount) ticketCount.innerText = tickets.length;
     if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
+    
+    if (connectBtn) {
+        if (currentUser.wallet) {
+            connectBtn.textContent = 'Deconnecter';
+            connectBtn.onclick = function() { disconnectPi(); };
+        } else {
+            connectBtn.textContent = 'Connexion Pi';
+            connectBtn.onclick = function() { connectToPi(); };
+        }
+    }
+    
     updateLoyaltyPointsDisplay();
 }
 
@@ -1566,7 +1722,7 @@ const faqData = [
         { q: "Qui peut utiliser Betix ?", a: "Tout detenteur d'un compte Pi Network peut utiliser Betix." }
     ],
     [
-        { q: "Comment acheter un billet ?", a: "Connectez-vous, parcourez les evenements, cliquez sur 'Acheter' et confirmez le paiement." },
+        { q: "Comment acheter un billet ?", a: "Connectez-vous, parcourez les evenements, cliquez sur 'Acheter Ticket' et choisissez la quantite." },
         { q: "Les paiements sont-ils securises ?", a: "Oui, via le reseau Pi Network et le systeme d'escrow de Betix." },
         { q: "Puis-je obtenir un remboursement ?", a: "Oui en cas d'annulation, de report ou de fraude." },
         { q: "Ou sont stockes mes tickets ?", a: "Dans la section 'Mes tickets' de votre compte." }
@@ -1578,7 +1734,7 @@ const faqData = [
         { q: "Comment booster mon evenement ?", a: "En payant un petit montant en Pi pour augmenter la visibilite." }
     ],
     [
-        { q: "Comment connecter mon wallet Pi ?", a: "Cliquez sur 'Connexion' dans le menu et autorisez l'acces." },
+        { q: "Comment connecter mon compte Pi ?", a: "Cliquez sur 'Connexion Pi' dans le menu et autorisez l'acces." },
         { q: "Qu'est-ce que le systeme d'escrow ?", a: "Un mecanisme qui bloque les fonds jusqu'a la validation de l'evenement." },
         { q: "Transactions anonymes ?", a: "Les transactions sont tracables sur la blockchain, mais vos infos restent privees." },
         { q: "Autre crypto-monnaie ?", a: "Actuellement uniquement Pi Network." }
@@ -1730,15 +1886,38 @@ function showLegal(type) {
 function renderEventsByCategory() {
     var container = document.getElementById('eventsByCategory');
     if (!container) return;
-    var filtered = events.filter(function(e) { return (currentFilter === 'Tous' || e.category === currentFilter) && (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery))); });
-    if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun evenement</p>'; return; }
-    if (currentFilter !== 'Tous') { container.innerHTML = '<div class="category-section"><div class="events-grid-centered">' + filtered.map(function(e) { return renderEventCard(e); }).join('') + '</div></div>'; return; }
-    var cats = ['Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
+    
+    var filtered = events.filter(function(e) { 
+        return (currentFilter === 'Tous' || e.category === currentFilter) && 
+               (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery))); 
+    });
+    
+    if (filtered.length === 0) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucun evenement trouve</p>'; 
+        return; 
+    }
+    
+    var cats = ['Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival', 'Theatre', 'Danse', 'Exposition', 'Gala', 'Seminaire'];
     var html = '';
-    for (var i = 0; i < cats.length; i++) {
-        var cat = cats[i];
-        var catEvents = filtered.filter(function(e) { return e.category === cat; });
-        if (catEvents.length) html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">' + catEvents.map(function(e) { return renderEventCard(e); }).join('') + '</div></div>';
+    
+    if (currentFilter !== 'Tous') {
+        html = '<div class="category-section"><div class="events-grid-centered">';
+        filtered.forEach(function(e) {
+            html += renderEventCard(e);
+        });
+        html += '</div></div>';
+    } else {
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            var catEvents = filtered.filter(function(e) { return e.category === cat; });
+            if (catEvents.length) {
+                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
+                catEvents.forEach(function(e) {
+                    html += renderEventCard(e);
+                });
+                html += '</div></div>';
+            }
+        }
     }
     container.innerHTML = html;
 }
@@ -1753,7 +1932,7 @@ function renderEventCard(event) {
     
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery" onclick="event.stopPropagation();">';
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
         for (var i = 0; i < Math.min(event.images.length, 4); i++) {
             galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
         }
@@ -1762,7 +1941,7 @@ function renderEventCard(event) {
         }
         galleryHtml += '</div></div>';
     } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery" onclick="event.stopPropagation();"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:160px;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:100px;object-fit:cover;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
     }
     
     var dateEvent = new Date(event.date);
@@ -1773,41 +1952,43 @@ function renderEventCard(event) {
     var fullStars = Math.floor(avgRating);
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
-    
-    var ratingHtml = avgRating > 0 ? '<span class="event-rating">' + ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')</span>' : '<span class="event-rating">Nouveau</span>';
-    
-    var descriptionShort = event.description ? event.description.substring(0, 100) + (event.description.length > 100 ? '...' : '') : '';
+    var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'Nouveau';
     
     var ratingButtonHtml = '';
     if (!hasRated && hasTicket) {
-        ratingButtonHtml = '<button class="rating-btn" onclick="event.stopPropagation(); openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter cet evenement</button>';
+        ratingButtonHtml = '<button class="rating-btn" onclick="event.stopPropagation(); openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter</button>';
     } else if (hasRated) {
-        ratingButtonHtml = '<div class="rated-badge" onclick="event.stopPropagation();">Vous avez note ' + (userRating ? userRating.rating : '') + '/5</div>';
+        ratingButtonHtml = '<div class="rated-badge">Note: ' + (userRating ? userRating.rating : '') + '/5</div>';
     }
     
-    return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')">' +
-        '<span class="event-detail-hint">Voir les details</span>' +
+    var detailClick = 'onclick="openEventDetails(\'' + event.id + '\')"';
+    
+    return '<div class="event-card" ' + detailClick + ' style="cursor:pointer;">' +
         galleryHtml +
         '<div class="event-info">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
-            '<div class="event-meta">' +
-                '<div class="event-meta-item"> ' + dateFormatted + ' a ' + timeFormatted + '</div>' +
-                '<div class="event-meta-item"> ' + escapeHtml(event.location || 'En ligne') + '</div>' +
+            '<div class="event-details-grid">' +
+                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'En ligne') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-tag"></i> ' + event.category + '</div>' +
             '</div>' +
-            (descriptionShort ? '<div class="event-description">' + escapeHtml(descriptionShort) + '</div>' : '') +
-            '<div class="event-stats">' + ratingHtml + '<span class="boost-count"> ' + (event.boosts || 0) + ' boosts</span></div>' +
+            (event.description ? '<div class="event-description">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
+            '<div class="event-stats">' +
+                '<span class="event-rating">' + ratingHtml + '</span>' +
+                '<span class="boost-count"><i class="fas fa-rocket"></i> ' + (event.boosts || 0) + '</span>' +
+            '</div>' +
             '<div class="event-footer">' +
-                '<div class="event-price">' + event.price + ' Pi</div>' +
-                '<div class="event-seats"> ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
-                '<button class="buy-btn" onclick="event.stopPropagation(); buyTicket(\'' + event.id + '\')">Acheter</button>' +
-                ratingButtonHtml +
+                '<div><span class="event-price">' + event.price + ' Pi</span> <span class="event-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' places</span></div>' +
+                '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Acheter Ticket</button>' +
             '</div>' +
+            ratingButtonHtml +
         '</div>' +
     '</div>';
 }
 
 // ============================================================
-// ===== OPEN EVENT DETAILS =====
+// ===== DETAILS EVENEMENT - MODAL =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -1927,7 +2108,7 @@ function openEventDetails(eventId) {
     document.getElementById('detailBuyBtn').onclick = function() {
         modal.classList.remove('show');
         document.body.style.overflow = '';
-        buyTicket(event.id);
+        openQuantityPopup(event.id);
     };
     
     document.getElementById('detailBoostBtn').onclick = function() {
@@ -1952,7 +2133,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// ===== OPEN GALLERY =====
+// ===== GALLERY =====
 // ============================================================
 
 function openGallery(eventId, startIndex) {
@@ -1984,7 +2165,7 @@ function openGallery(eventId, startIndex) {
 // ============================================================
 
 function initFilters() {
-    var cats = ['Tous', 'Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival'];
+    var cats = ['Tous', 'Concert', 'Sport', 'Conference', 'Formation', 'Cinema', 'Festival', 'Theatre', 'Danse', 'Exposition', 'Gala', 'Seminaire'];
     var container = document.getElementById('filtersContainer');
     if (!container) return;
     container.innerHTML = cats.map(function(c) { return '<div class="filter-chip ' + (c === currentFilter ? 'active' : '') + '" data-category="' + c + '">' + c + '</div>'; }).join('');
@@ -2021,7 +2202,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initFaq();
     renderAdminLogs();
     
-    // Vérifier si l'admin est déjà connecté
     var storedPassword = localStorage.getItem('betix_admin_password');
     if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
         var adminBtn = document.getElementById('adminMenuItem');
@@ -2035,7 +2215,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // ===== GESTION DU LOGO LANGUE =====
     var langLogo = document.querySelector('.sidebar-lang-logo');
     var langSelector = document.getElementById('sidebarLangSelector');
     if (langLogo && langSelector) {
@@ -2059,8 +2238,29 @@ document.addEventListener('DOMContentLoaded', function() {
     var eventForm = document.getElementById('eventForm');
     var searchInput = document.getElementById('searchInput');
     var clearDataBtn = document.getElementById('clearDataBtn');
-    var logoutBtn = document.getElementById('logoutBtn');
     var backBtn = document.getElementById('backBtn');
+    
+    if (sidebarWalletBtn) {
+        if (currentUser.wallet) {
+            sidebarWalletBtn.textContent = 'Deconnecter';
+            sidebarWalletBtn.classList.add('disconnect');
+            sidebarWalletBtn.onclick = function() { disconnectPi(); };
+        } else {
+            sidebarWalletBtn.textContent = 'Connexion Pi';
+            sidebarWalletBtn.classList.remove('disconnect');
+            sidebarWalletBtn.onclick = function() { connectToPi(); };
+        }
+    }
+    
+    if (profileConnectBtn) {
+        if (currentUser.wallet) {
+            profileConnectBtn.textContent = 'Deconnecter';
+            profileConnectBtn.onclick = function() { disconnectPi(); };
+        } else {
+            profileConnectBtn.textContent = 'Connexion Pi';
+            profileConnectBtn.onclick = function() { connectToPi(); };
+        }
+    }
     
     var addSlideBtn = document.getElementById('addSlideBtn');
     var saveSlideBtn = document.getElementById('saveSlideBtn');
@@ -2105,23 +2305,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (menuBtn) menuBtn.addEventListener('click', openSidebar);
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
     if (overlay) overlay.addEventListener('click', closeSidebar);
-    if (sidebarWalletBtn) sidebarWalletBtn.addEventListener('click', connectToPi);
-    if (profileConnectBtn) profileConnectBtn.addEventListener('click', connectToPi);
     if (eventForm) eventForm.addEventListener('submit', createEvent);
     if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
     if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
     if (backBtn) backBtn.addEventListener('click', goBack);
-    
-    var detailModal = document.getElementById('eventDetailModal');
-    if (detailModal) {
-        var observerModal = new MutationObserver(function() {
-            if (!detailModal.classList.contains('show')) {
-                document.body.style.overflow = '';
-            }
-        });
-        observerModal.observe(detailModal, { attributes: true, attributeFilter: ['class'] });
-    }
     
     var imageInputs = document.querySelectorAll('.image-input');
     for (var i = 0; i < imageInputs.length; i++) {
@@ -2150,10 +2337,10 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
     
-    if (currentUser.wallet && isSessionExpired()) { logout(); }
+    if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
 });
 
-console.log('✅ Betix charge avec succes !');
-console.log('🔐 Admin: 5 clics sur le logo + mot de passe Betix@2026#');
-console.log('📋 Journal des connexions admin actif');
-console.log('⏱️ Session admin: 30 minutes d\'inactivite');
+console.log('Betix charge avec succes !');
+console.log('Admin: 5 clics sur le logo + mot de passe Betix@2026#');
+console.log('Journal des connexions admin actif');
+console.log('Session admin: 30 minutes d\'inactivite');
