@@ -221,6 +221,7 @@ let events = JSON.parse(localStorage.getItem('betix_events')) || [];
 let tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
 let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { name: 'Invite', wallet: null, memberSince: '2026', loyaltyPoints: 0 };
 let currentFilter = 'Tous';
+let currentCountryFilter = 'Tous';
 let searchQuery = '';
 let piUser = null;
 let ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
@@ -277,7 +278,20 @@ if (heroSlides.length === 0) {
 
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
-// Nouvelles catégories ajoutées
+// Liste des pays pour le filtre
+const countriesList = [
+    'Tous', 'Afrique du Sud', 'Algerie', 'Allemagne', 'Angleterre', 'Arabie Saoudite',
+    'Argentine', 'Australie', 'Autriche', 'Belgique', 'Benin', 'Bresil',
+    'Burkina Faso', 'Burundi', 'Cameroun', 'Canada', 'Chine', 'Congo',
+    'Coree du Sud', "Cote d'Ivoire", 'Danemark', 'Egypte', 'Espagne',
+    'Etats-Unis', 'Ethiopie', 'France', 'Gabon', 'Ghana', 'Guinee',
+    'Inde', 'Indonesie', 'Iran', 'Italie', 'Japon', 'Kenya',
+    'Liban', 'Madagascar', 'Mali', 'Maroc', 'Mexique', 'Niger',
+    'Nigeria', 'Pays-Bas', 'Portugal', 'RDC', 'Royaume-Uni',
+    'Russie', 'Rwanda', 'Senegal', 'Suede', 'Suisse', 'Tchad',
+    'Togo', 'Tunisie', 'Turquie', 'Ukraine', 'Zambie', 'Zimbabwe'
+];
+
 const eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
     Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
@@ -293,18 +307,22 @@ const eventImagesList = {
 };
 
 const demoEvents = [
-    { id: '1', title: 'Concert de Jazz', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree\nRespecter les regles de l evenement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Match de Football', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '3', title: 'Conference Blockchain', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '4', title: 'Formation Crypto', category: 'Formation', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '5', title: 'Avant-premiere', category: 'Cinema', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Festival de Musique', category: 'Festival', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    // Nouveaux événements pour les nouvelles catégories
-    { id: '7', title: 'Piece de Theatre', category: 'Theatre', date: '2026-07-18T19:30', location: 'Paris, Theatre National', description: 'Une piece captivante sur l amour et la redemption', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0002, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Theatre], coverImage: eventImagesList.Theatre, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '8', title: 'Spectacle de Danse', category: 'Danse', date: '2026-07-22T20:00', location: 'Lyon, Opera', description: 'Un spectacle de danse contemporaine epoustouflant', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00025, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Danse], coverImage: eventImagesList.Danse, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '9', title: 'Exposition d Art Moderne', category: 'Exposition', date: '2026-07-28T10:00', location: 'Paris, Centre Pompidou', description: 'Decouvrez les oeuvres des plus grands artistes modernes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00015, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Exposition], coverImage: eventImagesList.Exposition, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '10', title: 'Gala de Bienfaisance', category: 'Gala', date: '2026-08-02T19:00', location: 'Paris, Palais des Congres', description: 'Soiree de gala au profit des associations caritatives', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nTenue de soiree exigee', price: 0.0005, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Gala], coverImage: eventImagesList.Gala, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '11', title: 'Seminaire Innovation', category: 'Seminaire', date: '2026-08-08T09:00', location: 'Paris, La Defense', description: 'Seminaire sur l innovation et les nouvelles technologies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.00035, seatsTotal: 80, seatsLeft: 80, images: [eventImagesList.Seminaire], coverImage: eventImagesList.Seminaire, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '1', title: 'Concert de Jazz', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree\nRespecter les regles de l evenement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Match de Football', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '3', title: 'Conference Blockchain', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '4', title: 'Formation Crypto', category: 'Formation', country: 'France', date: '2026-08-01T09:00', location: 'En ligne', description: 'Apprenez a trader et a investir dans les cryptomonnaies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Formation], coverImage: eventImagesList.Formation, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '5', title: 'Avant-premiere', category: 'Cinema', country: 'France', date: '2026-08-05T19:00', location: 'Paris', description: 'Film exclusif en avant-premiere', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '6', title: 'Festival de Musique', category: 'Festival', country: 'France', date: '2026-08-10T12:00', location: 'Nice', description: '3 jours de festivites avec plus de 20 artistes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '7', title: 'Piece de Theatre', category: 'Theatre', country: 'France', date: '2026-07-18T19:30', location: 'Paris, Theatre National', description: 'Une piece captivante sur l amour et la redemption', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0002, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Theatre], coverImage: eventImagesList.Theatre, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '8', title: 'Spectacle de Danse', category: 'Danse', country: 'France', date: '2026-07-22T20:00', location: 'Lyon, Opera', description: 'Un spectacle de danse contemporaine epoustouflant', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00025, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Danse], coverImage: eventImagesList.Danse, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '9', title: 'Exposition d Art Moderne', category: 'Exposition', country: 'France', date: '2026-07-28T10:00', location: 'Paris, Centre Pompidou', description: 'Decouvrez les oeuvres des plus grands artistes modernes', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00015, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Exposition], coverImage: eventImagesList.Exposition, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '10', title: 'Gala de Bienfaisance', category: 'Gala', country: 'France', date: '2026-08-02T19:00', location: 'Paris, Palais des Congres', description: 'Soiree de gala au profit des associations caritatives', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nTenue de soiree exigee', price: 0.0005, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Gala], coverImage: eventImagesList.Gala, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '11', title: 'Seminaire Innovation', category: 'Seminaire', country: 'France', date: '2026-08-08T09:00', location: 'Paris, La Defense', description: 'Seminaire sur l innovation et les nouvelles technologies', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.00035, seatsTotal: 80, seatsLeft: 80, images: [eventImagesList.Seminaire], coverImage: eventImagesList.Seminaire, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '12', title: 'Concert Afrobeat', category: 'Concert', country: 'RDC', date: '2026-07-19T19:00', location: 'Kinshasa, Stade des Martyrs', description: 'Grand concert afrobeat avec les plus grands artistes congolais', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0004, seatsTotal: 2000, seatsLeft: 2000, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '13', title: 'Match de Basket', category: 'Sport', country: 'RDC', date: '2026-07-25T16:00', location: 'Kinshasa, Gymnasium', description: 'Match de basket entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0002, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '14', title: 'Festival de la Rumba', category: 'Festival', country: 'RDC', date: '2026-08-01T14:00', location: 'Kinshasa, Place du 30 Juin', description: 'Festival celebra la Rumba congolaise avec des artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.0003, seatsTotal: 3000, seatsLeft: 3000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '15', title: 'Conference Tech Africa', category: 'Conference', country: 'RDC', date: '2026-08-05T09:00', location: 'Kinshasa, Cite de l\'UA', description: 'Conference sur les nouvelles technologies en Afrique', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.00025, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '16', title: 'Exposition d\'Art Africain', category: 'Exposition', country: 'RDC', date: '2026-08-10T10:00', location: 'Kinshasa, Musee National', description: 'Exposition dediee a l art africain moderne et traditionnel', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)', price: 0.00015, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Exposition], coverImage: eventImagesList.Exposition, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -469,7 +487,7 @@ function renderAdminLogs() {
     if (!container) return;
     
     if (adminLogs.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);" data-translate>Aucun journal disponible</p>';
+        container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">Aucun journal disponible</p>';
         return;
     }
     
@@ -714,7 +732,7 @@ function renderAdminEvents() {
         return '<div class="admin-event-item">' +
             '<div class="event-info">' +
                 '<strong>' + escapeHtml(e.title) + '</strong>' +
-                '<small>' + e.category + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' places | ' + new Date(e.date).toLocaleDateString('fr-FR') + '</small>' +
+                '<small>' + e.category + ' | ' + e.country + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' places | ' + new Date(e.date).toLocaleDateString('fr-FR') + '</small>' +
             '</div>' +
             '<div class="event-actions">' +
                 '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Supprimer</button>' +
@@ -1085,6 +1103,29 @@ function initHeroSlider() {
 }
 
 // ============================================================
+// ===== FILTRE PAR PAYS =====
+// ============================================================
+
+function initCountryFilter() {
+    var container = document.getElementById('countryFilterContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    countriesList.forEach(function(country) {
+        var btn = document.createElement('button');
+        btn.className = 'filter-country-btn' + (country === currentCountryFilter ? ' active' : '');
+        btn.textContent = country;
+        btn.dataset.country = country;
+        btn.addEventListener('click', function() {
+            currentCountryFilter = this.dataset.country;
+            initCountryFilter();
+            renderEventsByCategory();
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ============================================================
 // ===== CREATION D'EVENEMENT =====
 // ============================================================
 
@@ -1113,10 +1154,12 @@ function createEvent(e) {
     }
     
     var category = document.getElementById('eventCategory').value;
+    var country = document.getElementById('eventCountry').value;
     var newEvent = {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
         category: category,
+        country: country,
         date: document.getElementById('eventDate').value,
         location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value,
@@ -1292,7 +1335,6 @@ function updateTotalPrice() {
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-// Confirmer l'achat avec la quantité choisie
 document.addEventListener('DOMContentLoaded', function() {
     var confirmBtn = document.getElementById('confirmBuyBtn');
     if (confirmBtn) {
@@ -1318,7 +1360,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Fermer le popup en cliquant à l'extérieur
 document.addEventListener('click', function(e) {
     var popup = document.getElementById('quantityPopup');
     if (popup && popup.classList.contains('show')) {
@@ -1433,6 +1474,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
         '<div class="ticket-line"><span class="ticket-label">Evenement</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' a ' + timeFormatted + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">' + escapeHtml(event.location || 'En ligne') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">' + escapeHtml(event.country || 'Non specifie') + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Quantite</span><span class="ticket-value">' + qty + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
@@ -1746,7 +1788,7 @@ const faqData = [
         { q: "Langues disponibles ?", a: "Francais, Anglais, Portugais, Chinois, Indonesien." }
     ],
     [
-        { q: "Rejoindre la communaute ?", a: "Suivez-nous sur Telegram, Twitter, Discord, Instagram." },
+        { q: "Rejoindre la communaute ?", a: "Suivez-nous sur Telegram, Twitter, Discord, Instagram et WhatsApp." },
         { q: "Devenir ambassadeur ?", a: "Contactez-nous pour postuler au programme ambassadeur." },
         { q: "Devenir partenaire ?", a: "Contactez-nous pour discuter des opportunites de partenariat." },
         { q: "Projets futurs ?", a: "Application mobile, nouvelles crypto-monnaies, fonctionnalites sociales." }
@@ -1841,7 +1883,7 @@ function initFaq() {
 }
 
 // ============================================================
-// ===== SHOW LEGAL =====
+// ===== SHOW LEGAL - TEXTE COMPLET =====
 // ============================================================
 
 function showLegal(type) {
@@ -1850,12 +1892,8 @@ function showLegal(type) {
     var closeBtn = document.getElementById('legalModalClose');
     
     var texts = {
-        privacy: '<h2>Politique de Confidentialite</h2><p>Betix s\'engage a proteger vos donnees personnelles.</p><p><strong>Contact :</strong> betixservices@gmail.com</p>',
-        terms: '<h2>Conditions d\'Utilisation</h2><p>Les paiements en Pi sont irreversibles. Betix agit comme intermediaire de confiance.</p>',
-        refund: '<h2>Politique de Remboursement</h2><p>Remboursement en cas d\'annulation, de report ou de fraude.</p>',
-        support: '<h2>Support Client</h2><p>Email : betixservices@gmail.com<br>Chat en ligne<br>Telegram : @betix_support</p>',
-        partner: '<h2>Devenir Partenaire</h2><p>Contactez-nous pour discuter des opportunites de partenariat.</p>',
-        ambassador: '<h2>Programme Ambassadeur</h2><p>Contactez-nous pour postuler au programme ambassadeur.</p>'
+        privacy: '<h2>Politique de Confidentialite</h2><p>Derniere mise a jour : Juin 2026</p><br><p>Betix s\'engage a proteger vos donnees personnelles. Cette politique de confidentialite explique comment nous collectons, utilisons et protegeons vos informations.</p><br><p><strong>1. Donnees collectees</strong></p><p>Nous collectons les informations suivantes :</p><ul><li>Votre identifiant Pi Network</li><li>Les transactions effectuees sur la plateforme</li><li>Les evenements que vous creez ou auxquels vous participez</li></ul><br><p><strong>2. Utilisation des donnees</strong></p><p>Vos donnees sont utilisees pour :</p><ul><li>Gerer votre compte et vos tickets</li><li>Faciliter les paiements via Pi Network</li><li>Ameliorer nos services</li></ul><br><p><strong>3. Protection des donnees</strong></p><p>Nous utilisons des mesures de securite avancees pour proteger vos informations.</p><br><p><strong>Contact :</strong> betixservices@gmail.com</p>',
+        terms: '<h2>Conditions Generales d\'Utilisation</h2><p>Derniere mise a jour : Juin 2026</p><br><p><strong>1. Acceptation des conditions</strong></p><p>En utilisant Betix, vous acceptez les presentes conditions generales d\'utilisation.</p><br><p><strong>2. Description du service</strong></p><p>Betix est une plateforme de billetterie decentralisee basee sur Pi Network permettant aux utilisateurs d\'acheter et de vendre des billets d\'evenements.</p><br><p><strong>3. Paiements</strong></p><p>Les paiements sont effectues exclusivement en Pi via le reseau Pi Network. Les transactions sont securisees et irreversibles.</p><br><p><strong>4. Responsabilites</strong></p><ul><li>L\'utilisateur est responsable de la validite de ses informations</li><li>Betix agit comme intermediaire de confiance entre acheteurs et vendeurs</li><li>Les organisateurs sont responsables du bon deroulement de leurs evenements</li></ul><br><p><strong>5. Annulation et remboursement</strong></p><p>Les remboursements sont possibles en cas d\'annulation, de report ou de fraude prouvee.</p><br><p><strong>Contact :</strong> betixservices@gmail.com</p>'
     };
     
     if (content) {
@@ -1888,8 +1926,10 @@ function renderEventsByCategory() {
     if (!container) return;
     
     var filtered = events.filter(function(e) { 
-        return (currentFilter === 'Tous' || e.category === currentFilter) && 
-               (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery))); 
+        var matchCategory = (currentFilter === 'Tous' || e.category === currentFilter);
+        var matchCountry = (currentCountryFilter === 'Tous' || e.country === currentCountryFilter);
+        var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
+        return matchCategory && matchCountry && matchSearch;
     });
     
     if (filtered.length === 0) { 
@@ -1941,7 +1981,7 @@ function renderEventCard(event) {
         }
         galleryHtml += '</div></div>';
     } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:100px;object-fit:cover;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:200px;object-fit:cover;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
     }
     
     var dateEvent = new Date(event.date);
@@ -1972,6 +2012,7 @@ function renderEventCard(event) {
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'En ligne') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-tag"></i> ' + event.category + '</div>' +
+                '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Non specifie') + '</div>' +
             '</div>' +
             (event.description ? '<div class="event-description">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
             '<div class="event-stats">' +
@@ -2003,6 +2044,7 @@ function openEventDetails(eventId) {
     
     document.getElementById('detailTitle').textContent = event.title;
     document.getElementById('detailCategory').textContent = event.category;
+    document.getElementById('detailCountry').textContent = event.country || 'Non specifie';
     
     var dateEvent = new Date(event.date);
     document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('fr-FR') + ' a ' + dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -2192,7 +2234,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     calculateLoyaltyPoints();
-    initFilters(); renderEventsByCategory(); updateUserInfo(); updateProfilePage(); initAdmin(); initChat(); initLegalModals();
+    initCountryFilter();
+    initFilters(); 
+    renderEventsByCategory(); 
+    updateUserInfo(); 
+    updateProfilePage(); 
+    initAdmin(); 
+    initChat(); 
+    initLegalModals();
     
     var dark = document.getElementById('darkModeToggle');
     if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
