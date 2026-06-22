@@ -46,7 +46,7 @@
         </button>
         <div class="logo" id="mainLogo" onclick="handleLogoClick()">
             <img src="logo.png" alt="Logo Betix" style="height: 40px; width: auto; border-radius: 8px; display: inline-block;" onerror="this.style.display='none'">
-            <span data-translate>Betix</span>
+            <span>Betix</span>
         </div>
     </div>
     <div class="header-right">
@@ -61,24 +61,24 @@
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
         <div class="sidebar-avatar" id="sidebarAvatar">U</div>
-        <h3 id="sidebarName" data-translate>Invite</h3>
-        <p id="sidebarWallet" data-translate>Non connecte</p>
-        <button class="wallet-sidebar-btn" id="sidebarWalletBtn" data-translate>Connexion Pi</button>
+        <h3 id="sidebarName">Invite</h3>
+        <p id="sidebarWallet">Non connecte</p>
+        <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connexion Pi</button>
     </div>
     <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home" data-translate>Accueil</button>
-        <button class="sidebar-item" data-page="profile" data-translate>Profil</button>
-        <button class="sidebar-item" data-page="settings" data-translate>Parametres</button>
-        <button class="sidebar-item" data-page="tickets" data-translate>Mes tickets</button>
-        <button class="sidebar-item" data-page="history" data-translate>Historique des tickets</button>
-        <button class="sidebar-item" data-page="whitepaper" data-translate>Livre blanc</button>
-        <button class="sidebar-item" data-page="faq" data-translate>FAQ</button>
+        <button class="sidebar-item" data-page="home">Accueil</button>
+        <button class="sidebar-item" data-page="profile">Profil</button>
+        <button class="sidebar-item" data-page="settings">Parametres</button>
+        <button class="sidebar-item" data-page="tickets">Mes tickets</button>
+        <button class="sidebar-item" data-page="history">Historique des tickets</button>
+        <button class="sidebar-item" data-page="whitepaper">Livre blanc</button>
+        <button class="sidebar-item" data-page="faq">FAQ</button>
         
-        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #0D47A1, #1A73E8); color: white;" data-translate>Administration</button>
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #0D47A1, #1A73E8); color: white;">Administration</button>
         
         <div class="sidebar-lang-logo" id="sidebarLangLogo">
             <span class="lang-logo-icon">🌐</span>
-            <span class="lang-logo-label" data-translate>Langue</span>
+            <span class="lang-logo-label">Langue</span>
         </div>
         
         <div class="language-selector sidebar-lang-selector" id="sidebarLangSelector">
@@ -91,13 +91,14 @@
     </div>
     
     <div class="sidebar-social">
-        <div class="sidebar-social-title" data-translate>Suivez-nous</div>
+        <div class="sidebar-social-title">Suivez-nous</div>
         <div class="sidebar-social-icons">
             <a href="https://x.com/betix_app" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
             <a href="https://t.me/betix" target="_blank" class="social-link"><i class="fab fa-telegram-plane"></i></a>
-            <a href="https://discord.gg/betix" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
+            <a href="https://discord.gg/MqhdmPCH" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
             <a href="https://instagram.com/betix_app" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
             <a href="https://facebook.com/betix_app" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
         </div>
     </div>
 </div>
@@ -107,13 +108,13 @@
 
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header">
-        <div><span class="chat-logo" data-translate>Support Betix</span><span class="chat-status" data-translate>En ligne</span></div>
+        <div><span class="chat-logo">Support Betix</span><span class="chat-status">En ligne</span></div>
         <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Ecrivez votre message..." maxlength="500" data-translate-placeholder>
-        <button id="chatSendBtn" data-translate>Envoyer</button>
+        <input type="text" id="chatInput" placeholder="Ecrivez votre message..." maxlength="500">
+        <button id="chatSendBtn">Envoyer</button>
     </div>
 </div>
 
@@ -132,238 +133,289 @@
         
         <div class="hero-content-bottom">
             <div class="hero-text">
-                <h1 data-translate>La premiere plateforme de billetterie propulsee par Pi Network</h1>
-                <p data-translate>Decouvrez et reservez des experiences uniques. Payez avec votre crypto Pi.</p>
-                <button class="btn-hero" onclick="showPage('create')" data-translate>Creer un evenement</button>
+                <h1>La premiere plateforme de billetterie propulsee par Pi Network</h1>
+                <p>Decouvrez et reservez des experiences uniques. Payez avec votre crypto Pi.</p>
+                <button class="btn-hero" onclick="showPage('create')">Creer un evenement</button>
             </div>
         </div>
     </section>
     
-    <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..." data-translate-placeholder></div>
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..."></div>
+    
+    <!-- FILTRE PAR PAYS -->
+    <div class="filter-country-wrapper">
+        <div class="filter-country-buttons" id="countryFilterContainer"></div>
+    </div>
     
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
     
-    <!-- FILTRES PAR DATE DESACTIVES -->
-    <!-- <div class="filter-date-wrapper">
-        <div class="filter-date-buttons">
-            <button class="filter-date-btn active" data-filter="today" onclick="filterEventsByTime('today')">
-                <i class="fas fa-sun"></i> Aujourd'hui
-            </button>
-            <button class="filter-date-btn" data-filter="weekend" onclick="filterEventsByTime('weekend')">
-                <i class="fas fa-calendar-week"></i> Cette fin de semaine
-            </button>
-            <button class="filter-date-btn" data-filter="month" onclick="filterEventsByTime('month')">
-                <i class="fas fa-calendar-alt"></i> 30 prochains jours
-            </button>
-        </div>
-    </div> -->
-    
     <div class="events-container">
-        <h2 class="events-title" data-translate>Evenements a venir</h2>
-        <p class="events-sub" data-translate>Rejoignez la communaute et vivez des experiences uniques</p>
+        <h2 class="events-title">Evenements a venir</h2>
+        <p class="events-sub">Rejoignez la communaute et vivez des experiences uniques</p>
         <div id="eventsByCategory" class="events-grid-centered"></div>
     </div>
 </div>
 
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
-        <h2 class="events-title" data-translate>Creer un evenement</h2>
+        <h2 class="events-title">Creer un evenement</h2>
         <form id="eventForm" class="create-form">
-            <div class="form-group"><label data-translate>Titre</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required data-translate-placeholder></div>
-            <div class="form-group"><label data-translate>Categorie</label>
+            <div class="form-group"><label>Titre</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required></div>
+            <div class="form-group"><label>Categorie</label>
                 <select id="eventCategory">
-                    <option data-translate>Concert</option>
-                    <option data-translate>Sport</option>
-                    <option data-translate>Conference</option>
-                    <option data-translate>Formation</option>
-                    <option data-translate>Cinema</option>
-                    <option data-translate>Festival</option>
-                    <option data-translate>Theatre</option>
-                    <option data-translate>Danse</option>
-                    <option data-translate>Exposition</option>
-                    <option data-translate>Gala</option>
-                    <option data-translate>Seminaire</option>
+                    <option>Concert</option>
+                    <option>Sport</option>
+                    <option>Conference</option>
+                    <option>Formation</option>
+                    <option>Cinema</option>
+                    <option>Festival</option>
+                    <option>Theatre</option>
+                    <option>Danse</option>
+                    <option>Exposition</option>
+                    <option>Gala</option>
+                    <option>Seminaire</option>
                 </select>
             </div>
-            <div class="form-group"><label data-translate>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
-            <div class="form-group"><label data-translate>Lieu</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required data-translate-placeholder></div>
-            <div class="form-group"><label data-translate>Description</label><textarea id="eventDescription" rows="3" placeholder="Decrivez votre evenement..." data-translate-placeholder></textarea></div>
-            <div class="form-group">
-                <label data-translate>Conditions</label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi..." maxlength="1500" data-translate-placeholder></textarea>
+            <div class="form-group"><label>Pays</label>
+                <select id="eventCountry">
+                    <option value="Afrique du Sud">Afrique du Sud</option>
+                    <option value="Algerie">Algerie</option>
+                    <option value="Allemagne">Allemagne</option>
+                    <option value="Angleterre">Angleterre</option>
+                    <option value="Arabie Saoudite">Arabie Saoudite</option>
+                    <option value="Argentine">Argentine</option>
+                    <option value="Australie">Australie</option>
+                    <option value="Autriche">Autriche</option>
+                    <option value="Belgique">Belgique</option>
+                    <option value="Benin">Benin</option>
+                    <option value="Bresil">Bresil</option>
+                    <option value="Burkina Faso">Burkina Faso</option>
+                    <option value="Burundi">Burundi</option>
+                    <option value="Cameroun">Cameroun</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Chine">Chine</option>
+                    <option value="Congo">Congo</option>
+                    <option value="Coree du Sud">Coree du Sud</option>
+                    <option value="Cote d'Ivoire">Cote d'Ivoire</option>
+                    <option value="Danemark">Danemark</option>
+                    <option value="Egypte">Egypte</option>
+                    <option value="Espagne">Espagne</option>
+                    <option value="Etats-Unis">Etats-Unis</option>
+                    <option value="Ethiopie">Ethiopie</option>
+                    <option value="France">France</option>
+                    <option value="Gabon">Gabon</option>
+                    <option value="Ghana">Ghana</option>
+                    <option value="Guinee">Guinee</option>
+                    <option value="Inde">Inde</option>
+                    <option value="Indonesie">Indonesie</option>
+                    <option value="Iran">Iran</option>
+                    <option value="Italie">Italie</option>
+                    <option value="Japon">Japon</option>
+                    <option value="Kenya">Kenya</option>
+                    <option value="Liban">Liban</option>
+                    <option value="Madagascar">Madagascar</option>
+                    <option value="Mali">Mali</option>
+                    <option value="Maroc">Maroc</option>
+                    <option value="Mexique">Mexique</option>
+                    <option value="Niger">Niger</option>
+                    <option value="Nigeria">Nigeria</option>
+                    <option value="Pays-Bas">Pays-Bas</option>
+                    <option value="Portugal">Portugal</option>
+                    <option value="RDC">RDC</option>
+                    <option value="Royaume-Uni">Royaume-Uni</option>
+                    <option value="Russie">Russie</option>
+                    <option value="Rwanda">Rwanda</option>
+                    <option value="Senegal">Senegal</option>
+                    <option value="Suede">Suede</option>
+                    <option value="Suisse">Suisse</option>
+                    <option value="Tchad">Tchad</option>
+                    <option value="Togo">Togo</option>
+                    <option value="Tunisie">Tunisie</option>
+                    <option value="Turquie">Turquie</option>
+                    <option value="Ukraine">Ukraine</option>
+                    <option value="Zambie">Zambie</option>
+                    <option value="Zimbabwe">Zimbabwe</option>
+                </select>
             </div>
-            <div class="form-group"><label data-translate>Prix (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
-            <div class="form-group"><label data-translate>Places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required data-translate-placeholder></div>
+            <div class="form-group"><label>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
+            <div class="form-group"><label>Lieu</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
+            <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Decrivez votre evenement..."></textarea></div>
             <div class="form-group">
-                <label data-translate>Photos (2 a 5)</label>
+                <label>Conditions</label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi..." maxlength="1500"></textarea>
+            </div>
+            <div class="form-group"><label>Prix (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
+            <div class="form-group"><label>Places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
+            <div class="form-group">
+                <label>Photos (2 a 5)</label>
                 <div id="imageUploadContainer" class="image-upload-area">
                     <div class="upload-box" id="uploadBox1">
                         <span class="upload-icon"><i class="fas fa-camera"></i></span>
-                        <p data-translate>Photo 1</p>
+                        <p>Photo 1</p>
                         <input type="file" class="image-input" accept="image/*" data-index="0">
                         <img class="preview-image" id="preview0" style="display:none;">
                     </div>
                     <div class="upload-box" id="uploadBox2">
                         <span class="upload-icon"><i class="fas fa-camera"></i></span>
-                        <p data-translate>Photo 2</p>
+                        <p>Photo 2</p>
                         <input type="file" class="image-input" accept="image/*" data-index="1">
                         <img class="preview-image" id="preview1" style="display:none;">
                     </div>
                     <div class="upload-box" id="uploadBox3">
                         <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p data-translate>Photo 3</p>
+                        <p>Photo 3</p>
                         <input type="file" class="image-input" accept="image/*" data-index="2">
                         <img class="preview-image" id="preview2" style="display:none;">
                     </div>
                     <div class="upload-box" id="uploadBox4">
                         <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p data-translate>Photo 4</p>
+                        <p>Photo 4</p>
                         <input type="file" class="image-input" accept="image/*" data-index="3">
                         <img class="preview-image" id="preview3" style="display:none;">
                     </div>
                     <div class="upload-box" id="uploadBox5">
                         <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p data-translate>Photo 5</p>
+                        <p>Photo 5</p>
                         <input type="file" class="image-input" accept="image/*" data-index="4">
                         <img class="preview-image" id="preview4" style="display:none;">
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn-primary" data-translate>Publier</button>
+            <button type="submit" class="btn-primary">Publier</button>
         </form>
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
 </div>
 
 <div id="ticketsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Mes tickets actifs</h2><p class="events-sub" data-translate>Vos billets valides</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
+    <div class="events-container"><h2 class="events-title">Mes tickets actifs</h2><p class="events-sub">Vos billets valides</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
 </div>
 
 <div id="historyPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Historique</h2><p class="events-sub" data-translate>Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
+    <div class="events-container"><h2 class="events-title">Historique</h2><p class="events-sub">Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
 </div>
 
 <div id="ratingsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Mes evaluations</h2><p class="events-sub" data-translate>Evenements notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
+    <div class="events-container"><h2 class="events-title">Mes evaluations</h2><p class="events-sub">Evenements notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Retour</button></div>
 </div>
 
 <div id="profilePage" class="hidden-page">
     <div class="page-content">
-        <h2 data-translate>Mon profil</h2>
-        <p><strong data-translate>Nom :</strong> <span id="profileName" data-translate>Invite</span></p>
-        <p><strong data-translate>Compte Pi :</strong> <span id="profileWallet" data-translate>Non connecte</span></p>
-        <p><strong data-translate>Membre depuis :</strong> <span id="memberSince">2026</span></p>
-        <p><strong data-translate>Tickets :</strong> <span id="ticketCount">0</span></p>
-        <p><strong data-translate>Evenements notes :</strong> <span id="ratedCount">0</span></p>
-        <p><strong data-translate>Points :</strong> <span id="loyaltyPoints">0</span></p>
-        <button class="btn-primary" id="profileConnectBtn" data-translate>Connexion Pi</button>
+        <h2>Mon profil</h2>
+        <p><strong>Nom :</strong> <span id="profileName">Invite</span></p>
+        <p><strong>Compte Pi :</strong> <span id="profileWallet">Non connecte</span></p>
+        <p><strong>Membre depuis :</strong> <span id="memberSince">2026</span></p>
+        <p><strong>Tickets :</strong> <span id="ticketCount">0</span></p>
+        <p><strong>Evenements notes :</strong> <span id="ratedCount">0</span></p>
+        <p><strong>Points :</strong> <span id="loyaltyPoints">0</span></p>
+        <button class="btn-primary" id="profileConnectBtn">Connexion Pi</button>
     </div>
 </div>
 
 <div id="whitepaperPage" class="hidden-page">
     <div class="page-content">
-        <h2 data-translate>Livre blanc</h2>
+        <h2>Livre blanc</h2>
         <p>Betix</p>
-        <p><strong data-translate>Version Anglaise :</strong> <span data-translate>Encours.</span></p>
-        <p><strong data-translate>Version Francaise :</strong> <span data-translate>Encours</span></p>
+        <p><strong>Version Anglaise :</strong> Encours.</p>
+        <p><strong>Version Francaise :</strong> Encours</p>
     </div>
 </div>
 
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
         <div class="faq-header">
-            <h2 data-translate>Foire Aux Questions</h2>
-            <p class="faq-subtitle" data-translate>Tout ce que vous devez savoir sur Betix</p>
+            <h2>Foire Aux Questions</h2>
+            <p class="faq-subtitle">Tout ce que vous devez savoir sur Betix</p>
         </div>
         <div class="faq-page-indicator">
-            <span data-translate>Page</span> <span id="faqPageNumber">1</span> / <span id="faqTotalPages">6</span>
+            <span>Page</span> <span id="faqPageNumber">1</span> / <span id="faqTotalPages">6</span>
         </div>
         <div id="faqContainer" class="faq-container"></div>
         <div class="faq-pagination">
-            <button class="faq-nav-btn" id="faqPrevBtn" data-translate>Precedent</button>
+            <button class="faq-nav-btn" id="faqPrevBtn">Precedent</button>
             <span class="faq-page-dots" id="faqPageDots"></span>
-            <button class="faq-nav-btn" id="faqNextBtn" data-translate>Suivant</button>
+            <button class="faq-nav-btn" id="faqNextBtn">Suivant</button>
         </div>
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
 </div>
 
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
-        <h2 data-translate>Parametres</h2>
+        <h2>Parametres</h2>
         <div class="settings-group">
-            <p><strong data-translate>Theme</strong></p>
-            <label><input type="checkbox" id="darkModeToggle"> <span data-translate>Mode sombre</span></label>
+            <p><strong>Theme</strong></p>
+            <label><input type="checkbox" id="darkModeToggle"> Mode sombre</label>
         </div>
         <div class="settings-group">
-            <p><strong data-translate>Donnees</strong></p>
-            <button id="clearDataBtn" class="btn-danger" data-translate>Effacer mes donnees</button>
+            <p><strong>Donnees</strong></p>
+            <button id="clearDataBtn" class="btn-danger">Effacer mes donnees</button>
         </div>
     </div>
 </div>
 
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
-        <h2 data-translate>Administration</h2>
-        <p class="admin-subtitle" data-translate>Gerez votre plateforme Betix</p>
+        <h2>Administration</h2>
+        <p class="admin-subtitle">Gerez votre plateforme Betix</p>
         
         <div class="admin-session-timer">
-            <span data-translate>Session active</span>
+            <span>Session active</span>
             <span id="adminSessionTimer">30:00</span>
-            <button class="admin-logout-btn" onclick="adminLogout()" data-translate>Deconnexion</button>
+            <button class="admin-logout-btn" onclick="adminLogout()">Deconnexion</button>
         </div>
         
         <div class="admin-stats">
-            <div class="stat-card"><h3 data-translate>Evenements</h3><p id="adminEventCount">0</p></div>
-            <div class="stat-card"><h3 data-translate>Tickets</h3><p id="adminTicketCount">0</p></div>
-            <div class="stat-card"><h3 data-translate>Utilisateurs</h3><p id="adminUserCount">0</p></div>
+            <div class="stat-card"><h3>Evenements</h3><p id="adminEventCount">0</p></div>
+            <div class="stat-card"><h3>Tickets</h3><p id="adminTicketCount">0</p></div>
+            <div class="stat-card"><h3>Utilisateurs</h3><p id="adminUserCount">0</p></div>
         </div>
         
         <div class="admin-tabs">
-            <button class="admin-tab active" data-tab="events" data-translate>Evenements</button>
-            <button class="admin-tab" data-tab="slides" data-translate>Carrousel</button>
-            <button class="admin-tab" data-tab="users" data-translate>Utilisateurs</button>
-            <button class="admin-tab" data-tab="logs" data-translate>Journal</button>
-            <button class="admin-tab" data-tab="settings" data-translate>Parametres</button>
+            <button class="admin-tab active" data-tab="events">Evenements</button>
+            <button class="admin-tab" data-tab="slides">Carrousel</button>
+            <button class="admin-tab" data-tab="users">Utilisateurs</button>
+            <button class="admin-tab" data-tab="logs">Journal</button>
+            <button class="admin-tab" data-tab="settings">Parametres</button>
         </div>
         
         <div id="adminTabEvents" class="admin-tab-content active">
             <div class="admin-actions">
-                <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;" data-translate>Supprimer tous</button>
+                <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;">Supprimer tous</button>
             </div>
             <div id="adminEventsList"></div>
         </div>
         
         <div id="adminTabSlides" class="admin-tab-content">
             <div class="admin-actions">
-                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;" data-translate>Ajouter une image</button>
+                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Ajouter une image</button>
             </div>
             <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
-                <h3 id="adminSlideFormTitle" data-translate>Ajouter une image</h3>
+                <h3 id="adminSlideFormTitle">Ajouter une image</h3>
                 <div class="form-group">
-                    <label data-translate>Image</label>
+                    <label>Image</label>
                     <div class="admin-upload-box" id="adminUploadBox">
                         <span class="upload-icon"><i class="fas fa-image"></i></span>
-                        <p data-translate>Cliquez pour choisir une image</p>
+                        <p>Cliquez pour choisir une image</p>
                         <input type="file" id="adminSlideImageInput" accept="image/*">
                         <img class="preview-image" id="adminSlidePreview" style="display:none;">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label data-translate>Badge</label>
-                    <input type="text" id="adminSlideBadge" placeholder="Ex: Concert, Sport..." data-translate-placeholder>
+                    <label>Badge</label>
+                    <input type="text" id="adminSlideBadge" placeholder="Ex: Concert, Sport...">
                 </div>
                 <div class="form-group">
-                    <label data-translate>Titre</label>
-                    <input type="text" id="adminSlideTitle" placeholder="Titre de l'evenement" data-translate-placeholder>
+                    <label>Titre</label>
+                    <input type="text" id="adminSlideTitle" placeholder="Titre de l'evenement">
                 </div>
                 <div class="form-group">
-                    <label data-translate>Description</label>
-                    <input type="text" id="adminSlideDesc" placeholder="Description courte" data-translate-placeholder>
+                    <label>Description</label>
+                    <input type="text" id="adminSlideDesc" placeholder="Description courte">
                 </div>
                 <div style="display:flex; gap:12px;">
-                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;" data-translate>Enregistrer</button>
-                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;" data-translate>Annuler</button>
+                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Enregistrer</button>
+                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Annuler</button>
                 </div>
                 <input type="hidden" id="adminEditSlideIndex" value="-1">
             </div>
@@ -372,46 +424,46 @@
         
         <div id="adminTabUsers" class="admin-tab-content">
             <div class="admin-users-filters">
-                <input type="text" id="adminUserSearch" placeholder="Rechercher un utilisateur..." data-translate-placeholder>
+                <input type="text" id="adminUserSearch" placeholder="Rechercher un utilisateur...">
             </div>
             <div id="adminUsersList"></div>
         </div>
         
         <div id="adminTabLogs" class="admin-tab-content">
             <div class="admin-actions">
-                <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;" data-translate>Effacer le journal</button>
+                <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;">Effacer le journal</button>
             </div>
             <div id="adminLogsList"></div>
         </div>
         
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
-                <h3 data-translate>Changement de mot de passe</h3>
+                <h3>Changement de mot de passe</h3>
                 <div class="form-group">
-                    <label data-translate>Nouveau mot de passe</label>
-                    <input type="password" id="adminNewPassword" placeholder="Entrez le nouveau mot de passe..." data-translate-placeholder>
+                    <label>Nouveau mot de passe</label>
+                    <input type="password" id="adminNewPassword" placeholder="Entrez le nouveau mot de passe...">
                 </div>
                 <div class="form-group">
-                    <label data-translate>Confirmer</label>
-                    <input type="password" id="adminConfirmPassword" placeholder="Confirmez..." data-translate-placeholder>
+                    <label>Confirmer</label>
+                    <input type="password" id="adminConfirmPassword" placeholder="Confirmez...">
                 </div>
-                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;" data-translate>Changer</button>
+                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;">Changer</button>
                 <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
                 
                 <hr style="margin: 30px 0; border-color: #e5e7eb;">
                 
-                <h3 data-translate>Informations</h3>
-                <p><strong data-translate>Mot de passe actuel :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
-                <p><strong data-translate>Derniere connexion :</strong> <span id="adminLastLogin">Jamais</span></p>
-                <p><strong data-translate>Nombre de connexions :</strong> <span id="adminLoginCount">0</span></p>
+                <h3>Informations</h3>
+                <p><strong>Mot de passe actuel :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
+                <p><strong>Derniere connexion :</strong> <span id="adminLastLogin">Jamais</span></p>
+                <p><strong>Nombre de connexions :</strong> <span id="adminLoginCount">0</span></p>
             </div>
         </div>
         
-        <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
+<!-- ===== FOOTER COMPLET ===== -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -423,43 +475,37 @@
             </div>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Infos</h4>
+            <h4>Infos</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Conditions generales de vente</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Conditions generales utilisation</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Politique de confidentialite</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Declaration d'accessibilite</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Vos choix de confidentialite</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>Guide du fan pour l'achat de billets</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Mentions legales</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Preferences en matiere de cookies</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')">Conditions generales de vente</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')">Conditions generales utilisation</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')">Politique de confidentialite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')">Declaration d'accessibilite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')">Vos choix de confidentialite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">Guide du fan pour l'achat de billets</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')">Mentions legales</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')">Preferences en matiere de cookies</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4 data-translate>AXS</h4>
+            <h4>Betix</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>A propos de nous</a></li>
-                <li><a href="mailto:betixservices@gmail.com" data-translate>Nous contacter</a></li>
-                <li><a href="#" onclick="event.preventDefault(); alert('Vos retours sont importants !')" data-translate>Vos retours</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>Aide</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')">A propos de nous</a></li>
+                <li><a href="mailto:betixservices@gmail.com">Nous contacter</a></li>
+                <li><a href="#" onclick="event.preventDefault(); alert('Vos retours sont importants !')">Vos retours</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">Aide</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Rechercher par</h4>
-            <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Villes</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Lieux</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4 data-translate>Partenaires</h4>
+            <h4>Partenaires</h4>
             <div class="footer-social">
                 <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
-                <a href="https://discord.gg/betix" target="_blank"><i class="fab fa-discord"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank"><i class="fab fa-discord"></i></a>
                 <a href="https://facebook.com/betix_app" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <p class="footer-join" data-translate>Rejoignez la communaute Betix</p>
+            <p class="footer-join">Rejoignez la communaute Betix</p>
             <div style="margin-top: 12px;">
                 <span class="footer-badge"><i class="fas fa-check-circle"></i> Pi Network</span>
                 <span class="footer-badge"><i class="fas fa-lock"></i> Securise</span>
@@ -467,14 +513,35 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <span data-translate>2026 Betix. Tous droits reserves.</span>
-        <span><span data-translate>Construit sur</span> Pi Network <span data-translate>|</span> <span data-translate>Securise par</span> Blockchain</span>
+        <span>2026 Betix. Tous droits reserves.</span>
+        <span>Construit sur Pi Network | Securise par Blockchain</span>
     </div>
 </footer>
 
-<div id="legalModal" class="modal"><div class="modal-content"><span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span><div id="modalContent"></div></div></div>
+<!-- ===== MODALS ===== -->
+<div id="legalModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
+        <div id="modalContent"></div>
+    </div>
+</div>
 
-<div id="ratingModal" class="modal"><div class="modal-content"><span class="modal-close" id="ratingModalClose"><i class="fas fa-times"></i></span><h3 data-translate>Noter l'evenement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3" data-translate-placeholder></textarea><button id="submitRatingBtn" class="btn-primary" data-translate>Envoyer</button></div></div>
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="ratingModalClose"><i class="fas fa-times"></i></span>
+        <h3>Noter l'evenement</h3>
+        <div id="ratingEventInfo"></div>
+        <div class="star-rating">
+            <span class="star" data-rating="1">★</span>
+            <span class="star" data-rating="2">★</span>
+            <span class="star" data-rating="3">★</span>
+            <span class="star" data-rating="4">★</span>
+            <span class="star" data-rating="5">★</span>
+        </div>
+        <textarea id="ratingComment" placeholder="Votre avis" rows="3"></textarea>
+        <button id="submitRatingBtn" class="btn-primary">Envoyer</button>
+    </div>
+</div>
 
 <!-- ===== DETAILS EVENEMENT MODAL ===== -->
 <div id="eventDetailModal" class="modal">
@@ -489,6 +556,7 @@
                         <span class="detail-category" id="detailCategory">Categorie</span>
                         <span class="detail-date" id="detailDate">Date</span>
                         <span class="detail-location" id="detailLocation">Lieu</span>
+                        <span class="detail-country" id="detailCountry">Pays</span>
                     </div>
                     <div class="detail-price-seats">
                         <span class="detail-price" id="detailPrice">0 Pi</span>
@@ -498,30 +566,30 @@
             </div>
             <div class="event-detail-body">
                 <div class="detail-section">
-                    <h3 data-translate>Description complete</h3>
+                    <h3>Description complete</h3>
                     <p id="detailDescription"></p>
                 </div>
                 <div class="detail-section">
-                    <h3 data-translate>Conditions</h3>
+                    <h3>Conditions</h3>
                     <div id="detailConditions"></div>
                 </div>
                 <div class="detail-section">
-                    <h3 data-translate>Informations</h3>
+                    <h3>Informations</h3>
                     <div class="detail-grid">
-                        <div class="detail-grid-item"><span class="label" data-translate>Organisateur</span><span class="value" id="detailOrganizer">-</span></div>
-                        <div class="detail-grid-item"><span class="label" data-translate>Cree le</span><span class="value" id="detailCreated">-</span></div>
-                        <div class="detail-grid-item"><span class="label" data-translate>Boosts</span><span class="value" id="detailBoosts">0</span></div>
-                        <div class="detail-grid-item"><span class="label" data-translate>Note</span><span class="value" id="detailRating">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Organisateur</span><span class="value" id="detailOrganizer">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Cree le</span><span class="value" id="detailCreated">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Boosts</span><span class="value" id="detailBoosts">0</span></div>
+                        <div class="detail-grid-item"><span class="label">Note</span><span class="value" id="detailRating">-</span></div>
                     </div>
                 </div>
                 <div class="detail-section">
-                    <h3 data-translate>Avis</h3>
+                    <h3>Avis</h3>
                     <div id="detailReviews"></div>
                 </div>
             </div>
             <div class="event-detail-footer">
-                <button class="btn-primary" id="detailBuyBtn" data-translate>Acheter Ticket</button>
-                <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;" data-translate>Booster</button>
+                <button class="btn-primary" id="detailBuyBtn">Acheter Ticket</button>
+                <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;">Booster</button>
             </div>
         </div>
     </div>
@@ -531,7 +599,7 @@
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
-        <h3><i class="fas fa-ticket-alt"></i> <span data-translate>Choisissez la quantite</span></h3>
+        <h3><i class="fas fa-ticket-alt"></i> Choisissez la quantite</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
         <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
         <div class="quantity-selector">
@@ -540,10 +608,10 @@
             <button class="qty-btn" onclick="updateQuantity(1)">+</button>
         </div>
         <p style="font-size:0.85rem;color:var(--gray);">
-            <span data-translate>Total :</span> <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
+            Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
         <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
-        <button class="btn-primary" id="confirmBuyBtn" data-translate>Confirmer l'achat</button>
+        <button class="btn-primary" id="confirmBuyBtn">Confirmer l'achat</button>
     </div>
 </div>
 
