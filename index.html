@@ -7,7 +7,6 @@
     <meta name="description" content="Betix - La première plateforme d'événements décentralisée sur Pi Network">
     <link rel="stylesheet" href="style.css">
     
-    <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
@@ -64,7 +63,7 @@
         <div class="sidebar-avatar" id="sidebarAvatar">U</div>
         <h3 id="sidebarName" data-translate>Invite</h3>
         <p id="sidebarWallet" data-translate>Non connecte</p>
-        <button class="wallet-sidebar-btn" id="sidebarWalletBtn" data-translate>Connexion</button>
+        <button class="wallet-sidebar-btn" id="sidebarWalletBtn" data-translate>Connexion Pi</button>
     </div>
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home" data-translate>Accueil</button>
@@ -75,10 +74,8 @@
         <button class="sidebar-item" data-page="whitepaper" data-translate>Livre blanc</button>
         <button class="sidebar-item" data-page="faq" data-translate>FAQ</button>
         
-        <!-- Bouton Admin (visible après authentification) -->
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #0D47A1, #1A73E8); color: white;" data-translate>Administration</button>
         
-        <!-- Logo Langue en noir et blanc -->
         <div class="sidebar-lang-logo" id="sidebarLangLogo">
             <span class="lang-logo-icon">🌐</span>
             <span class="lang-logo-label" data-translate>Langue</span>
@@ -91,31 +88,16 @@
             <button class="sidebar-item lang-btn" data-lang="zh" style="font-size:0.8rem; padding-left: 1.5rem;">中文</button>
             <button class="sidebar-item lang-btn" data-lang="id" style="font-size:0.8rem; padding-left: 1.5rem;">Bahasa Indonesia</button>
         </div>
-        
-        <button class="sidebar-item" id="logoutBtn" style="color: #ef4444; margin-top: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;" data-translate>Deconnexion</button>
     </div>
     
     <div class="sidebar-social">
         <div class="sidebar-social-title" data-translate>Suivez-nous</div>
         <div class="sidebar-social-icons">
-            <a href="https://x.com/betix_app" target="_blank" class="social-link" title="Twitter (X)">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="https://t.me/betix" target="_blank" class="social-link" title="Telegram">
-                <i class="fab fa-telegram-plane"></i>
-            </a>
-            <a href="https://discord.gg/betix" target="_blank" class="social-link" title="Discord">
-                <i class="fab fa-discord"></i>
-            </a>
-            <a href="https://instagram.com/betix_app" target="_blank" class="social-link" title="Instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://facebook.com/betix_app" target="_blank" class="social-link" title="Facebook">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://youtube.com/c/betix" target="_blank" class="social-link" title="YouTube">
-                <i class="fab fa-youtube"></i>
-            </a>
+            <a href="https://x.com/betix_app" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="https://t.me/betix" target="_blank" class="social-link"><i class="fab fa-telegram-plane"></i></a>
+            <a href="https://discord.gg/betix" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
+            <a href="https://instagram.com/betix_app" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="https://facebook.com/betix_app" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
         </div>
     </div>
 </div>
@@ -124,8 +106,8 @@
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 
 <div id="chatWidget" class="chat-widget">
-    <div class="chat-header" id="chatHeader">
-        <div class="chat-header-info"><span class="chat-logo" data-translate>Support Betix</span><span class="chat-status" data-translate>En ligne</span></div>
+    <div class="chat-header">
+        <div><span class="chat-logo" data-translate>Support Betix</span><span class="chat-status" data-translate>En ligne</span></div>
         <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
@@ -158,7 +140,24 @@
     </section>
     
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..." data-translate-placeholder></div>
+    
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
+    
+    <!-- FILTRES PAR DATE DESACTIVES -->
+    <!-- <div class="filter-date-wrapper">
+        <div class="filter-date-buttons">
+            <button class="filter-date-btn active" data-filter="today" onclick="filterEventsByTime('today')">
+                <i class="fas fa-sun"></i> Aujourd'hui
+            </button>
+            <button class="filter-date-btn" data-filter="weekend" onclick="filterEventsByTime('weekend')">
+                <i class="fas fa-calendar-week"></i> Cette fin de semaine
+            </button>
+            <button class="filter-date-btn" data-filter="month" onclick="filterEventsByTime('month')">
+                <i class="fas fa-calendar-alt"></i> 30 prochains jours
+            </button>
+        </div>
+    </div> -->
+    
     <div class="events-container">
         <h2 class="events-title" data-translate>Evenements a venir</h2>
         <p class="events-sub" data-translate>Rejoignez la communaute et vivez des experiences uniques</p>
@@ -170,17 +169,31 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title" data-translate>Creer un evenement</h2>
         <form id="eventForm" class="create-form">
-            <div class="form-group"><label data-translate>Titre de l'evenement</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required data-translate-placeholder></div>
-            <div class="form-group"><label data-translate>Categorie</label><select id="eventCategory"><option data-translate>Concert</option><option data-translate>Sport</option><option data-translate>Conference</option><option data-translate>Formation</option><option data-translate>Cinema</option><option data-translate>Festival</option></select></div>
+            <div class="form-group"><label data-translate>Titre</label><input type="text" id="eventTitle" placeholder="Ex: Concert de Jazz" required data-translate-placeholder></div>
+            <div class="form-group"><label data-translate>Categorie</label>
+                <select id="eventCategory">
+                    <option data-translate>Concert</option>
+                    <option data-translate>Sport</option>
+                    <option data-translate>Conference</option>
+                    <option data-translate>Formation</option>
+                    <option data-translate>Cinema</option>
+                    <option data-translate>Festival</option>
+                    <option data-translate>Theatre</option>
+                    <option data-translate>Danse</option>
+                    <option data-translate>Exposition</option>
+                    <option data-translate>Gala</option>
+                    <option data-translate>Seminaire</option>
+                </select>
+            </div>
             <div class="form-group"><label data-translate>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
             <div class="form-group"><label data-translate>Lieu</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required data-translate-placeholder></div>
             <div class="form-group"><label data-translate>Description</label><textarea id="eventDescription" rows="3" placeholder="Decrivez votre evenement..." data-translate-placeholder></textarea></div>
             <div class="form-group">
-                <label data-translate>Conditions de participation</label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi, Presenter son ticket a l'entree..." maxlength="1500" data-translate-placeholder></textarea>
+                <label data-translate>Conditions</label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Avoir un wallet Pi Network actif, Paiement en Pi..." maxlength="1500" data-translate-placeholder></textarea>
             </div>
-            <div class="form-group"><label data-translate>Prix (en Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
-            <div class="form-group"><label data-translate>Nombre de places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required data-translate-placeholder></div>
+            <div class="form-group"><label data-translate>Prix (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
+            <div class="form-group"><label data-translate>Places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required data-translate-placeholder></div>
             <div class="form-group">
                 <label data-translate>Photos (2 a 5)</label>
                 <div id="imageUploadContainer" class="image-upload-area">
@@ -216,7 +229,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn-primary" data-translate>Publier l'evenement</button>
+            <button type="submit" class="btn-primary" data-translate>Publier</button>
         </form>
         <button class="btn-back" onclick="showPage('home')" data-translate>Retour</button>
     </div>
@@ -227,23 +240,23 @@
 </div>
 
 <div id="historyPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Historique des tickets</h2><p class="events-sub" data-translate>Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
+    <div class="events-container"><h2 class="events-title" data-translate>Historique</h2><p class="events-sub" data-translate>Tous vos tickets achetes</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
 </div>
 
 <div id="ratingsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title" data-translate>Mes evaluations</h2><p class="events-sub" data-translate>Evenements que vous avez notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
+    <div class="events-container"><h2 class="events-title" data-translate>Mes evaluations</h2><p class="events-sub" data-translate>Evenements notes</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')" data-translate>Retour</button></div>
 </div>
 
 <div id="profilePage" class="hidden-page">
     <div class="page-content">
         <h2 data-translate>Mon profil</h2>
         <p><strong data-translate>Nom :</strong> <span id="profileName" data-translate>Invite</span></p>
-        <p><strong data-translate>Wallet :</strong> <span id="profileWallet" data-translate>Non connecte</span></p>
+        <p><strong data-translate>Compte Pi :</strong> <span id="profileWallet" data-translate>Non connecte</span></p>
         <p><strong data-translate>Membre depuis :</strong> <span id="memberSince">2026</span></p>
         <p><strong data-translate>Tickets :</strong> <span id="ticketCount">0</span></p>
         <p><strong data-translate>Evenements notes :</strong> <span id="ratedCount">0</span></p>
-        <p><strong data-translate>Points de loyaute :</strong> <span id="loyaltyPoints">0</span></p>
-        <button class="btn-primary" id="profileConnectBtn" data-translate>Connexion</button>
+        <p><strong data-translate>Points :</strong> <span id="loyaltyPoints">0</span></p>
+        <button class="btn-primary" id="profileConnectBtn" data-translate>Connexion Pi</button>
     </div>
 </div>
 
@@ -289,29 +302,23 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- ===== PAGE ADMIN AVANCEE ===== -->
-<!-- ============================================================ -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2 data-translate>Administration</h2>
         <p class="admin-subtitle" data-translate>Gerez votre plateforme Betix</p>
         
-        <!-- Timer de session admin -->
         <div class="admin-session-timer">
             <span data-translate>Session active</span>
             <span id="adminSessionTimer">30:00</span>
             <button class="admin-logout-btn" onclick="adminLogout()" data-translate>Deconnexion</button>
         </div>
         
-        <!-- Stats -->
         <div class="admin-stats">
             <div class="stat-card"><h3 data-translate>Evenements</h3><p id="adminEventCount">0</p></div>
             <div class="stat-card"><h3 data-translate>Tickets</h3><p id="adminTicketCount">0</p></div>
             <div class="stat-card"><h3 data-translate>Utilisateurs</h3><p id="adminUserCount">0</p></div>
         </div>
         
-        <!-- Onglets Admin -->
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="events" data-translate>Evenements</button>
             <button class="admin-tab" data-tab="slides" data-translate>Carrousel</button>
@@ -320,7 +327,6 @@
             <button class="admin-tab" data-tab="settings" data-translate>Parametres</button>
         </div>
         
-        <!-- Onglet Evenements -->
         <div id="adminTabEvents" class="admin-tab-content active">
             <div class="admin-actions">
                 <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;" data-translate>Supprimer tous</button>
@@ -328,13 +334,12 @@
             <div id="adminEventsList"></div>
         </div>
         
-        <!-- Onglet Carrousel -->
         <div id="adminTabSlides" class="admin-tab-content">
             <div class="admin-actions">
                 <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;" data-translate>Ajouter une image</button>
             </div>
             <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
-                <h3 id="adminSlideFormTitle" data-translate>Ajouter une image au carrousel</h3>
+                <h3 id="adminSlideFormTitle" data-translate>Ajouter une image</h3>
                 <div class="form-group">
                     <label data-translate>Image</label>
                     <div class="admin-upload-box" id="adminUploadBox">
@@ -365,7 +370,6 @@
             <div id="adminSlidesList"></div>
         </div>
         
-        <!-- Onglet Utilisateurs -->
         <div id="adminTabUsers" class="admin-tab-content">
             <div class="admin-users-filters">
                 <input type="text" id="adminUserSearch" placeholder="Rechercher un utilisateur..." data-translate-placeholder>
@@ -373,7 +377,6 @@
             <div id="adminUsersList"></div>
         </div>
         
-        <!-- Onglet Journal des connexions -->
         <div id="adminTabLogs" class="admin-tab-content">
             <div class="admin-actions">
                 <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;" data-translate>Effacer le journal</button>
@@ -381,7 +384,6 @@
             <div id="adminLogsList"></div>
         </div>
         
-        <!-- Onglet Parametres Admin -->
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
                 <h3 data-translate>Changement de mot de passe</h3>
@@ -390,18 +392,18 @@
                     <input type="password" id="adminNewPassword" placeholder="Entrez le nouveau mot de passe..." data-translate-placeholder>
                 </div>
                 <div class="form-group">
-                    <label data-translate>Confirmer le mot de passe</label>
-                    <input type="password" id="adminConfirmPassword" placeholder="Confirmez le nouveau mot de passe..." data-translate-placeholder>
+                    <label data-translate>Confirmer</label>
+                    <input type="password" id="adminConfirmPassword" placeholder="Confirmez..." data-translate-placeholder>
                 </div>
-                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;" data-translate>Changer le mot de passe</button>
+                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;" data-translate>Changer</button>
                 <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
                 
                 <hr style="margin: 30px 0; border-color: #e5e7eb;">
                 
                 <h3 data-translate>Informations</h3>
                 <p><strong data-translate>Mot de passe actuel :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
-                <p><strong data-translate>Derniere connexion admin :</strong> <span id="adminLastLogin">Jamais</span></p>
-                <p><strong data-translate>Nombre de connexions admin :</strong> <span id="adminLoginCount">0</span></p>
+                <p><strong data-translate>Derniere connexion :</strong> <span id="adminLastLogin">Jamais</span></p>
+                <p><strong data-translate>Nombre de connexions :</strong> <span id="adminLoginCount">0</span></p>
             </div>
         </div>
         
@@ -418,53 +420,47 @@
             <p class="footer-desc">Plateforme securisee pour acheter et vendre des billets d'evenements avec paiement en Pi.</p>
             <div class="footer-contact">
                 <div><i class="fas fa-envelope"></i> betixservices@gmail.com</div>
-                <div><i class="fas fa-map-marker-alt"></i> Kinshasa, DR Congo</div>
             </div>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Navigation</h4>
+            <h4 data-translate>Infos</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Accueil</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Explorer</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('create')" data-translate>Creer</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('tickets')" data-translate>Mes billets</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>Comment ca marche</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Conditions generales de vente</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Conditions generales utilisation</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Politique de confidentialite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Declaration d'accessibilite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Vos choix de confidentialite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>Guide du fan pour l'achat de billets</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Mentions legales</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Preferences en matiere de cookies</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Categories</h4>
+            <h4 data-translate>AXS</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); currentFilter='Concert'; initFilters(); renderEventsByCategory(); showPage('home')" data-translate>Concerts</a></li>
-                <li><a href="#" onclick="event.preventDefault(); currentFilter='Conference'; initFilters(); renderEventsByCategory(); showPage('home')" data-translate>Conferences</a></li>
-                <li><a href="#" onclick="event.preventDefault(); currentFilter='Formation'; initFilters(); renderEventsByCategory(); showPage('home')" data-translate>Formations</a></li>
-                <li><a href="#" onclick="event.preventDefault(); currentFilter='Sport'; initFilters(); renderEventsByCategory(); showPage('home')" data-translate>Sport</a></li>
-                <li><a href="#" onclick="event.preventDefault(); currentFilter='Cinema'; initFilters(); renderEventsByCategory(); showPage('home')" data-translate>Cinema</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>A propos de nous</a></li>
+                <li><a href="mailto:betixservices@gmail.com" data-translate>Nous contacter</a></li>
+                <li><a href="#" onclick="event.preventDefault(); alert('Vos retours sont importants !')" data-translate>Vos retours</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>Aide</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Support</h4>
+            <h4 data-translate>Rechercher par</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('faq')" data-translate>FAQ</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('support')" data-translate>Support client</a></li>
-                <li><a href="mailto:betixservices@gmail.com" data-translate>Contact</a></li>
-            </ul>
-            <h4 style="margin-top: 16px;" data-translate>Legal</h4>
-            <ul>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('terms')" data-translate>Conditions</a></li>
-                <li><a href="#" onclick="event.preventDefault(); showLegal('privacy')" data-translate>Confidentialite</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Villes</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')" data-translate>Lieux</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4 data-translate>Communaute</h4>
+            <h4 data-translate>Partenaires</h4>
             <div class="footer-social">
-                <a href="https://t.me/betix" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
-                <a href="https://x.com/betix_app" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="https://discord.gg/betix" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
-                <a href="https://facebook.com/betix_app" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://discord.gg/betix" target="_blank"><i class="fab fa-discord"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-join" data-translate>Rejoignez la communaute Betix</p>
             <div style="margin-top: 12px;">
-                <p style="font-size: 0.75rem; color: #a0b4cc; margin-bottom: 4px;" data-translate>Paiement</p>
                 <span class="footer-badge"><i class="fas fa-check-circle"></i> Pi Network</span>
                 <span class="footer-badge"><i class="fas fa-lock"></i> Securise</span>
             </div>
@@ -480,6 +476,7 @@
 
 <div id="ratingModal" class="modal"><div class="modal-content"><span class="modal-close" id="ratingModalClose"><i class="fas fa-times"></i></span><h3 data-translate>Noter l'evenement</h3><div id="ratingEventInfo"></div><div class="star-rating"><span class="star" data-rating="1">★</span><span class="star" data-rating="2">★</span><span class="star" data-rating="3">★</span><span class="star" data-rating="4">★</span><span class="star" data-rating="5">★</span></div><textarea id="ratingComment" placeholder="Votre avis" rows="3" data-translate-placeholder></textarea><button id="submitRatingBtn" class="btn-primary" data-translate>Envoyer</button></div></div>
 
+<!-- ===== DETAILS EVENEMENT MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
@@ -501,7 +498,7 @@
             </div>
             <div class="event-detail-body">
                 <div class="detail-section">
-                    <h3 data-translate>Description</h3>
+                    <h3 data-translate>Description complete</h3>
                     <p id="detailDescription"></p>
                 </div>
                 <div class="detail-section">
@@ -523,10 +520,41 @@
                 </div>
             </div>
             <div class="event-detail-footer">
-                <button class="btn-primary" id="detailBuyBtn" data-translate>Acheter</button>
+                <button class="btn-primary" id="detailBuyBtn" data-translate>Acheter Ticket</button>
                 <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;" data-translate>Booster</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ===== POPUP QUANTITE TICKETS ===== -->
+<div id="quantityPopup" class="quantity-popup">
+    <div class="quantity-popup-content">
+        <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
+        <h3><i class="fas fa-ticket-alt"></i> <span data-translate>Choisissez la quantite</span></h3>
+        <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
+        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
+        <div class="quantity-selector">
+            <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
+            <input type="number" id="ticketQuantity" value="1" min="1" max="10">
+            <button class="qty-btn" onclick="updateQuantity(1)">+</button>
+        </div>
+        <p style="font-size:0.85rem;color:var(--gray);">
+            <span data-translate>Total :</span> <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
+        </p>
+        <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
+        <button class="btn-primary" id="confirmBuyBtn" data-translate>Confirmer l'achat</button>
+    </div>
+</div>
+
+<!-- ===== POPUP SUCCES ACHAT ===== -->
+<div id="successPopup" class="success-popup">
+    <div class="success-popup-content">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <h3 id="successTitle">Achat reussi !</h3>
+        <p id="successMessage">Vos tickets ont ete ajoutes avec succes.</p>
+        <div id="successTicketInfo" class="success-ticket-info"></div>
+        <button class="btn-primary" onclick="closeSuccessPopup()">OK</button>
     </div>
 </div>
 
