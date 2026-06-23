@@ -278,20 +278,6 @@ if (heroSlides.length === 0) {
 
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
-// Liste des pays pour le filtre
-const countriesList = [
-    'Tous', 'Afrique du Sud', 'Algerie', 'Allemagne', 'Angleterre', 'Arabie Saoudite',
-    'Argentine', 'Australie', 'Autriche', 'Belgique', 'Benin', 'Bresil',
-    'Burkina Faso', 'Burundi', 'Cameroun', 'Canada', 'Chine', 'Congo',
-    'Coree du Sud', "Cote d'Ivoire", 'Danemark', 'Egypte', 'Espagne',
-    'Etats-Unis', 'Ethiopie', 'France', 'Gabon', 'Ghana', 'Guinee',
-    'Inde', 'Indonesie', 'Iran', 'Italie', 'Japon', 'Kenya',
-    'Liban', 'Madagascar', 'Mali', 'Maroc', 'Mexique', 'Niger',
-    'Nigeria', 'Pays-Bas', 'Portugal', 'RDC', 'Royaume-Uni',
-    'Russie', 'Rwanda', 'Senegal', 'Suede', 'Suisse', 'Tchad',
-    'Togo', 'Tunisie', 'Turquie', 'Ukraine', 'Zambie', 'Zimbabwe'
-];
-
 const eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
     Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
@@ -305,6 +291,28 @@ const eventImagesList = {
     Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
     Seminaire: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
 };
+
+// Liste des pays avec tous les pays d'Afrique
+const countriesList = [
+    'Tous', 'Afrique du Sud', 'Algerie', 'Angola', 'Benin', 'Botswana',
+    'Burkina Faso', 'Burundi', 'Cameroun', 'Cap-Vert', 'Centrafrique',
+    'Comores', 'Congo', "Cote d'Ivoire", 'Djibouti', 'Egypte',
+    'Erythree', 'Eswatini', 'Ethiopie', 'Gabon', 'Gambie',
+    'Ghana', 'Guinee', 'Guinee-Bissau', 'Guinee Equatoriale',
+    'Kenya', 'Lesotho', 'Liberia', 'Libye', 'Madagascar',
+    'Malawi', 'Mali', 'Maroc', 'Maurice', 'Mauritanie',
+    'Mozambique', 'Namibie', 'Niger', 'Nigeria', 'Ouganda',
+    'RDC', 'Rwanda', 'Sao Tome', 'Senegal', 'Seychelles',
+    'Sierra Leone', 'Somalie', 'Soudan', 'Soudan du Sud',
+    'Tanzanie', 'Tchad', 'Togo', 'Tunisie', 'Zambie',
+    'Zimbabwe', 'Allemagne', 'Angleterre', 'Arabie Saoudite',
+    'Argentine', 'Australie', 'Autriche', 'Belgique', 'Bresil',
+    'Canada', 'Chine', 'Coree du Sud', 'Danemark', 'Espagne',
+    'Etats-Unis', 'France', 'Inde', 'Indonesie', 'Iran',
+    'Italie', 'Japon', 'Liban', 'Mexique', 'Pays-Bas',
+    'Portugal', 'Royaume-Uni', 'Russie', 'Suede', 'Suisse',
+    'Turquie', 'Ukraine'
+];
 
 const demoEvents = [
     { id: '1', title: 'Concert de Jazz', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree\nRespecter les regles de l evenement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
@@ -1103,26 +1111,12 @@ function initHeroSlider() {
 }
 
 // ============================================================
-// ===== FILTRE PAR PAYS =====
+// ===== FILTRE PAR PAYS - MENU DEROULANT =====
 // ============================================================
 
-function initCountryFilter() {
-    var container = document.getElementById('countryFilterContainer');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    countriesList.forEach(function(country) {
-        var btn = document.createElement('button');
-        btn.className = 'filter-country-btn' + (country === currentCountryFilter ? ' active' : '');
-        btn.textContent = country;
-        btn.dataset.country = country;
-        btn.addEventListener('click', function() {
-            currentCountryFilter = this.dataset.country;
-            initCountryFilter();
-            renderEventsByCategory();
-        });
-        container.appendChild(btn);
-    });
+function filterByCountry(country) {
+    currentCountryFilter = country;
+    renderEventsByCategory();
 }
 
 // ============================================================
@@ -1883,17 +1877,30 @@ function initFaq() {
 }
 
 // ============================================================
-// ===== SHOW LEGAL - TEXTE COMPLET =====
+// ===== SHOW LEGAL =====
 // ============================================================
 
 function showLegal(type) {
+    // Ouverture des liens externes pour Terms et Privacy
+    if (type === 'terms') {
+        window.open('https://betixapp.vercel.app/terms.html', '_blank');
+        return;
+    }
+    if (type === 'privacy') {
+        window.open('https://betixapp.vercel.app/privacy.html', '_blank');
+        return;
+    }
+    
+    // Pour les autres modals (support, partner, ambassador, refund)
     var modal = document.getElementById('legalModal');
     var content = document.getElementById('modalContent');
     var closeBtn = document.getElementById('legalModalClose');
     
     var texts = {
-        privacy: '<h2>Politique de Confidentialite</h2><p>Derniere mise a jour : Juin 2026</p><br><p>Betix s\'engage a proteger vos donnees personnelles. Cette politique de confidentialite explique comment nous collectons, utilisons et protegeons vos informations.</p><br><p><strong>1. Donnees collectees</strong></p><p>Nous collectons les informations suivantes :</p><ul><li>Votre identifiant Pi Network</li><li>Les transactions effectuees sur la plateforme</li><li>Les evenements que vous creez ou auxquels vous participez</li></ul><br><p><strong>2. Utilisation des donnees</strong></p><p>Vos donnees sont utilisees pour :</p><ul><li>Gerer votre compte et vos tickets</li><li>Faciliter les paiements via Pi Network</li><li>Ameliorer nos services</li></ul><br><p><strong>3. Protection des donnees</strong></p><p>Nous utilisons des mesures de securite avancees pour proteger vos informations.</p><br><p><strong>Contact :</strong> betixservices@gmail.com</p>',
-        terms: '<h2>Conditions Generales d\'Utilisation</h2><p>Derniere mise a jour : Juin 2026</p><br><p><strong>1. Acceptation des conditions</strong></p><p>En utilisant Betix, vous acceptez les presentes conditions generales d\'utilisation.</p><br><p><strong>2. Description du service</strong></p><p>Betix est une plateforme de billetterie decentralisee basee sur Pi Network permettant aux utilisateurs d\'acheter et de vendre des billets d\'evenements.</p><br><p><strong>3. Paiements</strong></p><p>Les paiements sont effectues exclusivement en Pi via le reseau Pi Network. Les transactions sont securisees et irreversibles.</p><br><p><strong>4. Responsabilites</strong></p><ul><li>L\'utilisateur est responsable de la validite de ses informations</li><li>Betix agit comme intermediaire de confiance entre acheteurs et vendeurs</li><li>Les organisateurs sont responsables du bon deroulement de leurs evenements</li></ul><br><p><strong>5. Annulation et remboursement</strong></p><p>Les remboursements sont possibles en cas d\'annulation, de report ou de fraude prouvee.</p><br><p><strong>Contact :</strong> betixservices@gmail.com</p>'
+        refund: '<h2>Politique de Remboursement</h2><p>Remboursement en cas d\'annulation, de report ou de fraude.</p><p>Contactez l\'organisateur directement.</p>',
+        support: '<h2>Support Client</h2><p>Email : betixservices@gmail.com<br>Chat en ligne<br>Telegram : @betix_support</p>',
+        partner: '<h2>Devenir Partenaire</h2><p>Contactez-nous pour discuter des opportunites de partenariat.</p>',
+        ambassador: '<h2>Programme Ambassadeur</h2><p>Contactez-nous pour postuler au programme ambassadeur.</p>'
     };
     
     if (content) {
@@ -2234,7 +2241,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     calculateLoyaltyPoints();
-    initCountryFilter();
     initFilters(); 
     renderEventsByCategory(); 
     updateUserInfo(); 
