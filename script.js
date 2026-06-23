@@ -214,6 +214,31 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================
+// ===== LISTE DES PAYS EN ORDRE ALPHABETIQUE =====
+// ============================================================
+
+const countriesList = [
+    'Tous',
+    'Afrique du Sud', 'Algerie', 'Allemagne', 'Angleterre', 'Angola',
+    'Arabie Saoudite', 'Argentine', 'Australie', 'Autriche',
+    'Belgique', 'Benin', 'Botswana', 'Bresil', 'Burkina Faso',
+    'Burundi', 'Cameroun', 'Canada', 'Cap-Vert', 'Centrafrique',
+    'Chine', 'Comores', 'Congo', 'Coree du Sud', "Cote d'Ivoire",
+    'Danemark', 'Djibouti', 'Egypte', 'Erythree', 'Espagne',
+    'Eswatini', 'Etats-Unis', 'Ethiopie', 'France', 'Gabon',
+    'Gambie', 'Ghana', 'Guinee', 'Guinee Equatoriale', 'Guinee-Bissau',
+    'Inde', 'Indonesie', 'Iran', 'Italie', 'Japon', 'Kenya',
+    'Lesotho', 'Liban', 'Liberia', 'Libye', 'Madagascar',
+    'Malawi', 'Mali', 'Maroc', 'Maurice', 'Mauritanie',
+    'Mexique', 'Mozambique', 'Namibie', 'Niger', 'Nigeria',
+    'Ouganda', 'Pays-Bas', 'Portugal', 'RDC', 'Royaume-Uni',
+    'Russie', 'Rwanda', 'Sao Tome', 'Senegal', 'Seychelles',
+    'Sierra Leone', 'Somalie', 'Soudan', 'Soudan du Sud',
+    'Suede', 'Suisse', 'Tanzanie', 'Tchad', 'Togo',
+    'Tunisie', 'Turquie', 'Ukraine', 'Zambie', 'Zimbabwe'
+];
+
+// ============================================================
 // ===== VARIABLES GLOBALES =====
 // ============================================================
 
@@ -233,6 +258,7 @@ let piUser = null;
 let ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
 let chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || [];
 let connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
+let notifications = JSON.parse(localStorage.getItem('betix_notifications')) || [];
 let adminCode = 'Betix@2026#';
 let selectedRating = 0;
 let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
@@ -323,6 +349,45 @@ function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(d
 function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); }
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); }
 function saveUser() { localStorage.setItem('betix_user', JSON.stringify(currentUser)); }
+function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
+
+// ============================================================
+// ===== INITIALISATION DES SELECTEURS DE PAYS =====
+// ============================================================
+
+function initCountrySelectors() {
+    // Sélecteur de filtre pays
+    var filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        countriesList.forEach(function(country) {
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === currentCountryFilter) {
+                option.selected = true;
+            }
+            filterSelect.appendChild(option);
+        });
+    }
+    
+    // Sélecteur de pays pour la création d'événement
+    var eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        // Exclure "Tous" du sélecteur de création
+        var creationCountries = countriesList.filter(function(c) { return c !== 'Tous'; });
+        creationCountries.forEach(function(country) {
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === 'France') {
+                option.selected = true;
+            }
+            eventSelect.appendChild(option);
+        });
+    }
+}
 
 // ============================================================
 // ===== GESTION PHOTO DE PROFIL =====
@@ -353,7 +418,6 @@ function handleProfilePhotoUpload(file) {
 function updateAllProfileImages() {
     var photo = currentUser.profilePhoto || '';
     
-    // Avatar dans le sidebar
     var sidebarImg = document.getElementById('sidebarAvatarImage');
     var sidebarText = document.getElementById('sidebarAvatarText');
     if (sidebarImg && sidebarText) {
@@ -368,7 +432,6 @@ function updateAllProfileImages() {
         }
     }
     
-    // Avatar dans la page de profil
     var profileImg = document.getElementById('profilePageAvatar');
     var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
     if (profileImg && profilePlaceholder) {
@@ -381,6 +444,32 @@ function updateAllProfileImages() {
             profilePlaceholder.style.display = 'flex';
             profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
         }
+    }
+}
+
+// ============================================================
+// ===== SUPPRESSION D'IMAGE LORS DE LA CREATION =====
+// ============================================================
+
+function removeImage(index) {
+    var preview = document.getElementById('preview' + index);
+    var box = document.getElementById('uploadBox' + (index + 1));
+    var input = document.querySelector('.image-input[data-index="' + index + '"]');
+    var removeBtn = document.getElementById('remove' + index);
+    
+    if (preview) {
+        preview.style.display = 'none';
+        preview.src = '';
+    }
+    if (box) {
+        box.classList.remove('has-image');
+    }
+    if (input) {
+        input.value = '';
+        input.dataset.imageData = '';
+    }
+    if (removeBtn) {
+        removeBtn.style.display = 'none';
     }
 }
 
@@ -456,7 +545,7 @@ function goBack() {
 
 function showPage(pageName) {
     updateActivity();
-    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage'];
+    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage', 'myeventsPage'];
     for (var i = 0; i < pages.length; i++) { 
         var el = document.getElementById(pages[i]); 
         if (el) { 
@@ -490,6 +579,7 @@ function showPage(pageName) {
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'faq') initFaq();
+    if (pageName === 'myevents') renderMyEvents();
     closeSidebar();
     window.scrollTo(0, 0);
     
@@ -502,12 +592,85 @@ function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.c
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
 
 // ============================================================
+// ===== NOTIFICATIONS =====
+// ============================================================
+
+function toggleNotifications() {
+    var panel = document.getElementById('notifPanel');
+    var overlay = document.getElementById('notifOverlay');
+    if (panel && overlay) {
+        panel.classList.toggle('open');
+        overlay.classList.toggle('active');
+        if (panel.classList.contains('open')) {
+            updateNotifBadge();
+        }
+    }
+}
+
+function addNotification(message, type) {
+    var notif = {
+        id: Date.now(),
+        message: message,
+        type: type || 'info',
+        read: false,
+        date: new Date().toISOString()
+    };
+    notifications.unshift(notif);
+    if (notifications.length > 100) {
+        notifications = notifications.slice(0, 100);
+    }
+    saveNotifications();
+    renderNotifications();
+    updateNotifBadge();
+}
+
+function renderNotifications() {
+    var container = document.getElementById('notifList');
+    if (!container) return;
+    
+    if (notifications.length === 0) {
+        container.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>Aucune notification</div>';
+        return;
+    }
+    
+    container.innerHTML = notifications.map(function(notif) {
+        var time = new Date(notif.date);
+        var timeStr = time.toLocaleDateString('fr-FR') + ' ' + time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        var unreadClass = notif.read ? '' : 'unread';
+        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
+        return '<div class="notif-item ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-text">' + notif.message + '</div>' +
+                '<span class="notif-time">' + timeStr + '</span>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+    
+    // Marquer comme lues
+    notifications.forEach(function(n) { n.read = true; });
+    saveNotifications();
+    updateNotifBadge();
+}
+
+function updateNotifBadge() {
+    var badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    var unread = notifications.filter(function(n) { return !n.read; }).length;
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// ============================================================
 // ===== MISE A JOUR DES BOUTONS DE CONNEXION =====
 // ============================================================
 
 function updateConnectButtons() {
-    // Bouton dans le sidebar
-    const sidebarBtn = document.getElementById('sidebarWalletBtn');
+    var sidebarBtn = document.getElementById('sidebarWalletBtn');
     if (sidebarBtn) {
         if (currentUser.wallet) {
             sidebarBtn.textContent = 'Deconnecter';
@@ -520,8 +683,7 @@ function updateConnectButtons() {
         }
     }
     
-    // Bouton dans la page de profil
-    const profilePageBtn = document.getElementById('profileConnectBtnPage');
+    var profilePageBtn = document.getElementById('profileConnectBtnPage');
     if (profilePageBtn) {
         if (currentUser.wallet) {
             profilePageBtn.textContent = 'Deconnecter';
@@ -1190,15 +1352,17 @@ function createEvent(e) {
     
     var imageInputs = document.querySelectorAll('.image-input');
     var images = [];
+    var hasImage = false;
     for (var i = 0; i < imageInputs.length; i++) {
         var input = imageInputs[i];
         if (input.dataset.imageData) {
             images.push(input.dataset.imageData);
+            hasImage = true;
         }
     }
     
     if (images.length < 2) { 
-        alert('Veuillez ajouter au moins 2 photos pour votre evenement'); 
+        alert('Veuillez ajouter 2 photos uniques pour votre evenement'); 
         return; 
     }
     
@@ -1252,10 +1416,115 @@ function createEvent(e) {
             input.value = '';
             input.dataset.imageData = '';
         }
+        var removeBtn = document.getElementById('remove' + i);
+        if (removeBtn) {
+            removeBtn.style.display = 'none';
+        }
     }
     
-    alert('Evenement cree avec ' + images.length + ' photos !');
-    showPage('home');
+    // Notification de publication
+    addNotification(
+        'Votre evenement "' + newEvent.title + '" a ete publie avec succes !',
+        'event'
+    );
+    
+    // Popup de confirmation
+    showPublishConfirm(newEvent);
+    
+    // Mettre à jour le compteur dans le profil
+    updateProfilePage();
+}
+
+function showPublishConfirm(event) {
+    var popup = document.getElementById('publishConfirm');
+    if (!popup) return;
+    
+    document.getElementById('publishEventTitle').textContent = event.title;
+    document.getElementById('publishCategory').textContent = event.category;
+    document.getElementById('publishCountry').textContent = event.country;
+    
+    var dateEvent = new Date(event.date);
+    document.getElementById('publishDate').textContent = dateEvent.toLocaleDateString('fr-FR') + ' a ' + dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('publishSeats').textContent = event.seatsTotal;
+    document.getElementById('publishPrice').textContent = event.price + ' Pi';
+    
+    popup.classList.add('show');
+}
+
+function closePublishConfirm() {
+    var popup = document.getElementById('publishConfirm');
+    if (popup) {
+        popup.classList.remove('show');
+    }
+}
+
+// Fermer la confirmation en cliquant à l'extérieur
+document.addEventListener('click', function(e) {
+    var popup = document.getElementById('publishConfirm');
+    if (popup && popup.classList.contains('show')) {
+        if (e.target === popup) {
+            closePublishConfirm();
+        }
+    }
+});
+
+// ============================================================
+// ===== MES EVENEMENTS =====
+// ============================================================
+
+function renderMyEvents() {
+    var container = document.getElementById('myEventsList');
+    if (!container) return;
+    
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    
+    if (myEvents.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Vous n\'avez pas encore cree d\'evenement</p>';
+        return;
+    }
+    
+    container.innerHTML = myEvents.map(function(e) {
+        return renderMyEventCard(e);
+    }).join('');
+}
+
+function renderMyEventCard(event) {
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
+    var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    var galleryHtml = '';
+    if (event.images && event.images.length > 0) {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
+        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
+            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
+        }
+        galleryHtml += '</div></div>';
+    } else {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
+    }
+    
+    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    
+    return '<div class="event-card" style="cursor:default;">' +
+        galleryHtml +
+        '<div class="event-info">' +
+            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-details-grid">' +
+                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'En ligne') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Non specifie') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' vendus</div>' +
+                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' places</div>' +
+            '</div>' +
+            '<div class="event-footer">' +
+                '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -1497,6 +1766,13 @@ async function confirmPurchase(eventId, quantity) {
                     saveEvents();
                     saveTickets();
                     
+                    // Notification pour l'organisateur
+                    var organizerName = event.organizerName || event.organizer || 'Organisateur';
+                    addNotification(
+                        'Achat de ' + quantity + ' ticket(s) pour "' + event.title + '" par ' + (currentUser.name || 'un utilisateur'),
+                        'purchase'
+                    );
+                    
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
@@ -1514,7 +1790,7 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// ===== POPUP DE SUCCES ACHAT =====
+// ===== POPUP DE SUCCES ACHAT (PROFESSIONNEL EN BLEU) =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity) {
@@ -1528,7 +1804,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
     var qty = quantity || ticketsList.length;
     var ticket = ticketsList[0] || {};
     
-    title.textContent = '🎉 Achat reussi !';
+    title.textContent = 'Achat reussi';
     message.textContent = qty + ' ticket(s) ajoute(s) avec succes.';
     
     var dateEvent = new Date(event.date);
@@ -1540,14 +1816,14 @@ function showSuccessPopup(event, ticketsList, quantity) {
     var codeDisplay = ticket.qrCode || 'N/A';
     
     info.innerHTML = 
-        '<div class="ticket-line"><span class="ticket-label">🎫 Evenement</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">📅 Date</span><span class="ticket-value">' + dateFormatted + ' a ' + timeFormatted + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">📍 Lieu</span><span class="ticket-value">' + escapeHtml(event.location || 'En ligne') + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">🌍 Pays</span><span class="ticket-value">' + escapeHtml(event.country || 'Non specifie') + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">👤 Organisateur</span><span class="ticket-value">' + escapeHtml(event.organizerName || event.organizer) + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">🎟️ Quantite</span><span class="ticket-value">' + qty + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">💰 Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">🔑 Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
+        '<div class="ticket-line"><span class="ticket-label">Evenement</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' a ' + timeFormatted + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">' + escapeHtml(event.location || 'En ligne') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">' + escapeHtml(event.country || 'Non specifie') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Organisateur</span><span class="ticket-value">' + escapeHtml(event.organizerName || event.organizer) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Quantite</span><span class="ticket-value">' + qty + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
     
     popup.classList.add('show');
 }
@@ -1569,41 +1845,6 @@ document.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// ===== BOOST EVENT =====
-// ============================================================
-
-async function boostEvent(eventId) {
-    if (typeof Pi === 'undefined') { alert("Veuillez ouvrir dans Pi Browser"); return; }
-    if (!piUser && !currentUser.wallet) { alert("Veuillez d'abord connecter votre compte Pi"); await connectToPi(); return; }
-    var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) return;
-    if (!confirm('Booster "' + event.title + '" pour 0.001 Pi ?')) return;
-    try {
-        var payment = await Pi.createPayment({
-            amount: 0.001,
-            memo: 'Boost: ' + event.title,
-            metadata: { eventId: event.id, type: 'boost' }
-        }, {
-            onReadyForServerApproval: function(paymentId) {
-                fetch(BACKEND_URL + '/api/pi/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId }) });
-            },
-            onReadyForServerCompletion: function(paymentId, txid) {
-                fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid }) }).then(function() {
-                    event.boosts = (event.boosts || 0) + 1;
-                    saveEvents();
-                    renderEventsByCategory();
-                    alert('Merci ! L\'evenement a maintenant ' + event.boosts + ' boost(s)');
-                });
-            },
-            onCancel: function() { alert('Boost annule'); },
-            onError: function(error) { alert('Erreur: ' + error.message); }
-        });
-    } catch(error) { alert('Erreur: ' + error.message); }
-}
-
-function connectWallet() { connectToPi(); }
-
-// ============================================================
 // ===== PROFIL =====
 // ============================================================
 
@@ -1616,7 +1857,6 @@ function updateUserInfo() {
     if (sidebarName) sidebarName.innerText = currentUser.name;
     if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Non connecte';
     
-    // Mise à jour de l'avatar dans le sidebar
     if (sidebarImg && sidebarText) {
         if (currentUser.profilePhoto) {
             sidebarImg.src = currentUser.profilePhoto;
@@ -1638,6 +1878,7 @@ function updateProfilePage() {
     var ticketCount = document.getElementById('ticketCount');
     var ratedCount = document.getElementById('ratedCount');
     var loyaltyDisplay = document.getElementById('loyaltyPointsDisplay');
+    var myEventsCount = document.getElementById('myEventsCount');
     
     if (profileName) profileName.innerText = currentUser.name;
     if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Non connecte';
@@ -1645,7 +1886,12 @@ function updateProfilePage() {
     if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
     if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
     
-    // Avatar dans la page de profil
+    // Compter les événements créés par l'utilisateur
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    if (myEventsCount) myEventsCount.innerText = myEvents.length;
+    
     var profileImg = document.getElementById('profilePageAvatar');
     var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
     if (profileImg && profilePlaceholder) {
@@ -1707,11 +1953,15 @@ function handleImageUpload(input, index) {
     reader.onload = function(e) {
         var imageData = e.target.result;
         var preview = document.getElementById('preview' + index);
+        var removeBtn = document.getElementById('remove' + index);
         if (preview) {
             preview.src = imageData;
             preview.style.display = 'block';
             var box = input.closest('.upload-box');
             if (box) box.classList.add('has-image');
+        }
+        if (removeBtn) {
+            removeBtn.style.display = 'block';
         }
         input.dataset.imageData = imageData;
     };
@@ -2008,8 +2258,7 @@ function showLegal(type) {
 }
 
 // ============================================================
-// ===== RENDER EVENTS AVEC AFFICHAGE ORGANISATEUR =====
-// ============================================================
+// ===== RENDER EVENTS =====// ============================================================
 
 function renderEventsByCategory() {
     var container = document.getElementById('eventsByCategory');
@@ -2089,20 +2338,12 @@ function renderEventCard(event) {
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'Nouveau';
     
-    var ratingButtonHtml = '';
-    if (!hasRated && hasTicket) {
-        ratingButtonHtml = '<button class="rating-btn" onclick="event.stopPropagation(); openRatingModal(\'' + event.id + '\', \'' + escapeHtml(event.title) + '\')">Noter</button>';
-    } else if (hasRated) {
-        ratingButtonHtml = '<div class="rated-badge">Note: ' + (userRating ? userRating.rating : '') + '/5</div>';
-    }
-    
     var detailClick = 'onclick="openEventDetails(\'' + event.id + '\')"';
     
     return '<div class="event-card" ' + detailClick + ' style="cursor:pointer;">' +
         '<div class="event-card-banner">' +
             '<img src="' + (event.coverImage || eventImagesList[event.category]) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + eventImagesList[event.category] + '\'">' +
             '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
-            '<span class="event-card-boost"><i class="fas fa-fire"></i> ' + (event.boosts || 0) + '</span>' +
         '</div>' +
         '<div class="event-card-body">' +
             '<div class="event-card-title">' + escapeHtml(event.title) + 
@@ -2117,13 +2358,11 @@ function renderEventCard(event) {
             (event.description ? '<div class="event-card-desc">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
             '<div class="event-card-stats">' +
                 '<span class="event-card-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</span>' +
-                '<span><i class="fas fa-rocket"></i> ' + (event.boosts || 0) + ' boosts</span>' +
             '</div>' +
             '<div class="event-card-footer">' +
                 '<div><span class="event-card-price">' + event.price + ' Pi</span> <span class="event-card-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' places</span></div>' +
                 '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Acheter Ticket</button>' +
             '</div>' +
-            ratingButtonHtml +
         '</div>' +
     '</div>';
 }
@@ -2154,7 +2393,7 @@ function openEventDetails(eventId) {
     document.getElementById('detailDescription').textContent = event.description || 'Aucune description';
     document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Inconnu';
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('fr-FR');
-    document.getElementById('detailBoosts').textContent = event.boosts || 0;
+    document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
     
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
@@ -2253,12 +2492,6 @@ function openEventDetails(eventId) {
         openQuantityPopup(event.id);
     };
     
-    document.getElementById('detailBoostBtn').onclick = function() {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-        boostEvent(event.id);
-    };
-    
     closeBtn.onclick = function() { 
         modal.classList.remove('show');
         document.body.style.overflow = '';
@@ -2333,12 +2566,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
+    
+    // Initialiser les sélecteurs de pays
+    initCountrySelectors();
+    
     calculateLoyaltyPoints();
     initFilters(); 
     renderEventsByCategory(); 
     updateUserInfo(); 
     updateProfilePage(); 
     updateAllProfileImages();
+    renderNotifications();
+    updateNotifBadge();
     initAdmin(); 
     initChat(); 
     initLegalModals();
@@ -2388,7 +2627,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var clearDataBtn = document.getElementById('clearDataBtn');
     var backBtn = document.getElementById('backBtn');
     
-    // Gestion photo de profil dans le sidebar
     var profilePhotoInputSidebar = document.getElementById('profilePhotoInputSidebar');
     if (profilePhotoInputSidebar) {
         profilePhotoInputSidebar.addEventListener('change', function() {
