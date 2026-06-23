@@ -60,11 +60,26 @@
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
-        <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+        <!-- Avatar + Nom utilisateur -->
+        <div class="sidebar-avatar" id="sidebarAvatar">
+            <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+            <span id="sidebarAvatarText">U</span>
+        </div>
+        
+        <!-- Nom et wallet -->
         <h3 id="sidebarName">Invite</h3>
         <p id="sidebarWallet">Non connecte</p>
+        
+        <!-- Bouton Connexion / Deconnexion -->
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connexion Pi</button>
+        
+        <!-- Bouton upload photo de profil -->
+        <div class="profile-upload-sidebar" onclick="document.getElementById('profilePhotoInputSidebar').click()">
+            <i class="fas fa-camera"></i> <span>Changer photo</span>
+        </div>
+        <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
     </div>
+    
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home">Accueil</button>
         <button class="sidebar-item" data-page="profile">Profil</button>
@@ -142,7 +157,6 @@
     
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Rechercher un evenement..."></div>
     
-    <!-- FILTRE PAR PAYS - MENU DEROULANT -->
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choisissez le Pays :</label>
@@ -416,15 +430,41 @@
 </div>
 
 <div id="profilePage" class="hidden-page">
-    <div class="page-content">
-        <h2>Mon profil</h2>
-        <p><strong>Nom :</strong> <span id="profileName">Invite</span></p>
-        <p><strong>Compte Pi :</strong> <span id="profileWallet">Non connecte</span></p>
-        <p><strong>Membre depuis :</strong> <span id="memberSince">2026</span></p>
-        <p><strong>Tickets :</strong> <span id="ticketCount">0</span></p>
-        <p><strong>Evenements notes :</strong> <span id="ratedCount">0</span></p>
-        <p><strong>Points :</strong> <span id="loyaltyPoints">0</span></p>
-        <button class="btn-primary" id="profileConnectBtn">Connexion Pi</button>
+    <div class="page-content profile-page-content">
+        <div class="profile-header-card">
+            <div class="profile-header-avatar">
+                <img id="profilePageAvatar" src="" alt="Avatar" style="display:none; width:100px; height:100px; border-radius:50%; object-fit:cover;">
+                <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="profile-upload-btn" onclick="document.getElementById('profilePhotoInputPage').click()">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <input type="file" id="profilePhotoInputPage" accept="image/*" style="display:none;">
+            </div>
+            <div class="profile-header-info">
+                <h2 id="profileNameDisplay">Invite</h2>
+                <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Non connecte</span></p>
+                <p><i class="fas fa-calendar-alt"></i> Membre depuis <span id="memberSince">2026</span></p>
+            </div>
+        </div>
+        
+        <div class="profile-stats-grid">
+            <div class="stat-card">
+                <span class="stat-number" id="ticketCount">0</span>
+                <span class="stat-label">Tickets</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="ratedCount">0</span>
+                <span class="stat-label">Evenements notes</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="loyaltyPointsDisplay">0</span>
+                <span class="stat-label">Points</span>
+            </div>
+        </div>
+        
+        <button class="btn-primary" id="profileConnectBtnPage">Connexion Pi</button>
     </div>
 </div>
 
@@ -517,19 +557,7 @@
                         <img class="preview-image" id="adminSlidePreview" style="display:none;">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Badge</label>
-                    <input type="text" id="adminSlideBadge" placeholder="Ex: Concert, Sport...">
-                </div>
-                <div class="form-group">
-                    <label>Titre</label>
-                    <input type="text" id="adminSlideTitle" placeholder="Titre de l'evenement">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" id="adminSlideDesc" placeholder="Description courte">
-                </div>
-                <div style="display:flex; gap:12px;">
+                <div style="display:flex; gap:12px; margin-top:12px;">
                     <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Enregistrer</button>
                     <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Annuler</button>
                 </div>
