@@ -52,28 +52,23 @@
     <div class="header-right">
         <button class="menu-btn" id="menuBtn">
             <i class="fas fa-bars"></i>
+            <span class="notif-badge-menu" id="notifBadgeMenu">0</span>
         </button>
     </div>
 </header>
 
+<!-- ===== NOTIFICATIONS PANEL (dans le sidebar) ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
-        <!-- Avatar + Nom utilisateur -->
         <div class="sidebar-avatar" id="sidebarAvatar">
             <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
             <span id="sidebarAvatarText">U</span>
         </div>
-        
-        <!-- Nom et wallet -->
         <h3 id="sidebarName">Invite</h3>
         <p id="sidebarWallet">Non connecte</p>
-        
-        <!-- Bouton Connexion / Deconnexion -->
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connexion Pi</button>
-        
-        <!-- Bouton upload photo de profil -->
         <div class="profile-upload-sidebar" onclick="document.getElementById('profilePhotoInputSidebar').click()">
             <i class="fas fa-camera"></i> <span>Changer photo</span>
         </div>
@@ -82,6 +77,7 @@
     
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home">Accueil</button>
+        <button class="sidebar-item" data-page="myevents">Mes evenements</button>
         <button class="sidebar-item" data-page="profile">Profil</button>
         <button class="sidebar-item" data-page="settings">Parametres</button>
         <button class="sidebar-item" data-page="tickets">Mes tickets</button>
@@ -90,6 +86,17 @@
         <button class="sidebar-item" data-page="faq">FAQ</button>
         
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #0D47A1, #1A73E8); color: white;">Administration</button>
+        
+        <!-- ===== NOTIFICATIONS DANS LE SIDEBAR ===== -->
+        <div class="sidebar-notif-section">
+            <div class="sidebar-notif-header" onclick="toggleNotificationsSidebar()">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notif-badge-sidebar" id="notifBadgeSidebar">0</span>
+                <i class="fas fa-chevron-down" id="notifChevron"></i>
+            </div>
+            <div class="sidebar-notif-list" id="sidebarNotifList"></div>
+        </div>
         
         <div class="sidebar-lang-logo" id="sidebarLangLogo">
             <span class="lang-logo-icon">🌐</span>
@@ -161,91 +168,7 @@
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choisissez le Pays :</label>
             <select id="countrySelect" onchange="filterByCountry(this.value)">
-                <option value="Tous">Tous les pays</option>
-                <option value="Afrique du Sud">Afrique du Sud</option>
-                <option value="Algerie">Algerie</option>
-                <option value="Angola">Angola</option>
-                <option value="Benin">Benin</option>
-                <option value="Botswana">Botswana</option>
-                <option value="Burkina Faso">Burkina Faso</option>
-                <option value="Burundi">Burundi</option>
-                <option value="Cameroun">Cameroun</option>
-                <option value="Cap-Vert">Cap-Vert</option>
-                <option value="Centrafrique">Centrafrique</option>
-                <option value="Comores">Comores</option>
-                <option value="Congo">Congo</option>
-                <option value="Cote d'Ivoire">Cote d'Ivoire</option>
-                <option value="Djibouti">Djibouti</option>
-                <option value="Egypte">Egypte</option>
-                <option value="Erythree">Erythree</option>
-                <option value="Eswatini">Eswatini</option>
-                <option value="Ethiopie">Ethiopie</option>
-                <option value="Gabon">Gabon</option>
-                <option value="Gambie">Gambie</option>
-                <option value="Ghana">Ghana</option>
-                <option value="Guinee">Guinee</option>
-                <option value="Guinee-Bissau">Guinee-Bissau</option>
-                <option value="Guinee Equatoriale">Guinee Equatoriale</option>
-                <option value="Kenya">Kenya</option>
-                <option value="Lesotho">Lesotho</option>
-                <option value="Liberia">Liberia</option>
-                <option value="Libye">Libye</option>
-                <option value="Madagascar">Madagascar</option>
-                <option value="Malawi">Malawi</option>
-                <option value="Mali">Mali</option>
-                <option value="Maroc">Maroc</option>
-                <option value="Maurice">Maurice</option>
-                <option value="Mauritanie">Mauritanie</option>
-                <option value="Mozambique">Mozambique</option>
-                <option value="Namibie">Namibie</option>
-                <option value="Niger">Niger</option>
-                <option value="Nigeria">Nigeria</option>
-                <option value="Ouganda">Ouganda</option>
-                <option value="RDC">RDC</option>
-                <option value="Rwanda">Rwanda</option>
-                <option value="Sao Tome">Sao Tome</option>
-                <option value="Senegal">Senegal</option>
-                <option value="Seychelles">Seychelles</option>
-                <option value="Sierra Leone">Sierra Leone</option>
-                <option value="Somalie">Somalie</option>
-                <option value="Soudan">Soudan</option>
-                <option value="Soudan du Sud">Soudan du Sud</option>
-                <option value="Tanzanie">Tanzanie</option>
-                <option value="Tchad">Tchad</option>
-                <option value="Togo">Togo</option>
-                <option value="Tunisie">Tunisie</option>
-                <option value="Zambie">Zambie</option>
-                <option value="Zimbabwe">Zimbabwe</option>
-                <option value="Allemagne">Allemagne</option>
-                <option value="Angleterre">Angleterre</option>
-                <option value="Arabie Saoudite">Arabie Saoudite</option>
-                <option value="Argentine">Argentine</option>
-                <option value="Australie">Australie</option>
-                <option value="Autriche">Autriche</option>
-                <option value="Belgique">Belgique</option>
-                <option value="Bresil">Bresil</option>
-                <option value="Canada">Canada</option>
-                <option value="Chine">Chine</option>
-                <option value="Coree du Sud">Coree du Sud</option>
-                <option value="Danemark">Danemark</option>
-                <option value="Espagne">Espagne</option>
-                <option value="Etats-Unis">Etats-Unis</option>
-                <option value="France">France</option>
-                <option value="Inde">Inde</option>
-                <option value="Indonesie">Indonesie</option>
-                <option value="Iran">Iran</option>
-                <option value="Italie">Italie</option>
-                <option value="Japon">Japon</option>
-                <option value="Liban">Liban</option>
-                <option value="Mexique">Mexique</option>
-                <option value="Pays-Bas">Pays-Bas</option>
-                <option value="Portugal">Portugal</option>
-                <option value="Royaume-Uni">Royaume-Uni</option>
-                <option value="Russie">Russie</option>
-                <option value="Suede">Suede</option>
-                <option value="Suisse">Suisse</option>
-                <option value="Turquie">Turquie</option>
-                <option value="Ukraine">Ukraine</option>
+                <!-- Les pays sont generes par JavaScript -->
             </select>
         </div>
     </div>
@@ -256,6 +179,16 @@
         <h2 class="events-title">Evenements a venir</h2>
         <p class="events-sub">Rejoignez la communaute et vivez des experiences uniques</p>
         <div id="eventsByCategory" class="events-grid-centered"></div>
+    </div>
+</div>
+
+<!-- ===== MES EVENEMENTS PAGE ===== -->
+<div id="myeventsPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">Mes evenements</h2>
+        <p class="events-sub">Les evenements que vous avez crees</p>
+        <div id="myEventsList" class="events-grid-centered"></div>
+        <button class="btn-back" onclick="showPage('home')">Retour</button>
     </div>
 </div>
 
@@ -281,90 +214,7 @@
             </div>
             <div class="form-group"><label>Pays</label>
                 <select id="eventCountry">
-                    <option value="Afrique du Sud">Afrique du Sud</option>
-                    <option value="Algerie">Algerie</option>
-                    <option value="Angola">Angola</option>
-                    <option value="Benin">Benin</option>
-                    <option value="Botswana">Botswana</option>
-                    <option value="Burkina Faso">Burkina Faso</option>
-                    <option value="Burundi">Burundi</option>
-                    <option value="Cameroun">Cameroun</option>
-                    <option value="Cap-Vert">Cap-Vert</option>
-                    <option value="Centrafrique">Centrafrique</option>
-                    <option value="Comores">Comores</option>
-                    <option value="Congo">Congo</option>
-                    <option value="Cote d'Ivoire">Cote d'Ivoire</option>
-                    <option value="Djibouti">Djibouti</option>
-                    <option value="Egypte">Egypte</option>
-                    <option value="Erythree">Erythree</option>
-                    <option value="Eswatini">Eswatini</option>
-                    <option value="Ethiopie">Ethiopie</option>
-                    <option value="Gabon">Gabon</option>
-                    <option value="Gambie">Gambie</option>
-                    <option value="Ghana">Ghana</option>
-                    <option value="Guinee">Guinee</option>
-                    <option value="Guinee-Bissau">Guinee-Bissau</option>
-                    <option value="Guinee Equatoriale">Guinee Equatoriale</option>
-                    <option value="Kenya">Kenya</option>
-                    <option value="Lesotho">Lesotho</option>
-                    <option value="Liberia">Liberia</option>
-                    <option value="Libye">Libye</option>
-                    <option value="Madagascar">Madagascar</option>
-                    <option value="Malawi">Malawi</option>
-                    <option value="Mali">Mali</option>
-                    <option value="Maroc">Maroc</option>
-                    <option value="Maurice">Maurice</option>
-                    <option value="Mauritanie">Mauritanie</option>
-                    <option value="Mozambique">Mozambique</option>
-                    <option value="Namibie">Namibie</option>
-                    <option value="Niger">Niger</option>
-                    <option value="Nigeria">Nigeria</option>
-                    <option value="Ouganda">Ouganda</option>
-                    <option value="RDC">RDC</option>
-                    <option value="Rwanda">Rwanda</option>
-                    <option value="Sao Tome">Sao Tome</option>
-                    <option value="Senegal">Senegal</option>
-                    <option value="Seychelles">Seychelles</option>
-                    <option value="Sierra Leone">Sierra Leone</option>
-                    <option value="Somalie">Somalie</option>
-                    <option value="Soudan">Soudan</option>
-                    <option value="Soudan du Sud">Soudan du Sud</option>
-                    <option value="Tanzanie">Tanzanie</option>
-                    <option value="Tchad">Tchad</option>
-                    <option value="Togo">Togo</option>
-                    <option value="Tunisie">Tunisie</option>
-                    <option value="Zambie">Zambie</option>
-                    <option value="Zimbabwe">Zimbabwe</option>
-                    <option value="Allemagne">Allemagne</option>
-                    <option value="Angleterre">Angleterre</option>
-                    <option value="Arabie Saoudite">Arabie Saoudite</option>
-                    <option value="Argentine">Argentine</option>
-                    <option value="Australie">Australie</option>
-                    <option value="Autriche">Autriche</option>
-                    <option value="Belgique">Belgique</option>
-                    <option value="Bresil">Bresil</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Chine">Chine</option>
-                    <option value="Coree du Sud">Coree du Sud</option>
-                    <option value="Danemark">Danemark</option>
-                    <option value="Espagne">Espagne</option>
-                    <option value="Etats-Unis">Etats-Unis</option>
-                    <option value="France">France</option>
-                    <option value="Inde">Inde</option>
-                    <option value="Indonesie">Indonesie</option>
-                    <option value="Iran">Iran</option>
-                    <option value="Italie">Italie</option>
-                    <option value="Japon">Japon</option>
-                    <option value="Liban">Liban</option>
-                    <option value="Mexique">Mexique</option>
-                    <option value="Pays-Bas">Pays-Bas</option>
-                    <option value="Portugal">Portugal</option>
-                    <option value="Royaume-Uni">Royaume-Uni</option>
-                    <option value="Russie">Russie</option>
-                    <option value="Suede">Suede</option>
-                    <option value="Suisse">Suisse</option>
-                    <option value="Turquie">Turquie</option>
-                    <option value="Ukraine">Ukraine</option>
+                    <!-- Les pays sont generes par JavaScript -->
                 </select>
             </div>
             <div class="form-group"><label>Date et heure</label><input type="datetime-local" id="eventDate" required></div>
@@ -377,37 +227,21 @@
             <div class="form-group"><label>Prix (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
             <div class="form-group"><label>Places</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
             <div class="form-group">
-                <label>Photos (2 a 5)</label>
+                <label>Photos (2 images uniques)</label>
                 <div id="imageUploadContainer" class="image-upload-area">
                     <div class="upload-box" id="uploadBox1">
                         <span class="upload-icon"><i class="fas fa-camera"></i></span>
                         <p>Photo 1</p>
                         <input type="file" class="image-input" accept="image/*" data-index="0">
                         <img class="preview-image" id="preview0" style="display:none;">
+                        <button type="button" class="remove-image-btn" id="remove0" style="display:none;" onclick="removeImage(0)"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="upload-box" id="uploadBox2">
                         <span class="upload-icon"><i class="fas fa-camera"></i></span>
                         <p>Photo 2</p>
                         <input type="file" class="image-input" accept="image/*" data-index="1">
                         <img class="preview-image" id="preview1" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox3">
-                        <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p>Photo 3</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="2">
-                        <img class="preview-image" id="preview2" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox4">
-                        <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p>Photo 4</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="3">
-                        <img class="preview-image" id="preview3" style="display:none;">
-                    </div>
-                    <div class="upload-box" id="uploadBox5">
-                        <span class="upload-icon"><i class="fas fa-plus"></i></span>
-                        <p>Photo 5</p>
-                        <input type="file" class="image-input" accept="image/*" data-index="4">
-                        <img class="preview-image" id="preview4" style="display:none;">
+                        <button type="button" class="remove-image-btn" id="remove1" style="display:none;" onclick="removeImage(1)"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
             </div>
@@ -461,6 +295,10 @@
             <div class="stat-card">
                 <span class="stat-number" id="loyaltyPointsDisplay">0</span>
                 <span class="stat-label">Points</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="myEventsCount">0</span>
+                <span class="stat-label">Mes evenements</span>
             </div>
         </div>
         
@@ -670,23 +508,6 @@
     </div>
 </div>
 
-<div id="ratingModal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close" id="ratingModalClose"><i class="fas fa-times"></i></span>
-        <h3>Noter l'evenement</h3>
-        <div id="ratingEventInfo"></div>
-        <div class="star-rating">
-            <span class="star" data-rating="1">★</span>
-            <span class="star" data-rating="2">★</span>
-            <span class="star" data-rating="3">★</span>
-            <span class="star" data-rating="4">★</span>
-            <span class="star" data-rating="5">★</span>
-        </div>
-        <textarea id="ratingComment" placeholder="Votre avis" rows="3"></textarea>
-        <button id="submitRatingBtn" class="btn-primary">Envoyer</button>
-    </div>
-</div>
-
 <!-- ===== DETAILS EVENEMENT MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
@@ -722,7 +543,7 @@
                     <div class="detail-grid">
                         <div class="detail-grid-item"><span class="label">Organisateur</span><span class="value" id="detailOrganizer">-</span></div>
                         <div class="detail-grid-item"><span class="label">Cree le</span><span class="value" id="detailCreated">-</span></div>
-                        <div class="detail-grid-item"><span class="label">Boosts</span><span class="value" id="detailBoosts">0</span></div>
+                        <div class="detail-grid-item"><span class="label">Places restantes</span><span class="value" id="detailBoosts">-</span></div>
                         <div class="detail-grid-item"><span class="label">Note</span><span class="value" id="detailRating">-</span></div>
                     </div>
                 </div>
@@ -733,7 +554,6 @@
             </div>
             <div class="event-detail-footer">
                 <button class="btn-primary" id="detailBuyBtn">Acheter Ticket</button>
-                <button class="btn-secondary" id="detailBoostBtn" style="margin-top: 8px;">Booster</button>
             </div>
         </div>
     </div>
@@ -759,14 +579,34 @@
     </div>
 </div>
 
-<!-- ===== POPUP SUCCES ACHAT ===== -->
+<!-- ===== POPUP SUCCES ACHAT (PROFESSIONNEL EN BLEU) ===== -->
 <div id="successPopup" class="success-popup">
-    <div class="success-popup-content">
-        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-        <h3 id="successTitle">Achat reussi !</h3>
+    <div class="success-popup-content success-blue">
+        <div class="success-icon success-icon-blue">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 id="successTitle">Achat reussi</h3>
         <p id="successMessage">Vos tickets ont ete ajoutes avec succes.</p>
-        <div id="successTicketInfo" class="success-ticket-info"></div>
-        <button class="btn-primary" onclick="closeSuccessPopup()">OK</button>
+        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
+        <button class="btn-primary success-btn-blue" onclick="closeSuccessPopup()">OK</button>
+    </div>
+</div>
+
+<!-- ===== CONFIRMATION PUBLICATION ===== -->
+<div id="publishConfirm" class="publish-confirm">
+    <div class="publish-confirm-content">
+        <div class="publish-icon"><i class="fas fa-check-circle"></i></div>
+        <h3>Evenement publie !</h3>
+        <p>Votre evenement a ete cree avec succes.</p>
+        <p id="publishEventTitle" style="font-weight:600;color:var(--primary);"></p>
+        <div class="publish-details">
+            <p><strong>Categorie :</strong> <span id="publishCategory"></span></p>
+            <p><strong>Pays :</strong> <span id="publishCountry"></span></p>
+            <p><strong>Date :</strong> <span id="publishDate"></span></p>
+            <p><strong>Places :</strong> <span id="publishSeats"></span></p>
+            <p><strong>Prix :</strong> <span id="publishPrice"></span></p>
+        </div>
+        <button class="btn-primary" onclick="closePublishConfirm()">OK</button>
     </div>
 </div>
 
