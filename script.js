@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== LISTE DES PAYS EN ORDRE ALPHABETIQUE =====
 // ============================================================
 
-const countriesList = [
+var countriesList = [
     'Tous',
     'Afrique du Sud', 'Algerie', 'Allemagne', 'Angleterre', 'Angola',
     'Arabie Saoudite', 'Argentine', 'Australie', 'Autriche',
@@ -242,35 +242,35 @@ const countriesList = [
 // ===== VARIABLES GLOBALES =====
 // ============================================================
 
-let events = JSON.parse(localStorage.getItem('betix_events')) || [];
-let tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
-let currentUser = JSON.parse(localStorage.getItem('betix_user')) || { 
+var events = JSON.parse(localStorage.getItem('betix_events')) || [];
+var tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
+var currentUser = JSON.parse(localStorage.getItem('betix_user')) || { 
     name: 'Invite', 
     wallet: null, 
     memberSince: '2026', 
     loyaltyPoints: 0,
     profilePhoto: null
 };
-let currentFilter = 'Tous';
-let currentCountryFilter = 'Tous';
-let searchQuery = '';
-let piUser = null;
-let ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
-let chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || [];
-let connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
-let notifications = JSON.parse(localStorage.getItem('betix_notifications')) || [];
-let adminCode = 'Betix@2026#';
-let selectedRating = 0;
-let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
-let pageHistory = ['home'];
-let logoClickCount = 0;
+var currentFilter = 'Tous';
+var currentCountryFilter = 'Tous';
+var searchQuery = '';
+var piUser = null;
+var ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
+var chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || [];
+var connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
+var notifications = JSON.parse(localStorage.getItem('betix_notifications')) || [];
+var adminCode = 'Betix@2026#';
+var selectedRating = 0;
+var lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
+var pageHistory = ['home'];
+var logoClickCount = 0;
 
-let adminSessionTimer = 1800;
-let adminTimerInterval = null;
-let adminLogs = JSON.parse(localStorage.getItem('betix_admin_logs')) || [];
-let adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
+var adminSessionTimer = 1800;
+var adminTimerInterval = null;
+var adminLogs = JSON.parse(localStorage.getItem('betix_admin_logs')) || [];
+var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
-let heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
+var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
 
 if (heroSlides.length === 0) {
     heroSlides = [
@@ -308,9 +308,9 @@ if (heroSlides.length === 0) {
     localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
 }
 
-const BACKEND_URL = "https://betix-backend.onrender.com";
+var BACKEND_URL = "https://betix-backend.onrender.com";
 
-const eventImagesList = {
+var eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
     Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
     Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
@@ -324,7 +324,7 @@ const eventImagesList = {
     Seminaire: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
 };
 
-const demoEvents = [
+var demoEvents = [
     { id: '1', title: 'Concert de Jazz', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'Soiree jazz exceptionnelle avec les meilleurs artistes internationaux', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree\nRespecter les regles de l evenement', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '2', title: 'Match de Football', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Match amical entre equipes locales', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nPresenter son ticket a l entree', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '3', title: 'Conference Blockchain', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Decouvrez l avenir de la blockchain et du Web3', conditions: 'Avoir un wallet Pi Network actif\nPaiement en Pi (montant indique)\nInscription obligatoire', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
@@ -356,11 +356,11 @@ function saveNotifications() { localStorage.setItem('betix_notifications', JSON.
 // ============================================================
 
 function initCountrySelectors() {
-    // Sélecteur de filtre pays
     var filterSelect = document.getElementById('countrySelect');
     if (filterSelect) {
         filterSelect.innerHTML = '';
-        countriesList.forEach(function(country) {
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
             var option = document.createElement('option');
             option.value = country;
             option.textContent = country;
@@ -368,16 +368,15 @@ function initCountrySelectors() {
                 option.selected = true;
             }
             filterSelect.appendChild(option);
-        });
+        }
     }
     
-    // Sélecteur de pays pour la création d'événement
     var eventSelect = document.getElementById('eventCountry');
     if (eventSelect) {
         eventSelect.innerHTML = '';
-        // Exclure "Tous" du sélecteur de création
-        var creationCountries = countriesList.filter(function(c) { return c !== 'Tous'; });
-        creationCountries.forEach(function(country) {
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
+            if (country === 'Tous') continue;
             var option = document.createElement('option');
             option.value = country;
             option.textContent = country;
@@ -385,7 +384,7 @@ function initCountrySelectors() {
                 option.selected = true;
             }
             eventSelect.appendChild(option);
-        });
+        }
     }
 }
 
@@ -448,7 +447,7 @@ function updateAllProfileImages() {
 }
 
 // ============================================================
-// ===== SUPPRESSION D'IMAGE LORS DE LA CREATION =====
+// ===== SUPPRESSION D'IMAGE =====
 // ============================================================
 
 function removeImage(index) {
@@ -592,19 +591,55 @@ function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.c
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
 
 // ============================================================
-// ===== NOTIFICATIONS =====
+// ===== NOTIFICATIONS DANS LE SIDEBAR =====
 // ============================================================
 
-function toggleNotifications() {
-    var panel = document.getElementById('notifPanel');
-    var overlay = document.getElementById('notifOverlay');
-    if (panel && overlay) {
-        panel.classList.toggle('open');
-        overlay.classList.toggle('active');
-        if (panel.classList.contains('open')) {
-            updateNotifBadge();
+var notificationsOpen = false;
+
+function toggleNotificationsSidebar() {
+    var list = document.getElementById('sidebarNotifList');
+    var header = document.querySelector('.sidebar-notif-header');
+    if (list && header) {
+        notificationsOpen = !notificationsOpen;
+        list.classList.toggle('open');
+        header.classList.toggle('open');
+        if (notificationsOpen) {
+            renderSidebarNotifications();
+            updateNotifBadgeSidebar();
         }
     }
+}
+
+function renderSidebarNotifications() {
+    var container = document.getElementById('sidebarNotifList');
+    if (!container) return;
+    
+    if (notifications.length === 0) {
+        container.innerHTML = '<div class="sidebar-notif-empty"><i class="fas fa-bell-slash"></i>Aucune notification</div>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < Math.min(notifications.length, 20); i++) {
+        var notif = notifications[i];
+        var time = new Date(notif.date);
+        var timeStr = time.toLocaleDateString('fr-FR') + ' ' + time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        var unreadClass = notif.read ? '' : 'unread';
+        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
+        html += '<div class="sidebar-notif-item ' + unreadClass + '">' +
+            '<div class="notif-icon-small"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-text">' + notif.message + '<span class="notif-time">' + timeStr + '</span></div>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+    
+    // Marquer comme lues
+    for (var j = 0; j < notifications.length; j++) {
+        notifications[j].read = true;
+    }
+    saveNotifications();
+    updateNotifBadgeSidebar();
+    updateNotifBadgeMenu();
 }
 
 function addNotification(message, type) {
@@ -620,43 +655,37 @@ function addNotification(message, type) {
         notifications = notifications.slice(0, 100);
     }
     saveNotifications();
-    renderNotifications();
-    updateNotifBadge();
-}
-
-function renderNotifications() {
-    var container = document.getElementById('notifList');
-    if (!container) return;
     
-    if (notifications.length === 0) {
-        container.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i>Aucune notification</div>';
-        return;
+    // Si les notifications sont ouvertes, les rafraîchir
+    if (notificationsOpen) {
+        renderSidebarNotifications();
     }
-    
-    container.innerHTML = notifications.map(function(notif) {
-        var time = new Date(notif.date);
-        var timeStr = time.toLocaleDateString('fr-FR') + ' ' + time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        var unreadClass = notif.read ? '' : 'unread';
-        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
-        return '<div class="notif-item ' + unreadClass + '">' +
-            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-content">' +
-                '<div class="notif-text">' + notif.message + '</div>' +
-                '<span class="notif-time">' + timeStr + '</span>' +
-            '</div>' +
-        '</div>';
-    }).join('');
-    
-    // Marquer comme lues
-    notifications.forEach(function(n) { n.read = true; });
-    saveNotifications();
-    updateNotifBadge();
+    updateNotifBadgeSidebar();
+    updateNotifBadgeMenu();
 }
 
-function updateNotifBadge() {
-    var badge = document.getElementById('notifBadge');
+function updateNotifBadgeSidebar() {
+    var badge = document.getElementById('notifBadgeSidebar');
     if (!badge) return;
-    var unread = notifications.filter(function(n) { return !n.read; }).length;
+    var unread = 0;
+    for (var i = 0; i < notifications.length; i++) {
+        if (!notifications[i].read) unread++;
+    }
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function updateNotifBadgeMenu() {
+    var badge = document.getElementById('notifBadgeMenu');
+    if (!badge) return;
+    var unread = 0;
+    for (var i = 0; i < notifications.length; i++) {
+        if (!notifications[i].read) unread++;
+    }
     if (unread > 0) {
         badge.textContent = unread;
         badge.style.display = 'flex';
@@ -1422,16 +1451,12 @@ function createEvent(e) {
         }
     }
     
-    // Notification de publication
     addNotification(
         'Votre evenement "' + newEvent.title + '" a ete publie avec succes !',
         'event'
     );
     
-    // Popup de confirmation
     showPublishConfirm(newEvent);
-    
-    // Mettre à jour le compteur dans le profil
     updateProfilePage();
 }
 
@@ -1458,7 +1483,6 @@ function closePublishConfirm() {
     }
 }
 
-// Fermer la confirmation en cliquant à l'extérieur
 document.addEventListener('click', function(e) {
     var popup = document.getElementById('publishConfirm');
     if (popup && popup.classList.contains('show')) {
@@ -1589,8 +1613,8 @@ async function onIncompletePaymentFound(payment) { console.log("Paiement incompl
 // ===== POPUP QUANTITE TICKETS =====
 // ============================================================
 
-let selectedEventForPurchase = null;
-let currentTicketQuantity = 1;
+var selectedEventForPurchase = null;
+var currentTicketQuantity = 1;
 
 function openQuantityPopup(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
@@ -1766,7 +1790,6 @@ async function confirmPurchase(eventId, quantity) {
                     saveEvents();
                     saveTickets();
                     
-                    // Notification pour l'organisateur
                     var organizerName = event.organizerName || event.organizer || 'Organisateur';
                     addNotification(
                         'Achat de ' + quantity + ' ticket(s) pour "' + event.title + '" par ' + (currentUser.name || 'un utilisateur'),
@@ -1886,7 +1909,6 @@ function updateProfilePage() {
     if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
     if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
     
-    // Compter les événements créés par l'utilisateur
     var myEvents = events.filter(function(e) {
         return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
     });
@@ -1966,31 +1988,6 @@ function handleImageUpload(input, index) {
         input.dataset.imageData = imageData;
     };
     reader.readAsDataURL(file);
-}
-
-function openRatingModal(eventId, eventTitle) {
-    selectedRating = 0;
-    var modal = document.getElementById('ratingModal');
-    document.getElementById('ratingEventInfo').innerHTML = '<p><strong>' + escapeHtml(eventTitle) + '</strong></p>';
-    document.getElementById('ratingComment').value = '';
-    var stars = document.querySelectorAll('#ratingModal .star');
-    for (var i = 0; i < stars.length; i++) {
-        stars[i].classList.remove('active');
-        stars[i].onclick = function() { selectedRating = parseInt(this.dataset.rating); for (var j = 0; j < stars.length; j++) { if (parseInt(stars[j].dataset.rating) <= selectedRating) stars[j].classList.add('active'); else stars[j].classList.remove('active'); } };
-    }
-    document.getElementById('submitRatingBtn').onclick = function() {
-        if (selectedRating === 0) { alert('Choisissez une note'); return; }
-        ratings.push({ id: Date.now(), eventId: eventId, eventTitle: eventTitle, rating: selectedRating, comment: document.getElementById('ratingComment').value || '', userWallet: currentUser.wallet || currentUser.name, userName: currentUser.name, date: new Date().toISOString() });
-        localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-        currentUser.loyaltyPoints = (currentUser.loyaltyPoints || 0) + selectedRating;
-        saveUser();
-        updateLoyaltyPointsDisplay();
-        alert('Note ' + selectedRating + '/5 enregistree ! Vous gagnez ' + selectedRating + ' points de fidelite.');
-        modal.classList.remove('show');
-        renderEventsByCategory(); renderMyRatings(); updateProfilePage();
-    };
-    modal.classList.add('show');
-    document.getElementById('ratingModalClose').onclick = function() { modal.classList.remove('show'); };
 }
 
 function renderMyRatings() {
@@ -2085,7 +2082,7 @@ function googleTranslateElementInit() {
 // ===== FAQ =====
 // ============================================================
 
-const faqData = [
+var faqData = [
     [
         { q: "Qu'est-ce que Betix ?", a: "Betix est la premiere plateforme de billetterie d'evenements decentralisee construite sur le reseau Pi Network." },
         { q: "Comment fonctionne Betix ?", a: "Betix utilise la blockchain Pi Network pour garantir la securite et la transparence des transactions." },
@@ -2124,7 +2121,7 @@ const faqData = [
     ]
 ];
 
-let currentFaqPage = 0;
+var currentFaqPage = 0;
 
 function renderFaqPage(pageIndex) {
     var container = document.getElementById('faqContainer');
@@ -2258,7 +2255,8 @@ function showLegal(type) {
 }
 
 // ============================================================
-// ===== RENDER EVENTS =====// ============================================================
+// ===== RENDER EVENTS =====
+// ============================================================
 
 function renderEventsByCategory() {
     var container = document.getElementById('eventsByCategory');
@@ -2567,7 +2565,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     
-    // Initialiser les sélecteurs de pays
     initCountrySelectors();
     
     calculateLoyaltyPoints();
@@ -2576,8 +2573,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateUserInfo(); 
     updateProfilePage(); 
     updateAllProfileImages();
-    renderNotifications();
-    updateNotifBadge();
+    updateNotifBadgeSidebar();
+    updateNotifBadgeMenu();
+    renderSidebarNotifications();
     initAdmin(); 
     initChat(); 
     initLegalModals();
