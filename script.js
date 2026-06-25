@@ -26,11 +26,42 @@ console.log('Loading Google Translate...');
 // ============================================================
 
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_s56MHx938L-NvnSwshln41w_4K5qf...";
+const SUPABASE_ANON_KEY = "sb_publishable_s56MHx938L-NvnSwshn41w_4K5qf...";
 
-// Initialisation de Supabase
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log("Supabase initialized");
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    },
+    db: {
+        schema: 'public'
+    }
+});
+
+console.log("Supabase initialized successfully");
+
+// ============================================================
+// ===== TEST DE CONNEXION =====
+// ============================================================
+
+async function testSupabaseConnection() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('events')
+            .select('count', { count: 'exact', head: true });
+        
+        if (error) {
+            console.error("Supabase connection test failed:", error);
+        } else {
+            console.log("Supabase connection successful!");
+        }
+    } catch (err) {
+        console.error("Supabase test error:", err);
+    }
+}
+
+testSupabaseConnection();
 
 // ============================================================
 // ===== COUNTRY LIST IN ALPHABETICAL ORDER =====
@@ -194,8 +225,6 @@ function saveNotifications() {
 // ===== SUPABASE SYNC FUNCTIONS =====
 // ============================================================
 
-// --- EVENTS ---
-
 async function loadEventsFromSupabase() {
     try {
         const { data, error } = await supabaseClient
@@ -203,7 +232,10 @@ async function loadEventsFromSupabase() {
             .select('*')
             .order('date', { ascending: true });
         
-        if (error) throw error;
+        if (error) {
+            console.error("Error loading events:", error);
+            return false;
+        }
         
         if (data && data.length > 0) {
             events = data;
@@ -221,6 +253,11 @@ async function loadEventsFromSupabase() {
 
 async function syncEventsToSupabase() {
     try {
+        if (events.length === 0) {
+            console.log('No events to sync');
+            return;
+        }
+        
         const { error: deleteError } = await supabaseClient
             .from('events')
             .delete()
@@ -228,21 +265,17 @@ async function syncEventsToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        if (events.length > 0) {
-            const { error: insertError } = await supabaseClient
-                .from('events')
-                .insert(events);
-            
-            if (insertError) throw insertError;
-        }
+        const { error: insertError } = await supabaseClient
+            .from('events')
+            .insert(events);
+        
+        if (insertError) throw insertError;
         
         console.log('Events synced to Supabase:', events.length);
     } catch (error) {
         console.error('Error syncing events:', error);
     }
 }
-
-// --- TICKETS ---
 
 async function loadTicketsFromSupabase() {
     try {
@@ -251,7 +284,10 @@ async function loadTicketsFromSupabase() {
             .select('*')
             .order('purchaseDate', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+            console.error("Error loading tickets:", error);
+            return false;
+        }
         
         if (data && data.length > 0) {
             tickets = data;
@@ -270,6 +306,11 @@ async function loadTicketsFromSupabase() {
 
 async function syncTicketsToSupabase() {
     try {
+        if (tickets.length === 0) {
+            console.log('No tickets to sync');
+            return;
+        }
+        
         const { error: deleteError } = await supabaseClient
             .from('tickets')
             .delete()
@@ -277,13 +318,11 @@ async function syncTicketsToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        if (tickets.length > 0) {
-            const { error: insertError } = await supabaseClient
-                .from('tickets')
-                .insert(tickets);
-            
-            if (insertError) throw insertError;
-        }
+        const { error: insertError } = await supabaseClient
+            .from('tickets')
+            .insert(tickets);
+        
+        if (insertError) throw insertError;
         
         console.log('Tickets synced to Supabase:', tickets.length);
     } catch (error) {
@@ -291,15 +330,16 @@ async function syncTicketsToSupabase() {
     }
 }
 
-// --- USERS ---
-
 async function loadUsersFromSupabase() {
     try {
         const { data, error } = await supabaseClient
             .from('users')
             .select('*');
         
-        if (error) throw error;
+        if (error) {
+            console.error("Error loading users:", error);
+            return false;
+        }
         
         if (data && data.length > 0) {
             connectedUsers = data;
@@ -316,6 +356,11 @@ async function loadUsersFromSupabase() {
 
 async function syncUsersToSupabase() {
     try {
+        if (connectedUsers.length === 0) {
+            console.log('No users to sync');
+            return;
+        }
+        
         const { error: deleteError } = await supabaseClient
             .from('users')
             .delete()
@@ -323,13 +368,11 @@ async function syncUsersToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        if (connectedUsers.length > 0) {
-            const { error: insertError } = await supabaseClient
-                .from('users')
-                .insert(connectedUsers);
-            
-            if (insertError) throw insertError;
-        }
+        const { error: insertError } = await supabaseClient
+            .from('users')
+            .insert(connectedUsers);
+        
+        if (insertError) throw insertError;
         
         console.log('Users synced to Supabase:', connectedUsers.length);
     } catch (error) {
@@ -337,15 +380,16 @@ async function syncUsersToSupabase() {
     }
 }
 
-// --- RATINGS ---
-
 async function loadRatingsFromSupabase() {
     try {
         const { data, error } = await supabaseClient
             .from('ratings')
             .select('*');
         
-        if (error) throw error;
+        if (error) {
+            console.error("Error loading ratings:", error);
+            return false;
+        }
         
         if (data && data.length > 0) {
             ratings = data;
@@ -362,6 +406,11 @@ async function loadRatingsFromSupabase() {
 
 async function syncRatingsToSupabase() {
     try {
+        if (ratings.length === 0) {
+            console.log('No ratings to sync');
+            return;
+        }
+        
         const { error: deleteError } = await supabaseClient
             .from('ratings')
             .delete()
@@ -369,21 +418,17 @@ async function syncRatingsToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        if (ratings.length > 0) {
-            const { error: insertError } = await supabaseClient
-                .from('ratings')
-                .insert(ratings);
-            
-            if (insertError) throw insertError;
-        }
+        const { error: insertError } = await supabaseClient
+            .from('ratings')
+            .insert(ratings);
+        
+        if (insertError) throw insertError;
         
         console.log('Ratings synced to Supabase:', ratings.length);
     } catch (error) {
         console.error('Error syncing ratings:', error);
     }
 }
-
-// --- NOTIFICATIONS ---
 
 async function loadNotificationsFromSupabase() {
     try {
@@ -392,7 +437,10 @@ async function loadNotificationsFromSupabase() {
             .select('*')
             .order('date', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+            console.error("Error loading notifications:", error);
+            return false;
+        }
         
         if (data && data.length > 0) {
             notifications = data;
@@ -410,6 +458,11 @@ async function loadNotificationsFromSupabase() {
 
 async function syncNotificationsToSupabase() {
     try {
+        if (notifications.length === 0) {
+            console.log('No notifications to sync');
+            return;
+        }
+        
         const { error: deleteError } = await supabaseClient
             .from('notifications')
             .delete()
@@ -417,13 +470,11 @@ async function syncNotificationsToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        if (notifications.length > 0) {
-            const { error: insertError } = await supabaseClient
-                .from('notifications')
-                .insert(notifications);
-            
-            if (insertError) throw insertError;
-        }
+        const { error: insertError } = await supabaseClient
+            .from('notifications')
+            .insert(notifications);
+        
+        if (insertError) throw insertError;
         
         console.log('Notifications synced to Supabase:', notifications.length);
     } catch (error) {
