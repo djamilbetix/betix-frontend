@@ -1,398 +1,84 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conditions d'utilisation - Betix</title>
+    <title>Terms of Service - Betix</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .legal-page {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-        .legal-page h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .legal-page .last-update {
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 1rem;
-        }
-        .legal-page h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 2rem;
-            margin-bottom: 0.8rem;
-            color: var(--primary-dark);
-        }
-        .legal-page h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary-dark);
-        }
-        .legal-page p {
-            color: #4b5563;
-            line-height: 1.8;
-            margin-bottom: 0.8rem;
-        }
-        .legal-page ul {
-            padding-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .legal-page ul li {
-            color: #4b5563;
-            line-height: 1.8;
-            margin-bottom: 0.5rem;
-        }
-        .legal-page .highlight-box {
-            background: #f0f7ff;
-            border-left: 4px solid var(--primary);
-            padding: 1rem 1.5rem;
-            border-radius: 0 12px 12px 0;
-            margin: 1.5rem 0;
-        }
-        .legal-page .highlight-box p {
-            margin-bottom: 0;
-        }
-        .legal-page .warning-box {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 1rem 1.5rem;
-            border-radius: 0 12px 12px 0;
-            margin: 1.5rem 0;
-        }
-        .legal-page .warning-box p {
-            margin-bottom: 0;
-            color: #991b1b;
-        }
-        .legal-page .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-            background: #f9fafb;
-            padding: 1.5rem;
-            border-radius: 16px;
-        }
-        .legal-page .contact-grid .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .legal-page .contact-grid .contact-item a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .legal-page .contact-grid .contact-item a:hover {
-            text-decoration: underline;
-        }
-        .legal-page .back-link {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 0.6rem 1.5rem;
-            background: var(--gradient);
-            color: white;
-            border-radius: 40px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: opacity 0.2s;
-        }
-        .legal-page .back-link:hover {
-            opacity: 0.85;
-        }
-        .legal-page .legal-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        .legal-page .legal-table th,
-        .legal-page .legal-table td {
-            padding: 10px 14px;
-            border: 1px solid #e5e7eb;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-        .legal-page .legal-table th {
-            background: var(--gradient);
-            color: white;
-            font-weight: 600;
-        }
-        .legal-page .legal-table td {
-            background: white;
-        }
-        .legal-page .legal-table tr:nth-child(even) td {
-            background: #f9fafb;
-        }
-        .legal-page .data-category {
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
-
-        body.dark-mode .legal-page h2 {
-            color: var(--primary-light);
-        }
-        body.dark-mode .legal-page h3 {
-            color: var(--primary-light);
-        }
-        body.dark-mode .legal-page p,
-        body.dark-mode .legal-page ul li {
-            color: #d1d5db;
-        }
-        body.dark-mode .legal-page .highlight-box {
-            background: #1e293b;
-            border-left-color: var(--primary);
-        }
-        body.dark-mode .legal-page .warning-box {
-            background: #1e1a2e;
-            border-left-color: #ef4444;
-        }
-        body.dark-mode .legal-page .warning-box p {
-            color: #fca5a5;
-        }
-        body.dark-mode .legal-page .contact-grid {
-            background: #1f2937;
-        }
-        body.dark-mode .legal-page .last-update {
-            border-bottom-color: #374151;
-        }
-        body.dark-mode .legal-page .legal-table td {
-            background: #1f2937;
-            border-color: #374151;
-            color: #d1d5db;
-        }
-        body.dark-mode .legal-page .legal-table tr:nth-child(even) td {
-            background: #1a2234;
-        }
-        body.dark-mode .legal-page .data-category {
-            color: var(--primary-light);
-        }
-    </style>
 </head>
 <body>
 
 <header class="header">
-    <div class="header-left">
-        <button class="back-btn" onclick="window.location.href='/'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <div class="logo" onclick="window.location.href='/'">Betix</div>
-    </div>
+    <div class="logo" onclick="window.location.href='/'">Betix</div>
 </header>
 
-<div class="legal-page">
-    <h1>Conditions d'utilisation</h1>
-    <p class="last-update">Dernière mise à jour : 19 juin 2026</p>
+<div class="page-content">
+    <h1>Terms of Service</h1>
+    <p><strong>Last updated: June 2026</strong></p>
 
-    <p>
-        Bienvenue sur Betix, la plateforme de billetterie décentralisée construite sur le réseau Pi Network. 
-        Les présentes conditions d'utilisation régissent l'accès et l'utilisation de notre service. 
-        En utilisant Betix, vous acceptez pleinement ces conditions. Si vous n'acceptez pas ces conditions, 
-        veuillez ne pas utiliser notre plateforme.
-    </p>
+    <h2>1. Acceptance of Terms</h2>
+    <p>By using Betix, you agree to these terms. If you do not agree to these terms, please do not use our platform.</p>
 
-    <div class="highlight-box">
-        <p><strong>Engagement Betix :</strong> Nous nous engageons à fournir une plateforme transparente, sécurisée et décentralisée pour la billetterie événementielle, sans commission et sans intermédiaire inutile.</p>
-    </div>
+    <h2>2. Description of Service</h2>
+    <p>Betix is a decentralized ticketing platform that allows organizers to create events and participants to purchase tickets using Pi Network.</p>
 
-    <div class="warning-box">
-        <p><strong>Avertissement important :</strong> Betix est une plateforme d'intermédiation technique. Nous ne sommes pas responsables du contenu des événements, de leur organisation, ni des litiges entre organisateurs et participants. Les transactions en Pi Network sont irréversibles.</p>
-    </div>
+    <h2>3. Eligibility</h2>
+    <p>You must be at least 18 years old and have a valid Pi Network account to use Betix.</p>
 
-    <h2>1. Acceptation des conditions</h2>
-    <p>En créant un compte, en accédant à notre plateforme ou en utilisant nos services, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser Betix.</p>
-    <p>Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications entrent en vigueur dès leur publication sur cette page. Votre utilisation continue de Betix après la publication des modifications constitue votre acceptation des nouvelles conditions.</p>
+    <h2>4. Organizer Responsibilities</h2>
+    <p>Organizers are responsible for the accuracy of their event information, compliance with local laws, and seat management. Betix is not responsible for event cancellations or modifications.</p>
 
-    <h2>2. Description du service</h2>
-    <p>Betix est une plateforme de billetterie décentralisée qui permet :</p>
-    <ul>
-        <li><strong>Aux organisateurs :</strong> De créer, publier et gérer des événements, de fixer le prix des billets en Pi Network, et de gérer les places disponibles.</li>
-        <li><strong>Aux participants :</strong> De découvrir des événements, d'acheter des billets exclusivement en Pi Network, et de gérer leurs tickets via la plateforme.</li>
-        <li><strong>À tous :</strong> De bénéficier d'une plateforme sans commission, transparente et sécurisée grâce à la technologie blockchain Pi Network.</li>
-    </ul>
-    <p>Betix agit comme un intermédiaire technique mettant en relation les organisateurs et les participants. Nous ne sommes pas organisateurs des événements publiés sur notre plateforme.</p>
+    <h2>5. Participant Responsibilities</h2>
+    <p>Participants agree to provide accurate information, not to resell tickets, and to comply with event rules.</p>
 
-    <h2>3. Éligibilité</h2>
-    <p>Pour utiliser Betix, vous devez remplir les conditions suivantes :</p>
-    <ul>
-        <li><strong>Âge :</strong> Être âgé d'au moins 18 ans.</li>
-        <li><strong>Compte Pi Network :</strong> Posséder un compte Pi Network valide et actif.</li>
-        <li><strong>Portefeuille Pi :</strong> Disposer d'un portefeuille Pi Network fonctionnel pour effectuer les transactions.</li>
-        <li><strong>Capacité juridique :</strong> Avoir la capacité juridique de conclure un contrat contraignant.</li>
-    </ul>
-    <p>En utilisant Betix, vous déclarez et garantissez que vous remplissez toutes ces conditions.</p>
+    <h2>6. Payments</h2>
+    <p>All payments are made exclusively in Pi Network. No commissions are charged by Betix. Transactions are final and irreversible.</p>
 
-    <h2>4. Création et gestion des événements</h2>
-    <p>En tant qu'organisateur, vous êtes entièrement responsable de :</p>
-    <ul>
-        <li><strong>Exactitude des informations :</strong> La véracité, l'exactitude et l'exhaustivité des informations fournies sur votre événement (titre, description, date, lieu, conditions de participation, prix, nombre de places).</li>
-        <li><strong>Respect des lois :</strong> Le respect de toutes les lois et réglementations locales applicables à votre événement (déclarations, autorisations, sécurité, droits d'auteur).</li>
-        <li><strong>Gestion des places :</strong> La gestion du nombre de places disponibles et la mise à jour en temps réel des disponibilités.</li>
-        <li><strong>Conditions de participation :</strong> La rédaction claire des conditions de participation, qui doivent inclure au minimum : l'obligation d'avoir un wallet Pi, les modalités de paiement, les règles d'accès à l'événement.</li>
-        <li><strong>Communication :</strong> La communication avec les participants concernant les modifications, annulations ou tout changement affectant l'événement.</li>
-        <li><strong>Validation des billets :</strong> La vérification de l'authenticité des billets à l'entrée de l'événement via les codes QR générés par Betix.</li>
-    </ul>
-    <p>Betix se réserve le droit de supprimer tout événement qui ne respecterait pas ces conditions, sans préavis.</p>
+    <h2>7. Tickets and QR Codes</h2>
+    <p>Tickets are generated with a unique QR code. They are not transferable. Presentation of an expired or falsified QR code will result in denial of access to the event.</p>
 
-    <h2>5. Responsabilités des participants</h2>
-    <p>En tant que participant, vous vous engagez à :</p>
-    <ul>
-        <li><strong>Informations exactes :</strong> Fournir des informations exactes et à jour lors de vos achats et interactions sur la plateforme.</li>
-        <li><strong>Non-revente :</strong> Ne pas revendre les billets achetés sur Betix en dehors de la plateforme. Toute revente non autorisée est strictement interdite.</li>
-        <li><strong>Respect des règles :</strong> Vous conformer aux règles et conditions de participation de chaque événement pour lequel vous achetez un billet.</li>
-        <li><strong>Présentation du billet :</strong> Présenter votre billet (code QR) valide à l'entrée de l'événement. Un billet expiré, falsifié ou déjà utilisé entraînera le refus d'accès.</li>
-        <li><strong>Sécurité de votre compte :</strong> Assurer la sécurité de votre compte Pi Network et de vos identifiants. Vous êtes responsable de toute activité effectuée sur votre compte.</li>
-    </ul>
+    <h2>8. Cancellation and Refund</h2>
+    <p>Refunds are at the discretion of the organizer. Betix does not directly process refunds. In case of event cancellation, contact the organizer.</p>
 
-    <h2>6. Paiements en Pi Network</h2>
-    <p>Les paiements sur Betix sont régis par les règles suivantes :</p>
-    <ul>
-        <li><strong>Exclusivité Pi Network :</strong> Tous les paiements sont effectués exclusivement en Pi Network (π). Aucune autre cryptomonnaie ou monnaie fiduciaire n'est acceptée.</li>
-        <li><strong>Zéro commission :</strong> Betix ne prélève aucune commission sur les transactions. L'intégralité du paiement est reversée à l'organisateur, déduction faite des frais de réseau Pi Network applicables.</li>
-        <li><strong>Irrevocabilité :</strong> Toutes les transactions sur la blockchain Pi Network sont définitives, irréversibles et non annulables. Une fois un paiement effectué, il ne peut pas être annulé ou annulé.</li>
-        <li><strong>Vérification blockchain :</strong> Toutes les transactions sont enregistrées sur la blockchain Pi Network et sont vérifiables publiquement.</li>
-        <li><strong>Responsabilité :</strong> Vous êtes responsable de la sécurité de votre portefeuille Pi et de la vérification des montants avant validation.</li>
-    </ul>
-    <p><strong>Attention :</strong> En raison de l'irréversibilité des transactions blockchain, Betix ne peut pas traiter de remboursement direct. Les remboursements éventuels sont à la discrétion de l'organisateur.</p>
+    <h2>9. Limitation of Liability</h2>
+    <p>Betix acts as a technical intermediary. We are not responsible for canceled events, fake tickets generated outside our platform, or disputes between organizers and participants.</p>
 
-    <h2>7. Tickets et codes QR</h2>
-    <p>Les billets émis sur Betix présentent les caractéristiques suivantes :</p>
-    <ul>
-        <li><strong>Unicité :</strong> Chaque billet est généré avec un code QR unique et infalsifiable, cryptographiquement sécurisé.</li>
-        <li><strong>Non-transférabilité :</strong> Les billets sont nominatifs et ne sont pas transférables. Ils sont liés à votre identifiant Pi Network.</li>
-        <li><strong>Validation :</strong> La présentation d'un code QR valide est obligatoire pour l'accès à l'événement. Les codes QR expirés, falsifiés, déjà utilisés ou non conformes entraîneront le refus d'accès.</li>
-        <li><strong>Vérification :</strong> Les organisateurs peuvent vérifier l'authenticité des billets via la blockchain Pi Network.</li>
-        <li><strong>Conservation :</strong> Les billets sont conservés dans votre espace "Mes tickets" sur la plateforme. Nous vous recommandons de les sauvegarder également sur votre appareil.</li>
-    </ul>
+    <h2>10. Modification of Service</h2>
+    <p>We reserve the right to modify or suspend Betix at any time, for maintenance or improvements.</p>
 
-    <h2>8. Annulation et remboursement</h2>
-    <p>La politique d'annulation et de remboursement est la suivante :</p>
-    <ul>
-        <li><strong>À la discrétion de l'organisateur :</strong> Les remboursements sont entièrement à la discrétion de l'organisateur de l'événement. Betix n'intervient pas dans le processus de remboursement.</li>
-        <li><strong>Contact direct :</strong> En cas d'annulation d'événement, vous devez contacter directement l'organisateur pour toute demande de remboursement.</li>
-        <li><strong>Irreversibilité blockchain :</strong> Betix ne peut pas annuler ou inverser une transaction blockchain. Les remboursements éventuels doivent être initiés par l'organisateur via un nouveau transfert en Pi Network.</li>
-        <li><strong>Absence de garantie :</strong> Betix ne garantit pas que les organisateurs procèderont à des remboursements. Nous ne sommes pas responsables des annulations d'événements ou des refus de remboursement.</li>
-        <li><strong>Modification d'événement :</strong> En cas de modification d'événement (changement de date, de lieu, de programme), il appartient à l'organisateur de vous informer et de gérer la situation.</li>
-    </ul>
+    <h2>11. Termination</h2>
+    <p>We may suspend your account in case of fraud, misuse, or violation of these terms.</p>
 
-    <h2>9. Comportement interdit</h2>
-    <p>Sont strictement interdits sur Betix :</p>
-    <ul>
-        <li><strong>Fraude :</strong> Toute tentative de fraude, de falsification, d'utilisation de faux billets, ou de manipulation des données.</li>
-        <li><strong>Utilisation abusive :</strong> L'utilisation de la plateforme à des fins illégales, malveillantes, ou non conformes aux présentes conditions.</li>
-        <li><strong>Harcèlement :</strong> Toute forme de harcèlement, d'abus, ou de comportement inapproprié envers d'autres utilisateurs.</li>
-        <li><strong>Spam :</strong> L'envoi de messages non sollicités, de publicité, ou de contenu indésirable.</li>
-        <li><strong>Contenu inapproprié :</strong> La publication d'événements dont le contenu est illégal, offensant, discriminatoire, ou qui porterait atteinte aux droits de tiers.</li>
-        <li><strong>Revendeur non autorisé :</strong> La revente de billets en dehors de la plateforme Betix.</li>
-        <li><strong>Exploitation de vulnérabilités :</strong> Toute tentative d'exploiter des failles de sécurité de la plateforme.</li>
-    </ul>
-    <p>En cas de comportement interdit, Betix se réserve le droit de suspendre ou de résilier immédiatement votre compte, sans préavis, et de prendre toute mesure légale nécessaire.</p>
-
-    <h2>10. Propriété intellectuelle</h2>
-    <p>La plateforme Betix, son code, son design, ses fonctionnalités, et son contenu (hors événements publiés par les utilisateurs) sont protégés par les droits de propriété intellectuelle :</p>
-    <ul>
-        <li><strong>Marques :</strong> Le nom "Betix" et le logo associé sont des marques déposées. Toute utilisation non autorisée est interdite.</li>
-        <li><strong>Code source :</strong> Le code source de la plateforme est la propriété de Betix. Il est interdit de le copier, le modifier, le distribuer ou le réutiliser sans autorisation.</li>
-        <li><strong>Contenu utilisateur :</strong> Les organisateurs conservent les droits sur le contenu qu'ils publient (description, images, etc.). En publiant sur Betix, vous nous accordez une licence non exclusive pour l'hébergement, l'affichage et la distribution de ce contenu sur notre plateforme.</li>
-        <li><strong>Respect des droits :</strong> Les organisateurs garantissent que leur contenu ne porte pas atteinte aux droits de tiers (droits d'auteur, marques, etc.).</li>
-    </ul>
-
-    <h2>11. Limitation de responsabilité</h2>
-    <p>Dans les limites autorisées par la loi, Betix décline toute responsabilité :</p>
-    <ul>
-        <li><strong>Événements annulés :</strong> Nous ne sommes pas responsables des annulations, modifications ou report d'événements publiés sur notre plateforme.</li>
-        <li><strong>Faux billets :</strong> Nous ne sommes pas responsables des faux billets générés en dehors de notre plateforme ou des tentatives de fraude.</li>
-        <li><strong>Litiges :</strong> Nous ne sommes pas responsables des litiges entre organisateurs et participants. Nous agissons comme un intermédiaire technique neutre.</li>
-        <li><strong>Problèmes techniques :</strong> Nous ne sommes pas responsables des interruptions de service, des bugs, ou des problèmes techniques indépendants de notre volonté.</li>
-        <li><strong>Contenu des événements :</strong> Nous ne sommes pas responsables du contenu, de la qualité, de la sécurité ou de la légalité des événements publiés.</li>
-        <li><strong>Dommages indirects :</strong> Nous ne sommes pas responsables des dommages indirects, pertes de profits, ou préjudices immatériels résultant de l'utilisation de notre plateforme.</li>
-    </ul>
-    <p>La responsabilité totale de Betix envers vous est limitée au montant total des frais que vous avez payés à Betix (sachant que Betix ne prélève pas de commission).</p>
-
-    <h2>12. Garanties et assurances</h2>
-    <p>Betix est fournie "en l'état" et "selon disponibilité", sans garantie d'aucune sorte, expresse ou implicite, y compris les garanties de qualité marchande, d'adéquation à un usage particulier, ou de non-contrefaçon. Nous ne garantissons pas que la plateforme sera exempte d'erreurs ou ininterrompue.</p>
-    <p>Les organisateurs sont seuls responsables de leur événement et doivent souscrire les assurances nécessaires à l'organisation de leur événement.</p>
-
-    <h2>13. Modification et suspension du service</h2>
-    <p>Nous nous réservons le droit de :</p>
-    <ul>
-        <li><strong>Modifier le service :</strong> Ajouter, supprimer ou modifier des fonctionnalités de la plateforme à tout moment.</li>
-        <li><strong>Suspendre le service :</strong> Suspendre temporairement le service pour maintenance, améliorations ou mises à jour de sécurité.</li>
-        <li><strong>Arrêter le service :</strong> Mettre fin à la plateforme avec un préavis raisonnable.</li>
-        <li><strong>Limiter l'accès :</strong> Restreindre l'accès à certaines fonctionnalités ou à certains utilisateurs.</li>
-    </ul>
-    <p>Nous vous informerons dans la mesure du possible des interruptions de service prévues.</p>
-
-    <h2>14. Résiliation du compte</h2>
-    <p>Nous pouvons suspendre ou résilier votre compte immédiatement, sans préavis, dans les cas suivants :</p>
-    <ul>
-        <li><strong>Fraude :</strong> En cas de fraude avérée ou suspectée.</li>
-        <li><strong>Utilisation abusive :</strong> En cas de violation des présentes conditions d'utilisation.</li>
-        <li><strong>Comportement inapproprié :</strong> En cas de comportement malveillant, harcelant ou nuisible envers d'autres utilisateurs.</li>
-        <li><strong>Activité suspecte :</strong> En cas d'activité susceptible de nuire à l'intégrité de la plateforme.</li>
-        <li><strong>Non-respect des lois :</strong> En cas de non-respect des lois applicables.</li>
-    </ul>
-    <p>Vous pouvez également résilier votre compte à tout moment en nous contactant. La suppression de votre compte ne supprime pas les enregistrements blockchain qui sont immuables.</p>
-
-    <h2>15. Résolution des litiges</h2>
-    <p>En cas de litige :</p>
-    <ul>
-        <li><strong>Contact préalable :</strong> Vous devez d'abord nous contacter pour tenter de résoudre le litige à l'amiable.</li>
-        <li><strong>Médiation :</strong> Si le litige persiste, une médiation pourra être envisagée avant toute action judiciaire.</li>
-        <li><strong>Juridiction compétente :</strong> Les présentes conditions sont régies par la loi française. Tout litige relèvera de la compétence exclusive des tribunaux français.</li>
-        <li><strong>Délai :</strong> Toute action en justice doit être intentée dans un délai d'un an à compter de la survenance du fait générateur du litige.</li>
-    </ul>
-
-    <h2>16. Droit applicable</h2>
-    <p>Les présentes conditions d'utilisation sont régies par le droit français, à l'exclusion de ses règles de conflit de lois. Les transactions effectuées via la blockchain Pi Network sont également soumises aux règles du réseau Pi Network.</p>
-
-    <h2>17. Contact</h2>
-    <p>Pour toute question concernant ces conditions d'utilisation, vous pouvez nous contacter :</p>
-
-    <div class="contact-grid">
-        <div class="contact-item">
-            <strong>Email :</strong>
-            <a href="mailto:betixservices@gmail.com">betixservices@gmail.com</a>
-        </div>
-        <div class="contact-item">
-            <strong>Twitter :</strong>
-            <a href="https://twitter.com/betix_app" target="_blank">@betix_app</a>
-        </div>
-        <div class="contact-item">
-            <strong>Support :</strong>
-            <span>Chat en ligne disponible sur la plateforme</span>
-        </div>
-    </div>
-
-    <p>Nous nous engageons à répondre à toutes vos demandes dans un délai de 30 jours maximum.</p>
-
-    <a href="/" class="back-link">Retour à l'accueil</a>
+    <h2>12. Contact</h2>
+    <p>For any questions, contact us at: betixservices@gmail.com</p>
 </div>
 
-<footer class="footer" style="margin-top: 2rem;">
-    <p>&copy; 2026 Betix - Tous droits réservés</p>
+<footer class="betix-footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <div class="footer-logo">Betix</div>
+            <p class="footer-slogan">Decentralized Event Ticketing on Pi Network</p>
+            <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#" onclick="window.location.href='terms.html'">Terms of Service</a></li>
+                <li><a href="#" onclick="window.location.href='privacy.html'">Privacy Policy</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+                <li><a href="mailto:betixservices@gmail.com">betixservices@gmail.com</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 Betix. All rights reserved.</span>
+        <span>Built on Pi Network | Secured by Blockchain</span>
+    </div>
 </footer>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-    });
-</script>
 
 </body>
 </html>
