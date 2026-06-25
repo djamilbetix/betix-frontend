@@ -22,7 +22,18 @@ function reinitTranslation() {
 console.log('Loading Google Translate...');
 
 // ============================================================
-// ===== COUNTRY LIST IN ALPHABETICAL ORDER (with Kenya) =====
+// ===== SUPABASE CONFIGURATION =====
+// ============================================================
+
+const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_s56MHx938L-NvnSwshln41w_4K5qf...";
+
+// Initialisation de Supabase
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+console.log("Supabase initialized");
+
+// ============================================================
+// ===== COUNTRY LIST IN ALPHABETICAL ORDER =====
 // ============================================================
 
 var countriesList = [
@@ -154,10 +165,293 @@ var demoEvents = [
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
-function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); }
-function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); }
-function saveUser() { localStorage.setItem('betix_user', JSON.stringify(currentUser)); }
-function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
+
+// ============================================================
+// ===== SAVE FUNCTIONS (Local + Supabase) =====
+// ============================================================
+
+function saveEvents() { 
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    syncEventsToSupabase();
+}
+
+function saveTickets() { 
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    syncTicketsToSupabase();
+}
+
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser));
+    syncUsersToSupabase();
+}
+
+function saveNotifications() { 
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    syncNotificationsToSupabase();
+}
+
+// ============================================================
+// ===== SUPABASE SYNC FUNCTIONS =====
+// ============================================================
+
+// --- EVENTS ---
+
+async function loadEventsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('events')
+            .select('*')
+            .order('date', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            events = data;
+            localStorage.setItem('betix_events', JSON.stringify(events));
+            renderEventsByCategory();
+            console.log('Events loaded from Supabase:', events.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading events:', error);
+        return false;
+    }
+}
+
+async function syncEventsToSupabase() {
+    try {
+        const { error: deleteError } = await supabaseClient
+            .from('events')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        if (events.length > 0) {
+            const { error: insertError } = await supabaseClient
+                .from('events')
+                .insert(events);
+            
+            if (insertError) throw insertError;
+        }
+        
+        console.log('Events synced to Supabase:', events.length);
+    } catch (error) {
+        console.error('Error syncing events:', error);
+    }
+}
+
+// --- TICKETS ---
+
+async function loadTicketsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('tickets')
+            .select('*')
+            .order('purchaseDate', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            tickets = data;
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            renderTickets();
+            renderHistory();
+            console.log('Tickets loaded from Supabase:', tickets.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading tickets:', error);
+        return false;
+    }
+}
+
+async function syncTicketsToSupabase() {
+    try {
+        const { error: deleteError } = await supabaseClient
+            .from('tickets')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        if (tickets.length > 0) {
+            const { error: insertError } = await supabaseClient
+                .from('tickets')
+                .insert(tickets);
+            
+            if (insertError) throw insertError;
+        }
+        
+        console.log('Tickets synced to Supabase:', tickets.length);
+    } catch (error) {
+        console.error('Error syncing tickets:', error);
+    }
+}
+
+// --- USERS ---
+
+async function loadUsersFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('*');
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            connectedUsers = data;
+            localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+            console.log('Users loaded from Supabase:', connectedUsers.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading users:', error);
+        return false;
+    }
+}
+
+async function syncUsersToSupabase() {
+    try {
+        const { error: deleteError } = await supabaseClient
+            .from('users')
+            .delete()
+            .neq('wallet', '');
+        
+        if (deleteError) throw deleteError;
+        
+        if (connectedUsers.length > 0) {
+            const { error: insertError } = await supabaseClient
+                .from('users')
+                .insert(connectedUsers);
+            
+            if (insertError) throw insertError;
+        }
+        
+        console.log('Users synced to Supabase:', connectedUsers.length);
+    } catch (error) {
+        console.error('Error syncing users:', error);
+    }
+}
+
+// --- RATINGS ---
+
+async function loadRatingsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('ratings')
+            .select('*');
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            ratings = data;
+            localStorage.setItem('betix_ratings', JSON.stringify(ratings));
+            console.log('Ratings loaded from Supabase:', ratings.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading ratings:', error);
+        return false;
+    }
+}
+
+async function syncRatingsToSupabase() {
+    try {
+        const { error: deleteError } = await supabaseClient
+            .from('ratings')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        if (ratings.length > 0) {
+            const { error: insertError } = await supabaseClient
+                .from('ratings')
+                .insert(ratings);
+            
+            if (insertError) throw insertError;
+        }
+        
+        console.log('Ratings synced to Supabase:', ratings.length);
+    } catch (error) {
+        console.error('Error syncing ratings:', error);
+    }
+}
+
+// --- NOTIFICATIONS ---
+
+async function loadNotificationsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('notifications')
+            .select('*')
+            .order('date', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            notifications = data;
+            localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+            updateNotifBadgeHeader();
+            console.log('Notifications loaded from Supabase:', notifications.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        return false;
+    }
+}
+
+async function syncNotificationsToSupabase() {
+    try {
+        const { error: deleteError } = await supabaseClient
+            .from('notifications')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        if (notifications.length > 0) {
+            const { error: insertError } = await supabaseClient
+                .from('notifications')
+                .insert(notifications);
+            
+            if (insertError) throw insertError;
+        }
+        
+        console.log('Notifications synced to Supabase:', notifications.length);
+    } catch (error) {
+        console.error('Error syncing notifications:', error);
+    }
+}
+
+// --- GLOBAL SYNC ---
+
+async function syncAllFromSupabase() {
+    console.log('Syncing all data from Supabase...');
+    await loadEventsFromSupabase();
+    await loadTicketsFromSupabase();
+    await loadUsersFromSupabase();
+    await loadRatingsFromSupabase();
+    await loadNotificationsFromSupabase();
+    console.log('All data synced from Supabase');
+}
+
+async function syncAllToSupabase() {
+    console.log('Syncing all data to Supabase...');
+    await syncEventsToSupabase();
+    await syncTicketsToSupabase();
+    await syncUsersToSupabase();
+    await syncRatingsToSupabase();
+    await syncNotificationsToSupabase();
+    console.log('All data synced to Supabase');
+}
 
 // ============================================================
 // ===== INITIALIZE COUNTRY SELECTORS =====
@@ -2456,6 +2750,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindActivityListeners(); 
     startSessionMonitor();
+    
+    // ===== SYNC WITH SUPABASE =====
+    syncAllFromSupabase();
+
+    // Auto-save every 30 seconds
+    setInterval(function() {
+        syncAllToSupabase();
+    }, 30000);
+
+    // Save when user leaves the page
+    window.addEventListener('beforeunload', function() {
+        syncAllToSupabase();
+    });
     
     if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
 });
