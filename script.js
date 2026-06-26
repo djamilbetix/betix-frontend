@@ -70,9 +70,9 @@ var countriesList = [
 // ===== GLOBAL VARIABLES =====
 // ============================================================
 
-var events = JSON.parse(localStorage.getItem('betix_events')) || [];
-var tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
-var currentUser = JSON.parse(localStorage.getItem('betix_user')) || { 
+var events = [];
+var tickets = [];
+var currentUser = { 
     name: 'Guest', 
     wallet: null, 
     memberSince: '2026', 
@@ -83,10 +83,10 @@ var currentFilter = 'All';
 var currentCountryFilter = 'All';
 var searchQuery = '';
 var piUser = null;
-var ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
-var chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || [];
-var connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
-var notifications = JSON.parse(localStorage.getItem('betix_notifications')) || [];
+var ratings = [];
+var chatMessages = [];
+var connectedUsers = [];
+var notifications = [];
 var adminCode = 'Betix@2026#';
 var selectedRating = 0;
 var lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
@@ -95,7 +95,7 @@ var logoClickCount = 0;
 
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
-var adminLogs = JSON.parse(localStorage.getItem('betix_admin_logs')) || [];
+var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
 var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
@@ -176,8 +176,49 @@ function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
 
 // ============================================================
-// ===== SUPABASE FUNCTIONS =====
+// ===== SAVE FUNCTIONS (LOCAL + SUPABASE) =====
 // ============================================================
+
+function saveEvents() { 
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    syncEventsToSupabase();
+}
+
+function saveTickets() { 
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    syncTicketsToSupabase();
+}
+
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser));
+    syncUsersToSupabase();
+}
+
+function saveNotifications() { 
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    syncNotificationsToSupabase();
+}
+
+function saveChatMessages() {
+    localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
+    syncChatToSupabase();
+}
+
+function saveRatings() {
+    localStorage.setItem('betix_ratings', JSON.stringify(ratings));
+    syncRatingsToSupabase();
+}
+
+function saveConnectedUsers() {
+    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+    syncUsersToSupabase();
+}
+
+// ============================================================
+// ===== SUPABASE SYNC FUNCTIONS =====
+// ============================================================
+
+// --- EVENTS ---
 
 async function loadEventsFromSupabase() {
     try {
@@ -197,8 +238,14 @@ async function loadEventsFromSupabase() {
             renderEventsByCategory();
             console.log('Events loaded from Supabase:', events.length);
             return true;
+        } else {
+            events = JSON.parse(JSON.stringify(demoEvents));
+            localStorage.setItem('betix_events', JSON.stringify(events));
+            await syncEventsToSupabase();
+            renderEventsByCategory();
+            console.log('Demo events loaded and synced to Supabase');
+            return true;
         }
-        return false;
     } catch (error) {
         console.error('Error loading events:', error);
         return false;
@@ -230,6 +277,8 @@ async function syncEventsToSupabase() {
         console.error('Error syncing events:', error);
     }
 }
+
+// --- TICKETS ---
 
 async function loadTicketsFromSupabase() {
     try {
@@ -284,6 +333,8 @@ async function syncTicketsToSupabase() {
     }
 }
 
+// --- USERS ---
+
 async function loadUsersFromSupabase() {
     try {
         const { data, error } = await supabaseClient
@@ -298,6 +349,22 @@ async function loadUsersFromSupabase() {
         if (data && data.length > 0) {
             connectedUsers = data;
             localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+            
+            // Restaurer l'utilisateur actuel
+            if (currentUser.wallet) {
+                const existingUser = connectedUsers.find(u => u.wallet === currentUser.wallet);
+                if (existingUser) {
+                    currentUser.name = existingUser.name;
+                    currentUser.profilePhoto = existingUser.profilePhoto || null;
+                    currentUser.loyaltyPoints = existingUser.loyaltyPoints || 0;
+                    currentUser.memberSince = existingUser.memberSince || '2026';
+                    saveUser();
+                    updateUserInfo();
+                    updateProfilePage();
+                    updateAllProfileImages();
+                }
+            }
+            
             console.log('Users loaded from Supabase:', connectedUsers.length);
             return true;
         }
@@ -310,6 +377,25 @@ async function loadUsersFromSupabase() {
 
 async function syncUsersToSupabase() {
     try {
+        if (currentUser.wallet) {
+            const existingIndex = connectedUsers.findIndex(u => u.wallet === currentUser.wallet);
+            const userData = {
+                wallet: currentUser.wallet,
+                name: currentUser.name,
+                ticketCount: tickets.filter(t => t.buyerWallet === currentUser.wallet).length,
+                lastSeen: new Date().toLocaleString(),
+                profilePhoto: currentUser.profilePhoto || null,
+                loyaltyPoints: currentUser.loyaltyPoints || 0,
+                memberSince: currentUser.memberSince || '2026'
+            };
+            
+            if (existingIndex !== -1) {
+                connectedUsers[existingIndex] = userData;
+            } else {
+                connectedUsers.push(userData);
+            }
+        }
+        
         if (connectedUsers.length === 0) {
             console.log('No users to sync');
             return;
@@ -328,11 +414,14 @@ async function syncUsersToSupabase() {
         
         if (insertError) throw insertError;
         
+        localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
         console.log('Users synced to Supabase:', connectedUsers.length);
     } catch (error) {
         console.error('Error syncing users:', error);
     }
 }
+
+// --- RATINGS ---
 
 async function loadRatingsFromSupabase() {
     try {
@@ -383,6 +472,8 @@ async function syncRatingsToSupabase() {
         console.error('Error syncing ratings:', error);
     }
 }
+
+// --- NOTIFICATIONS ---
 
 async function loadNotificationsFromSupabase() {
     try {
@@ -436,33 +527,119 @@ async function syncNotificationsToSupabase() {
     }
 }
 
-// ============================================================
-// ===== SAVE FUNCTIONS (Local + Supabase) =====
-// ============================================================
+// --- CHAT ---
 
-function saveEvents() { 
-    localStorage.setItem('betix_events', JSON.stringify(events));
-    syncEventsToSupabase();
+async function loadChatFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('chat_messages')
+            .select('*')
+            .order('timestamp', { ascending: true });
+        
+        if (error) {
+            console.error("Error loading chat messages:", error);
+            return false;
+        }
+        
+        if (data && data.length > 0) {
+            chatMessages = data;
+            localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
+            // Recharger le chat si ouvert
+            const chatContainer = document.getElementById('chatMessages');
+            if (chatContainer) {
+                renderChatMessages();
+            }
+            console.log('Chat messages loaded from Supabase:', chatMessages.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading chat messages:', error);
+        return false;
+    }
 }
 
-function saveTickets() { 
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    syncTicketsToSupabase();
+async function syncChatToSupabase() {
+    try {
+        if (chatMessages.length === 0) {
+            console.log('No chat messages to sync');
+            return;
+        }
+        
+        const { error: deleteError } = await supabaseClient
+            .from('chat_messages')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        const { error: insertError } = await supabaseClient
+            .from('chat_messages')
+            .insert(chatMessages);
+        
+        if (insertError) throw insertError;
+        
+        console.log('Chat messages synced to Supabase:', chatMessages.length);
+    } catch (error) {
+        console.error('Error syncing chat messages:', error);
+    }
 }
 
-function saveUser() { 
-    localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncUsersToSupabase();
+// --- ADMIN LOGS ---
+
+async function loadAdminLogsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('admin_logs')
+            .select('*')
+            .order('timestamp', { ascending: false });
+        
+        if (error) {
+            console.error("Error loading admin logs:", error);
+            return false;
+        }
+        
+        if (data && data.length > 0) {
+            adminLogs = data;
+            localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+            renderAdminLogs();
+            console.log('Admin logs loaded from Supabase:', adminLogs.length);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading admin logs:', error);
+        return false;
+    }
 }
 
-function saveNotifications() { 
-    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncNotificationsToSupabase();
+async function syncAdminLogsToSupabase() {
+    try {
+        if (adminLogs.length === 0) {
+            console.log('No admin logs to sync');
+            return;
+        }
+        
+        const { error: deleteError } = await supabaseClient
+            .from('admin_logs')
+            .delete()
+            .neq('id', '');
+        
+        if (deleteError) throw deleteError;
+        
+        const { error: insertError } = await supabaseClient
+            .from('admin_logs')
+            .insert(adminLogs);
+        
+        if (insertError) throw insertError;
+        
+        console.log('Admin logs synced to Supabase:', adminLogs.length);
+    } catch (error) {
+        console.error('Error syncing admin logs:', error);
+    }
 }
 
-// ============================================================
-// ===== GLOBAL SYNC =====
-// ============================================================
+// --- GLOBAL SYNC ---
 
 async function syncAllFromSupabase() {
     console.log('Syncing all data from Supabase...');
@@ -471,6 +648,8 @@ async function syncAllFromSupabase() {
     await loadUsersFromSupabase();
     await loadRatingsFromSupabase();
     await loadNotificationsFromSupabase();
+    await loadChatFromSupabase();
+    await loadAdminLogsFromSupabase();
     console.log('All data synced from Supabase');
 }
 
@@ -481,44 +660,237 @@ async function syncAllToSupabase() {
     await syncUsersToSupabase();
     await syncRatingsToSupabase();
     await syncNotificationsToSupabase();
+    await syncChatToSupabase();
+    await syncAdminLogsToSupabase();
     console.log('All data synced to Supabase');
 }
 
 // ============================================================
-// ===== INITIALIZE COUNTRY SELECTORS =====
+// ===== RENDER CHAT MESSAGES =====
 // ============================================================
 
-function initCountrySelectors() {
-    var filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
-            var option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (country === currentCountryFilter) {
-                option.selected = true;
-            }
-            filterSelect.appendChild(option);
-        }
+function renderChatMessages() {
+    var container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    if (!chatMessages || chatMessages.length === 0) {
+        var emptyMsg = document.createElement('div');
+        emptyMsg.className = 'chat-message support';
+        emptyMsg.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
+        container.appendChild(emptyMsg);
+        return;
     }
     
-    var eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
-            if (country === 'All') continue;
-            var option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (country === 'France') {
-                option.selected = true;
-            }
-            eventSelect.appendChild(option);
+    for (var i = 0; i < chatMessages.length; i++) {
+        var m = chatMessages[i];
+        var d = document.createElement('div');
+        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
+        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
+        container.appendChild(d);
+    }
+    container.scrollTop = container.scrollHeight;
+}
+
+// ============================================================
+// ===== LANGUAGE MANAGEMENT =====
+// ============================================================
+
+function changeLanguage(lang) {
+    localStorage.setItem('betix_language', lang);
+    var currentUrl = window.location.href;
+    var url = new URL(currentUrl);
+    url.searchParams.set('lang', lang);
+    window.location.href = url.toString();
+}
+
+function detectLanguage() {
+    var savedLang = localStorage.getItem('betix_language') || 'en';
+    var urlParams = new URLSearchParams(window.location.search);
+    var urlLang = urlParams.get('lang');
+    if (urlLang) {
+        localStorage.setItem('betix_language', urlLang);
+        savedLang = urlLang;
+    }
+    var select = document.getElementById('nativeLangSelect');
+    if (select) {
+        select.value = savedLang;
+    }
+    return savedLang;
+}
+
+// ============================================================
+// ===== NOTIFICATION PANEL =====
+// ============================================================
+
+function openNotificationPanel() {
+    var panel = document.getElementById('notificationPanel');
+    if (panel) {
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+            renderNotificationPanel();
         }
     }
+}
+
+function closeNotificationPanel() {
+    var panel = document.getElementById('notificationPanel');
+    if (panel) {
+        panel.classList.remove('open');
+    }
+}
+
+function renderNotificationPanel() {
+    var container = document.getElementById('notificationPanelBody');
+    if (!container) return;
+    
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < Math.min(notifications.length, 20); i++) {
+        var notif = notifications[i];
+        var time = new Date(notif.date);
+        var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        var unreadClass = notif.read ? '' : 'unread';
+        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
+        
+        html += '<div class="notification-item ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
+                '<div class="notif-time">' + timeStr + '</div>' +
+            '</div>' +
+        '</div>';
+        notifications[i].read = true;
+    }
+    container.innerHTML = html;
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
+function toggleNotifications() {
+    openNotificationPanel();
+}
+
+function updateNotifBadgeHeader() {
+    var badge = document.getElementById('notifBadgeHeader');
+    if (!badge) return;
+    var unread = 0;
+    for (var i = 0; i < notifications.length; i++) {
+        if (!notifications[i].read) unread++;
+    }
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function addNotification(message, type) {
+    var notif = {
+        id: Date.now(),
+        message: message,
+        type: type || 'info',
+        read: false,
+        date: new Date().toISOString()
+    };
+    notifications.unshift(notif);
+    if (notifications.length > 100) {
+        notifications = notifications.slice(0, 100);
+    }
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
+// ============================================================
+// ===== NAVIGATION DEPUIS LE PROFIL =====
+// ============================================================
+
+function goToMyEvents() {
+    showPage('myevents');
+}
+
+function goToTickets() {
+    showPage('tickets');
+}
+
+function goToHistory() {
+    showPage('history');
+}
+
+function goToRatings() {
+    showPage('ratings');
+}
+
+// ============================================================
+// ===== IMAGE UPLOAD FIX =====
+// ============================================================
+
+function handleImageUpload(input, index) {
+    var file = input.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image');
+        input.value = '';
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image is too large (max 5MB)');
+        input.value = '';
+        return;
+    }
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var imageData = e.target.result;
+        
+        var preview = document.getElementById('preview' + index);
+        var removeBtn = document.getElementById('remove' + index);
+        var box = document.getElementById('uploadBox' + (index + 1));
+        
+        if (preview) {
+            preview.src = imageData;
+            preview.style.display = 'block';
+        }
+        if (box) {
+            box.classList.add('has-image');
+        }
+        if (removeBtn) {
+            removeBtn.style.display = 'block';
+        }
+        input.dataset.imageData = imageData;
+        console.log('Image ' + (index + 1) + ' uploaded successfully');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage(index) {
+    var preview = document.getElementById('preview' + index);
+    var box = document.getElementById('uploadBox' + (index + 1));
+    var input = document.querySelector('.image-input[data-index="' + index + '"]');
+    var removeBtn = document.getElementById('remove' + index);
+    
+    if (preview) {
+        preview.style.display = 'none';
+        preview.src = '';
+    }
+    if (box) {
+        box.classList.remove('has-image');
+    }
+    if (input) {
+        input.value = '';
+        input.dataset.imageData = '';
+    }
+    if (removeBtn) {
+        removeBtn.style.display = 'none';
+    }
+    console.log('Image ' + (index + 1) + ' removed');
 }
 
 // ============================================================
@@ -542,7 +914,7 @@ function handleProfilePhotoUpload(file) {
         currentUser.profilePhoto = imageData;
         saveUser();
         updateAllProfileImages();
-        alert('Profile photo updated!');
+        alert('Profile photo updated and saved!');
     };
     reader.readAsDataURL(file);
 }
@@ -580,28 +952,39 @@ function updateAllProfileImages() {
 }
 
 // ============================================================
-// ===== IMAGE REMOVAL =====
+// ===== INITIALIZE COUNTRY SELECTORS =====
 // ============================================================
 
-function removeImage(index) {
-    var preview = document.getElementById('preview' + index);
-    var box = document.getElementById('uploadBox' + (index + 1));
-    var input = document.querySelector('.image-input[data-index="' + index + '"]');
-    var removeBtn = document.getElementById('remove' + index);
+function initCountrySelectors() {
+    var filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === currentCountryFilter) {
+                option.selected = true;
+            }
+            filterSelect.appendChild(option);
+        }
+    }
     
-    if (preview) {
-        preview.style.display = 'none';
-        preview.src = '';
-    }
-    if (box) {
-        box.classList.remove('has-image');
-    }
-    if (input) {
-        input.value = '';
-        input.dataset.imageData = '';
-    }
-    if (removeBtn) {
-        removeBtn.style.display = 'none';
+    var eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
+            if (country === 'All') continue;
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === 'France') {
+                option.selected = true;
+            }
+            eventSelect.appendChild(option);
+        }
     }
 }
 
@@ -720,82 +1103,6 @@ function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.c
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
 
 // ============================================================
-// ===== NOTIFICATIONS =====// ============================================================
-
-function updateNotifBadgeHeader() {
-    var badge = document.getElementById('notifBadgeHeader');
-    if (!badge) return;
-    var unread = 0;
-    for (var i = 0; i < notifications.length; i++) {
-        if (!notifications[i].read) unread++;
-    }
-    if (unread > 0) {
-        badge.textContent = unread;
-        badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-function addNotification(message, type) {
-    var notif = {
-        id: Date.now(),
-        message: message,
-        type: type || 'info',
-        read: false,
-        date: new Date().toISOString()
-    };
-    notifications.unshift(notif);
-    if (notifications.length > 100) {
-        notifications = notifications.slice(0, 100);
-    }
-    saveNotifications();
-    updateNotifBadgeHeader();
-}
-
-function toggleNotifications() {
-    var list = document.getElementById('sidebarNotifList');
-    if (list) {
-        var isOpen = list.classList.contains('open');
-        list.classList.toggle('open');
-        if (!isOpen) {
-            renderSidebarNotifications();
-            updateNotifBadgeHeader();
-        }
-    }
-}
-
-function renderSidebarNotifications() {
-    var container = document.getElementById('sidebarNotifList');
-    if (!container) return;
-    
-    if (notifications.length === 0) {
-        container.innerHTML = '<div class="sidebar-notif-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
-        return;
-    }
-    
-    var html = '';
-    for (var i = 0; i < Math.min(notifications.length, 20); i++) {
-        var notif = notifications[i];
-        var time = new Date(notif.date);
-        var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        var unreadClass = notif.read ? '' : 'unread';
-        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
-        html += '<div class="sidebar-notif-item ' + unreadClass + '">' +
-            '<div class="notif-icon-small"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-text">' + notif.message + '<span class="notif-time">' + timeStr + '</span></div>' +
-        '</div>';
-    }
-    container.innerHTML = html;
-    
-    for (var j = 0; j < notifications.length; j++) {
-        notifications[j].read = true;
-    }
-    saveNotifications();
-    updateNotifBadgeHeader();
-}
-
-// ============================================================
 // ===== UPDATE CONNECT BUTTONS =====
 // ============================================================
 
@@ -843,6 +1150,7 @@ function addAdminLog(action, details) {
         adminLogs = adminLogs.slice(0, 500);
     }
     localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+    syncAdminLogsToSupabase();
     renderAdminLogs();
 }
 
@@ -871,6 +1179,7 @@ function adminClearLogs() {
     if (confirm('Clear all connection logs?')) {
         adminLogs = [];
         localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+        syncAdminLogsToSupabase();
         renderAdminLogs();
         addAdminLog('Logs cleared', 'All logs were deleted');
         alert('Logs cleared');
@@ -1482,12 +1791,10 @@ function createEvent(e) {
     
     var imageInputs = document.querySelectorAll('.image-input');
     var images = [];
-    var hasImage = false;
     for (var i = 0; i < imageInputs.length; i++) {
         var input = imageInputs[i];
         if (input.dataset.imageData) {
             images.push(input.dataset.imageData);
-            hasImage = true;
         }
     }
     
@@ -1534,22 +1841,7 @@ function createEvent(e) {
     document.getElementById('eventForm').reset();
     
     for (var i = 0; i < 5; i++) {
-        var preview = document.getElementById('preview' + i);
-        if (preview) {
-            preview.style.display = 'none';
-            preview.src = '';
-        }
-        var box = document.getElementById('uploadBox' + (i + 1));
-        if (box) box.classList.remove('has-image');
-        var input = document.querySelector('.image-input[data-index="' + i + '"]');
-        if (input) {
-            input.value = '';
-            input.dataset.imageData = '';
-        }
-        var removeBtn = document.getElementById('remove' + i);
-        if (removeBtn) {
-            removeBtn.style.display = 'none';
-        }
+        removeImage(i);
     }
     
     addNotification(
@@ -1832,7 +2124,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// ===== PURCHASE CONFIRMATION WITH QUANTITY =====
+// ===== PURCHASE CONFIRMATION =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -2003,12 +2295,22 @@ function updateProfilePage() {
     var ratedCount = document.getElementById('ratedCount');
     var loyaltyDisplay = document.getElementById('loyaltyPointsDisplay');
     var myEventsCount = document.getElementById('myEventsCount');
+    var historyCount = document.getElementById('historyCount');
+    var profileRatingDisplay = document.getElementById('profileRatingDisplay');
+    var profileLoyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
     
     if (profileName) profileName.innerText = currentUser.name;
     if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Not connected';
     if (ticketCount) ticketCount.innerText = tickets.length;
     if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
     if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
+    if (historyCount) historyCount.innerText = tickets.length;
+    if (profileRatingDisplay) {
+        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+        var avg = userRatings.length > 0 ? (userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length).toFixed(1) : '0';
+        profileRatingDisplay.innerText = avg;
+    }
+    if (profileLoyaltyDisplay) profileLoyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
     
     var myEvents = events.filter(function(e) {
         return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
@@ -2059,38 +2361,6 @@ function renderHistory() {
 // ===== OTHER FUNCTIONS =====
 // ============================================================
 
-function handleImageUpload(input, index) {
-    var file = input.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        alert('Please select an image');
-        input.value = '';
-        return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-        alert('Image is too large (max 5MB)');
-        input.value = '';
-        return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var imageData = e.target.result;
-        var preview = document.getElementById('preview' + index);
-        var removeBtn = document.getElementById('remove' + index);
-        if (preview) {
-            preview.src = imageData;
-            preview.style.display = 'block';
-            var box = input.closest('.upload-box');
-            if (box) box.classList.add('has-image');
-        }
-        if (removeBtn) {
-            removeBtn.style.display = 'block';
-        }
-        input.dataset.imageData = imageData;
-    };
-    reader.readAsDataURL(file);
-}
-
 function renderMyRatings() {
     var container = document.getElementById('myRatingsList');
     if (!container) return;
@@ -2129,15 +2399,82 @@ function initAdmin() {
 }
 
 function initChat() {
-    var widget = document.getElementById('chatWidget'), btn = document.getElementById('chatFloatBtn'), close = document.getElementById('chatCloseBtn'), send = document.getElementById('chatSendBtn'), input = document.getElementById('chatInput'), msgs = document.getElementById('chatMessages');
+    var widget = document.getElementById('chatWidget');
+    var btn = document.getElementById('chatFloatBtn');
+    var close = document.getElementById('chatCloseBtn');
+    var send = document.getElementById('chatSendBtn');
+    var input = document.getElementById('chatInput');
+    var msgs = document.getElementById('chatMessages');
+    
     if (!widget) return;
-    function load() { if (!msgs) return; msgs.innerHTML = ''; if (!chatMessages.length) add({ text: "Hello! How can we help you today?", sender: 'Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }); else for (var i = 0; i < chatMessages.length; i++) add(chatMessages[i]); }
-    function add(m) { if (!msgs) return; var d = document.createElement('div'); d.className = 'chat-message ' + (m.isUser ? 'user' : 'support'); d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>'; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; }
+    
+    function load() {
+        if (!msgs) return;
+        msgs.innerHTML = '';
+        if (!chatMessages || chatMessages.length === 0) {
+            var emptyMsg = document.createElement('div');
+            emptyMsg.className = 'chat-message support';
+            emptyMsg.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
+            msgs.appendChild(emptyMsg);
+            return;
+        }
+        for (var i = 0; i < chatMessages.length; i++) {
+            addMessage(chatMessages[i]);
+        }
+    }
+    
+    function addMessage(m) {
+        if (!msgs) return;
+        var d = document.createElement('div');
+        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
+        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+    
     if (btn) btn.addEventListener('click', function() { widget.classList.toggle('open'); });
     if (close) close.addEventListener('click', function() { widget.classList.remove('open'); });
-    function sendMsg() { var msg = input.value.trim(); if (!msg) return; var newMsg = { id: Date.now(), text: msg, sender: currentUser.wallet || currentUser.name, isUser: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(newMsg); chatMessages.push(newMsg); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); input.value = ''; setTimeout(function() { var resp = "Thank you! Quick response by email: betixservices@gmail.com"; if (msg.toLowerCase().includes('ticket')) resp = "Your tickets are in the 'My Tickets' section."; else if (msg.toLowerCase().includes('payment')) resp = "Payments are secured via Pi Network."; var auto = { id: Date.now() + 1, text: resp, sender: 'Betix Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(auto); chatMessages.push(auto); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }, 1000); }
+    
+    function sendMsg() {
+        var msg = input.value.trim();
+        if (!msg) return;
+        var newMsg = {
+            id: Date.now(),
+            text: msg,
+            sender: currentUser.wallet || currentUser.name,
+            isUser: true,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: new Date().toISOString()
+        };
+        chatMessages.push(newMsg);
+        saveChatMessages();
+        addMessage(newMsg);
+        input.value = '';
+        
+        setTimeout(function() {
+            var resp = "Thank you! Quick response by email: betixservices@gmail.com";
+            if (msg.toLowerCase().includes('ticket')) {
+                resp = "Your tickets are in the 'My Tickets' section.";
+            } else if (msg.toLowerCase().includes('payment')) {
+                resp = "Payments are secured via Pi Network.";
+            }
+            var auto = {
+                id: Date.now() + 1,
+                text: resp,
+                sender: 'Betix Support',
+                isUser: false,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timestamp: new Date().toISOString()
+            };
+            chatMessages.push(auto);
+            saveChatMessages();
+            addMessage(auto);
+        }, 1000);
+    }
+    
     if (send) send.addEventListener('click', sendMsg);
     if (input) input.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMsg(); });
+    
     load();
 }
 
@@ -2151,16 +2488,52 @@ function initLegalModals() {
 function trackUserConnection() {
     if (currentUser.wallet) {
         var existing = null;
-        for (var i = 0; i < connectedUsers.length; i++) { if (connectedUsers[i].wallet === currentUser.wallet) { existing = connectedUsers[i]; break; } }
-        if (!existing) connectedUsers.push({ name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString() });
-        else { existing.lastSeen = new Date().toLocaleString(); existing.ticketCount = tickets.length; }
+        for (var i = 0; i < connectedUsers.length; i++) { 
+            if (connectedUsers[i].wallet === currentUser.wallet) { 
+                existing = connectedUsers[i]; 
+                break; 
+            } 
+        }
+        var userData = {
+            name: currentUser.name,
+            wallet: currentUser.wallet,
+            ticketCount: tickets.length,
+            lastSeen: new Date().toLocaleString(),
+            profilePhoto: currentUser.profilePhoto || null,
+            loyaltyPoints: currentUser.loyaltyPoints || 0,
+            memberSince: currentUser.memberSince || '2026'
+        };
+        
+        if (!existing) {
+            connectedUsers.push(userData);
+        } else {
+            existing.name = currentUser.name;
+            existing.ticketCount = tickets.length;
+            existing.lastSeen = new Date().toLocaleString();
+            existing.profilePhoto = currentUser.profilePhoto || null;
+            existing.loyaltyPoints = currentUser.loyaltyPoints || 0;
+        }
         localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+        syncUsersToSupabase();
     }
 }
 
-function clearAllData() { if (confirm('Delete all your data?')) { localStorage.clear(); location.reload(); } }
+function clearAllData() { 
+    if (confirm('Delete all your data?')) { 
+        localStorage.clear(); 
+        location.reload(); 
+    } 
+}
 
-function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
+function toggleDarkMode(e) { 
+    if (e.target.checked) { 
+        document.body.classList.add('dark-mode'); 
+        localStorage.setItem('darkMode', 'true'); 
+    } else { 
+        document.body.classList.remove('dark-mode'); 
+        localStorage.setItem('darkMode', 'false'); 
+    } 
+}
 
 // ============================================================
 // ===== SHOW LEGAL (Terms, Privacy, Cookies) =====
@@ -2378,30 +2751,13 @@ function renderEventsByCategory() {
 }
 
 function renderEventCard(event) {
-    var hasRated = ratings.some(function(r) { return r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name); });
-    var userRating = ratings.find(function(r) { return r.eventId === event.id && r.userWallet === (currentUser.wallet || currentUser.name); });
     var avgRating = 0;
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
-    var hasTicket = tickets.some(function(t) { return t.eventId === event.id && t.buyerWallet === (currentUser.wallet || currentUser.name); });
     
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 15) {
         organizerDisplay = organizerDisplay.substring(0, 12) + '...';
-    }
-    
-    var galleryHtml = '';
-    if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 4); i++) {
-            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
-        }
-        if (event.images.length > 4) { 
-            galleryHtml += '<div class="event-gallery-img" style="background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;">+' + (event.images.length - 4) + '</div>'; 
-        }
-        galleryHtml += '</div></div>';
-    } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:200px;object-fit:cover;" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', 0)"></div></div>';
     }
     
     var dateEvent = new Date(event.date);
@@ -2414,9 +2770,7 @@ function renderEventCard(event) {
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
     
-    var detailClick = 'onclick="openEventDetails(\'' + event.id + '\')"';
-    
-    return '<div class="event-card" ' + detailClick + ' style="cursor:pointer;">' +
+    return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')" style="cursor:pointer;">' +
         '<div class="event-card-banner">' +
             '<img src="' + (event.coverImage || eventImagesList[event.category]) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + eventImagesList[event.category] + '\'">' +
             '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
@@ -2641,10 +2995,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 800);
     }
     
+    // Détecter la langue
+    detectLanguage();
+    
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
     
     initCountrySelectors();
-    
     calculateLoyaltyPoints();
     initFilters(); 
     renderEventsByCategory(); 
@@ -2750,7 +3106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (notifHeaderBtn) {
         notifHeaderBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            toggleNotifications();
+            openNotificationPanel();
         });
     }
     
