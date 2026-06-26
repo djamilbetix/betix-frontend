@@ -42,28 +42,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log("Supabase initialized successfully");
 
 // ============================================================
-// ===== TEST DE CONNEXION =====
-// ============================================================
-
-async function testSupabaseConnection() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('events')
-            .select('count', { count: 'exact', head: true });
-        
-        if (error) {
-            console.error("Supabase connection test failed:", error);
-        } else {
-            console.log("Supabase connection successful!");
-        }
-    } catch (err) {
-        console.error("Supabase test error:", err);
-    }
-}
-
-testSupabaseConnection();
-
-// ============================================================
 // ===== COUNTRY LIST IN ALPHABETICAL ORDER =====
 // ============================================================
 
@@ -92,9 +70,9 @@ var countriesList = [
 // ===== GLOBAL VARIABLES =====
 // ============================================================
 
-var events = [];
-var tickets = [];
-var currentUser = { 
+var events = JSON.parse(localStorage.getItem('betix_events')) || [];
+var tickets = JSON.parse(localStorage.getItem('betix_tickets')) || [];
+var currentUser = JSON.parse(localStorage.getItem('betix_user')) || { 
     name: 'Guest', 
     wallet: null, 
     memberSince: '2026', 
@@ -105,10 +83,10 @@ var currentFilter = 'All';
 var currentCountryFilter = 'All';
 var searchQuery = '';
 var piUser = null;
-var ratings = [];
-var chatMessages = [];
-var connectedUsers = [];
-var notifications = [];
+var ratings = JSON.parse(localStorage.getItem('betix_ratings')) || [];
+var chatMessages = JSON.parse(localStorage.getItem('betix_chat_messages')) || [];
+var connectedUsers = JSON.parse(localStorage.getItem('betix_connected_users')) || [];
+var notifications = JSON.parse(localStorage.getItem('betix_notifications')) || [];
 var adminCode = 'Betix@2026#';
 var selectedRating = 0;
 var lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
@@ -117,7 +95,7 @@ var logoClickCount = 0;
 
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
-var adminLogs = [];
+var adminLogs = JSON.parse(localStorage.getItem('betix_admin_logs')) || [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
 var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
@@ -198,49 +176,8 @@ function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
 
 // ============================================================
-// ===== SAVE FUNCTIONS (Local + Supabase) =====
+// ===== SUPABASE FUNCTIONS =====
 // ============================================================
-
-function saveEvents() { 
-    localStorage.setItem('betix_events', JSON.stringify(events));
-    syncEventsToSupabase();
-}
-
-function saveTickets() { 
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    syncTicketsToSupabase();
-}
-
-function saveUser() { 
-    localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncUsersToSupabase();
-}
-
-function saveNotifications() { 
-    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncNotificationsToSupabase();
-}
-
-function saveChatMessages() {
-    localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
-    syncChatToSupabase();
-}
-
-function saveRatings() {
-    localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-    syncRatingsToSupabase();
-}
-
-function saveConnectedUsers() {
-    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-    syncUsersToSupabase();
-}
-
-// ============================================================
-// ===== SUPABASE SYNC FUNCTIONS =====
-// ============================================================
-
-// --- EVENTS ---
 
 async function loadEventsFromSupabase() {
     try {
@@ -260,15 +197,8 @@ async function loadEventsFromSupabase() {
             renderEventsByCategory();
             console.log('Events loaded from Supabase:', events.length);
             return true;
-        } else {
-            // Si la table est vide, charger les événements de démonstration
-            events = JSON.parse(JSON.stringify(demoEvents));
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            await syncEventsToSupabase();
-            renderEventsByCategory();
-            console.log('Demo events loaded and synced to Supabase');
-            return true;
         }
+        return false;
     } catch (error) {
         console.error('Error loading events:', error);
         return false;
@@ -282,7 +212,6 @@ async function syncEventsToSupabase() {
             return;
         }
         
-        // Supprimer tous les événements existants
         const { error: deleteError } = await supabaseClient
             .from('events')
             .delete()
@@ -290,7 +219,6 @@ async function syncEventsToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        // Insérer les nouveaux événements
         const { error: insertError } = await supabaseClient
             .from('events')
             .insert(events);
@@ -302,8 +230,6 @@ async function syncEventsToSupabase() {
         console.error('Error syncing events:', error);
     }
 }
-
-// --- TICKETS ---
 
 async function loadTicketsFromSupabase() {
     try {
@@ -358,8 +284,6 @@ async function syncTicketsToSupabase() {
     }
 }
 
-// --- USERS ---
-
 async function loadUsersFromSupabase() {
     try {
         const { data, error } = await supabaseClient
@@ -374,20 +298,6 @@ async function loadUsersFromSupabase() {
         if (data && data.length > 0) {
             connectedUsers = data;
             localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-            // Mettre à jour l'utilisateur actuel s'il existe
-            if (currentUser.wallet) {
-                const existingUser = connectedUsers.find(u => u.wallet === currentUser.wallet);
-                if (existingUser) {
-                    currentUser.name = existingUser.name;
-                    currentUser.profilePhoto = existingUser.profilePhoto || null;
-                    currentUser.loyaltyPoints = existingUser.loyaltyPoints || 0;
-                    currentUser.memberSince = existingUser.memberSince || '2026';
-                    saveUser();
-                    updateUserInfo();
-                    updateProfilePage();
-                    updateAllProfileImages();
-                }
-            }
             console.log('Users loaded from Supabase:', connectedUsers.length);
             return true;
         }
@@ -400,32 +310,11 @@ async function loadUsersFromSupabase() {
 
 async function syncUsersToSupabase() {
     try {
-        // Ajouter l'utilisateur actuel à la liste des utilisateurs connectés
-        if (currentUser.wallet) {
-            const existingIndex = connectedUsers.findIndex(u => u.wallet === currentUser.wallet);
-            const userData = {
-                wallet: currentUser.wallet,
-                name: currentUser.name,
-                ticketCount: tickets.filter(t => t.buyerWallet === currentUser.wallet).length,
-                lastSeen: new Date().toLocaleString(),
-                profilePhoto: currentUser.profilePhoto || null,
-                loyaltyPoints: currentUser.loyaltyPoints || 0,
-                memberSince: currentUser.memberSince || '2026'
-            };
-            
-            if (existingIndex !== -1) {
-                connectedUsers[existingIndex] = userData;
-            } else {
-                connectedUsers.push(userData);
-            }
-        }
-        
         if (connectedUsers.length === 0) {
             console.log('No users to sync');
             return;
         }
         
-        // Supprimer tous les utilisateurs existants
         const { error: deleteError } = await supabaseClient
             .from('users')
             .delete()
@@ -433,21 +322,17 @@ async function syncUsersToSupabase() {
         
         if (deleteError) throw deleteError;
         
-        // Insérer les utilisateurs
         const { error: insertError } = await supabaseClient
             .from('users')
             .insert(connectedUsers);
         
         if (insertError) throw insertError;
         
-        localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
         console.log('Users synced to Supabase:', connectedUsers.length);
     } catch (error) {
         console.error('Error syncing users:', error);
     }
 }
-
-// --- RATINGS ---
 
 async function loadRatingsFromSupabase() {
     try {
@@ -498,8 +383,6 @@ async function syncRatingsToSupabase() {
         console.error('Error syncing ratings:', error);
     }
 }
-
-// --- NOTIFICATIONS ---
 
 async function loadNotificationsFromSupabase() {
     try {
@@ -553,119 +436,33 @@ async function syncNotificationsToSupabase() {
     }
 }
 
-// --- CHAT ---
+// ============================================================
+// ===== SAVE FUNCTIONS (Local + Supabase) =====
+// ============================================================
 
-async function loadChatFromSupabase() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('chat_messages')
-            .select('*')
-            .order('timestamp', { ascending: true });
-        
-        if (error) {
-            console.error("Error loading chat messages:", error);
-            return false;
-        }
-        
-        if (data && data.length > 0) {
-            chatMessages = data;
-            localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
-            // Recharger le chat si ouvert
-            const chatMessagesContainer = document.getElementById('chatMessages');
-            if (chatMessagesContainer) {
-                renderChatMessages();
-            }
-            console.log('Chat messages loaded from Supabase:', chatMessages.length);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Error loading chat messages:', error);
-        return false;
-    }
+function saveEvents() { 
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    syncEventsToSupabase();
 }
 
-async function syncChatToSupabase() {
-    try {
-        if (chatMessages.length === 0) {
-            console.log('No chat messages to sync');
-            return;
-        }
-        
-        const { error: deleteError } = await supabaseClient
-            .from('chat_messages')
-            .delete()
-            .neq('id', '');
-        
-        if (deleteError) throw deleteError;
-        
-        const { error: insertError } = await supabaseClient
-            .from('chat_messages')
-            .insert(chatMessages);
-        
-        if (insertError) throw insertError;
-        
-        console.log('Chat messages synced to Supabase:', chatMessages.length);
-    } catch (error) {
-        console.error('Error syncing chat messages:', error);
-    }
+function saveTickets() { 
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    syncTicketsToSupabase();
 }
 
-// --- ADMIN LOGS ---
-
-async function loadAdminLogsFromSupabase() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('admin_logs')
-            .select('*')
-            .order('timestamp', { ascending: false });
-        
-        if (error) {
-            console.error("Error loading admin logs:", error);
-            return false;
-        }
-        
-        if (data && data.length > 0) {
-            adminLogs = data;
-            localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
-            renderAdminLogs();
-            console.log('Admin logs loaded from Supabase:', adminLogs.length);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Error loading admin logs:', error);
-        return false;
-    }
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser));
+    syncUsersToSupabase();
 }
 
-async function syncAdminLogsToSupabase() {
-    try {
-        if (adminLogs.length === 0) {
-            console.log('No admin logs to sync');
-            return;
-        }
-        
-        const { error: deleteError } = await supabaseClient
-            .from('admin_logs')
-            .delete()
-            .neq('id', '');
-        
-        if (deleteError) throw deleteError;
-        
-        const { error: insertError } = await supabaseClient
-            .from('admin_logs')
-            .insert(adminLogs);
-        
-        if (insertError) throw insertError;
-        
-        console.log('Admin logs synced to Supabase:', adminLogs.length);
-    } catch (error) {
-        console.error('Error syncing admin logs:', error);
-    }
+function saveNotifications() { 
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    syncNotificationsToSupabase();
 }
 
-// --- GLOBAL SYNC ---
+// ============================================================
+// ===== GLOBAL SYNC =====
+// ============================================================
 
 async function syncAllFromSupabase() {
     console.log('Syncing all data from Supabase...');
@@ -674,8 +471,6 @@ async function syncAllFromSupabase() {
     await loadUsersFromSupabase();
     await loadRatingsFromSupabase();
     await loadNotificationsFromSupabase();
-    await loadChatFromSupabase();
-    await loadAdminLogsFromSupabase();
     console.log('All data synced from Supabase');
 }
 
@@ -686,36 +481,7 @@ async function syncAllToSupabase() {
     await syncUsersToSupabase();
     await syncRatingsToSupabase();
     await syncNotificationsToSupabase();
-    await syncChatToSupabase();
-    await syncAdminLogsToSupabase();
     console.log('All data synced to Supabase');
-}
-
-// ============================================================
-// ===== RENDER CHAT MESSAGES =====
-// ============================================================
-
-function renderChatMessages() {
-    var container = document.getElementById('chatMessages');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    if (!chatMessages || chatMessages.length === 0) {
-        var emptyMsg = document.createElement('div');
-        emptyMsg.className = 'chat-message support';
-        emptyMsg.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
-        container.appendChild(emptyMsg);
-        return;
-    }
-    
-    for (var i = 0; i < chatMessages.length; i++) {
-        var m = chatMessages[i];
-        var d = document.createElement('div');
-        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
-        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
-        container.appendChild(d);
-    }
-    container.scrollTop = container.scrollHeight;
 }
 
 // ============================================================
@@ -776,7 +542,7 @@ function handleProfilePhotoUpload(file) {
         currentUser.profilePhoto = imageData;
         saveUser();
         updateAllProfileImages();
-        alert('Profile photo updated and saved!');
+        alert('Profile photo updated!');
     };
     reader.readAsDataURL(file);
 }
@@ -954,8 +720,7 @@ function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.c
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
 
 // ============================================================
-// ===== NOTIFICATIONS =====
-// ============================================================
+// ===== NOTIFICATIONS =====// ============================================================
 
 function updateNotifBadgeHeader() {
     var badge = document.getElementById('notifBadgeHeader');
@@ -1078,7 +843,6 @@ function addAdminLog(action, details) {
         adminLogs = adminLogs.slice(0, 500);
     }
     localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
-    syncAdminLogsToSupabase();
     renderAdminLogs();
 }
 
@@ -1107,7 +871,6 @@ function adminClearLogs() {
     if (confirm('Clear all connection logs?')) {
         adminLogs = [];
         localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
-        syncAdminLogsToSupabase();
         renderAdminLogs();
         addAdminLog('Logs cleared', 'All logs were deleted');
         alert('Logs cleared');
@@ -2366,80 +2129,15 @@ function initAdmin() {
 }
 
 function initChat() {
-    var widget = document.getElementById('chatWidget');
-    var btn = document.getElementById('chatFloatBtn');
-    var close = document.getElementById('chatCloseBtn');
-    var send = document.getElementById('chatSendBtn');
-    var input = document.getElementById('chatInput');
-    var msgs = document.getElementById('chatMessages');
-    
+    var widget = document.getElementById('chatWidget'), btn = document.getElementById('chatFloatBtn'), close = document.getElementById('chatCloseBtn'), send = document.getElementById('chatSendBtn'), input = document.getElementById('chatInput'), msgs = document.getElementById('chatMessages');
     if (!widget) return;
-    
-    function load() {
-        if (!msgs) return;
-        msgs.innerHTML = '';
-        if (!chatMessages || chatMessages.length === 0) {
-            var emptyMsg = document.createElement('div');
-            emptyMsg.className = 'chat-message support';
-            emptyMsg.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
-            msgs.appendChild(emptyMsg);
-            return;
-        }
-        for (var i = 0; i < chatMessages.length; i++) {
-            addMessage(chatMessages[i]);
-        }
-    }
-    
-    function addMessage(m) {
-        if (!msgs) return;
-        var d = document.createElement('div');
-        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
-        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
-        msgs.appendChild(d);
-        msgs.scrollTop = msgs.scrollHeight;
-    }
-    
+    function load() { if (!msgs) return; msgs.innerHTML = ''; if (!chatMessages.length) add({ text: "Hello! How can we help you today?", sender: 'Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }); else for (var i = 0; i < chatMessages.length; i++) add(chatMessages[i]); }
+    function add(m) { if (!msgs) return; var d = document.createElement('div'); d.className = 'chat-message ' + (m.isUser ? 'user' : 'support'); d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>'; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; }
     if (btn) btn.addEventListener('click', function() { widget.classList.toggle('open'); });
     if (close) close.addEventListener('click', function() { widget.classList.remove('open'); });
-    
-    function sendMsg() {
-        var msg = input.value.trim();
-        if (!msg) return;
-        var newMsg = {
-            id: Date.now(),
-            text: msg,
-            sender: currentUser.wallet || currentUser.name,
-            isUser: true,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        chatMessages.push(newMsg);
-        saveChatMessages();
-        addMessage(newMsg);
-        input.value = '';
-        
-        setTimeout(function() {
-            var resp = "Thank you! Quick response by email: betixservices@gmail.com";
-            if (msg.toLowerCase().includes('ticket')) {
-                resp = "Your tickets are in the 'My Tickets' section.";
-            } else if (msg.toLowerCase().includes('payment')) {
-                resp = "Payments are secured via Pi Network.";
-            }
-            var auto = {
-                id: Date.now() + 1,
-                text: resp,
-                sender: 'Betix Support',
-                isUser: false,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            chatMessages.push(auto);
-            saveChatMessages();
-            addMessage(auto);
-        }, 1000);
-    }
-    
+    function sendMsg() { var msg = input.value.trim(); if (!msg) return; var newMsg = { id: Date.now(), text: msg, sender: currentUser.wallet || currentUser.name, isUser: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(newMsg); chatMessages.push(newMsg); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); input.value = ''; setTimeout(function() { var resp = "Thank you! Quick response by email: betixservices@gmail.com"; if (msg.toLowerCase().includes('ticket')) resp = "Your tickets are in the 'My Tickets' section."; else if (msg.toLowerCase().includes('payment')) resp = "Payments are secured via Pi Network."; var auto = { id: Date.now() + 1, text: resp, sender: 'Betix Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }; add(auto); chatMessages.push(auto); localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }, 1000); }
     if (send) send.addEventListener('click', sendMsg);
     if (input) input.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMsg(); });
-    
     load();
 }
 
@@ -2454,23 +2152,9 @@ function trackUserConnection() {
     if (currentUser.wallet) {
         var existing = null;
         for (var i = 0; i < connectedUsers.length; i++) { if (connectedUsers[i].wallet === currentUser.wallet) { existing = connectedUsers[i]; break; } }
-        if (!existing) connectedUsers.push({ 
-            name: currentUser.name, 
-            wallet: currentUser.wallet, 
-            ticketCount: tickets.length, 
-            lastSeen: new Date().toLocaleString(),
-            profilePhoto: currentUser.profilePhoto || null,
-            loyaltyPoints: currentUser.loyaltyPoints || 0,
-            memberSince: currentUser.memberSince || '2026'
-        });
-        else { 
-            existing.lastSeen = new Date().toLocaleString(); 
-            existing.ticketCount = tickets.length;
-            existing.profilePhoto = currentUser.profilePhoto || null;
-            existing.loyaltyPoints = currentUser.loyaltyPoints || 0;
-        }
+        if (!existing) connectedUsers.push({ name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString() });
+        else { existing.lastSeen = new Date().toLocaleString(); existing.ticketCount = tickets.length; }
         localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-        syncUsersToSupabase();
     }
 }
 
@@ -2957,22 +2641,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 800);
     }
     
+    if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
+    
     initCountrySelectors();
+    
     calculateLoyaltyPoints();
     initFilters(); 
-    
-    // ===== CHARGER LES DONNÉES DEPUIS SUPABASE =====
-    syncAllFromSupabase().then(function() {
-        renderEventsByCategory();
-        updateUserInfo();
-        updateProfilePage();
-        updateAllProfileImages();
-        updateNotifBadgeHeader();
-        renderTickets();
-        renderHistory();
-        renderAdminLogs();
-    });
-    
+    renderEventsByCategory(); 
+    updateUserInfo(); 
+    updateProfilePage(); 
+    updateAllProfileImages();
+    updateNotifBadgeHeader();
     initAdmin(); 
     initChat(); 
     initLegalModals();
@@ -2983,6 +2662,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initHeroSlider();
     initFaq();
+    renderAdminLogs();
     
     var storedPassword = localStorage.getItem('betix_admin_password');
     if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
@@ -3101,11 +2781,15 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
     
-    // ===== SYNC AUTOMATIQUE =====
+    // ===== SYNC WITH SUPABASE =====
+    syncAllFromSupabase();
+
+    // Auto-save every 30 seconds
     setInterval(function() {
         syncAllToSupabase();
     }, 30000);
 
+    // Save when user leaves the page
     window.addEventListener('beforeunload', function() {
         syncAllToSupabase();
     });
