@@ -55,10 +55,29 @@
     </div>
     <div class="header-right">
         <!-- Notification Icon -->
-        <button class="notif-icon-btn" id="notifHeaderBtn">
+        <button class="notif-icon-btn" id="notifHeaderBtn" onclick="openNotificationPanel()">
             <i class="fas fa-bell"></i>
             <span class="notif-badge-header" id="notifBadgeHeader">0</span>
         </button>
+        
+        <!-- Language Selector (fonctionne sur Pi Browser) -->
+        <div class="lang-selector-wrapper">
+            <select id="nativeLangSelect" class="lang-select-native" onchange="changeLanguage(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+            </select>
+        </div>
         
         <button class="menu-btn" id="menuBtn">
             <i class="fas fa-bars"></i>
@@ -83,7 +102,6 @@
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
         <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
         
-        <!-- Language Selector placed here -->
         <div class="sidebar-language-selector">
             <label for="google_translate_element" style="font-size: 0.8rem; color: var(--gray); margin-right: 8px;">Choose Language:</label>
             <div id="google_translate_element" class="lang-widget"></div>
@@ -116,6 +134,17 @@
     </div>
 </div>
 <div class="overlay" id="overlay"></div>
+
+<!-- ===== NOTIFICATION PANEL ===== -->
+<div class="notification-panel" id="notificationPanel">
+    <div class="notification-panel-header">
+        <span><i class="fas fa-bell"></i> Notifications</span>
+        <button class="close-notif" onclick="closeNotificationPanel()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="notification-panel-body" id="notificationPanelBody">
+        <div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>
+    </div>
+</div>
 
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 
@@ -269,7 +298,7 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <button class="profile-upload-btn" onclick="document.getElementById('profilePhotoInputPage').click()">
-                    <i class="fas fa-pen"></i>
+                    <i class="fas fa-camera"></i>
                 </button>
                 <input type="file" id="profilePhotoInputPage" accept="image/*" style="display:none;">
             </div>
@@ -277,29 +306,40 @@
                 <h2 id="profileNameDisplay">Guest</h2>
                 <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
                 <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
+                <div class="profile-badges">
+                    <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> rating</span>
+                    <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
+                </div>
             </div>
         </div>
         
         <div class="profile-stats-grid">
-            <div class="stat-card">
-                <span class="stat-number" id="ticketCount">0</span>
-                <span class="stat-label">Tickets</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="ratedCount">0</span>
-                <span class="stat-label">Events rated</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="loyaltyPointsDisplay">0</span>
-                <span class="stat-label">Points</span>
-            </div>
-            <div class="stat-card">
+            <div class="stat-card clickable" onclick="goToMyEvents()">
                 <span class="stat-number" id="myEventsCount">0</span>
-                <span class="stat-label">My Events</span>
+                <span class="stat-label"><i class="fas fa-calendar-plus"></i> My Events</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToTickets()">
+                <span class="stat-number" id="ticketCount">0</span>
+                <span class="stat-label"><i class="fas fa-ticket-alt"></i> My Tickets</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToHistory()">
+                <span class="stat-number" id="historyCount">0</span>
+                <span class="stat-label"><i class="fas fa-history"></i> History</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToRatings()">
+                <span class="stat-number" id="ratedCount">0</span>
+                <span class="stat-label"><i class="fas fa-star"></i> Rated</span>
+                <span class="stat-link">View all →</span>
             </div>
         </div>
         
-        <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
+        <div class="profile-actions">
+            <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
+            <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
+        </div>
     </div>
 </div>
 
