@@ -60,25 +60,6 @@
             <span class="notif-badge-header" id="notifBadgeHeader">0</span>
         </button>
         
-        <!-- Language Selector (fonctionne sur Pi Browser) -->
-        <div class="lang-selector-wrapper">
-            <select id="nativeLangSelect" class="lang-select-native" onchange="changeLanguage(this.value)">
-                <option value="en">🇬🇧 English</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="es">🇪🇸 Español</option>
-                <option value="pt">🇵🇹 Português</option>
-                <option value="zh">🇨🇳 中文</option>
-                <option value="id">🇮🇩 Indonesia</option>
-                <option value="ar">🇸🇦 العربية</option>
-                <option value="hi">🇮🇳 हिन्दी</option>
-                <option value="ru">🇷🇺 Русский</option>
-                <option value="ja">🇯🇵 日本語</option>
-                <option value="ko">🇰🇷 한국어</option>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="it">🇮🇹 Italiano</option>
-            </select>
-        </div>
-        
         <button class="menu-btn" id="menuBtn">
             <i class="fas fa-bars"></i>
         </button>
@@ -105,9 +86,13 @@
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
         <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
         
+        <!-- Language Selector UNIQUEMENT dans le sidebar -->
         <div class="sidebar-language-selector">
-            <label for="google_translate_element" style="font-size: 0.8rem; color: var(--gray); margin-right: 8px;">Choose Language:</label>
+            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
             <div id="google_translate_element" class="lang-widget"></div>
+            <div style="margin-top: 6px; font-size: 0.7rem; color: var(--gray);">
+                <i class="fas fa-info-circle"></i> Works on all browsers
+            </div>
         </div>
     </div>
     
@@ -187,7 +172,7 @@
     
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
     
-    <!-- COUNTRY FILTER - WITHOUT SEARCH BAR -->
+    <!-- COUNTRY FILTER -->
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
@@ -251,28 +236,55 @@
             </div>
             <div class="form-group"><label>Price (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
             <div class="form-group"><label>Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
+            
+            <!-- UPLOAD D'IMAGES PROFESSIONNEL -->
             <div class="form-group">
-                <label>Photos (2 unique images)</label>
-                <div id="imageUploadContainer" class="image-upload-area">
-                    <div class="upload-box" id="uploadBox1">
-                        <span class="upload-icon"><i class="fas fa-camera"></i></span>
-                        <p>Photo 1</p>
-                        <div class="loading-indicator">Compressing...</div>
-                        <input type="file" class="image-input" accept="image/*" data-index="0">
-                        <img class="preview-image" id="preview0" style="display:none;">
-                        <button type="button" class="remove-image-btn" id="remove0" style="display:none;" onclick="removeImage(0)"><i class="fas fa-times"></i></button>
+                <label>Photos (2 images required)</label>
+                <div id="imageUploadContainer" class="image-upload-container">
+                    <!-- Image 1 -->
+                    <div class="upload-box-modern" id="uploadBox1">
+                        <div class="upload-box-inner" id="uploadInner1">
+                            <div class="upload-icon-modern">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress1" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill1" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText1">0%</span>
+                            </div>
+                        </div>
+                        <input type="file" class="image-input-modern" accept="image/*" data-index="0" id="imageInput0">
+                        <div class="preview-modern" id="previewContainer0" style="display:none;">
+                            <img id="previewImage0" src="#" alt="Preview">
+                            <button type="button" class="remove-image-modern" id="remove0" onclick="removeImageModern(0)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
+                        </div>
                     </div>
-                    <div class="upload-box" id="uploadBox2">
-                        <span class="upload-icon"><i class="fas fa-camera"></i></span>
-                        <p>Photo 2</p>
-                        <div class="loading-indicator">Compressing...</div>
-                        <input type="file" class="image-input" accept="image/*" data-index="1">
-                        <img class="preview-image" id="preview1" style="display:none;">
-                        <button type="button" class="remove-image-btn" id="remove1" style="display:none;" onclick="removeImage(1)"><i class="fas fa-times"></i></button>
+                    
+                    <!-- Image 2 -->
+                    <div class="upload-box-modern" id="uploadBox2">
+                        <div class="upload-box-inner" id="uploadInner2">
+                            <div class="upload-icon-modern">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress2" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText2">0%</span>
+                            </div>
+                        </div>
+                        <input type="file" class="image-input-modern" accept="image/*" data-index="1" id="imageInput1">
+                        <div class="preview-modern" id="previewContainer1" style="display:none;">
+                            <img id="previewImage1" src="#" alt="Preview">
+                            <button type="button" class="remove-image-modern" id="remove1" onclick="removeImageModern(1)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
+                        </div>
                     </div>
                 </div>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
-            <button type="submit" class="btn-primary">Publish</button>
+            
+            <button type="submit" class="btn-primary">Publish Event</button>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
