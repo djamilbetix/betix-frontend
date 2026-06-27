@@ -167,6 +167,7 @@ var selectedRating = 0;
 var lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
 var pageHistory = ['home'];
 var logoClickCount = 0;
+var uploadedImages = {};
 
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
@@ -632,10 +633,6 @@ function detectLanguage() {
         localStorage.setItem('betix_language', urlLang);
         savedLang = urlLang;
     }
-    var select = document.getElementById('nativeLangSelect');
-    if (select) {
-        select.value = savedLang;
-    }
     return savedLang;
 }
 
@@ -733,80 +730,97 @@ function goToHistory() { showPage('history'); }
 function goToRatings() { showPage('ratings'); }
 
 // ============================================================
-// ===== IMAGE UPLOAD AVEC COMPRESSION =====
+// ===== MODERN IMAGE UPLOAD WITH COMPRESSION =====
 // ============================================================
 
-async function handleImageUpload(input, index) {
-    var file = input.files[0];
+async function handleImageUploadModern(file, index) {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
         alert('Please select an image');
-        input.value = '';
         return;
     }
+    
     if (file.size > 10 * 1024 * 1024) {
         alert('Image is too large (max 10MB)');
-        input.value = '';
         return;
     }
     
-    var preview = document.getElementById('preview' + index);
     var box = document.getElementById('uploadBox' + (index + 1));
+    var progress = document.getElementById('progress' + (index + 1));
+    var progressFill = document.getElementById('progressFill' + (index + 1));
+    var progressText = document.getElementById('progressText' + (index + 1));
+    var previewContainer = document.getElementById('previewContainer' + index);
+    var previewImage = document.getElementById('previewImage' + index);
+    var uploadInner = document.getElementById('uploadInner' + (index + 1));
     
-    if (box) box.classList.add('compress');
+    progress.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = '0%';
+    box.classList.add('compress');
     
     try {
+        var progressInterval = setInterval(function() {
+            var currentWidth = parseInt(progressFill.style.width) || 0;
+            if (currentWidth < 90) {
+                var newWidth = currentWidth + Math.random() * 15;
+                if (newWidth > 90) newWidth = 90;
+                progressFill.style.width = newWidth + '%';
+                progressText.textContent = Math.round(newWidth) + '%';
+            }
+        }, 200);
+        
         var compressedData = await compressEventImage(file);
         
-        var removeBtn = document.getElementById('remove' + index);
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+        progressText.textContent = '100%';
         
-        if (preview) {
-            preview.src = compressedData;
-            preview.style.display = 'block';
-        }
-        if (box) {
+        setTimeout(function() {
+            progress.style.display = 'none';
+            progressFill.style.width = '0%';
+            
+            previewImage.src = compressedData;
+            previewContainer.style.display = 'block';
             box.classList.add('has-image');
             box.classList.remove('compress');
-        }
-        if (removeBtn) {
-            removeBtn.style.display = 'block';
-        }
-        input.dataset.imageData = compressedData;
-        console.log('Image ' + (index + 1) + ' compressed and uploaded');
+            
+            uploadedImages[index] = compressedData;
+            console.log('Image ' + (index + 1) + ' uploaded and compressed successfully');
+        }, 300);
+        
     } catch (error) {
         console.error('Error compressing image:', error);
         alert('Error compressing image. Please try with a smaller image.');
-        input.value = '';
-        if (box) box.classList.remove('compress');
-        if (preview) {
-            preview.style.opacity = '1';
-        }
+        progress.style.display = 'none';
+        box.classList.remove('compress');
     }
 }
 
-function removeImage(index) {
-    var preview = document.getElementById('preview' + index);
+function removeImageModern(index) {
     var box = document.getElementById('uploadBox' + (index + 1));
-    var input = document.querySelector('.image-input[data-index="' + index + '"]');
-    var removeBtn = document.getElementById('remove' + index);
+    var previewContainer = document.getElementById('previewContainer' + index);
+    var previewImage = document.getElementById('previewImage' + index);
+    var input = document.getElementById('imageInput' + index);
     
-    if (preview) {
-        preview.style.display = 'none';
-        preview.src = '';
-    }
-    if (box) {
-        box.classList.remove('has-image');
-        box.classList.remove('compress');
-    }
-    if (input) {
-        input.value = '';
-        input.dataset.imageData = '';
-    }
-    if (removeBtn) {
-        removeBtn.style.display = 'none';
-    }
+    previewContainer.style.display = 'none';
+    previewImage.src = '#';
+    box.classList.remove('has-image');
+    box.classList.remove('compress');
+    input.value = '';
+    delete uploadedImages[index];
+    
     console.log('Image ' + (index + 1) + ' removed');
+}
+
+function getUploadedImages() {
+    var images = [];
+    for (var key in uploadedImages) {
+        if (uploadedImages.hasOwnProperty(key)) {
+            images.push(uploadedImages[key]);
+        }
+    }
+    return images;
 }
 
 // ============================================================
@@ -1204,39 +1218,6 @@ function updateTotalPrice() {
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    var confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
-            if (selectedEventForPurchase) {
-                var qtyInput = document.getElementById('ticketQuantity');
-                var qty = parseInt(qtyInput.value) || 1;
-                confirmPurchase(selectedEventForPurchase.id, qty);
-            }
-        });
-    }
-    var qtyInput = document.getElementById('ticketQuantity');
-    if (qtyInput) {
-        qtyInput.addEventListener('change', function() {
-            var val = parseInt(this.value) || 1;
-            var maxVal = parseInt(this.max) || 10;
-            if (val < 1) this.value = 1;
-            if (val > maxVal) this.value = maxVal;
-            currentTicketQuantity = parseInt(this.value) || 1;
-            updateTotalPrice();
-        });
-    }
-});
-
-document.addEventListener('click', function(e) {
-    var popup = document.getElementById('quantityPopup');
-    if (popup && popup.classList.contains('show')) {
-        if (e.target === popup) {
-            closeQuantityPopup();
-        }
-    }
-});
-
 // ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
 // ============================================================
@@ -1274,15 +1255,6 @@ function closeSuccessPopup() {
         popup.classList.remove('show');
     }
 }
-
-document.addEventListener('click', function(e) {
-    var popup = document.getElementById('successPopup');
-    if (popup && popup.classList.contains('show')) {
-        if (e.target === popup) {
-            closeSuccessPopup();
-        }
-    }
-});
 
 // ============================================================
 // ===== PROFILE =====
@@ -1375,7 +1347,7 @@ function renderHistory() {
 }
 
 // ============================================================
-// ===== OTHER FUNCTIONS =====
+// ===== MY RATINGS =====
 // ============================================================
 
 function renderMyRatings() {
@@ -1385,6 +1357,10 @@ function renderMyRatings() {
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
 }
+
+// ============================================================
+// ===== ADMIN FUNCTIONS =====
+// ============================================================
 
 function initAdmin() {
     var adminItem = document.getElementById('adminMenuItem');
@@ -1846,185 +1822,31 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== LOGO MANAGEMENT =====
-// ============================================================
-
-function handleLogoClick() {
-    logoClickCount++;
-    console.log('Logo clicks:', logoClickCount);
-    if (logoClickCount >= 5) {
-        var password = prompt('Enter administrator password:');
-        if (password === adminPassword || password === 'Betix@2026#') {
-            localStorage.setItem('betix_admin_password', password);
-            adminPassword = password;
-            var adminBtn = document.getElementById('adminMenuItem');
-            if (adminBtn) {
-                adminBtn.style.display = 'block';
-                adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
-                adminBtn.style.color = 'white';
-            }
-            addAdminLog('Admin authentication', 'Login via logo');
-            alert('Administrator access activated!');
-            logoClickCount = 0;
-        } else if (password !== null) {
-            alert('Incorrect password');
-            logoClickCount = 0;
-        } else {
-            logoClickCount = 0;
-        }
-    }
-}
-
-// ============================================================
-// ===== HERO SLIDER =====
-// ============================================================
-
-function initHeroSlider() {
-    var slidesContainer = document.getElementById('heroSlides');
-    if (!slidesContainer) return;
-    slidesContainer.innerHTML = '';
-    heroSlides.forEach(function(slide, index) {
-        var div = document.createElement('div');
-        div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div><div class="hero-slide-content"><div class="hero-badge">' + (slide.badge || 'Event') + '</div><h2>' + slide.title + '</h2><p>' + (slide.description || '') + '</p></div>';
-        slidesContainer.appendChild(div);
-    });
-    var dotsContainer = document.getElementById('heroDots');
-    if (dotsContainer) {
-        dotsContainer.innerHTML = '';
-        heroSlides.forEach(function(slide, i) {
-            var dot = document.createElement('button');
-            dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('data-index', i);
-            dot.addEventListener('click', function() {
-                var index = parseInt(this.getAttribute('data-index'));
-                stopAutoPlay();
-                goToSlide(index);
-                setTimeout(startAutoPlay, 3000);
-            });
-            dotsContainer.appendChild(dot);
-        });
-    }
-    var slides = document.querySelectorAll('.hero-slide');
-    var dots = document.querySelectorAll('.hero-dots .dot');
-    var prevBtn = document.getElementById('heroPrev');
-    var nextBtn = document.getElementById('heroNext');
-    var currentIndex = 0;
-    var totalSlides = heroSlides.length;
-    var autoPlayInterval = null;
-    var isTransitioning = false;
-
-    function goToSlide(index) {
-        if (isTransitioning || totalSlides === 0) return;
-        isTransitioning = true;
-        if (index < 0) index = totalSlides - 1;
-        if (index >= totalSlides) index = 0;
-        currentIndex = index;
-        var offset = -currentIndex * 100;
-        slidesContainer.style.transform = 'translateX(' + offset + '%)';
-        slides.forEach(function(slide, i) {
-            slide.classList.remove('active');
-            if (i === currentIndex) {
-                slide.classList.add('active');
-                var bg = slide.querySelector('.hero-slide-bg');
-                if (bg) {
-                    bg.style.transition = 'none';
-                    bg.style.transform = 'scale(1.05)';
-                    setTimeout(function() {
-                        bg.style.transition = 'transform 8s ease';
-                        bg.style.transform = 'scale(1)';
-                    }, 50);
-                }
-            }
-        });
-        dots.forEach(function(dot, i) {
-            dot.classList.remove('active');
-            if (i === currentIndex) dot.classList.add('active');
-        });
-        setTimeout(function() {
-            isTransitioning = false;
-        }, 800);
-    }
-
-    function nextSlide() {
-        if (totalSlides > 0) goToSlide(currentIndex + 1);
-    }
-
-    function prevSlide() {
-        if (totalSlides > 0) goToSlide(currentIndex - 1);
-    }
-
-    function startAutoPlay() {
-        if (autoPlayInterval) clearInterval(autoPlayInterval);
-        if (totalSlides > 1) {
-            autoPlayInterval = setInterval(nextSlide, 4000);
-        }
-    }
-
-    function stopAutoPlay() {
-        if (autoPlayInterval) {
-            clearInterval(autoPlayInterval);
-            autoPlayInterval = null;
-        }
-    }
-
-    if (prevBtn) {
-        prevBtn.onclick = function() {
-            stopAutoPlay();
-            prevSlide();
-            setTimeout(startAutoPlay, 3000);
-        };
-    }
-    if (nextBtn) {
-        nextBtn.onclick = function() {
-            stopAutoPlay();
-            nextSlide();
-            setTimeout(startAutoPlay, 3000);
-        };
-    }
-    var hero = document.querySelector('.hero');
-    if (hero) {
-        hero.onmouseenter = stopAutoPlay;
-        hero.onmouseleave = startAutoPlay;
-    }
-    startAutoPlay();
-}
-
-// ============================================================
-// ===== FILTER BY COUNTRY =====
-// ============================================================
-
-function filterByCountry(country) {
-    currentCountryFilter = country;
-    renderEventsByCategory();
-}
-
-// ============================================================
 // ===== CREATE EVENT =====
 // ============================================================
 
 function createEvent(e) {
     e.preventDefault();
-    if (!currentUser.wallet) { alert('Connect your Pi account first'); return; }
-    var imageInputs = document.querySelectorAll('.image-input');
-    var images = [];
-    for (var i = 0; i < imageInputs.length; i++) {
-        var input = imageInputs[i];
-        if (input.dataset.imageData) {
-            images.push(input.dataset.imageData);
-        }
-    }
-    if (images.length < 2) { 
-        alert('Please add 2 unique photos for your event'); 
+    if (!currentUser.wallet) { 
+        alert('Connect your Pi account first'); 
         return; 
     }
+    
+    var images = getUploadedImages();
+    if (images.length < 2) { 
+        alert('Please add 2 photos for your event'); 
+        return; 
+    }
+    
     var conditions = document.getElementById('eventConditions').value.trim();
     if (!conditions) {
         alert('Please add participation conditions');
         return;
     }
+    
     var category = document.getElementById('eventCategory').value;
     var country = document.getElementById('eventCountry').value;
+    
     var newEvent = {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
@@ -2044,16 +1866,21 @@ function createEvent(e) {
         createdAt: new Date().toISOString(),
         boosts: 0
     };
+    
     if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
         alert('Please fill in all required fields'); 
         return; 
     }
+    
     events.push(newEvent);
     saveEvents();
     document.getElementById('eventForm').reset();
-    for (var i = 0; i < 5; i++) {
-        removeImage(i);
+    
+    for (var i = 0; i < 2; i++) {
+        removeImageModern(i);
     }
+    uploadedImages = {};
+    
     addNotification(
         'New event "' + newEvent.title + '" has been published!',
         'event'
@@ -2081,15 +1908,6 @@ function closePublishConfirm() {
         popup.classList.remove('show');
     }
 }
-
-document.addEventListener('click', function(e) {
-    var popup = document.getElementById('publishConfirm');
-    if (popup && popup.classList.contains('show')) {
-        if (e.target === popup) {
-            closePublishConfirm();
-        }
-    }
-});
 
 // ============================================================
 // ===== MY EVENTS =====
@@ -2728,6 +2546,160 @@ function initLegalModals() {
 }
 
 // ============================================================
+// ===== HERO SLIDER =====
+// ============================================================
+
+function initHeroSlider() {
+    var slidesContainer = document.getElementById('heroSlides');
+    if (!slidesContainer) return;
+    slidesContainer.innerHTML = '';
+    heroSlides.forEach(function(slide, index) {
+        var div = document.createElement('div');
+        div.className = 'hero-slide' + (index === 0 ? ' active' : '');
+        div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div><div class="hero-slide-content"><div class="hero-badge">' + (slide.badge || 'Event') + '</div><h2>' + slide.title + '</h2><p>' + (slide.description || '') + '</p></div>';
+        slidesContainer.appendChild(div);
+    });
+    var dotsContainer = document.getElementById('heroDots');
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        heroSlides.forEach(function(slide, i) {
+            var dot = document.createElement('button');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', function() {
+                var index = parseInt(this.getAttribute('data-index'));
+                stopAutoPlay();
+                goToSlide(index);
+                setTimeout(startAutoPlay, 3000);
+            });
+            dotsContainer.appendChild(dot);
+        });
+    }
+    var slides = document.querySelectorAll('.hero-slide');
+    var dots = document.querySelectorAll('.hero-dots .dot');
+    var prevBtn = document.getElementById('heroPrev');
+    var nextBtn = document.getElementById('heroNext');
+    var currentIndex = 0;
+    var totalSlides = heroSlides.length;
+    var autoPlayInterval = null;
+    var isTransitioning = false;
+
+    function goToSlide(index) {
+        if (isTransitioning || totalSlides === 0) return;
+        isTransitioning = true;
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        currentIndex = index;
+        var offset = -currentIndex * 100;
+        slidesContainer.style.transform = 'translateX(' + offset + '%)';
+        slides.forEach(function(slide, i) {
+            slide.classList.remove('active');
+            if (i === currentIndex) {
+                slide.classList.add('active');
+                var bg = slide.querySelector('.hero-slide-bg');
+                if (bg) {
+                    bg.style.transition = 'none';
+                    bg.style.transform = 'scale(1.05)';
+                    setTimeout(function() {
+                        bg.style.transition = 'transform 8s ease';
+                        bg.style.transform = 'scale(1)';
+                    }, 50);
+                }
+            }
+        });
+        dots.forEach(function(dot, i) {
+            dot.classList.remove('active');
+            if (i === currentIndex) dot.classList.add('active');
+        });
+        setTimeout(function() {
+            isTransitioning = false;
+        }, 800);
+    }
+
+    function nextSlide() {
+        if (totalSlides > 0) goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+        if (totalSlides > 0) goToSlide(currentIndex - 1);
+    }
+
+    function startAutoPlay() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        if (totalSlides > 1) {
+            autoPlayInterval = setInterval(nextSlide, 4000);
+        }
+    }
+
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+
+    if (prevBtn) {
+        prevBtn.onclick = function() {
+            stopAutoPlay();
+            prevSlide();
+            setTimeout(startAutoPlay, 3000);
+        };
+    }
+    if (nextBtn) {
+        nextBtn.onclick = function() {
+            stopAutoPlay();
+            nextSlide();
+            setTimeout(startAutoPlay, 3000);
+        };
+    }
+    var hero = document.querySelector('.hero');
+    if (hero) {
+        hero.onmouseenter = stopAutoPlay;
+        hero.onmouseleave = startAutoPlay;
+    }
+    startAutoPlay();
+}
+
+// ============================================================
+// ===== FILTER BY COUNTRY =====
+// ============================================================
+
+function filterByCountry(country) {
+    currentCountryFilter = country;
+    renderEventsByCategory();
+}
+
+// ============================================================
+// ===== LOGO MANAGEMENT =====
+// ============================================================
+
+function handleLogoClick() {
+    logoClickCount++;
+    console.log('Logo clicks:', logoClickCount);
+    if (logoClickCount >= 5) {
+        var password = prompt('Enter administrator password:');
+        if (password === adminPassword || password === 'Betix@2026#') {
+            localStorage.setItem('betix_admin_password', password);
+            adminPassword = password;
+            var adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) {
+                adminBtn.style.display = 'block';
+                adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+                adminBtn.style.color = 'white';
+            }
+            addAdminLog('Admin authentication', 'Login via logo');
+            alert('Administrator access activated!');
+            logoClickCount = 0;
+        } else if (password !== null) {
+            alert('Incorrect password');
+            logoClickCount = 0;
+        } else {
+            logoClickCount = 0;
+        }
+    }
+}
+
+// ============================================================
 // ===== DOM CONTENT LOADED =====
 // ============================================================
 
@@ -2857,16 +2829,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    var imageInputs = document.querySelectorAll('.image-input');
-    for (var i = 0; i < imageInputs.length; i++) {
-        var input = imageInputs[i];
+    // Modern image upload handling
+    var imageInputsModern = document.querySelectorAll('.image-input-modern');
+    for (var i = 0; i < imageInputsModern.length; i++) {
+        var input = imageInputsModern[i];
         var index = parseInt(input.dataset.index);
-        input.addEventListener('change', function() { handleImageUpload(this, index); });
+        
+        input.addEventListener('change', function(e) {
+            var idx = parseInt(this.dataset.index);
+            if (this.files && this.files[0]) {
+                handleImageUploadModern(this.files[0], idx);
+            }
+        });
+        
         var box = document.getElementById('uploadBox' + (index + 1));
         if (box) {
-            box.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'INPUT') {
-                    input.click();
+            box.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            box.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            box.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                var files = e.dataTransfer.files;
+                var inputFile = this.querySelector('.image-input-modern');
+                if (files && files.length > 0 && inputFile) {
+                    inputFile.files = files;
+                    inputFile.dispatchEvent(new Event('change'));
                 }
             });
         }
@@ -2883,7 +2878,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindActivityListeners(); 
     startSessionMonitor();
-    
+
     // ===== SYNC WITH SUPABASE =====
     syncAllFromSupabase();
 
