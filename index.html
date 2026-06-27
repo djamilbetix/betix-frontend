@@ -54,12 +54,6 @@
         </div>
     </div>
     <div class="header-right">
-        <!-- Notification Icon -->
-        <button class="notif-icon-btn" id="notifHeaderBtn" onclick="openNotificationPanel()">
-            <i class="fas fa-bell"></i>
-            <span class="notif-badge-header" id="notifBadgeHeader">0</span>
-        </button>
-        
         <button class="menu-btn" id="menuBtn">
             <i class="fas fa-bars"></i>
         </button>
@@ -71,11 +65,18 @@
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
-        <div class="sidebar-avatar" id="sidebarAvatar">
-            <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
-            <span id="sidebarAvatarText">U</span>
-            <button class="profile-edit-icon" onclick="document.getElementById('profilePhotoInputSidebar').click()">
-                <i class="fas fa-pen"></i>
+        <div class="sidebar-avatar-wrapper">
+            <div class="sidebar-avatar" id="sidebarAvatar">
+                <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                <span id="sidebarAvatarText">U</span>
+                <button class="profile-edit-icon" onclick="document.getElementById('profilePhotoInputSidebar').click()">
+                    <i class="fas fa-pen"></i>
+                </button>
+            </div>
+            <!-- NOTIFICATION ICON A COTE DE LA PHOTO DE PROFIL -->
+            <button class="sidebar-notif-icon" onclick="showPage('notifications')" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
             </button>
         </div>
         <div id="profilePhotoLoading" class="profile-upload-loading" style="display:none;">
@@ -86,7 +87,7 @@
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
         <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
         
-        <!-- Language Selector UNIQUEMENT dans le sidebar -->
+        <!-- Language Selector -->
         <div class="sidebar-language-selector">
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
             <div id="google_translate_element" class="lang-widget"></div>
@@ -123,14 +124,16 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ===== NOTIFICATION PANEL ===== -->
-<div class="notification-panel" id="notificationPanel">
-    <div class="notification-panel-header">
-        <span><i class="fas fa-bell"></i> Notifications</span>
-        <button class="close-notif" onclick="closeNotificationPanel()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="notification-panel-body" id="notificationPanelBody">
-        <div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>
+<!-- ===== NOTIFICATIONS PAGE ===== -->
+<div id="notificationsPage" class="hidden-page">
+    <div class="page-content">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-bell" style="color:#f5a623;"></i> 
+            Notifications
+        </h2>
+        <p class="events-sub">All your notifications</p>
+        <div id="notificationsList" style="margin-top:20px;"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
@@ -284,9 +287,88 @@
                 <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
-            <button type="submit" class="btn-primary">Publish Event</button>
+            <button type="submit" class="btn-primary" style="display:none;">Publish Event</button>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ===== PUBLISH CONFIRMATION POPUP (PROFESSIONNEL) ===== -->
+<div id="publishConfirmPopup" class="publish-confirm">
+    <div class="publish-confirm-content publish-confirm-professional">
+        <div class="publish-confirm-header">
+            <div class="publish-confirm-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Confirm Publication</h2>
+            <p class="publish-confirm-sub">Please review all information before publishing your event</p>
+            <button class="publish-confirm-close" onclick="closePublishConfirmPopup()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="publish-confirm-body">
+            <div class="publish-summary">
+                <div class="publish-summary-grid">
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Title</span>
+                        <span class="publish-value" id="confirmTitle">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Category</span>
+                        <span class="publish-value" id="confirmCategory">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Country</span>
+                        <span class="publish-value" id="confirmCountry">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Date & Time</span>
+                        <span class="publish-value" id="confirmDate">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Location</span>
+                        <span class="publish-value" id="confirmLocation">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Price</span>
+                        <span class="publish-value" id="confirmPrice">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Seats</span>
+                        <span class="publish-value" id="confirmSeats">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Organizer</span>
+                        <span class="publish-value" id="confirmOrganizer">-</span>
+                    </div>
+                </div>
+                
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full">
+                        <span class="publish-label">Description</span>
+                        <span class="publish-value" id="confirmDescription">-</span>
+                    </div>
+                </div>
+                
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full">
+                        <span class="publish-label">Conditions</span>
+                        <span class="publish-value" id="confirmConditions">-</span>
+                    </div>
+                </div>
+                
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full">
+                        <span class="publish-label">Images</span>
+                        <div class="publish-images-preview" id="confirmImages"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="publish-confirm-footer">
+            <button class="publish-btn cancel" onclick="closePublishConfirmPopup()">Cancel</button>
+            <button class="publish-btn confirm" id="confirmPublishBtn">Publish Event</button>
+        </div>
     </div>
 </div>
 
@@ -647,24 +729,6 @@
         <p id="successMessage">Your tickets have been added successfully.</p>
         <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
         <button class="btn-primary success-btn-blue" onclick="closeSuccessPopup()">OK</button>
-    </div>
-</div>
-
-<!-- ===== PUBLISH CONFIRMATION ===== -->
-<div id="publishConfirm" class="publish-confirm">
-    <div class="publish-confirm-content">
-        <div class="publish-icon"><i class="fas fa-check-circle"></i></div>
-        <h3>Event published!</h3>
-        <p>Your event has been created successfully.</p>
-        <p id="publishEventTitle" style="font-weight:600;color:var(--primary);"></p>
-        <div class="publish-details">
-            <p><strong>Category :</strong> <span id="publishCategory"></span></p>
-            <p><strong>Country :</strong> <span id="publishCountry"></span></p>
-            <p><strong>Date :</strong> <span id="publishDate"></span></p>
-            <p><strong>Seats :</strong> <span id="publishSeats"></span></p>
-            <p><strong>Price :</strong> <span id="publishPrice"></span></p>
-        </div>
-        <button class="btn-primary" onclick="closePublishConfirm()">OK</button>
     </div>
 </div>
 
