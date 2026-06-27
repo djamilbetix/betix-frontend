@@ -386,45 +386,39 @@ function saveConnectedUsers() {
 }
 
 // ============================================================
-// ===== SAUVEGARDE UTILISATEUR =====
+// ===== SAUVEGARDE UTILISATEUR CORRIGEE =====
 // ============================================================
 
 async function saveUserToSupabase() {
     if (!currentUser.wallet) {
         console.log('Pas de wallet, sauvegarde ignoree');
-        return;
+        return false;
     }
     
     try {
         const userData = {
-            wallet: currentUser.wallet || '',
+            pi_uid: currentUser.wallet,
+            username: currentUser.name || 'Guest',
+            photo_url: currentUser.profilePhoto || null,
+            wallet: currentUser.wallet,
             name: currentUser.name || 'Guest',
-            ticket_count: tickets.filter(t => t.buyerWallet === currentUser.wallet).length || 0,
-            last_seen: new Date().toLocaleString(),
-            profile_photo: currentUser.profilePhoto || null,
             loyalty_points: currentUser.loyaltyPoints || 0,
             member_since: currentUser.memberSince || '2026'
         };
         
-        Object.keys(userData).forEach(key => {
-            if (userData[key] === undefined) {
-                delete userData[key];
-            }
-        });
+        console.log('Envoi vers profiles:', userData);
         
         const { data, error } = await supabaseClient
-            .from('users')
-            .upsert(userData, { 
-                onConflict: 'wallet',
-                ignoreDuplicates: false 
-            });
+            .from('profiles')
+            .upsert(userData, { onConflict: 'pi_uid' });
             
         if (error) {
-            console.error('Erreur sauvegarde utilisateur:', error.message);
+            console.error('Erreur Supabase:', error.message);
+            alert('Erreur de sauvegarde: ' + error.message);
             return false;
         }
         
-        console.log('Utilisateur sauvegarde sur Supabase');
+        console.log('Utilisateur sauvegarde dans profiles');
         return true;
         
     } catch (error) {
@@ -441,9 +435,9 @@ async function loadUserFromSupabase() {
     if (!currentUser.wallet) return false;
     try {
         const { data, error } = await supabaseClient
-            .from('users')
+            .from('profiles')
             .select('*')
-            .eq('wallet', currentUser.wallet)
+            .eq('pi_uid', currentUser.wallet)
             .single();
         if (error) { 
             if (error.code !== 'PGRST116') {
@@ -453,7 +447,7 @@ async function loadUserFromSupabase() {
         }
         if (data) {
             currentUser.name = data.name || currentUser.name;
-            currentUser.profilePhoto = data.profile_photo || null;
+            currentUser.profilePhoto = data.photo_url || null;
             currentUser.loyaltyPoints = data.loyalty_points || 0;
             currentUser.memberSince = data.member_since || '2026';
             saveUser();
@@ -1335,7 +1329,7 @@ async function connectToPi() {
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
 
 // ============================================================
-// ===== CONFIRMATION ACHAT AVEC SAUVEGARDE SUPABASE =====
+// ===== CONFIRMATION ACHAT =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1508,7 +1502,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION PROFESSIONNEL =====
+// ===== PUBLISH CONFIRMATION =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1546,7 +1540,7 @@ function closePublishConfirmPopup() {
 }
 
 // ============================================================
-// ===== PUBLISH EVENT AVEC SAUVEGARDE SUPABASE =====
+// ===== PUBLISH EVENT CORRIGE =====
 // ============================================================
 
 async function confirmPublishEvent() {
@@ -1557,9 +1551,11 @@ async function confirmPublishEvent() {
     
     const newEvent = pendingEventData;
     
+    // Ajouter l'evenement localement
     events.push(newEvent);
     saveEvents();
     
+    // Sauvegarder dans Supabase
     try {
         const eventData = {
             id: newEvent.id,
@@ -1600,16 +1596,20 @@ async function confirmPublishEvent() {
         alert('Erreur de communication avec le serveur');
     }
     
+    // Fermeture et nettoyage
     closePublishConfirmPopup();
     
+    // Ajouter une notification
     addNotification(
         'New event "' + newEvent.title + '" has been published!',
         'event'
     );
     
+    // Mettre a jour l'affichage
     renderEventsByCategory();
     updateProfilePage();
     
+    // Reinitialiser le formulaire
     document.getElementById('eventForm').reset();
     for (let i = 0; i < 2; i++) {
         removeImageModern(i);
