@@ -1839,6 +1839,56 @@ body {
     transform: scale(1.1);
 }
 
+/* ===== IMAGE COMPRESSION LOADING ===== */
+.upload-box .loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    z-index: 5;
+    display: none;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.upload-box.compress .loading-indicator {
+    display: block;
+}
+
+.upload-box.compress .upload-icon,
+.upload-box.compress p {
+    opacity: 0.3;
+}
+
+.profile-upload-loading {
+    font-size: 0.7rem;
+    color: var(--gray);
+    display: none;
+    text-align: center;
+    padding: 4px 0;
+    animation: pulseText 1.2s ease-in-out infinite;
+}
+
+.profile-upload-loading.show {
+    display: block;
+}
+
+@keyframes pulseText {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.upload-box .preview-image.compressing {
+    opacity: 0.5;
+    filter: blur(2px);
+}
+
 /* ============================================================ */
 /* ===== EVENT DETAIL MODAL ===== */
 /* ============================================================ */
@@ -3374,6 +3424,15 @@ body.dark-mode .upload-box {
 body.dark-mode .upload-box:hover {
     border-color: #f5a623;
     background: #2d3748;
+}
+
+body.dark-mode .upload-box .loading-indicator {
+    background: rgba(0,0,0,0.8);
+    color: #f3f4f6;
+}
+
+body.dark-mode .profile-upload-loading {
+    color: #9ca3af;
 }
 
 body.dark-mode .sidebar-item {
