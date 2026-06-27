@@ -65,6 +65,12 @@
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
+        <!-- NOTIFICATION EN HAUT A DROITE -->
+        <button class="sidebar-notif-icon-top" onclick="showPage('notifications')" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
+        </button>
+        
         <div class="sidebar-avatar-wrapper">
             <div class="sidebar-avatar" id="sidebarAvatar">
                 <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
@@ -73,11 +79,6 @@
                     <i class="fas fa-pen"></i>
                 </button>
             </div>
-            <!-- NOTIFICATION ICON A COTE DE LA PHOTO DE PROFIL -->
-            <button class="sidebar-notif-icon" onclick="showPage('notifications')" title="Notifications">
-                <i class="fas fa-bell"></i>
-                <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
-            </button>
         </div>
         <div id="profilePhotoLoading" class="profile-upload-loading" style="display:none;">
             <i class="fas fa-spinner fa-spin"></i> Compressing...
@@ -90,9 +91,23 @@
         <!-- Language Selector -->
         <div class="sidebar-language-selector">
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
-            <div id="google_translate_element" class="lang-widget"></div>
+            <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="zh">中文</option>
+                <option value="id">Indonesia</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+            </select>
             <div style="margin-top: 6px; font-size: 0.7rem; color: var(--gray);">
-                <i class="fas fa-info-circle"></i> Works on all browsers
+                <i class="fas fa-info-circle"></i> Select language
             </div>
         </div>
     </div>
@@ -287,7 +302,7 @@
                 <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
-            <button type="submit" class="btn-primary" style="display:none;">Publish Event</button>
+            <button type="submit" class="btn-primary" id="publishEventBtn">Publish Event</button>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
