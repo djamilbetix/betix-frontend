@@ -168,45 +168,50 @@ var lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
 var pageHistory = ['home'];
 var logoClickCount = 0;
 var uploadedImages = {};
+var pendingEventData = null;
 
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
 var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
+// ============================================================
+// ===== HERO SLIDES WITH NEW ATTRACTIVE IMAGES =====
+// ============================================================
+
 var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
 
 if (heroSlides.length === 0) {
     heroSlides = [
         {
-            image: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200&h=600&fit=crop',
-            badge: 'Concert',
-            title: 'Jazz Concert',
-            description: 'An exceptional evening with the best artists'
+            image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop',
+            badge: 'Music Festival',
+            title: 'Summer Music Festival 2026',
+            description: '3 days of electrifying performances by top artists'
         },
         {
-            image: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=1200&h=600&fit=crop',
-            badge: 'Sport',
-            title: 'Football Match',
-            description: 'Experience the excitement of live sport'
+            image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop',
+            badge: 'Football',
+            title: 'Champions League Final',
+            description: 'The biggest football event of the year live'
         },
         {
-            image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop',
+            image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop',
             badge: 'Conference',
-            title: 'Blockchain Summit',
-            description: 'The future of decentralized technology'
+            title: 'Web3 Summit 2026',
+            description: 'The future of decentralized technology unveiled'
         },
         {
-            image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&h=600&fit=crop',
+            image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop',
             badge: 'Cinema',
-            title: 'Premiere',
-            description: 'Discover exclusive films'
+            title: 'International Film Festival',
+            description: 'Premieres and exclusive screenings'
         },
         {
-            image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&h=600&fit=crop',
-            badge: 'Festival',
-            title: 'Music Festival',
-            description: '3 days of unforgettable festivities'
+            image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop',
+            badge: 'Concert',
+            title: 'World Tour Concert',
+            description: 'An unforgettable night with global superstars'
         }
     ];
     localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
@@ -214,9 +219,14 @@ if (heroSlides.length === 0) {
 
 var BACKEND_URL = "https://betix-backend.onrender.com";
 
+// ============================================================
+// ===== EVENT IMAGES - NOUVELLES IMAGES ATTRACTIVES =====
+// ============================================================
+
 var eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
-    Sport: 'https://images.unsplash.com/photo-1461896836934-ffe807baa261?w=600&h=400&fit=crop',
+    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
     Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
     Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
     Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
@@ -230,7 +240,7 @@ var eventImagesList = {
 
 var demoEvents = [
     { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '4', title: 'Crypto Training', category: 'Training', country: 'France', date: '2026-08-01T09:00', location: 'Online', description: 'Learn to trade and invest in cryptocurrencies', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Training], coverImage: eventImagesList.Training, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '5', title: 'Movie Premiere', category: 'Cinema', country: 'France', date: '2026-08-05T19:00', location: 'Paris', description: 'Exclusive film premiere', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
@@ -240,7 +250,7 @@ var demoEvents = [
     { id: '9', title: 'Modern Art Exhibition', category: 'Exhibition', country: 'France', date: '2026-07-28T10:00', location: 'Paris, Centre Pompidou', description: 'Discover works by the greatest modern artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.00015, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Exhibition], coverImage: eventImagesList.Exhibition, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '10', title: 'Charity Gala', category: 'Gala', country: 'France', date: '2026-08-02T19:00', location: 'Paris, Palais des Congres', description: 'An elegant gala evening supporting charitable causes', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nFormal attire required', price: 0.0005, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Gala], coverImage: eventImagesList.Gala, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '11', title: 'Innovation Seminar', category: 'Seminar', country: 'France', date: '2026-08-08T09:00', location: 'Paris, La Defense', description: 'Seminar on innovation and new technologies', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.00035, seatsTotal: 80, seatsLeft: 80, images: [eventImagesList.Seminar], coverImage: eventImagesList.Seminar, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '12', title: 'Afrobeat Concert', category: 'Concert', country: 'RDC', date: '2026-07-19T19:00', location: 'Kinshasa, Stade des Martyrs', description: 'A massive afrobeat concert with the biggest Congolese artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0004, seatsTotal: 2000, seatsLeft: 2000, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '12', title: 'Football Derby', category: 'Sport', country: 'RDC', date: '2026-07-19T19:00', location: 'Kinshasa, Stade des Martyrs', description: 'A massive football derby between rival teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0004, seatsTotal: 2000, seatsLeft: 2000, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '13', title: 'Basketball Match', category: 'Sport', country: 'RDC', date: '2026-07-25T16:00', location: 'Kinshasa, Gymnasium', description: 'Basketball match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0002, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '14', title: 'Rumba Festival', category: 'Festival', country: 'RDC', date: '2026-08-01T14:00', location: 'Kinshasa, Place du 30 Juin', description: 'Celebrating Congolese Rumba with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0003, seatsTotal: 3000, seatsLeft: 3000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
     { id: '15', title: 'Tech Africa Conference', category: 'Conference', country: 'RDC', date: '2026-08-05T09:00', location: 'Kinshasa, Cite de l\'UA', description: 'Conference on new technologies in Africa', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.00025, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
@@ -619,10 +629,14 @@ function renderChatMessages() {
 
 function changeLanguage(lang) {
     localStorage.setItem('betix_language', lang);
-    var currentUrl = window.location.href;
-    var url = new URL(currentUrl);
-    url.searchParams.set('lang', lang);
-    window.location.href = url.toString();
+    var select = document.querySelector('.goog-te-combo');
+    if (select) {
+        select.value = lang;
+        select.dispatchEvent(new Event('change'));
+    }
+    setTimeout(function() {
+        location.reload();
+    }, 500);
 }
 
 function detectLanguage() {
@@ -637,7 +651,7 @@ function detectLanguage() {
 }
 
 // ============================================================
-// ===== NOTIFICATION PANEL =====
+// ===== NOTIFICATIONS =====
 // ============================================================
 
 function openNotificationPanel() {
@@ -685,6 +699,34 @@ function renderNotificationPanel() {
     updateNotifBadgeHeader();
 }
 
+function renderNotificationsPage() {
+    var container = document.getElementById('notificationsList');
+    if (!container) return;
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < notifications.length; i++) {
+        var notif = notifications[i];
+        var time = new Date(notif.date);
+        var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        var unreadClass = notif.read ? '' : 'unread';
+        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
+        html += '<div class="notification-item ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
+                '<div class="notif-time">' + timeStr + '</div>' +
+            '</div>' +
+        '</div>';
+        notifications[i].read = true;
+    }
+    container.innerHTML = html;
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
 function toggleNotifications() {
     openNotificationPanel();
 }
@@ -701,6 +743,22 @@ function updateNotifBadgeHeader() {
         badge.style.display = 'flex';
     } else {
         badge.style.display = 'none';
+    }
+    updateSidebarNotifBadge();
+}
+
+function updateSidebarNotifBadge() {
+    var badge = document.getElementById('sidebarNotifBadge');
+    if (!badge) return;
+    var unread = 0;
+    for (var i = 0; i < notifications.length; i++) {
+        if (!notifications[i].read) unread++;
+    }
+    if (unread > 0) {
+        badge.textContent = unread;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
     }
 }
 
@@ -752,7 +810,6 @@ async function handleImageUploadModern(file, index) {
     var progressText = document.getElementById('progressText' + (index + 1));
     var previewContainer = document.getElementById('previewContainer' + index);
     var previewImage = document.getElementById('previewImage' + index);
-    var uploadInner = document.getElementById('uploadInner' + (index + 1));
     
     progress.style.display = 'block';
     progressFill.style.width = '0%';
@@ -957,7 +1014,7 @@ function goBack() {
 
 function showPage(pageName) {
     updateActivity();
-    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage', 'myeventsPage'];
+    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage', 'myeventsPage', 'notificationsPage'];
     for (var i = 0; i < pages.length; i++) { 
         var el = document.getElementById(pages[i]); 
         if (el) { 
@@ -989,6 +1046,7 @@ function showPage(pageName) {
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'faq') initFaq();
     if (pageName === 'myevents') renderMyEvents();
+    if (pageName === 'notifications') renderNotificationsPage();
     closeSidebar();
     window.scrollTo(0, 0);
 }
@@ -1216,6 +1274,123 @@ function updateTotalPrice() {
     var qty = parseInt(input.value) || 1;
     var total = qty * selectedEventForPurchase.price;
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
+}
+
+// ============================================================
+// ===== PUBLISH CONFIRMATION PROFESSIONNEL =====
+// ============================================================
+
+function openPublishConfirm(eventData) {
+    pendingEventData = eventData;
+    
+    document.getElementById('confirmTitle').textContent = eventData.title;
+    document.getElementById('confirmCategory').textContent = eventData.category;
+    document.getElementById('confirmCountry').textContent = eventData.country;
+    var dateEvent = new Date(eventData.date);
+    document.getElementById('confirmDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
+    document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
+    document.getElementById('confirmSeats').textContent = eventData.seatsTotal;
+    document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
+    document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
+    document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
+    
+    var imagesContainer = document.getElementById('confirmImages');
+    imagesContainer.innerHTML = '';
+    if (eventData.images && eventData.images.length > 0) {
+        for (var i = 0; i < eventData.images.length; i++) {
+            var img = document.createElement('img');
+            img.src = eventData.images[i];
+            img.alt = 'Event image ' + (i + 1);
+            imagesContainer.appendChild(img);
+        }
+    }
+    
+    document.getElementById('publishConfirmPopup').classList.add('show');
+}
+
+function closePublishConfirmPopup() {
+    document.getElementById('publishConfirmPopup').classList.remove('show');
+    pendingEventData = null;
+}
+
+function confirmPublishEvent() {
+    if (!pendingEventData) return;
+    
+    var newEvent = pendingEventData;
+    events.push(newEvent);
+    saveEvents();
+    
+    document.getElementById('eventForm').reset();
+    for (var i = 0; i < 2; i++) {
+        removeImageModern(i);
+    }
+    uploadedImages = {};
+    
+    addNotification(
+        'New event "' + newEvent.title + '" has been published!',
+        'event'
+    );
+    
+    closePublishConfirmPopup();
+    renderEventsByCategory();
+    updateProfilePage();
+    alert('Event "' + newEvent.title + '" has been successfully published!');
+    showPage('home');
+}
+
+// ============================================================
+// ===== MODIFIED CREATE EVENT =====
+// ============================================================
+
+function createEvent(e) {
+    e.preventDefault();
+    if (!currentUser.wallet) { 
+        alert('Connect your Pi account first'); 
+        return; 
+    }
+    
+    var images = getUploadedImages();
+    if (images.length < 2) { 
+        alert('Please add 2 photos for your event'); 
+        return; 
+    }
+    
+    var conditions = document.getElementById('eventConditions').value.trim();
+    if (!conditions) {
+        alert('Please add participation conditions');
+        return;
+    }
+    
+    var category = document.getElementById('eventCategory').value;
+    var country = document.getElementById('eventCountry').value;
+    
+    var newEvent = {
+        id: Date.now().toString(),
+        title: document.getElementById('eventTitle').value,
+        category: category,
+        country: country,
+        date: document.getElementById('eventDate').value,
+        location: document.getElementById('eventLocation').value,
+        description: document.getElementById('eventDescription').value,
+        conditions: conditions,
+        price: parseFloat(document.getElementById('eventPrice').value) || 0.0003,
+        seatsTotal: parseInt(document.getElementById('eventSeats').value),
+        seatsLeft: parseInt(document.getElementById('eventSeats').value),
+        images: images,
+        coverImage: images[0],
+        organizer: currentUser.wallet,
+        organizerName: currentUser.name,
+        createdAt: new Date().toISOString(),
+        boosts: 0
+    };
+    
+    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
+        alert('Please fill in all required fields'); 
+        return; 
+    }
+    
+    openPublishConfirm(newEvent);
 }
 
 // ============================================================
@@ -1822,94 +1997,6 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
-// ============================================================
-
-function createEvent(e) {
-    e.preventDefault();
-    if (!currentUser.wallet) { 
-        alert('Connect your Pi account first'); 
-        return; 
-    }
-    
-    var images = getUploadedImages();
-    if (images.length < 2) { 
-        alert('Please add 2 photos for your event'); 
-        return; 
-    }
-    
-    var conditions = document.getElementById('eventConditions').value.trim();
-    if (!conditions) {
-        alert('Please add participation conditions');
-        return;
-    }
-    
-    var category = document.getElementById('eventCategory').value;
-    var country = document.getElementById('eventCountry').value;
-    
-    var newEvent = {
-        id: Date.now().toString(),
-        title: document.getElementById('eventTitle').value,
-        category: category,
-        country: country,
-        date: document.getElementById('eventDate').value,
-        location: document.getElementById('eventLocation').value,
-        description: document.getElementById('eventDescription').value,
-        conditions: conditions,
-        price: parseFloat(document.getElementById('eventPrice').value) || 0.0003,
-        seatsTotal: parseInt(document.getElementById('eventSeats').value),
-        seatsLeft: parseInt(document.getElementById('eventSeats').value),
-        images: images,
-        coverImage: images[0],
-        organizer: currentUser.wallet,
-        organizerName: currentUser.name,
-        createdAt: new Date().toISOString(),
-        boosts: 0
-    };
-    
-    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
-        alert('Please fill in all required fields'); 
-        return; 
-    }
-    
-    events.push(newEvent);
-    saveEvents();
-    document.getElementById('eventForm').reset();
-    
-    for (var i = 0; i < 2; i++) {
-        removeImageModern(i);
-    }
-    uploadedImages = {};
-    
-    addNotification(
-        'New event "' + newEvent.title + '" has been published!',
-        'event'
-    );
-    showPublishConfirm(newEvent);
-    updateProfilePage();
-}
-
-function showPublishConfirm(event) {
-    var popup = document.getElementById('publishConfirm');
-    if (!popup) return;
-    document.getElementById('publishEventTitle').textContent = event.title;
-    document.getElementById('publishCategory').textContent = event.category;
-    document.getElementById('publishCountry').textContent = event.country;
-    var dateEvent = new Date(event.date);
-    document.getElementById('publishDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('publishSeats').textContent = event.seatsTotal;
-    document.getElementById('publishPrice').textContent = event.price + ' Pi';
-    popup.classList.add('show');
-}
-
-function closePublishConfirm() {
-    var popup = document.getElementById('publishConfirm');
-    if (popup) {
-        popup.classList.remove('show');
-    }
-}
-
-// ============================================================
 // ===== MY EVENTS =====
 // ============================================================
 
@@ -2019,9 +2106,10 @@ function renderEventCard(event) {
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')" style="cursor:pointer;">' +
         '<div class="event-card-banner">' +
-            '<img src="' + (event.coverImage || eventImagesList[event.category]) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + eventImagesList[event.category] + '\'">' +
+            '<img src="' + (event.coverImage || fallbackImage) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
             '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
         '<div class="event-card-body">' +
@@ -2782,6 +2870,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateConnectButtons();
     
+    var confirmPublishBtn = document.getElementById('confirmPublishBtn');
+    if (confirmPublishBtn) {
+        confirmPublishBtn.addEventListener('click', confirmPublishEvent);
+    }
+    
     var adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
     var adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
     var adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
@@ -2821,15 +2914,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
     if (backBtn) backBtn.addEventListener('click', goBack);
     
-    var notifHeaderBtn = document.getElementById('notifHeaderBtn');
-    if (notifHeaderBtn) {
-        notifHeaderBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            openNotificationPanel();
-        });
-    }
-    
-    // Modern image upload handling
     var imageInputsModern = document.querySelectorAll('.image-input-modern');
     for (var i = 0; i < imageInputsModern.length; i++) {
         var input = imageInputsModern[i];
@@ -2879,15 +2963,12 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
 
-    // ===== SYNC WITH SUPABASE =====
     syncAllFromSupabase();
 
-    // Auto-save every 30 seconds
     setInterval(function() {
         syncAllToSupabase();
     }, 30000);
 
-    // Save when user leaves the page
     window.addEventListener('beforeunload', function() {
         syncAllToSupabase();
     });
