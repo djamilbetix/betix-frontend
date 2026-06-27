@@ -169,6 +169,7 @@ var pageHistory = ['home'];
 var logoClickCount = 0;
 var uploadedImages = {};
 var pendingEventData = null;
+var dataLoaded = false;
 
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
@@ -267,17 +268,14 @@ function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(d
 
 function saveEvents() { 
     localStorage.setItem('betix_events', JSON.stringify(events));
-    syncEventsToSupabase();
 }
 
 function saveTickets() { 
     localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    syncTicketsToSupabase();
 }
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    saveUserToSupabase();
 }
 
 function saveNotifications() { 
@@ -286,21 +284,18 @@ function saveNotifications() {
 
 function saveChatMessages() {
     localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
-    syncChatToSupabase();
 }
 
 function saveRatings() {
     localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-    syncRatingsToSupabase();
 }
 
 function saveConnectedUsers() {
     localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-    syncUsersToSupabase();
 }
 
 // ============================================================
-// ===== SAUVEGARDE UTILISATEUR =====
+// ===== SAUVEGARDE VERS SUPABASE =====
 // ============================================================
 
 async function saveUserToSupabase() {
@@ -310,7 +305,7 @@ async function saveUserToSupabase() {
             wallet: currentUser.wallet,
             name: currentUser.name,
             ticketCount: tickets.filter(t => t.userWallet === currentUser.wallet).length,
-            lastSeen: new Date().toLocaleString(),
+            lastSeen: new Date().toISOString(),
             profilePhoto: currentUser.profilePhoto || null,
             loyaltyPoints: currentUser.loyaltyPoints || 0,
             memberSince: currentUser.memberSince || '2026'
@@ -319,7 +314,7 @@ async function saveUserToSupabase() {
             .from('users')
             .upsert(userData, { onConflict: 'wallet' });
         if (error) console.error('Error saving user:', error);
-        else console.log('User saved to Supabase');
+        else console.log('✅ User saved to Supabase');
     } catch (error) { console.error('Error saving user:', error); }
 }
 
@@ -335,7 +330,15 @@ async function loadUserFromSupabase() {
             .select('*')
             .eq('wallet', currentUser.wallet)
             .single();
-        if (error) { console.error('Error loading user:', error); return false; }
+        if (error) { 
+            if (error.code === 'PGRST116') {
+                console.log('No user found in Supabase, creating...');
+                await saveUserToSupabase();
+                return false;
+            }
+            console.error('Error loading user:', error); 
+            return false; 
+        }
         if (data) {
             currentUser.name = data.name || currentUser.name;
             currentUser.profilePhoto = data.profilePhoto || null;
@@ -345,14 +348,18 @@ async function loadUserFromSupabase() {
             updateAllProfileImages();
             updateUserInfo();
             updateProfilePage();
+            console.log('✅ User loaded from Supabase:', currentUser.name);
             return true;
         }
         return false;
-    } catch (error) { console.error('Error loading user:', error); return false; }
+    } catch (error) { 
+        console.error('Error loading user:', error); 
+        return false; 
+    }
 }
 
 // ============================================================
-// ===== CHARGER ÉVÉNEMENTS - PUBLICS =====
+// ===== CHARGER ÉVÉNEMENTS =====
 // ============================================================
 
 async function loadEventsFromSupabase() {
@@ -370,14 +377,14 @@ async function loadEventsFromSupabase() {
         
         if (data && data.length > 0) {
             events = data;
-            localStorage.setItem('betix_events', JSON.stringify(events));
+            saveEvents();
             renderEventsByCategory();
             console.log('✅ Events loaded from Supabase:', events.length);
             return true;
         } else {
             console.log("No events in Supabase, loading demo events...");
             events = JSON.parse(JSON.stringify(demoEvents));
-            localStorage.setItem('betix_events', JSON.stringify(events));
+            saveEvents();
             await syncEventsToSupabase();
             renderEventsByCategory();
             console.log('✅ Demo events loaded');
@@ -396,11 +403,14 @@ async function syncEventsToSupabase() {
             return;
         }
         console.log("Syncing events to Supabase...");
+        // Supprimer tous les événements existants
         const { error: deleteError } = await supabaseClient
             .from('events')
             .delete()
             .neq('id', '');
         if (deleteError) throw deleteError;
+        
+        // Insérer les nouveaux événements
         const { error: insertError } = await supabaseClient
             .from('events')
             .insert(events);
@@ -439,7 +449,7 @@ async function loadTicketsFromSupabase() {
         
         if (data && data.length > 0) {
             tickets = data;
-            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            saveTickets();
             renderTickets();
             renderHistory();
             console.log('✅ Tickets loaded for user:', currentUser.wallet, data.length);
@@ -447,7 +457,7 @@ async function loadTicketsFromSupabase() {
         } else {
             console.log("No tickets found for user:", currentUser.wallet);
             tickets = [];
-            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            saveTickets();
             renderTickets();
             renderHistory();
             return false;
@@ -504,14 +514,14 @@ async function loadNotificationsFromSupabase() {
         
         if (data && data.length > 0) {
             notifications = data;
-            localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+            saveNotifications();
             updateNotifBadgeHeader();
             console.log('✅ Notifications loaded for user:', currentUser.wallet, data.length);
             return true;
         } else {
             console.log("No notifications found for user:", currentUser.wallet);
             notifications = [];
-            localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+            saveNotifications();
             updateNotifBadgeHeader();
             return false;
         }
@@ -565,12 +575,12 @@ async function loadRatingsFromSupabase() {
         
         if (data && data.length > 0) {
             ratings = data;
-            localStorage.setItem('betix_ratings', JSON.stringify(ratings));
+            saveRatings();
             console.log('✅ Ratings loaded for user:', currentUser.wallet, data.length);
             return true;
         } else {
             ratings = [];
-            localStorage.setItem('betix_ratings', JSON.stringify(ratings));
+            saveRatings();
             return false;
         }
     } catch (error) { 
@@ -663,26 +673,33 @@ async function syncAdminLogsToSupabase() {
 }
 
 // ============================================================
-// ===== SYNC ALL =====
+// ===== SYNC ALL - CORRIGÉ =====
 // ============================================================
 
 async function syncAllFromSupabase() {
     console.log('🔄 Syncing all data from Supabase for user:', currentUser.wallet || 'Guest');
     
+    // Charger les événements (publics)
     await loadEventsFromSupabase();
+    
+    // Charger les données de l'utilisateur
+    await loadUserFromSupabase();
     await loadTicketsFromSupabase();
     await loadNotificationsFromSupabase();
     await loadRatingsFromSupabase();
     await loadChatFromSupabase();
     await loadAdminLogsFromSupabase();
-    await loadUserFromSupabase();
     
+    // Mettre à jour l'interface
     renderEventsByCategory();
     updateProfilePage();
     updateUserInfo();
     updateAllProfileImages();
     updateNotifBadgeHeader();
+    renderTickets();
+    renderHistory();
     
+    dataLoaded = true;
     console.log('✅ All data synced from Supabase for user:', currentUser.wallet || 'Guest');
 }
 
@@ -696,6 +713,12 @@ async function syncAllToSupabase() {
     await syncAdminLogsToSupabase();
     await saveUserToSupabase();
     console.log('✅ All data synced to Supabase');
+}
+
+function forceReloadData() {
+    console.log('🔄 Force reloading all data...');
+    syncAllFromSupabase();
+    alert('Data reloaded from Supabase!');
 }
 
 // ============================================================
@@ -901,6 +924,7 @@ function addNotification(message, type) {
         notifications = notifications.slice(0, 100);
     }
     saveNotifications();
+    syncNotificationsToSupabase();
     updateNotifBadgeHeader();
 }
 
@@ -1028,8 +1052,9 @@ async function handleProfilePhotoUpload(file) {
         var compressedData = await compressProfilePhoto(file);
         currentUser.profilePhoto = compressedData;
         saveUser();
+        await saveUserToSupabase();
         updateAllProfileImages();
-        alert('Profile photo updated and compressed!');
+        alert('Profile photo updated and saved!');
     } catch (error) {
         console.error('Error compressing image:', error);
         alert('Error compressing image. Please try with a smaller image.');
@@ -1232,6 +1257,7 @@ async function connectToPi() {
             updateConnectButtons();
             await loadTicketsFromSupabase();
             await loadNotificationsFromSupabase();
+            await loadRatingsFromSupabase();
             alert('Pi account connected (demo mode)! Welcome Demo User');
             closeSidebar();
             return;
@@ -1258,6 +1284,7 @@ async function connectToPi() {
             renderEventsByCategory();
             updateConnectButtons();
             
+            // Charger TOUTES les données de l'utilisateur
             await loadTicketsFromSupabase();
             await loadNotificationsFromSupabase();
             await loadRatingsFromSupabase();
@@ -1320,6 +1347,8 @@ async function confirmPurchase(eventId, quantity) {
                     event.boosts = (event.boosts || 0) + quantity;
                     saveEvents();
                     saveTickets();
+                    syncTicketsToSupabase();
+                    syncEventsToSupabase();
                     addNotification(
                         'Purchase of ' + quantity + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
                         'purchase'
@@ -1453,6 +1482,7 @@ function confirmPublishEvent() {
     var newEvent = pendingEventData;
     events.push(newEvent);
     saveEvents();
+    syncEventsToSupabase();
     
     document.getElementById('eventForm').reset();
     for (var i = 0; i < 2; i++) {
@@ -1948,6 +1978,7 @@ function adminDeleteEvent(id) {
     if (confirm('Delete this event?')) {
         events = events.filter(function(e) { return e.id !== id; });
         saveEvents();
+        syncEventsToSupabase();
         renderAdminEvents();
         renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = events.length;
@@ -1960,6 +1991,7 @@ function adminDeleteAllEvents() {
     if (confirm('Delete ALL events? This action is irreversible.')) {
         events = [];
         saveEvents();
+        syncEventsToSupabase();
         renderAdminEvents();
         renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = 0;
@@ -2939,10 +2971,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     detectLanguage();
     
-    if (!events.length) { 
-        events = JSON.parse(JSON.stringify(demoEvents)); 
-        saveEvents(); 
-    }
+    // Charger les données depuis Supabase
+    setTimeout(async function() {
+        await syncAllFromSupabase();
+    }, 500);
     
     initCountrySelectors();
     calculateLoyaltyPoints();
@@ -3098,11 +3130,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindActivityListeners(); 
     startSessionMonitor();
-
-    // ===== SYNC WITH SUPABASE - CHARGEMENT FORCÉ =====
-    setTimeout(async function() {
-        await syncAllFromSupabase();
-    }, 1000);
 
     // Auto-save every 30 seconds
     setInterval(function() {
