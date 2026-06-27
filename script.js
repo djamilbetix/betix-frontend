@@ -282,7 +282,6 @@ function saveUser() {
 
 function saveNotifications() { 
     localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncNotificationsToSupabase();
 }
 
 function saveChatMessages() {
@@ -310,7 +309,7 @@ async function saveUserToSupabase() {
         const userData = {
             wallet: currentUser.wallet,
             name: currentUser.name,
-            ticketCount: tickets.filter(t => t.buyerWallet === currentUser.wallet).length,
+            ticketCount: tickets.filter(t => t.userWallet === currentUser.wallet).length,
             lastSeen: new Date().toLocaleString(),
             profilePhoto: currentUser.profilePhoto || null,
             loyaltyPoints: currentUser.loyaltyPoints || 0,
@@ -353,36 +352,50 @@ async function loadUserFromSupabase() {
 }
 
 // ============================================================
-// ===== CHARGER ÉVÉNEMENTS =====
+// ===== CHARGER ÉVÉNEMENTS - PUBLICS =====
 // ============================================================
 
 async function loadEventsFromSupabase() {
     try {
+        console.log("Loading events from Supabase...");
         const { data, error } = await supabaseClient
             .from('events')
             .select('*')
             .order('date', { ascending: true });
-        if (error) { console.error("Error loading events:", error); return false; }
+        
+        if (error) { 
+            console.error("Error loading events:", error); 
+            return false; 
+        }
+        
         if (data && data.length > 0) {
             events = data;
             localStorage.setItem('betix_events', JSON.stringify(events));
             renderEventsByCategory();
-            console.log('Events loaded from Supabase:', events.length);
+            console.log('✅ Events loaded from Supabase:', events.length);
             return true;
         } else {
+            console.log("No events in Supabase, loading demo events...");
             events = JSON.parse(JSON.stringify(demoEvents));
             localStorage.setItem('betix_events', JSON.stringify(events));
             await syncEventsToSupabase();
             renderEventsByCategory();
-            console.log('Demo events loaded');
+            console.log('✅ Demo events loaded');
             return true;
         }
-    } catch (error) { console.error('Error loading events:', error); return false; }
+    } catch (error) { 
+        console.error('Error loading events:', error); 
+        return false; 
+    }
 }
 
 async function syncEventsToSupabase() {
     try {
-        if (events.length === 0) return;
+        if (events.length === 0) {
+            console.log("No events to sync");
+            return;
+        }
+        console.log("Syncing events to Supabase...");
         const { error: deleteError } = await supabaseClient
             .from('events')
             .delete()
@@ -392,99 +405,178 @@ async function syncEventsToSupabase() {
             .from('events')
             .insert(events);
         if (insertError) throw insertError;
-        console.log('Events synced to Supabase:', events.length);
-    } catch (error) { console.error('Error syncing events:', error); }
+        console.log('✅ Events synced to Supabase:', events.length);
+    } catch (error) { 
+        console.error('Error syncing events:', error); 
+    }
 }
 
 // ============================================================
-// ===== CHARGER BILLETS =====
+// ===== CHARGER BILLETS - UNIQUEMENT CEUX DE L'UTILISATEUR =====
 // ============================================================
 
 async function loadTicketsFromSupabase() {
+    if (!currentUser.wallet) {
+        console.log("No user wallet, cannot load tickets");
+        tickets = [];
+        renderTickets();
+        renderHistory();
+        return false;
+    }
+    
     try {
+        console.log("Loading tickets for user:", currentUser.wallet);
         const { data, error } = await supabaseClient
             .from('tickets')
             .select('*')
+            .eq('userWallet', currentUser.wallet)
             .order('purchaseDate', { ascending: false });
-        if (error) { console.error("Error loading tickets:", error); return false; }
+        
+        if (error) { 
+            console.error("Error loading tickets:", error); 
+            return false; 
+        }
+        
         if (data && data.length > 0) {
             tickets = data;
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             renderTickets();
             renderHistory();
-            console.log('Tickets loaded from Supabase:', tickets.length);
+            console.log('✅ Tickets loaded for user:', currentUser.wallet, data.length);
             return true;
+        } else {
+            console.log("No tickets found for user:", currentUser.wallet);
+            tickets = [];
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            renderTickets();
+            renderHistory();
+            return false;
         }
-        return false;
-    } catch (error) { console.error('Error loading tickets:', error); return false; }
+    } catch (error) { 
+        console.error('Error loading tickets:', error); 
+        return false; 
+    }
 }
 
 async function syncTicketsToSupabase() {
     try {
-        if (tickets.length === 0) return;
+        if (tickets.length === 0) {
+            console.log("No tickets to sync");
+            return;
+        }
+        console.log("Syncing tickets to Supabase...");
         for (const ticket of tickets) {
             const { error } = await supabaseClient
                 .from('tickets')
                 .upsert(ticket, { onConflict: 'id' });
             if (error) console.error('Error syncing ticket:', error);
         }
-        console.log('Tickets synced to Supabase:', tickets.length);
-    } catch (error) { console.error('Error syncing tickets:', error); }
+        console.log('✅ Tickets synced to Supabase:', tickets.length);
+    } catch (error) { 
+        console.error('Error syncing tickets:', error); 
+    }
 }
 
 // ============================================================
-// ===== NOTIFICATIONS =====
+// ===== CHARGER NOTIFICATIONS - UNIQUEMENT CELLES DE L'UTILISATEUR =====
 // ============================================================
 
 async function loadNotificationsFromSupabase() {
+    if (!currentUser.wallet) {
+        console.log("No user wallet, cannot load notifications");
+        notifications = [];
+        updateNotifBadgeHeader();
+        return false;
+    }
+    
     try {
+        console.log("Loading notifications for user:", currentUser.wallet);
         const { data, error } = await supabaseClient
             .from('notifications')
             .select('*')
+            .eq('userWallet', currentUser.wallet)
             .order('date', { ascending: false });
-        if (error) { console.error("Error loading notifications:", error); return false; }
+        
+        if (error) { 
+            console.error("Error loading notifications:", error); 
+            return false; 
+        }
+        
         if (data && data.length > 0) {
             notifications = data;
             localStorage.setItem('betix_notifications', JSON.stringify(notifications));
             updateNotifBadgeHeader();
-            console.log('Notifications loaded from Supabase:', notifications.length);
+            console.log('✅ Notifications loaded for user:', currentUser.wallet, data.length);
             return true;
+        } else {
+            console.log("No notifications found for user:", currentUser.wallet);
+            notifications = [];
+            localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+            updateNotifBadgeHeader();
+            return false;
         }
-        return false;
-    } catch (error) { console.error('Error loading notifications:', error); return false; }
+    } catch (error) { 
+        console.error('Error loading notifications:', error); 
+        return false; 
+    }
 }
 
 async function syncNotificationsToSupabase() {
     try {
-        if (notifications.length === 0) return;
+        if (notifications.length === 0) {
+            console.log("No notifications to sync");
+            return;
+        }
+        console.log("Syncing notifications to Supabase...");
         for (const notif of notifications) {
             const { error } = await supabaseClient
                 .from('notifications')
                 .upsert(notif, { onConflict: 'id' });
             if (error) console.error('Error syncing notification:', error);
         }
-        console.log('Notifications synced to Supabase:', notifications.length);
-    } catch (error) { console.error('Error syncing notifications:', error); }
+        console.log('✅ Notifications synced to Supabase:', notifications.length);
+    } catch (error) { 
+        console.error('Error syncing notifications:', error); 
+    }
 }
 
 // ============================================================
-// ===== RATINGS =====
+// ===== CHARGER RATINGS - UNIQUEMENT CEUX DE L'UTILISATEUR =====
 // ============================================================
 
 async function loadRatingsFromSupabase() {
+    if (!currentUser.wallet) {
+        console.log("No user wallet, cannot load ratings");
+        ratings = [];
+        return false;
+    }
+    
     try {
+        console.log("Loading ratings for user:", currentUser.wallet);
         const { data, error } = await supabaseClient
             .from('ratings')
-            .select('*');
-        if (error) { console.error("Error loading ratings:", error); return false; }
+            .select('*')
+            .eq('userWallet', currentUser.wallet);
+        
+        if (error) { 
+            console.error("Error loading ratings:", error); 
+            return false; 
+        }
+        
         if (data && data.length > 0) {
             ratings = data;
             localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-            console.log('Ratings loaded from Supabase:', ratings.length);
+            console.log('✅ Ratings loaded for user:', currentUser.wallet, data.length);
             return true;
+        } else {
+            ratings = [];
+            localStorage.setItem('betix_ratings', JSON.stringify(ratings));
+            return false;
         }
-        return false;
-    } catch (error) { console.error('Error loading ratings:', error); return false; }
+    } catch (error) { 
+        console.error('Error loading ratings:', error); 
+        return false; 
+    }
 }
 
 async function syncRatingsToSupabase() {
@@ -575,7 +667,8 @@ async function syncAdminLogsToSupabase() {
 // ============================================================
 
 async function syncAllFromSupabase() {
-    console.log('Syncing all data from Supabase...');
+    console.log('🔄 Syncing all data from Supabase for user:', currentUser.wallet || 'Guest');
+    
     await loadEventsFromSupabase();
     await loadTicketsFromSupabase();
     await loadNotificationsFromSupabase();
@@ -583,11 +676,18 @@ async function syncAllFromSupabase() {
     await loadChatFromSupabase();
     await loadAdminLogsFromSupabase();
     await loadUserFromSupabase();
-    console.log('All data synced from Supabase');
+    
+    renderEventsByCategory();
+    updateProfilePage();
+    updateUserInfo();
+    updateAllProfileImages();
+    updateNotifBadgeHeader();
+    
+    console.log('✅ All data synced from Supabase for user:', currentUser.wallet || 'Guest');
 }
 
 async function syncAllToSupabase() {
-    console.log('Syncing all data to Supabase...');
+    console.log('🔄 Syncing all data to Supabase...');
     await syncEventsToSupabase();
     await syncTicketsToSupabase();
     await syncNotificationsToSupabase();
@@ -595,7 +695,7 @@ async function syncAllToSupabase() {
     await syncChatToSupabase();
     await syncAdminLogsToSupabase();
     await saveUserToSupabase();
-    console.log('All data synced to Supabase');
+    console.log('✅ All data synced to Supabase');
 }
 
 // ============================================================
@@ -629,18 +729,15 @@ function renderChatMessages() {
 
 function changeLanguage(lang) {
     localStorage.setItem('betix_language', lang);
-    // Mettre à jour le selecteur natif
     var nativeSelect = document.getElementById('nativeLangSelect');
     if (nativeSelect) {
         nativeSelect.value = lang;
     }
-    // Traduction avec Google Translate
     var googleSelect = document.querySelector('.goog-te-combo');
     if (googleSelect) {
         googleSelect.value = lang;
         googleSelect.dispatchEvent(new Event('change'));
     }
-    // Recharger la page pour appliquer la traduction
     setTimeout(function() {
         location.reload();
     }, 600);
@@ -654,12 +751,10 @@ function detectLanguage() {
         localStorage.setItem('betix_language', urlLang);
         savedLang = urlLang;
     }
-    // Mettre à jour le selecteur natif
     var nativeSelect = document.getElementById('nativeLangSelect');
     if (nativeSelect) {
         nativeSelect.value = savedLang;
     }
-    // Appliquer la traduction
     setTimeout(function() {
         var googleSelect = document.querySelector('.goog-te-combo');
         if (googleSelect && googleSelect.value !== savedLang) {
@@ -694,13 +789,16 @@ function closeNotificationPanel() {
 function renderNotificationPanel() {
     var container = document.getElementById('notificationPanelBody');
     if (!container) return;
-    if (!notifications || notifications.length === 0) {
+    var userNotifications = notifications.filter(function(n) {
+        return n.userWallet === currentUser.wallet;
+    });
+    if (!userNotifications || userNotifications.length === 0) {
         container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
         return;
     }
     var html = '';
-    for (var i = 0; i < Math.min(notifications.length, 20); i++) {
-        var notif = notifications[i];
+    for (var i = 0; i < Math.min(userNotifications.length, 20); i++) {
+        var notif = userNotifications[i];
         var time = new Date(notif.date);
         var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         var unreadClass = notif.read ? '' : 'unread';
@@ -712,7 +810,7 @@ function renderNotificationPanel() {
                 '<div class="notif-time">' + timeStr + '</div>' +
             '</div>' +
         '</div>';
-        notifications[i].read = true;
+        notif.read = true;
     }
     container.innerHTML = html;
     saveNotifications();
@@ -722,13 +820,16 @@ function renderNotificationPanel() {
 function renderNotificationsPage() {
     var container = document.getElementById('notificationsList');
     if (!container) return;
-    if (!notifications || notifications.length === 0) {
+    var userNotifications = notifications.filter(function(n) {
+        return n.userWallet === currentUser.wallet;
+    });
+    if (!userNotifications || userNotifications.length === 0) {
         container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
         return;
     }
     var html = '';
-    for (var i = 0; i < notifications.length; i++) {
-        var notif = notifications[i];
+    for (var i = 0; i < userNotifications.length; i++) {
+        var notif = userNotifications[i];
         var time = new Date(notif.date);
         var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         var unreadClass = notif.read ? '' : 'unread';
@@ -740,7 +841,7 @@ function renderNotificationsPage() {
                 '<div class="notif-time">' + timeStr + '</div>' +
             '</div>' +
         '</div>';
-        notifications[i].read = true;
+        notif.read = true;
     }
     container.innerHTML = html;
     saveNotifications();
@@ -753,42 +854,47 @@ function toggleNotifications() {
 
 function updateNotifBadgeHeader() {
     var badge = document.getElementById('notifBadgeHeader');
-    if (!badge) return;
+    var sidebarBadge = document.getElementById('sidebarNotifBadge');
+    
     var unread = 0;
     for (var i = 0; i < notifications.length; i++) {
-        if (!notifications[i].read) unread++;
+        if (!notifications[i].read && notifications[i].userWallet === currentUser.wallet) {
+            unread++;
+        }
     }
-    if (unread > 0) {
-        badge.textContent = unread;
-        badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
+    
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = unread;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
     }
-    updateSidebarNotifBadge();
-}
-
-function updateSidebarNotifBadge() {
-    var badge = document.getElementById('sidebarNotifBadge');
-    if (!badge) return;
-    var unread = 0;
-    for (var i = 0; i < notifications.length; i++) {
-        if (!notifications[i].read) unread++;
-    }
-    if (unread > 0) {
-        badge.textContent = unread;
-        badge.classList.remove('hidden');
-    } else {
-        badge.classList.add('hidden');
+    
+    if (sidebarBadge) {
+        if (unread > 0) {
+            sidebarBadge.textContent = unread;
+            sidebarBadge.classList.remove('hidden');
+        } else {
+            sidebarBadge.classList.add('hidden');
+        }
     }
 }
 
 function addNotification(message, type) {
+    if (!currentUser.wallet) {
+        console.log("No user connected, notification not saved");
+        return;
+    }
+    
     var notif = {
-        id: Date.now(),
+        id: Date.now().toString() + '_' + currentUser.wallet,
         message: message,
         type: type || 'info',
         read: false,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        userWallet: currentUser.wallet
     };
     notifications.unshift(notif);
     if (notifications.length > 100) {
@@ -1110,20 +1216,22 @@ function updateConnectButtons() {
 async function connectToPi() {
     if (typeof Pi === 'undefined') { 
         if (confirm("Pi Browser not detected. Use demo mode?")) {
-            currentUser.wallet = 'demo_user';
+            var demoWallet = 'demo_user_' + Date.now();
+            currentUser.wallet = demoWallet;
             currentUser.name = 'Demo User';
             currentUser.memberSince = '2026';
             currentUser.loyaltyPoints = 0;
             currentUser.profilePhoto = null;
             saveUser();
-            saveUserToSupabase();
+            await saveUserToSupabase();
             updateActivity();
             updateUserInfo();
             updateProfilePage();
             updateAllProfileImages();
             renderEventsByCategory();
             updateConnectButtons();
-            loadTicketsFromSupabase();
+            await loadTicketsFromSupabase();
+            await loadNotificationsFromSupabase();
             alert('Pi account connected (demo mode)! Welcome Demo User');
             closeSidebar();
             return;
@@ -1141,7 +1249,7 @@ async function connectToPi() {
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             if (!currentUser.profilePhoto) currentUser.profilePhoto = null;
             saveUser();
-            saveUserToSupabase();
+            await saveUserToSupabase();
             updateActivity();
             updateUserInfo();
             updateProfilePage();
@@ -1149,7 +1257,12 @@ async function connectToPi() {
             trackUserConnection();
             renderEventsByCategory();
             updateConnectButtons();
-            loadTicketsFromSupabase();
+            
+            await loadTicketsFromSupabase();
+            await loadNotificationsFromSupabase();
+            await loadRatingsFromSupabase();
+            await loadUserFromSupabase();
+            
             alert('Pi account connected! Welcome ' + piUser.username);
             closeSidebar();
         }
@@ -1186,7 +1299,7 @@ async function confirmPurchase(eventId, quantity) {
                     var ticketsAdded = [];
                     for (var i = 0; i < quantity; i++) {
                         var ticket = {
-                            id: Date.now().toString() + '-' + i,
+                            id: Date.now().toString() + '-' + i + '_' + currentUser.wallet,
                             eventId: event.id,
                             eventTitle: event.title,
                             eventDate: event.date,
@@ -2826,7 +2939,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     detectLanguage();
     
-    if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
+    if (!events.length) { 
+        events = JSON.parse(JSON.stringify(demoEvents)); 
+        saveEvents(); 
+    }
     
     initCountrySelectors();
     calculateLoyaltyPoints();
@@ -2983,17 +3099,24 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
 
-    syncAllFromSupabase();
+    // ===== SYNC WITH SUPABASE - CHARGEMENT FORCÉ =====
+    setTimeout(async function() {
+        await syncAllFromSupabase();
+    }, 1000);
 
+    // Auto-save every 30 seconds
     setInterval(function() {
         syncAllToSupabase();
     }, 30000);
 
+    // Save when user leaves the page
     window.addEventListener('beforeunload', function() {
         syncAllToSupabase();
     });
     
     if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
+    
+    console.log('💡 Pour recharger les données: forceReloadData()');
 });
 
 console.log('Betix loaded successfully!');
