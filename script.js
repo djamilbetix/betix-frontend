@@ -18,10 +18,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log("Supabase initialized successfully");
 
-// ============================================================
-// ===== FONCTION DE TEST SUPABASE =====
-// ============================================================
-
 async function testSupabaseConnection() {
     try {
         const { data, error } = await supabaseClient
@@ -41,7 +37,6 @@ async function testSupabaseConnection() {
 
 async function testSupabaseInsert() {
     console.log('Testing Supabase insert...');
-    
     try {
         const testData = {
             pi_uid: 'test_' + Date.now(),
@@ -52,11 +47,9 @@ async function testSupabaseInsert() {
             loyalty_points: 0,
             member_since: '2026'
         };
-        
         const { data, error } = await supabaseClient
             .from('profiles')
             .insert(testData);
-            
         if (error) {
             console.error('Test profiles error:', error.message);
         } else {
@@ -66,7 +59,6 @@ async function testSupabaseInsert() {
     } catch (e) {
         console.error('Error:', e);
     }
-    
     try {
         const testEvent = {
             id: 'test_' + Date.now(),
@@ -87,11 +79,9 @@ async function testSupabaseInsert() {
             created_at: new Date().toISOString(),
             boosts: 0
         };
-        
         const { data, error } = await supabaseClient
             .from('events')
             .insert(testEvent);
-            
         if (error) {
             console.error('Test events error:', error.message);
         } else {
@@ -103,74 +93,60 @@ async function testSupabaseInsert() {
     }
 }
 
-// ============================================================
-// ===== COMPRESSION D'IMAGES =====
-// ============================================================
-
-function compressImage(file, options = {}) {
+function compressImage(file, options) {
     return new Promise((resolve, reject) => {
         if (!file || !file.type.startsWith('image/')) {
             reject(new Error('Le fichier n\'est pas une image'));
             return;
         }
-
-        const config = {
+        var config = {
             maxWidth: options.maxWidth || 800,
             maxHeight: options.maxHeight || 800,
             quality: options.quality || 0.7,
             format: options.format || 'image/webp',
             maxSizeMB: options.maxSizeMB || 5
         };
-
         if (file.size / (1024 * 1024) < 0.2) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) { resolve(e.target.result); };
             reader.onerror = function() { reject(new Error('Erreur de lecture du fichier')); };
             reader.readAsDataURL(file);
             return;
         }
-
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onload = function(event) {
-            const img = new Image();
+            var img = new Image();
             img.onload = function() {
-                let width = img.width;
-                let height = img.height;
-                
+                var width = img.width;
+                var height = img.height;
                 if (width > config.maxWidth || height > config.maxHeight) {
-                    const ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
+                    var ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
                     width = Math.round(width * ratio);
                     height = Math.round(height * ratio);
                 }
-                
-                const canvas = document.createElement('canvas');
+                var canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                
+                var ctx = canvas.getContext('2d');
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
-                
-                let format = config.format;
+                var format = config.format;
                 if (format === 'image/webp') {
-                    const testCanvas = document.createElement('canvas');
+                    var testCanvas = document.createElement('canvas');
                     testCanvas.width = 1;
                     testCanvas.height = 1;
-                    const testData = testCanvas.toDataURL('image/webp');
+                    var testData = testCanvas.toDataURL('image/webp');
                     if (!testData || testData.indexOf('image/webp') === -1) {
                         format = 'image/jpeg';
                     }
                 }
-                
-                let compressedDataUrl = canvas.toDataURL(format, config.quality);
-                
-                const compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
+                var compressedDataUrl = canvas.toDataURL(format, config.quality);
+                var compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
                 if (compressedSize > config.maxSizeMB && config.quality > 0.3) {
-                    const newQuality = Math.max(0.3, config.quality - 0.2);
+                    var newQuality = Math.max(0.3, config.quality - 0.2);
                     compressedDataUrl = canvas.toDataURL(format, newQuality);
                 }
-                
                 resolve(compressedDataUrl);
             };
             img.onerror = function() { reject(new Error('Erreur de chargement de l\'image')); };
@@ -201,10 +177,6 @@ async function compressEventImage(file) {
     });
 }
 
-// ============================================================
-// ===== COUNTRY LIST =====
-// ============================================================
-
 var countriesList = [
     'All',
     'Afghanistan', 'Algeria', 'Angola', 'Argentina', 'Australia',
@@ -225,10 +197,6 @@ var countriesList = [
     'Tunisia', 'Turkey', 'Uganda', 'Ukraine',
     'United Kingdom', 'United States', 'Zambia', 'Zimbabwe'
 ];
-
-// ============================================================
-// ===== GLOBAL VARIABLES =====
-// ============================================================
 
 var events = [];
 var tickets = [];
@@ -254,18 +222,12 @@ var pageHistory = ['home'];
 var logoClickCount = 0;
 var uploadedImages = {};
 var pendingEventData = null;
-
 var adminSessionTimer = 1800;
 var adminTimerInterval = null;
 var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
-// ============================================================
-// ===== HERO SLIDES =====
-// ============================================================
-
 var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
-
 if (heroSlides.length === 0) {
     heroSlides = [
         {
@@ -303,10 +265,6 @@ if (heroSlides.length === 0) {
 }
 
 var BACKEND_URL = "https://betix-backend.onrender.com";
-
-// ============================================================
-// ===== EVENT IMAGES =====
-// ============================================================
 
 var eventImagesList = {
     Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
@@ -346,10 +304,6 @@ function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, fun
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
 
-// ============================================================
-// ===== FONCTIONS DE SAUVEGARDE =====
-// ============================================================
-
 function saveEvents() { 
     localStorage.setItem('betix_events', JSON.stringify(events));
     syncEventsToSupabase();
@@ -385,18 +339,13 @@ function saveConnectedUsers() {
     syncUsersToSupabase();
 }
 
-// ============================================================
-// ===== SAUVEGARDE UTILISATEUR CORRIGEE =====
-// ============================================================
-
 async function saveUserToSupabase() {
     if (!currentUser.wallet) {
         console.log('Pas de wallet, sauvegarde ignoree');
         return false;
     }
-    
     try {
-        const userData = {
+        var userData = {
             pi_uid: currentUser.wallet,
             username: currentUser.name || 'Guest',
             photo_url: currentUser.profilePhoto || null,
@@ -405,45 +354,35 @@ async function saveUserToSupabase() {
             loyalty_points: currentUser.loyaltyPoints || 0,
             member_since: currentUser.memberSince || '2026'
         };
-        
         console.log('Envoi vers profiles:', userData);
-        
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('profiles')
             .upsert(userData, { onConflict: 'pi_uid' });
-            
         if (error) {
             console.error('Erreur Supabase:', error.message);
-            alert('Erreur de sauvegarde: ' + error.message);
             return false;
         }
-        
         console.log('Utilisateur sauvegarde dans profiles');
         return true;
-        
     } catch (error) {
         console.error('Erreur:', error);
         return false;
     }
 }
 
-// ============================================================
-// ===== CHARGER UTILISATEUR =====
-// ============================================================
-
 async function loadUserFromSupabase() {
     if (!currentUser.wallet) return false;
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('pi_uid', currentUser.wallet)
             .single();
-        if (error) { 
+        if (error) {
             if (error.code !== 'PGRST116') {
                 console.error('Error loading user:', error);
             }
-            return false; 
+            return false;
         }
         if (data) {
             currentUser.name = data.name || currentUser.name;
@@ -460,19 +399,15 @@ async function loadUserFromSupabase() {
     } catch (error) { console.error('Error loading user:', error); return false; }
 }
 
-// ============================================================
-// ===== CHARGER EVENEMENTS =====
-// ============================================================
-
 async function loadEventsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('events')
             .select('*')
             .order('date', { ascending: true });
-        if (error) { 
-            console.error("Error loading events:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading events:", error);
+            return false;
         }
         if (data && data.length > 0) {
             events = data;
@@ -492,35 +427,28 @@ async function loadEventsFromSupabase() {
 async function syncEventsToSupabase() {
     try {
         if (events.length === 0) return;
-        
-        const { error: deleteError } = await supabaseClient
+        var { error: deleteError } = await supabaseClient
             .from('events')
             .delete()
             .neq('id', '');
         if (deleteError) throw deleteError;
-        
-        const { error: insertError } = await supabaseClient
+        var { error: insertError } = await supabaseClient
             .from('events')
             .insert(events);
         if (insertError) throw insertError;
-        
         console.log('Events synced to Supabase:', events.length);
     } catch (error) { console.error('Error syncing events:', error); }
 }
 
-// ============================================================
-// ===== CHARGER BILLETS =====
-// ============================================================
-
 async function loadTicketsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('tickets')
             .select('*')
             .order('purchase_date', { ascending: false });
-        if (error) { 
-            console.error("Error loading tickets:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading tickets:", error);
+            return false;
         }
         if (data && data.length > 0) {
             tickets = data;
@@ -537,8 +465,9 @@ async function loadTicketsFromSupabase() {
 async function syncTicketsToSupabase() {
     try {
         if (tickets.length === 0) return;
-        for (const ticket of tickets) {
-            const { error } = await supabaseClient
+        for (var i = 0; i < tickets.length; i++) {
+            var ticket = tickets[i];
+            var { error } = await supabaseClient
                 .from('tickets')
                 .upsert(ticket, { onConflict: 'id' });
             if (error) console.error('Error syncing ticket:', error);
@@ -547,19 +476,15 @@ async function syncTicketsToSupabase() {
     } catch (error) { console.error('Error syncing tickets:', error); }
 }
 
-// ============================================================
-// ===== NOTIFICATIONS =====
-// ============================================================
-
 async function loadNotificationsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('notifications')
             .select('*')
             .order('date', { ascending: false });
-        if (error) { 
-            console.error("Error loading notifications:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading notifications:", error);
+            return false;
         }
         if (data && data.length > 0) {
             notifications = data;
@@ -575,8 +500,9 @@ async function loadNotificationsFromSupabase() {
 async function syncNotificationsToSupabase() {
     try {
         if (notifications.length === 0) return;
-        for (const notif of notifications) {
-            const { error } = await supabaseClient
+        for (var i = 0; i < notifications.length; i++) {
+            var notif = notifications[i];
+            var { error } = await supabaseClient
                 .from('notifications')
                 .upsert(notif, { onConflict: 'id' });
             if (error) console.error('Error syncing notification:', error);
@@ -585,18 +511,14 @@ async function syncNotificationsToSupabase() {
     } catch (error) { console.error('Error syncing notifications:', error); }
 }
 
-// ============================================================
-// ===== RATINGS =====
-// ============================================================
-
 async function loadRatingsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('ratings')
             .select('*');
-        if (error) { 
-            console.error("Error loading ratings:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading ratings:", error);
+            return false;
         }
         if (data && data.length > 0) {
             ratings = data;
@@ -611,8 +533,9 @@ async function loadRatingsFromSupabase() {
 async function syncRatingsToSupabase() {
     try {
         if (ratings.length === 0) return;
-        for (const rating of ratings) {
-            const { error } = await supabaseClient
+        for (var i = 0; i < ratings.length; i++) {
+            var rating = ratings[i];
+            var { error } = await supabaseClient
                 .from('ratings')
                 .upsert(rating, { onConflict: 'id' });
             if (error) console.error('Error syncing rating:', error);
@@ -621,19 +544,15 @@ async function syncRatingsToSupabase() {
     } catch (error) { console.error('Error syncing ratings:', error); }
 }
 
-// ============================================================
-// ===== CHAT =====
-// ============================================================
-
 async function loadChatFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('chat_messages')
             .select('*')
             .order('timestamp', { ascending: true });
-        if (error) { 
-            console.error("Error loading chat messages:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading chat messages:", error);
+            return false;
         }
         if (data && data.length > 0) {
             chatMessages = data;
@@ -649,8 +568,9 @@ async function loadChatFromSupabase() {
 async function syncChatToSupabase() {
     try {
         if (chatMessages.length === 0) return;
-        for (const msg of chatMessages) {
-            const { error } = await supabaseClient
+        for (var i = 0; i < chatMessages.length; i++) {
+            var msg = chatMessages[i];
+            var { error } = await supabaseClient
                 .from('chat_messages')
                 .upsert(msg, { onConflict: 'id' });
             if (error) console.error('Error syncing chat message:', error);
@@ -659,19 +579,15 @@ async function syncChatToSupabase() {
     } catch (error) { console.error('Error syncing chat messages:', error); }
 }
 
-// ============================================================
-// ===== ADMIN LOGS =====
-// ============================================================
-
 async function loadAdminLogsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('admin_logs')
             .select('*')
             .order('timestamp', { ascending: false });
-        if (error) { 
-            console.error("Error loading admin logs:", error); 
-            return false; 
+        if (error) {
+            console.error("Error loading admin logs:", error);
+            return false;
         }
         if (data && data.length > 0) {
             adminLogs = data;
@@ -687,8 +603,9 @@ async function loadAdminLogsFromSupabase() {
 async function syncAdminLogsToSupabase() {
     try {
         if (adminLogs.length === 0) return;
-        for (const log of adminLogs) {
-            const { error } = await supabaseClient
+        for (var i = 0; i < adminLogs.length; i++) {
+            var log = adminLogs[i];
+            var { error } = await supabaseClient
                 .from('admin_logs')
                 .upsert(log, { onConflict: 'id' });
             if (error) console.error('Error syncing admin log:', error);
@@ -696,10 +613,6 @@ async function syncAdminLogsToSupabase() {
         console.log('Admin logs synced to Supabase:', adminLogs.length);
     } catch (error) { console.error('Error syncing admin logs:', error); }
 }
-
-// ============================================================
-// ===== SYNC ALL =====
-// ============================================================
 
 async function syncAllFromSupabase() {
     console.log('Syncing all data from Supabase...');
@@ -725,10 +638,6 @@ async function syncAllToSupabase() {
     console.log('All data synced to Supabase');
 }
 
-// ============================================================
-// ===== RENDER CHAT MESSAGES =====
-// ============================================================
-
 function renderChatMessages() {
     var container = document.getElementById('chatMessages');
     if (!container) return;
@@ -749,10 +658,6 @@ function renderChatMessages() {
     }
     container.scrollTop = container.scrollHeight;
 }
-
-// ============================================================
-// ===== LANGUAGE MANAGEMENT =====
-// ============================================================
 
 function changeLanguage(lang) {
     localStorage.setItem('betix_language', lang);
@@ -791,10 +696,6 @@ function detectLanguage() {
     }, 800);
     return savedLang;
 }
-
-// ============================================================
-// ===== NOTIFICATIONS =====
-// ============================================================
 
 function openNotificationPanel() {
     var panel = document.getElementById('notificationPanel');
@@ -920,44 +821,31 @@ function addNotification(message, type) {
     updateNotifBadgeHeader();
 }
 
-// ============================================================
-// ===== NAVIGATION PROFIL =====
-// ============================================================
-
 function goToMyEvents() { showPage('myevents'); }
 function goToTickets() { showPage('tickets'); }
 function goToHistory() { showPage('history'); }
 function goToRatings() { showPage('ratings'); }
 
-// ============================================================
-// ===== MODERN IMAGE UPLOAD WITH COMPRESSION =====
-// ============================================================
-
 async function handleImageUploadModern(file, index) {
     if (!file) return;
-    
     if (!file.type.startsWith('image/')) {
         alert('Please select an image');
         return;
     }
-    
     if (file.size > 10 * 1024 * 1024) {
         alert('Image is too large (max 10MB)');
         return;
     }
-    
     var box = document.getElementById('uploadBox' + (index + 1));
     var progress = document.getElementById('progress' + (index + 1));
     var progressFill = document.getElementById('progressFill' + (index + 1));
     var progressText = document.getElementById('progressText' + (index + 1));
     var previewContainer = document.getElementById('previewContainer' + index);
     var previewImage = document.getElementById('previewImage' + index);
-    
     progress.style.display = 'block';
     progressFill.style.width = '0%';
     progressText.textContent = '0%';
     box.classList.add('compress');
-    
     try {
         var progressInterval = setInterval(function() {
             var currentWidth = parseInt(progressFill.style.width) || 0;
@@ -968,26 +856,20 @@ async function handleImageUploadModern(file, index) {
                 progressText.textContent = Math.round(newWidth) + '%';
             }
         }, 200);
-        
         var compressedData = await compressEventImage(file);
-        
         clearInterval(progressInterval);
         progressFill.style.width = '100%';
         progressText.textContent = '100%';
-        
         setTimeout(function() {
             progress.style.display = 'none';
             progressFill.style.width = '0%';
-            
             previewImage.src = compressedData;
             previewContainer.style.display = 'block';
             box.classList.add('has-image');
             box.classList.remove('compress');
-            
             uploadedImages[index] = compressedData;
             console.log('Image ' + (index + 1) + ' uploaded and compressed successfully');
         }, 300);
-        
     } catch (error) {
         console.error('Error compressing image:', error);
         alert('Error compressing image. Please try with a smaller image.');
@@ -1001,14 +883,12 @@ function removeImageModern(index) {
     var previewContainer = document.getElementById('previewContainer' + index);
     var previewImage = document.getElementById('previewImage' + index);
     var input = document.getElementById('imageInput' + index);
-    
     previewContainer.style.display = 'none';
     previewImage.src = '#';
     box.classList.remove('has-image');
     box.classList.remove('compress');
     input.value = '';
     delete uploadedImages[index];
-    
     console.log('Image ' + (index + 1) + ' removed');
 }
 
@@ -1022,10 +902,6 @@ function getUploadedImages() {
     return images;
 }
 
-// ============================================================
-// ===== PROFILE PHOTO AVEC COMPRESSION ET SAUVEGARDE =====
-// ============================================================
-
 async function handleProfilePhotoUpload(file) {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -1036,18 +912,14 @@ async function handleProfilePhotoUpload(file) {
         alert('Image is too large (max 10MB)');
         return;
     }
-    
     var loadingMsg = document.getElementById('profilePhotoLoading');
     if (loadingMsg) loadingMsg.style.display = 'block';
-    
     try {
         var compressedData = await compressProfilePhoto(file);
         currentUser.profilePhoto = compressedData;
-        
         saveUser();
-        
         if (currentUser.wallet) {
-            const profileData = {
+            var profileData = {
                 pi_uid: currentUser.wallet,
                 username: currentUser.name || 'Guest',
                 photo_url: compressedData || null,
@@ -1056,16 +928,13 @@ async function handleProfilePhotoUpload(file) {
                 loyalty_points: currentUser.loyaltyPoints || 0,
                 member_since: currentUser.memberSince || '2026'
             };
-            
             console.log('Envoi photo vers Supabase:', profileData);
-            
-            const { data, error } = await supabaseClient
+            var { data, error } = await supabaseClient
                 .from('profiles')
-                .upsert(profileData, { 
+                .upsert(profileData, {
                     onConflict: 'pi_uid',
-                    ignoreDuplicates: false 
+                    ignoreDuplicates: false
                 });
-                
             if (error) {
                 console.error('Erreur sauvegarde photo:', error.message);
                 alert('Erreur de sauvegarde: ' + error.message);
@@ -1076,9 +945,7 @@ async function handleProfilePhotoUpload(file) {
         } else {
             alert('Connect your Pi account first to save the photo');
         }
-        
         updateAllProfileImages();
-        
     } catch (error) {
         console.error('Error compressing image:', error);
         alert('Error compressing image. Please try with a smaller image.');
@@ -1116,10 +983,6 @@ function updateAllProfileImages() {
         }
     }
 }
-
-// ============================================================
-// ===== UTILITY FUNCTIONS =====
-// ============================================================
 
 function calculateLoyaltyPoints() {
     var points = 0;
@@ -1190,23 +1053,23 @@ function goBack() {
 function showPage(pageName) {
     updateActivity();
     var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'whitepaperPage', 'faqPage', 'settingsPage', 'ratingsPage', 'adminPage', 'slidesPage', 'myeventsPage', 'notificationsPage'];
-    for (var i = 0; i < pages.length; i++) { 
-        var el = document.getElementById(pages[i]); 
-        if (el) { 
-            el.style.display = 'none'; 
-            el.classList.add('hidden-page'); 
-        } 
+    for (var i = 0; i < pages.length; i++) {
+        var el = document.getElementById(pages[i]);
+        if (el) {
+            el.style.display = 'none';
+            el.classList.add('hidden-page');
+        }
     }
     var displayPage = pageName;
-    if (pageName === 'home') { 
-        document.getElementById('homePage').style.display = 'block'; 
+    if (pageName === 'home') {
+        document.getElementById('homePage').style.display = 'block';
         renderEventsByCategory();
         displayPage = 'home';
-    } else { 
-        var target = document.getElementById(pageName + 'Page'); 
-        if (target) { 
-            target.style.display = 'block'; 
-            target.classList.remove('hidden-page'); 
+    } else {
+        var target = document.getElementById(pageName + 'Page');
+        if (target) {
+            target.style.display = 'block';
+            target.classList.remove('hidden-page');
         }
         displayPage = pageName;
     }
@@ -1228,10 +1091,6 @@ function showPage(pageName) {
 
 function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.remove('open'); var o = document.getElementById('overlay'); if (o) o.classList.remove('active'); }
 function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
-
-// ============================================================
-// ===== UPDATE CONNECT BUTTONS =====
-// ============================================================
 
 function updateConnectButtons() {
     var sidebarBtn = document.getElementById('sidebarWalletBtn');
@@ -1258,12 +1117,8 @@ function updateConnectButtons() {
     }
 }
 
-// ============================================================
-// ===== CONNEXION PI =====
-// ============================================================
-
 async function connectToPi() {
-    if (typeof Pi === 'undefined') { 
+    if (typeof Pi === 'undefined') {
         if (confirm("Pi Browser not detected. Use demo mode?")) {
             currentUser.wallet = 'demo_user';
             currentUser.name = 'Demo User';
@@ -1284,7 +1139,7 @@ async function connectToPi() {
             return;
         }
         alert("Please open this page in Pi Browser");
-        return; 
+        return;
     }
     try {
         var scopes = ['username', 'payments'];
@@ -1305,7 +1160,6 @@ async function connectToPi() {
             renderEventsByCategory();
             updateConnectButtons();
             loadTicketsFromSupabase();
-            
             await loadUserFromSupabase();
             await loadEventsFromSupabase();
             await loadTicketsFromSupabase();
@@ -1316,21 +1170,16 @@ async function connectToPi() {
             updateAllProfileImages();
             updateUserInfo();
             console.log('Donnees rechargées apres connexion');
-            
             alert('Pi account connected! Welcome ' + piUser.username);
             closeSidebar();
         }
-    } catch (error) { 
-        console.error("Pi connection error:", error); 
-        alert("Connection error: " + (error.message || "Please try again")); 
+    } catch (error) {
+        console.error("Pi connection error:", error);
+        alert("Connection error: " + (error.message || "Please try again"));
     }
 }
 
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
-
-// ============================================================
-// ===== CONFIRMATION ACHAT =====
-// ============================================================
 
 async function confirmPurchase(eventId, quantity) {
     var event = events.find(function(e) { return e.id === eventId; });
@@ -1374,38 +1223,35 @@ async function confirmPurchase(eventId, quantity) {
                     event.boosts = (event.boosts || 0) + quantity;
                     saveEvents();
                     saveTickets();
-                    
                     try {
-                        const ticketsToInsert = ticketsAdded.map(t => ({
-                            id: t.id,
-                            event_id: t.eventId,
-                            event_title: t.eventTitle || '',
-                            event_date: t.eventDate || '',
-                            event_location: t.eventLocation || '',
-                            price: t.price || 0,
-                            buyer_wallet: t.buyerWallet || currentUser.wallet || '',
-                            buyer_name: t.buyerName || currentUser.name || '',
-                            user_wallet: t.userWallet || currentUser.wallet || '',
-                            purchase_date: t.purchaseDate || new Date().toISOString(),
-                            purchase_datetime: t.purchaseDateTime || new Date().toLocaleString('en-US'),
-                            transaction_id: t.transactionId || '',
-                            qr_code: t.qrCode || ''
-                        }));
-                        
-                        const { error } = await supabaseClient
+                        var ticketsToInsert = ticketsAdded.map(function(t) {
+                            return {
+                                id: t.id,
+                                event_id: t.eventId,
+                                event_title: t.eventTitle || '',
+                                event_date: t.eventDate || '',
+                                event_location: t.eventLocation || '',
+                                price: t.price || 0,
+                                buyer_wallet: t.buyerWallet || currentUser.wallet || '',
+                                buyer_name: t.buyerName || currentUser.name || '',
+                                user_wallet: t.userWallet || currentUser.wallet || '',
+                                purchase_date: t.purchaseDate || new Date().toISOString(),
+                                purchase_datetime: t.purchaseDateTime || new Date().toLocaleString('en-US'),
+                                transaction_id: t.transactionId || '',
+                                qr_code: t.qrCode || ''
+                            };
+                        });
+                        var { error } = await supabaseClient
                             .from('tickets')
                             .insert(ticketsToInsert);
-                            
                         if (error) {
                             console.error('Erreur sauvegarde tickets:', error.message);
                         } else {
                             console.log('Tickets sauvegardes sur Supabase');
                         }
-                        
                     } catch (error) {
                         console.error('Erreur:', error);
                     }
-                    
                     addNotification(
                         'Purchase of ' + quantity + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
                         'purchase'
@@ -1424,27 +1270,20 @@ async function confirmPurchase(eventId, quantity) {
     } catch (error) { alert("Error: " + error.message); }
 }
 
-// ============================================================
-// ===== TICKET QUANTITY POPUP =====
-// ============================================================
-
 var selectedEventForPurchase = null;
 var currentTicketQuantity = 1;
 
 function openQuantityPopup(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) { alert('Event not found'); return; }
-    
     if (!piUser && !currentUser.wallet) {
         alert('Please connect your Pi account first');
         connectToPi();
         return;
     }
-    
     if (!piUser && currentUser.wallet) {
         piUser = { username: currentUser.wallet };
     }
-    
     if (event.seatsLeft <= 0) { alert('No seats available for this event'); return; }
     selectedEventForPurchase = event;
     currentTicketQuantity = 1;
@@ -1501,13 +1340,8 @@ function updateTotalPrice() {
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-// ============================================================
-// ===== PUBLISH CONFIRMATION =====
-// ============================================================
-
 function openPublishConfirm(eventData) {
     pendingEventData = eventData;
-    
     document.getElementById('confirmTitle').textContent = eventData.title;
     document.getElementById('confirmCategory').textContent = eventData.category;
     document.getElementById('confirmCountry').textContent = eventData.country;
@@ -1519,7 +1353,6 @@ function openPublishConfirm(eventData) {
     document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
     document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
     document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
-    
     var imagesContainer = document.getElementById('confirmImages');
     imagesContainer.innerHTML = '';
     if (eventData.images && eventData.images.length > 0) {
@@ -1530,7 +1363,6 @@ function openPublishConfirm(eventData) {
             imagesContainer.appendChild(img);
         }
     }
-    
     document.getElementById('publishConfirmPopup').classList.add('show');
 }
 
@@ -1539,25 +1371,16 @@ function closePublishConfirmPopup() {
     pendingEventData = null;
 }
 
-// ============================================================
-// ===== PUBLISH EVENT CORRIGE =====
-// ============================================================
-
 async function confirmPublishEvent() {
     if (!pendingEventData) {
         console.warn('Aucune donnee d\'evenement a publier');
         return;
     }
-    
-    const newEvent = pendingEventData;
-    
-    // Ajouter l'evenement localement
+    var newEvent = pendingEventData;
     events.push(newEvent);
     saveEvents();
-    
-    // Sauvegarder dans Supabase
     try {
-        const eventData = {
+        var eventData = {
             id: newEvent.id,
             title: newEvent.title || '',
             category: newEvent.category || 'Concert',
@@ -1576,13 +1399,10 @@ async function confirmPublishEvent() {
             created_at: newEvent.createdAt || new Date().toISOString(),
             boosts: newEvent.boosts || 0
         };
-        
         console.log('Publication evenement vers Supabase:', eventData);
-        
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('events')
             .insert(eventData);
-            
         if (error) {
             console.error('Erreur Supabase:', error.message);
             alert('Evenement sauvegarde localement mais erreur serveur: ' + error.message);
@@ -1590,62 +1410,44 @@ async function confirmPublishEvent() {
             console.log('Evenement publie sur Supabase', data);
             alert('Event published successfully on the server!');
         }
-        
     } catch (error) {
         console.error('Erreur:', error);
         alert('Erreur de communication avec le serveur');
     }
-    
-    // Fermeture et nettoyage
     closePublishConfirmPopup();
-    
-    // Ajouter une notification
     addNotification(
         'New event "' + newEvent.title + '" has been published!',
         'event'
     );
-    
-    // Mettre a jour l'affichage
     renderEventsByCategory();
     updateProfilePage();
-    
-    // Reinitialiser le formulaire
     document.getElementById('eventForm').reset();
-    for (let i = 0; i < 2; i++) {
+    for (var i = 0; i < 2; i++) {
         removeImageModern(i);
     }
     uploadedImages = {};
     pendingEventData = null;
-    
     showPage('home');
 }
 
-// ============================================================
-// ===== CREATE EVENT =====
-// ============================================================
-
 function createEvent(e) {
     e.preventDefault();
-    if (!currentUser.wallet) { 
-        alert('Connect your Pi account first'); 
-        return; 
+    if (!currentUser.wallet) {
+        alert('Connect your Pi account first');
+        return;
     }
-    
     var images = getUploadedImages();
-    if (images.length < 2) { 
-        alert('Please add 2 photos for your event'); 
-        return; 
+    if (images.length < 2) {
+        alert('Please add 2 photos for your event');
+        return;
     }
-    
     var conditions = document.getElementById('eventConditions').value.trim();
     if (!conditions) {
         alert('Please add participation conditions');
         return;
     }
-    
     var category = document.getElementById('eventCategory').value;
     var country = document.getElementById('eventCountry').value;
-    
     var newEvent = {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
@@ -1665,18 +1467,12 @@ function createEvent(e) {
         createdAt: new Date().toISOString(),
         boosts: 0
     };
-    
-    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
-        alert('Please fill in all required fields'); 
-        return; 
+    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) {
+        alert('Please fill in all required fields');
+        return;
     }
-    
     openPublishConfirm(newEvent);
 }
-
-// ============================================================
-// ===== PURCHASE SUCCESS POPUP =====
-// ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity) {
     var popup = document.getElementById('successPopup');
@@ -1693,7 +1489,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     var totalPrice = qty * event.price;
     var codeDisplay = ticket.qrCode || 'N/A';
-    info.innerHTML = 
+    info.innerHTML =
         '<div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
@@ -1711,10 +1507,6 @@ function closeSuccessPopup() {
         popup.classList.remove('show');
     }
 }
-
-// ============================================================
-// ===== PROFILE =====
-// ============================================================
 
 function updateUserInfo() {
     var sidebarName = document.getElementById('sidebarName');
@@ -1780,17 +1572,13 @@ function updateProfilePage() {
     updateLoyaltyPointsDisplay();
 }
 
-// ============================================================
-// ===== TICKETS AND HISTORY =====
-// ============================================================
-
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     var active = tickets.filter(function(t) { return new Date(t.event_date || t.eventDate) > new Date(); });
     active.sort(function(a, b) { return new Date(b.purchase_date || b.purchaseDate) - new Date(a.purchase_date || a.purchaseDate); });
     if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No active tickets</p>'; return; }
-    container.innerHTML = active.map(function(t) { 
+    container.innerHTML = active.map(function(t) {
         var title = t.event_title || t.eventTitle || 'Event';
         var buyer = t.buyer_name || t.buyerName || t.buyer_wallet || t.buyerWallet || 'Unknown';
         var price = t.price || 0;
@@ -1798,7 +1586,7 @@ function renderTickets() {
         var location = t.event_location || t.eventLocation || 'Not specified';
         var purchaseDate = t.purchase_date || t.purchaseDate || new Date().toISOString();
         var qrCode = t.qr_code || t.qrCode || 'N/A';
-        return '<div class="ticket-card"><h3>' + escapeHtml(title) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(buyer) + '</p><p><strong>Price :</strong> ' + price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(date) + '</p><p><strong>Location :</strong> ' + escapeHtml(location) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(purchaseDate) + '</p><p><strong>Code :</strong> <code>' + qrCode + '</code></p></div>'; 
+        return '<div class="ticket-card"><h3>' + escapeHtml(title) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(buyer) + '</p><p><strong>Price :</strong> ' + price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(date) + '</p><p><strong>Location :</strong> ' + escapeHtml(location) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(purchaseDate) + '</p><p><strong>Code :</strong> <code>' + qrCode + '</code></p></div>';
     }).join('');
 }
 
@@ -1808,19 +1596,15 @@ function renderHistory() {
     var old = tickets.filter(function(t) { return new Date(t.event_date || t.eventDate) <= new Date(); });
     old.sort(function(a, b) { return new Date(b.purchase_date || b.purchaseDate) - new Date(a.purchase_date || a.purchaseDate); });
     if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No history</p>'; return; }
-    container.innerHTML = old.map(function(t) { 
+    container.innerHTML = old.map(function(t) {
         var title = t.event_title || t.eventTitle || 'Event';
         var buyer = t.buyer_name || t.buyerName || t.buyer_wallet || t.buyerWallet || 'Unknown';
         var price = t.price || 0;
         var date = t.event_date || t.eventDate || new Date().toISOString();
         var purchaseDate = t.purchase_date || t.purchaseDate || new Date().toISOString();
-        return '<div class="ticket-card" style="opacity:0.8;"><h3>' + escapeHtml(title) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(buyer) + '</p><p><strong>Price :</strong> ' + price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(date) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(purchaseDate) + '</p><p style="color:#ef4444;">Past event</p></div>'; 
+        return '<div class="ticket-card" style="opacity:0.8;"><h3>' + escapeHtml(title) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(buyer) + '</p><p><strong>Price :</strong> ' + price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(date) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(purchaseDate) + '</p><p style="color:#ef4444;">Past event</p></div>';
     }).join('');
 }
-
-// ============================================================
-// ===== MY RATINGS =====
-// ============================================================
 
 function renderMyRatings() {
     var container = document.getElementById('myRatingsList');
@@ -1830,31 +1614,27 @@ function renderMyRatings() {
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
 }
 
-// ============================================================
-// ===== ADMIN FUNCTIONS =====
-// ============================================================
-
 function initAdmin() {
     var adminItem = document.getElementById('adminMenuItem');
     if (!adminItem) return;
     var logo = document.querySelector('.logo');
     var clicks = 0;
-    if (logo) logo.addEventListener('click', function() { 
-        clicks++; 
-        if (clicks === 5) { 
-            var pwd = prompt('Admin code:'); 
-            if (pwd === adminPassword || pwd === 'Betix@2026#') { 
+    if (logo) logo.addEventListener('click', function() {
+        clicks++;
+        if (clicks === 5) {
+            var pwd = prompt('Admin code:');
+            if (pwd === adminPassword || pwd === 'Betix@2026#') {
                 localStorage.setItem('betix_admin_password', pwd);
                 adminPassword = pwd;
-                adminItem.style.display = 'block'; 
+                adminItem.style.display = 'block';
                 adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
                 adminItem.style.color = 'white';
                 addAdminLog('Admin authentication', 'Login via logo');
-                alert('Admin activated'); 
-            } 
-            clicks = 0; 
-        } 
-        setTimeout(function() { clicks = 0; }, 2000); 
+                alert('Admin activated');
+            }
+            clicks = 0;
+        }
+        setTimeout(function() { clicks = 0; }, 2000);
     });
     if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
         adminItem.style.display = 'block';
@@ -2293,10 +2073,6 @@ function initAdminTabs() {
     });
 }
 
-// ============================================================
-// ===== MY EVENTS =====
-// ============================================================
-
 function renderMyEvents() {
     var container = document.getElementById('myEventsList');
     if (!container) return;
@@ -2346,22 +2122,18 @@ function renderMyEventCard(event) {
     '</div>';
 }
 
-// ============================================================
-// ===== RENDER EVENTS =====
-// ============================================================
-
 function renderEventsByCategory() {
     var container = document.getElementById('eventsByCategory');
     if (!container) return;
-    var filtered = events.filter(function(e) { 
+    var filtered = events.filter(function(e) {
         var matchCategory = (currentFilter === 'All' || e.category === currentFilter);
         var matchCountry = (currentCountryFilter === 'All' || e.country === currentCountryFilter);
         var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
         return matchCategory && matchCountry && matchSearch;
     });
-    if (filtered.length === 0) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
-        return; 
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>';
+        return;
     }
     var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
     var html = '';
@@ -2410,7 +2182,7 @@ function renderEventCard(event) {
             '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
         '<div class="event-card-body">' +
-            '<div class="event-card-title">' + escapeHtml(event.title) + 
+            '<div class="event-card-title">' + escapeHtml(event.title) +
                 '<span class="organizer-name"><i class="fas fa-user"></i> by ' + escapeHtml(organizerDisplay) + '</span>' +
             '</div>' +
             '<div class="event-card-details">' +
@@ -2430,10 +2202,6 @@ function renderEventCard(event) {
         '</div>' +
     '</div>';
 }
-
-// ============================================================
-// ===== EVENT DETAILS =====
-// ============================================================
 
 function openEventDetails(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
@@ -2541,11 +2309,11 @@ function openEventDetails(eventId) {
         document.body.style.overflow = '';
         openQuantityPopup(event.id);
     };
-    closeBtn.onclick = function() { 
+    closeBtn.onclick = function() {
         modal.classList.remove('show');
         document.body.style.overflow = '';
     };
-    window.onclick = function(e) { 
+    window.onclick = function(e) {
         if (e.target === modal) {
             modal.classList.remove('show');
             document.body.style.overflow = '';
@@ -2554,10 +2322,6 @@ function openEventDetails(eventId) {
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
-
-// ============================================================
-// ===== GALLERY =====
-// ============================================================
 
 function openGallery(eventId, startIndex) {
     var event = events.find(function(e) { return e.id === eventId; });
@@ -2583,10 +2347,6 @@ function openGallery(eventId, startIndex) {
     modal.classList.add('show');
 }
 
-// ============================================================
-// ===== INIT FILTERS =====
-// ============================================================
-
 function initFilters() {
     var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
     var container = document.getElementById('filtersContainer');
@@ -2595,10 +2355,6 @@ function initFilters() {
     var chips = document.querySelectorAll('.filter-chip');
     for (var i = 0; i < chips.length; i++) { chips[i].addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }); }
 }
-
-// ============================================================
-// ===== INIT COUNTRY SELECTORS =====
-// ============================================================
 
 function initCountrySelectors() {
     var filterSelect = document.getElementById('countrySelect');
@@ -2632,18 +2388,14 @@ function initCountrySelectors() {
     }
 }
 
-// ============================================================
-// ===== TRACK USER CONNECTION =====
-// ============================================================
-
 function trackUserConnection() {
     if (currentUser.wallet) {
         var existing = null;
-        for (var i = 0; i < connectedUsers.length; i++) { 
-            if (connectedUsers[i].wallet === currentUser.wallet) { 
-                existing = connectedUsers[i]; 
-                break; 
-            } 
+        for (var i = 0; i < connectedUsers.length; i++) {
+            if (connectedUsers[i].wallet === currentUser.wallet) {
+                existing = connectedUsers[i];
+                break;
+            }
         }
         var userData = {
             name: currentUser.name,
@@ -2668,30 +2420,22 @@ function trackUserConnection() {
     }
 }
 
-// ============================================================
-// ===== CLEAR DATA =====
-// ============================================================
-
-function clearAllData() { 
-    if (confirm('Delete all your data?')) { 
-        localStorage.clear(); 
-        location.reload(); 
-    } 
+function clearAllData() {
+    if (confirm('Delete all your data?')) {
+        localStorage.clear();
+        location.reload();
+    }
 }
 
-function toggleDarkMode(e) { 
-    if (e.target.checked) { 
-        document.body.classList.add('dark-mode'); 
-        localStorage.setItem('darkMode', 'true'); 
-    } else { 
-        document.body.classList.remove('dark-mode'); 
-        localStorage.setItem('darkMode', 'false'); 
-    } 
+function toggleDarkMode(e) {
+    if (e.target.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkMode', 'false');
+    }
 }
-
-// ============================================================
-// ===== SHOW LEGAL =====
-// ============================================================
 
 function showLegal(type) {
     var modal = document.getElementById('legalModal');
@@ -2720,10 +2464,6 @@ function showLegal(type) {
         }
     };
 }
-
-// ============================================================
-// ===== FAQ =====
-// ============================================================
 
 var faqData = [
     [
@@ -2842,10 +2582,6 @@ function initFaq() {
     initFaqPagination();
 }
 
-// ============================================================
-// ===== CHAT INIT =====
-// ============================================================
-
 function initChat() {
     var widget = document.getElementById('chatWidget');
     var btn = document.getElementById('chatFloatBtn');
@@ -2929,10 +2665,6 @@ function initLegalModals() {
     if (close) close.onclick = function() { modal.classList.remove('show'); };
     window.onclick = function(e) { if (e.target === modal) modal.classList.remove('show'); };
 }
-
-// ============================================================
-// ===== HERO SLIDER =====
-// ============================================================
 
 function initHeroSlider() {
     var slidesContainer = document.getElementById('heroSlides');
@@ -3045,18 +2777,10 @@ function initHeroSlider() {
     startAutoPlay();
 }
 
-// ============================================================
-// ===== FILTER BY COUNTRY =====
-// ============================================================
-
 function filterByCountry(country) {
     currentCountryFilter = country;
     renderEventsByCategory();
 }
-
-// ============================================================
-// ===== LOGO MANAGEMENT =====
-// ============================================================
 
 function handleLogoClick() {
     logoClickCount++;
@@ -3084,10 +2808,6 @@ function handleLogoClick() {
     }
 }
 
-// ============================================================
-// ===== DOM CONTENT LOADED =====
-// ============================================================
-
 document.addEventListener('DOMContentLoaded', function() {
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
@@ -3107,14 +2827,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initCountrySelectors();
     calculateLoyaltyPoints();
-    initFilters(); 
-    renderEventsByCategory(); 
-    updateUserInfo(); 
-    updateProfilePage(); 
+    initFilters();
+    renderEventsByCategory();
+    updateUserInfo();
+    updateProfilePage();
     updateAllProfileImages();
     updateNotifBadgeHeader();
-    initAdmin(); 
-    initChat(); 
+    initAdmin();
+    initChat();
     initLegalModals();
     
     var dark = document.getElementById('darkModeToggle');
@@ -3252,20 +2972,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     var sidebarItems = document.querySelectorAll('.sidebar-item');
-    for (var i = 0; i < sidebarItems.length; i++) { 
-        sidebarItems[i].addEventListener('click', function() { 
+    for (var i = 0; i < sidebarItems.length; i++) {
+        sidebarItems[i].addEventListener('click', function() {
             var page = this.dataset.page;
-            if (page) showPage(page); 
-            closeSidebar(); 
-        }); 
+            if (page) showPage(page);
+            closeSidebar();
+        });
     }
     
-    bindActivityListeners(); 
+    bindActivityListeners();
     startSessionMonitor();
 
-    // ============================================================
-    // ===== INITIALISATION DES DONNEES AU DEMARRAGE =====
-    // ============================================================
     (async function initApp() {
         console.log('Initialisation de Betix...');
         
