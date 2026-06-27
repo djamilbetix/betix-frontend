@@ -624,19 +624,26 @@ function renderChatMessages() {
 }
 
 // ============================================================
-// ===== LANGUAGE MANAGEMENT =====
+// ===== LANGUAGE MANAGEMENT - VERSION POUR PI BROWSER =====
 // ============================================================
 
 function changeLanguage(lang) {
     localStorage.setItem('betix_language', lang);
-    var select = document.querySelector('.goog-te-combo');
-    if (select) {
-        select.value = lang;
-        select.dispatchEvent(new Event('change'));
+    // Mettre à jour le selecteur natif
+    var nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) {
+        nativeSelect.value = lang;
     }
+    // Traduction avec Google Translate
+    var googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) {
+        googleSelect.value = lang;
+        googleSelect.dispatchEvent(new Event('change'));
+    }
+    // Recharger la page pour appliquer la traduction
     setTimeout(function() {
         location.reload();
-    }, 500);
+    }, 600);
 }
 
 function detectLanguage() {
@@ -647,6 +654,19 @@ function detectLanguage() {
         localStorage.setItem('betix_language', urlLang);
         savedLang = urlLang;
     }
+    // Mettre à jour le selecteur natif
+    var nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) {
+        nativeSelect.value = savedLang;
+    }
+    // Appliquer la traduction
+    setTimeout(function() {
+        var googleSelect = document.querySelector('.goog-te-combo');
+        if (googleSelect && googleSelect.value !== savedLang) {
+            googleSelect.value = savedLang;
+            googleSelect.dispatchEvent(new Event('change'));
+        }
+    }, 800);
     return savedLang;
 }
 
