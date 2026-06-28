@@ -1512,7 +1512,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* ===== PUBLISH CONFIRMATION PROFESSIONNEL ===== */
 .publish-confirm {
     display: none;
     position: fixed;
@@ -1735,7 +1734,6 @@ body {
     transform: scale(0.97);
 }
 
-/* Responsive publish confirm */
 @media (max-width: 600px) {
     .publish-confirm-professional {
         max-width: 98%;
@@ -1776,7 +1774,6 @@ body {
     }
 }
 
-/* ===== IMAGE UPLOAD MODERN ===== */
 .image-upload-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3034,7 +3031,6 @@ body {
     background: #f7c35c;
 }
 
-/* ===== NOTIFICATIONS PAGE ===== */
 #notificationsList .notification-item {
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
@@ -3086,7 +3082,6 @@ body {
     background: #fefaf0;
 }
 
-/* ===== DARK MODE ===== */
 body.dark-mode {
     background-color: #111827;
     color: #f3f4f6;
@@ -3561,7 +3556,6 @@ body.dark-mode #notificationsList .notification-item.unread {
     border-left-color: #f5a623;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
     .footer-container {
         grid-template-columns: repeat(2, 1fr);
@@ -4064,7 +4058,6 @@ body.dark-mode #notificationsList .notification-item.unread {
     }
 }
 
-/* ===== GOOGLE TRANSLATE ===== */
 .goog-te-banner-frame {
     display: none !important;
     height: 0 !important;
