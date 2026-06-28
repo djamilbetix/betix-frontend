@@ -9,34 +9,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log("Supabase initialized");
 
-async function testSupabaseConnection() {
-    try {
-        const { error } = await supabaseClient
-            .from('profiles')
-            .select('count', { count: 'exact', head: true });
-        if (error) {
-            console.error('Supabase error:', error);
-            return false;
-        }
-        console.log('Supabase OK');
-        return true;
-    } catch (e) {
-        console.error('Error:', e);
-        return false;
-    }
-}
-
-// ============================================================
-// ===== COUNTRIES =====
-// ============================================================
-
-var countriesList = [
-    'All', 'France', 'RDC', 'Canada', 'USA', 'UK', 'Germany',
-    'Italy', 'Spain', 'Portugal', 'Belgium', 'Switzerland',
-    'Morocco', 'Algeria', 'Tunisia', 'Senegal', 'Ivory Coast',
-    'Cameroon', 'Nigeria', 'Ghana', 'Kenya', 'South Africa'
-];
-
 // ============================================================
 // ===== GLOBAL VARIABLES =====
 // ============================================================
@@ -46,8 +18,6 @@ var tickets = [];
 var currentUser = {
     name: 'Guest',
     wallet: null,
-    memberSince: '2026',
-    loyaltyPoints: 0,
     profilePhoto: null
 };
 var currentFilter = 'All';
@@ -57,91 +27,103 @@ var piUser = null;
 var uploadedImages = {};
 var pendingEventData = null;
 var pageHistory = ['home'];
-
 var BACKEND_URL = "https://betix-backend.onrender.com";
 
 // ============================================================
-// ===== HERO SLIDES =====
+// ===== EVENEMENTS DE DEMO POUR TEST =====
 // ============================================================
 
-var heroSlides = [
+var demoEvents = [
     {
-        image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop',
-        badge: 'Music Festival',
-        title: 'Summer Music Festival 2026'
+        id: 'demo1',
+        title: '🎵 Concert Jazz International',
+        category: 'Concert',
+        country: 'France',
+        date: '2026-07-20T20:00',
+        location: 'Paris, Olympia',
+        description: 'Un concert exceptionnel de jazz avec des artistes internationaux',
+        conditions: 'Paiement en Pi\nPrésenter le ticket à l\'entrée',
+        price: 0.0005,
+        seatsTotal: 50,
+        seatsLeft: 50,
+        coverImage: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
+        images: ['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop'],
+        organizer: 'demo',
+        organizerName: 'Betix Demo'
     },
     {
-        image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop',
-        badge: 'Football',
-        title: 'Champions League Final'
+        id: 'demo2',
+        title: '⚽ Match de Football',
+        category: 'Sport',
+        country: 'RDC',
+        date: '2026-07-25T16:00',
+        location: 'Kinshasa, Stade des Martyrs',
+        description: 'Match amical entre équipes locales',
+        conditions: 'Paiement en Pi\nPrésenter le ticket à l\'entrée',
+        price: 0.0003,
+        seatsTotal: 100,
+        seatsLeft: 100,
+        coverImage: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+        images: ['https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop'],
+        organizer: 'demo',
+        organizerName: 'Betix Demo'
     },
     {
-        image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop',
-        badge: 'Conference',
-        title: 'Web3 Summit 2026'
+        id: 'demo3',
+        title: '💻 Conférence Web3',
+        category: 'Conference',
+        country: 'France',
+        date: '2026-08-01T14:00',
+        location: 'Paris, La Défense',
+        description: 'Découvrez le futur de la blockchain et du Web3',
+        conditions: 'Paiement en Pi\nInscription obligatoire',
+        price: 0.0004,
+        seatsTotal: 80,
+        seatsLeft: 80,
+        coverImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+        images: ['https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop'],
+        organizer: 'demo',
+        organizerName: 'Betix Demo'
+    },
+    {
+        id: 'demo4',
+        title: '🎬 Festival de Cinéma',
+        category: 'Cinema',
+        country: 'France',
+        date: '2026-08-05T19:00',
+        location: 'Cannes',
+        description: 'Avant-premières et projections exclusives',
+        conditions: 'Paiement en Pi\nPrésenter le ticket à l\'entrée',
+        price: 0.0006,
+        seatsTotal: 60,
+        seatsLeft: 60,
+        coverImage: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
+        images: ['https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop'],
+        organizer: 'demo',
+        organizerName: 'Betix Demo'
+    },
+    {
+        id: 'demo5',
+        title: '🎭 Soirée Gala de Charité',
+        category: 'Gala',
+        country: 'RDC',
+        date: '2026-08-10T19:30',
+        location: 'Kinshasa, Pullman Hotel',
+        description: 'Une soirée élégante au profit d\'œuvres caritatives',
+        conditions: 'Paiement en Pi\nTenue de soirée exigée',
+        price: 0.0008,
+        seatsTotal: 40,
+        seatsLeft: 40,
+        coverImage: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
+        images: ['https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop'],
+        organizer: 'demo',
+        organizerName: 'Betix Demo'
     }
 ];
 
 // ============================================================
-// ===== UTILITY FUNCTIONS =====
+// ===== CHARGER LES DONNEES =====
 // ============================================================
-
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
-
-// ============================================================
-// ===== SAUVEGARDE SUPABASE =====
-// ============================================================
-
-async function saveUserToSupabase() {
-    if (!currentUser.wallet) return false;
-    try {
-        var data = {
-            pi_uid: currentUser.wallet,
-            username: currentUser.name || 'Guest',
-            photo_url: currentUser.profilePhoto || null,
-            wallet: currentUser.wallet,
-            name: currentUser.name || 'Guest'
-        };
-        var { error } = await supabaseClient
-            .from('profiles')
-            .upsert(data, { onConflict: 'pi_uid' });
-        if (error) {
-            console.error('Save user error:', error);
-            return false;
-        }
-        console.log('User saved to Supabase');
-        return true;
-    } catch (e) { console.error('Error:', e); return false; }
-}
-
-async function saveEventToSupabase(eventData) {
-    try {
-        var { error } = await supabaseClient
-            .from('events')
-            .insert(eventData);
-        if (error) {
-            console.error('Save event error:', error);
-            return false;
-        }
-        console.log('Event saved to Supabase');
-        return true;
-    } catch (e) { console.error('Error:', e); return false; }
-}
-
-async function saveTicketsToSupabase(ticketsData) {
-    try {
-        var { error } = await supabaseClient
-            .from('tickets')
-            .insert(ticketsData);
-        if (error) {
-            console.error('Save tickets error:', error);
-            return false;
-        }
-        console.log('Tickets saved to Supabase');
-        return true;
-    } catch (e) { console.error('Error:', e); return false; }
-}
 
 async function loadEventsFromSupabase() {
     try {
@@ -155,13 +137,29 @@ async function loadEventsFromSupabase() {
         }
         if (data && data.length > 0) {
             events = data;
-            console.log('Events loaded:', events.length);
-            renderEventsByCategory();
-            return true;
+            console.log('Events loaded from Supabase:', events.length);
+        } else {
+            // Si pas d'événements dans Supabase, charger les démos et les sauvegarder
+            events = JSON.parse(JSON.stringify(demoEvents));
+            console.log('Demo events loaded');
+            await saveEventsToSupabase(events);
         }
-        console.log('No events found in Supabase');
-        return false;
+        renderEventsByCategory();
+        return true;
     } catch (error) { console.error('Error:', error); return false; }
+}
+
+async function saveEventsToSupabase(eventsData) {
+    try {
+        for (var i = 0; i < eventsData.length; i++) {
+            var { error } = await supabaseClient
+                .from('events')
+                .upsert(eventsData[i], { onConflict: 'id' });
+            if (error) console.error('Error saving event:', error);
+        }
+        console.log('Events saved to Supabase');
+        return true;
+    } catch (e) { console.error('Error:', e); return false; }
 }
 
 async function loadTicketsFromSupabase() {
@@ -183,6 +181,41 @@ async function loadTicketsFromSupabase() {
         }
         return false;
     } catch (error) { console.error('Error:', error); return false; }
+}
+
+async function saveUserToSupabase() {
+    if (!currentUser.wallet) return false;
+    try {
+        var data = {
+            pi_uid: currentUser.wallet,
+            username: currentUser.name || 'Guest',
+            photo_url: currentUser.profilePhoto || null,
+            wallet: currentUser.wallet,
+            name: currentUser.name || 'Guest'
+        };
+        var { error } = await supabaseClient
+            .from('profiles')
+            .upsert(data, { onConflict: 'pi_uid' });
+        if (error) {
+            console.error('Save user error:', error);
+            return false;
+        }
+        console.log('User saved');
+        return true;
+    } catch (e) { console.error('Error:', e); return false; }
+}
+
+async function saveTicketsToSupabase(ticketsData) {
+    try {
+        for (var i = 0; i < ticketsData.length; i++) {
+            var { error } = await supabaseClient
+                .from('tickets')
+                .insert(ticketsData[i]);
+            if (error) console.error('Error saving ticket:', error);
+        }
+        console.log('Tickets saved');
+        return true;
+    } catch (e) { console.error('Error:', e); return false; }
 }
 
 // ============================================================
@@ -219,6 +252,14 @@ function compressImage(file) {
         reader.readAsDataURL(file);
     });
 }
+
+// ============================================================
+// ===== UTILITY FUNCTIONS =====
+// ============================================================
+
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
+function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
 
 // ============================================================
 // ===== RENDER EVENTS =====
@@ -411,7 +452,7 @@ function updateConnectButtons() {
 // ============================================================
 
 function showPage(pageName) {
-    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'settingsPage', 'faqPage', 'myeventsPage', 'notificationsPage'];
+    var pages = ['homePage', 'createPage', 'ticketsPage', 'historyPage', 'profilePage', 'settingsPage', 'myeventsPage', 'notificationsPage'];
     for (var i = 0; i < pages.length; i++) {
         var el = document.getElementById(pages[i]);
         if (el) {
@@ -464,7 +505,49 @@ function goToTickets() { showPage('tickets'); }
 function goToHistory() { showPage('history'); }
 
 // ============================================================
-// ===== CONNEXION PI AVEC MODE DEMO =====
+// ===== COUNTRIES =====
+// ============================================================
+
+var countriesList = [
+    'All', 'France', 'RDC', 'Canada', 'USA', 'UK', 'Germany',
+    'Italy', 'Spain', 'Portugal', 'Belgium', 'Switzerland',
+    'Morocco', 'Algeria', 'Tunisia', 'Senegal', 'Ivory Coast',
+    'Cameroon', 'Nigeria', 'Ghana', 'Kenya', 'South Africa'
+];
+
+function initCountrySelectors() {
+    var filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            var option = document.createElement('option');
+            option.value = countriesList[i];
+            option.textContent = countriesList[i];
+            if (countriesList[i] === currentCountryFilter) option.selected = true;
+            filterSelect.appendChild(option);
+        }
+    }
+    var eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            if (countriesList[i] === 'All') continue;
+            var option = document.createElement('option');
+            option.value = countriesList[i];
+            option.textContent = countriesList[i];
+            if (countriesList[i] === 'France') option.selected = true;
+            eventSelect.appendChild(option);
+        }
+    }
+}
+
+function filterByCountry(country) {
+    currentCountryFilter = country;
+    renderEventsByCategory();
+}
+
+// ============================================================
+// ===== CONNEXION PI =====
 // ============================================================
 
 async function connectToPi() {
@@ -479,7 +562,7 @@ async function connectToPi() {
             updateAllProfileImages();
             renderEventsByCategory();
             updateConnectButtons();
-            alert('✅ Demo mode activated! You can create events and buy tickets.');
+            alert('✅ Demo mode activated!');
             closeSidebar();
             return;
         }
@@ -499,7 +582,7 @@ async function connectToPi() {
             updateAllProfileImages();
             renderEventsByCategory();
             updateConnectButtons();
-            alert('✅ Pi connected! Welcome ' + piUser.username);
+            alert('✅ Pi connected!');
             closeSidebar();
         }
     } catch (error) {
@@ -510,7 +593,7 @@ async function connectToPi() {
 
 function disconnectPi() {
     if (confirm('Disconnect your Pi account?')) {
-        currentUser = { name: 'Guest', wallet: null, memberSince: '2026', loyaltyPoints: 0, profilePhoto: null };
+        currentUser = { name: 'Guest', wallet: null, profilePhoto: null };
         piUser = null;
         saveUserToSupabase();
         updateUserInfo();
@@ -563,6 +646,10 @@ function updateQuantity(delta) {
     }
 }
 
+// ============================================================
+// ===== CONFIRM PURCHASE =====
+// ============================================================
+
 async function confirmPurchase() {
     if (!selectedEventForPurchase) return;
     var input = document.getElementById('ticketQuantity');
@@ -577,15 +664,15 @@ async function confirmPurchase() {
     for (var i = 0; i < quantity; i++) {
         var ticket = {
             id: Date.now().toString() + '-' + i,
-            eventId: event.id,
-            eventTitle: event.title,
-            eventDate: event.date,
-            eventLocation: event.location,
+            event_id: event.id,
+            event_title: event.title,
+            event_date: event.date,
+            event_location: event.location,
             price: event.price,
-            buyerWallet: currentUser.wallet,
-            buyerName: currentUser.name,
-            purchaseDate: new Date().toISOString(),
-            qrCode: 'BETIX-' + Date.now() + '-' + i
+            buyer_wallet: currentUser.wallet,
+            buyer_name: currentUser.name,
+            purchase_date: new Date().toISOString(),
+            qr_code: 'BETIX-' + Date.now() + '-' + i
         };
         tickets.push(ticket);
         ticketsAdded.push(ticket);
@@ -593,14 +680,11 @@ async function confirmPurchase() {
     event.seatsLeft -= quantity;
 
     // Sauvegarde dans Supabase
-    var saved = await saveTicketsToSupabase(ticketsAdded);
-    if (saved) {
-        // Mettre à jour l'événement
-        await supabaseClient
-            .from('events')
-            .update({ seats_left: event.seatsLeft })
-            .eq('id', event.id);
-    }
+    await saveTicketsToSupabase(ticketsAdded);
+    await supabaseClient
+        .from('events')
+        .update({ seats_left: event.seatsLeft })
+        .eq('id', event.id);
 
     renderEventsByCategory();
     renderTickets();
@@ -610,114 +694,10 @@ async function confirmPurchase() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== PROFILE PHOTO UPLOAD =====
 // ============================================================
 
-function openPublishConfirm(eventData) {
-    pendingEventData = eventData;
-    document.getElementById('confirmTitle').textContent = eventData.title;
-    document.getElementById('confirmCategory').textContent = eventData.category;
-    document.getElementById('confirmCountry').textContent = eventData.country;
-    var dateEvent = new Date(eventData.date);
-    document.getElementById('confirmDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
-    document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
-    document.getElementById('confirmSeats').textContent = eventData.seatsTotal;
-    document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
-    document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
-    document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
-
-    var imagesContainer = document.getElementById('confirmImages');
-    imagesContainer.innerHTML = '';
-    if (eventData.images && eventData.images.length > 0) {
-        for (var i = 0; i < eventData.images.length; i++) {
-            var img = document.createElement('img');
-            img.src = eventData.images[i];
-            img.alt = 'Event image ' + (i + 1);
-            imagesContainer.appendChild(img);
-        }
-    }
-    document.getElementById('publishConfirmPopup').classList.add('show');
-}
-
-function closePublishConfirmPopup() {
-    document.getElementById('publishConfirmPopup').classList.remove('show');
-    pendingEventData = null;
-}
-
-async function confirmPublishEvent() {
-    if (!pendingEventData) return;
-    var newEvent = pendingEventData;
-    events.push(newEvent);
-
-    // Sauvegarde dans Supabase
-    var saved = await saveEventToSupabase(newEvent);
-    if (saved) {
-        alert('✅ Event published successfully!');
-    } else {
-        alert('⚠️ Event saved locally but could not save to server. Check console for errors.');
-    }
-
-    closePublishConfirmPopup();
-    renderEventsByCategory();
-    updateProfilePage();
-    document.getElementById('eventForm').reset();
-    uploadedImages = {};
-    pendingEventData = null;
-    showPage('home');
-}
-
-function createEvent(e) {
-    e.preventDefault();
-    if (!currentUser.wallet) {
-        alert('Please connect your Pi account first');
-        return;
-    }
-
-    var images = [];
-    for (var key in uploadedImages) {
-        if (uploadedImages.hasOwnProperty(key)) {
-            images.push(uploadedImages[key]);
-        }
-    }
-    if (images.length < 2) {
-        alert('Please add 2 photos for your event');
-        return;
-    }
-
-    var newEvent = {
-        id: Date.now().toString(),
-        title: document.getElementById('eventTitle').value,
-        category: document.getElementById('eventCategory').value,
-        country: document.getElementById('eventCountry').value,
-        date: document.getElementById('eventDate').value,
-        location: document.getElementById('eventLocation').value,
-        description: document.getElementById('eventDescription').value,
-        conditions: document.getElementById('eventConditions').value,
-        price: parseFloat(document.getElementById('eventPrice').value) || 0.0003,
-        seatsTotal: parseInt(document.getElementById('eventSeats').value),
-        seatsLeft: parseInt(document.getElementById('eventSeats').value),
-        images: images,
-        coverImage: images[0],
-        organizer: currentUser.wallet,
-        organizerName: currentUser.name,
-        createdAt: new Date().toISOString(),
-        boosts: 0
-    };
-
-    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) {
-        alert('Please fill in all required fields');
-        return;
-    }
-
-    openPublishConfirm(newEvent);
-}
-
-// ============================================================
-// ===== IMAGE UPLOAD =====
-// ============================================================
-
-async function handleImageUploadModern(file, index) {
+async function handleProfilePhotoUpload(file) {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
         alert('Please select an image');
@@ -725,93 +705,13 @@ async function handleImageUploadModern(file, index) {
     }
     try {
         var compressedData = await compressImage(file);
-        var previewContainer = document.getElementById('previewContainer' + index);
-        var previewImage = document.getElementById('previewImage' + index);
-        var box = document.getElementById('uploadBox' + (index + 1));
-        previewImage.src = compressedData;
-        previewContainer.style.display = 'block';
-        box.classList.add('has-image');
-        uploadedImages[index] = compressedData;
-        console.log('Image ' + (index + 1) + ' uploaded');
+        currentUser.profilePhoto = compressedData;
+        saveUserToSupabase();
+        updateAllProfileImages();
+        alert('✅ Profile photo updated!');
     } catch (error) {
-        alert('Error compressing image: ' + error.message);
+        alert('Error: ' + error.message);
     }
-}
-
-function removeImageModern(index) {
-    var box = document.getElementById('uploadBox' + (index + 1));
-    var previewContainer = document.getElementById('previewContainer' + index);
-    var previewImage = document.getElementById('previewImage' + index);
-    var input = document.getElementById('imageInput' + index);
-    previewContainer.style.display = 'none';
-    previewImage.src = '#';
-    box.classList.remove('has-image');
-    input.value = '';
-    delete uploadedImages[index];
-}
-
-function getUploadedImages() {
-    var images = [];
-    for (var key in uploadedImages) {
-        if (uploadedImages.hasOwnProperty(key)) {
-            images.push(uploadedImages[key]);
-        }
-    }
-    return images;
-}
-
-// ============================================================
-// ===== EVENT DETAILS =====
-// ============================================================
-
-function openEventDetails(eventId) {
-    var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) { alert('Event not found'); return; }
-
-    var modal = document.getElementById('eventDetailModal');
-    var closeBtn = document.getElementById('eventDetailClose');
-    document.getElementById('detailTitle').textContent = event.title;
-    document.getElementById('detailCategory').textContent = event.category;
-    document.getElementById('detailCountry').textContent = event.country || 'Not specified';
-    var dateEvent = new Date(event.date);
-    document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('detailLocation').textContent = event.location || 'Online';
-    document.getElementById('detailPrice').textContent = event.price + ' Pi';
-    document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
-    document.getElementById('detailDescription').textContent = event.description || 'No description';
-    document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
-
-    var gallery = document.getElementById('detailGallery');
-    gallery.innerHTML = '';
-    if (event.images && event.images.length > 0) {
-        var img = document.createElement('img');
-        img.src = event.images[0];
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        gallery.appendChild(img);
-    }
-
-    document.getElementById('detailBuyBtn').onclick = function() {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-        openQuantityPopup(event.id);
-    };
-
-    closeBtn.onclick = function() {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    };
-
-    window.onclick = function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('show');
-            document.body.style.overflow = '';
-        }
-    };
-
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
 }
 
 // ============================================================
@@ -845,41 +745,27 @@ function initFilters() {
     }
 }
 
-function initCountrySelectors() {
-    var filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var option = document.createElement('option');
-            option.value = countriesList[i];
-            option.textContent = countriesList[i];
-            if (countriesList[i] === currentCountryFilter) option.selected = true;
-            filterSelect.appendChild(option);
-        }
-    }
-    var eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            if (countriesList[i] === 'All') continue;
-            var option = document.createElement('option');
-            option.value = countriesList[i];
-            option.textContent = countriesList[i];
-            if (countriesList[i] === 'France') option.selected = true;
-            eventSelect.appendChild(option);
-        }
-    }
-}
-
-function filterByCountry(country) {
-    currentCountryFilter = country;
-    renderEventsByCategory();
-}
-
 function initHeroSlider() {
     var slidesContainer = document.getElementById('heroSlides');
     if (!slidesContainer) return;
     slidesContainer.innerHTML = '';
+    var heroSlides = [
+        {
+            image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop',
+            badge: 'Music Festival',
+            title: 'Summer Music Festival 2026'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop',
+            badge: 'Football',
+            title: 'Champions League Final'
+        },
+        {
+            image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop',
+            badge: 'Conference',
+            title: 'Web3 Summit 2026'
+        }
+    ];
     heroSlides.forEach(function(slide, index) {
         var div = document.createElement('div');
         div.className = 'hero-slide' + (index === 0 ? ' active' : '');
@@ -940,27 +826,6 @@ function initHeroSlider() {
             slides.forEach(function(s, i) { s.classList.remove('active'); if (i === newIndex) s.classList.add('active'); });
             dots.forEach(function(d, i) { d.classList.remove('active'); if (i === newIndex) d.classList.add('active'); });
         };
-    }
-}
-
-// ============================================================
-// ===== PROFILE PHOTO UPLOAD =====
-// ============================================================
-
-async function handleProfilePhotoUpload(file) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        alert('Please select an image');
-        return;
-    }
-    try {
-        var compressedData = await compressImage(file);
-        currentUser.profilePhoto = compressedData;
-        saveUserToSupabase();
-        updateAllProfileImages();
-        alert('✅ Profile photo updated!');
-    } catch (error) {
-        alert('Error: ' + error.message);
     }
 }
 
@@ -1066,13 +931,9 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmBuyBtn.addEventListener('click', confirmPurchase);
     }
 
-    // Charger les données depuis Supabase
+    // Charger les données
     (async function initApp() {
         console.log('Initializing Betix...');
-        var connected = await testSupabaseConnection();
-        if (!connected) {
-            console.warn('Supabase not accessible, using localStorage');
-        }
         await loadEventsFromSupabase();
         await loadTicketsFromSupabase();
         renderEventsByCategory();
@@ -1087,4 +948,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 console.log('Betix loaded successfully!');
 console.log('🔑 Admin: 5 clicks on logo + password Betix@2026#');
-console.log('📱 Mode demo available if Pi SDK not loaded');
+console.log('📱 Mode demo available');
