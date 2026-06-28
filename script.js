@@ -1220,6 +1220,38 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
+// ===== CONFIRMATION D'ACHAT DEPUIS LA POPUP =====
+// ============================================================
+
+function confirmPurchaseFromPopup() {
+    if (!selectedEventForPurchase) {
+        alert('No event selected');
+        return;
+    }
+    
+    var quantityInput = document.getElementById('ticketQuantity');
+    var quantity = parseInt(quantityInput.value) || 1;
+    
+    if (quantity < 1) {
+        alert('Please select at least 1 ticket');
+        return;
+    }
+    
+    if (quantity > selectedEventForPurchase.seatsLeft) {
+        alert('Only ' + selectedEventForPurchase.seatsLeft + ' tickets available');
+        return;
+    }
+    
+    if (quantity > 10) {
+        alert('Maximum 10 tickets per purchase');
+        return;
+    }
+    
+    // Appeler la fonction de confirmation d'achat
+    confirmPurchase(selectedEventForPurchase.id, quantity);
+}
+
+// ============================================================
 // ===== TICKET QUANTITY POPUP =====
 // ============================================================
 
@@ -2887,6 +2919,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var confirmPublishBtn = document.getElementById('confirmPublishBtn');
     if (confirmPublishBtn) {
         confirmPublishBtn.addEventListener('click', confirmPublishEvent);
+    }
+    
+    // ============================================================
+    // ===== LIER LE BOUTON DE CONFIRMATION D'ACHAT =====
+    // ============================================================
+    var confirmBuyBtn = document.getElementById('confirmBuyBtn');
+    if (confirmBuyBtn) {
+        confirmBuyBtn.addEventListener('click', confirmPurchaseFromPopup);
     }
     
     var adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
