@@ -176,7 +176,7 @@ var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
 // ============================================================
-// ===== HERO SLIDES WITH NEW ATTRACTIVE IMAGES =====
+// ===== HERO SLIDES =====
 // ============================================================
 
 var heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
@@ -297,7 +297,6 @@ function saveRatings() {
 
 function saveConnectedUsers() {
     localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-    syncUsersToSupabase();
 }
 
 // ============================================================
@@ -1157,7 +1156,7 @@ async function connectToPi() {
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
 
 // ============================================================
-// ===== CONFIRMATION ACHAT =====
+// ===== CONFIRMATION ACHAT - PAIEMENT PI NETWORK =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1292,7 +1291,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION PROFESSIONNEL =====
+// ===== PUBLISH CONFIRMATION =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1355,7 +1354,7 @@ function confirmPublishEvent() {
 }
 
 // ============================================================
-// ===== MODIFIED CREATE EVENT =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 function createEvent(e) {
