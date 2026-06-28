@@ -2,12 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Betix - Event Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Betix - Event Ticketing Platform on Pi Network</title>
+    <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
     <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Initialisation du SDK Pi
+        (function initPiSDK() {
+            if (typeof Pi !== 'undefined') {
+                Pi.init({ version: "2.0", sandbox: true });
+                console.log("Pi SDK initialized");
+                window.piSDKReady = true;
+            } else {
+                console.log("Waiting for Pi SDK...");
+                setTimeout(initPiSDK, 200);
+            }
+        })();
+        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 1000);
+        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
+    </script>
+    
+    <!-- Google Translate Script -->
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
@@ -25,45 +49,124 @@
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </button>
-        <div class="logo" onclick="handleLogoClick()">
+        <div class="logo" id="mainLogo" onclick="handleLogoClick()">
+            <img src="logo.png" alt="Betix Logo" style="height: 40px; width: auto; border-radius: 8px; display: inline-block;" onerror="this.style.display='none'">
             <span>Betix</span>
         </div>
     </div>
     <div class="header-right">
-        <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+        <button class="menu-btn" id="menuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
 </header>
 
-<!-- SIDEBAR -->
+<!-- ===== SIDEBAR ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+        
+        <!-- NOTIFICATION EN HAUT A DROITE -->
+        <button class="sidebar-notif-icon-top" onclick="showPage('notifications')" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
+        </button>
+        
         <div class="sidebar-avatar-wrapper">
             <div class="sidebar-avatar" id="sidebarAvatar">
-                <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 <span id="sidebarAvatarText">U</span>
                 <button class="profile-edit-icon" onclick="document.getElementById('profilePhotoInputSidebar').click()">
                     <i class="fas fa-pen"></i>
                 </button>
             </div>
         </div>
+        <div id="profilePhotoLoading" class="profile-upload-loading" style="display:none;">
+            <i class="fas fa-spinner fa-spin"></i> Compressing...
+        </div>
         <h3 id="sidebarName">Guest</h3>
         <p id="sidebarWallet">Not connected</p>
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
         <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
+        
+        <!-- Language Selector -->
+        <div class="sidebar-language-selector">
+            <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
+            <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="zh">中文</option>
+                <option value="id">Indonesia</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+            </select>
+            <div style="margin-top: 6px; font-size: 0.7rem; color: var(--gray);">
+                <i class="fas fa-info-circle"></i> Select language
+            </div>
+        </div>
     </div>
+    
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home">Home</button>
         <button class="sidebar-item" data-page="myevents">My Events</button>
         <button class="sidebar-item" data-page="profile">Profile</button>
         <button class="sidebar-item" data-page="settings">Settings</button>
         <button class="sidebar-item" data-page="tickets">My Tickets</button>
-        <button class="sidebar-item" data-page="history">History</button>
+        <button class="sidebar-item" data-page="history">Ticket History</button>
+        <button class="sidebar-item" data-page="whitepaper">Whitepaper</button>
+        <button class="sidebar-item" data-page="faq">FAQ</button>
+        
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;">Administration</button>
+        
+        <div class="sidebar-social">
+            <div class="sidebar-social-title">Follow us</div>
+            <div class="sidebar-social-icons">
+                <a href="https://x.com/betix_app" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="https://t.me/betix" target="_blank" class="social-link"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
+                <a href="https://instagram.com/betix_app" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
     </div>
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- HOME PAGE -->
+<!-- ===== NOTIFICATIONS PAGE ===== -->
+<div id="notificationsPage" class="hidden-page">
+    <div class="page-content">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-bell" style="color:#f5a623;"></i> 
+            Notifications
+        </h2>
+        <p class="events-sub">All your notifications</p>
+        <div id="notificationsList" style="margin-top:20px;"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
+
+<div id="chatWidget" class="chat-widget">
+    <div class="chat-header">
+        <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
+        <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type your message..." maxlength="500">
+        <button id="chatSendBtn">Send</button>
+    </div>
+</div>
+
 <div id="homePage">
     <section class="hero">
         <div class="hero-slider-container">
@@ -74,121 +177,201 @@
                 <div class="hero-dots" id="heroDots"></div>
             </div>
         </div>
+        
         <div class="hero-divider"></div>
+        
         <div class="hero-content-bottom">
             <div class="hero-text">
-                <h1>Event Ticketing Platform powered by Pi Network</h1>
-                <p>Discover and book unique experiences. Pay with Pi.</p>
+                <h1>The first ticketing platform powered by Pi Network</h1>
+                <p>Discover and book unique experiences. Pay with your Pi crypto.</p>
                 <button class="btn-hero" onclick="showPage('create')">Create Event</button>
             </div>
         </div>
     </section>
     
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search event...">
-    </div>
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
     
+    <!-- COUNTRY FILTER -->
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
-            <label for="countrySelect"><i class="fas fa-globe-africa"></i> Country :</label>
-            <select id="countrySelect" onchange="filterByCountry(this.value)"></select>
+            <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
+            <select id="countrySelect" onchange="filterByCountry(this.value)">
+                <!-- Countries generated by JavaScript -->
+            </select>
         </div>
     </div>
     
-    <div class="filters-wrapper">
-        <div class="filters-horizontal" id="filtersContainer"></div>
-    </div>
+    <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
     
     <div class="events-container">
         <h2 class="events-title">Upcoming Events</h2>
+        <p class="events-sub">Join the community and live unique experiences</p>
         <div id="eventsByCategory" class="events-grid-centered"></div>
     </div>
 </div>
 
-<!-- CREATE EVENT PAGE -->
+<!-- ===== MY EVENTS PAGE ===== -->
+<div id="myeventsPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">My Events</h2>
+        <p class="events-sub">Events you have created</p>
+        <div id="myEventsList" class="events-grid-centered"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ===== CREATE EVENT PAGE ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
             <div class="form-group"><label>Title</label><input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required></div>
-            <div class="form-group">
-                <label>Category</label>
+            <div class="form-group"><label>Category</label>
                 <select id="eventCategory">
-                    <option>Concert</option><option>Sport</option><option>Conference</option>
-                    <option>Training</option><option>Cinema</option><option>Festival</option>
-                    <option>Theatre</option><option>Dance</option><option>Exhibition</option>
-                    <option>Gala</option><option>Seminar</option>
+                    <option>Concert</option>
+                    <option>Sport</option>
+                    <option>Conference</option>
+                    <option>Training</option>
+                    <option>Cinema</option>
+                    <option>Festival</option>
+                    <option>Theatre</option>
+                    <option>Dance</option>
+                    <option>Exhibition</option>
+                    <option>Gala</option>
+                    <option>Seminar</option>
                 </select>
             </div>
-            <div class="form-group"><label>Country</label><select id="eventCountry"></select></div>
+            <div class="form-group"><label>Country</label>
+                <select id="eventCountry">
+                    <!-- Countries generated by JavaScript -->
+                </select>
+            </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
-            <div class="form-group"><label>Conditions</label><textarea id="eventConditions" rows="4" placeholder="Payment in Pi, etc..." maxlength="1500"></textarea></div>
+            <div class="form-group">
+                <label>Conditions</label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
+            </div>
             <div class="form-group"><label>Price (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
             <div class="form-group"><label>Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
             
-            <!-- IMAGE UPLOAD -->
+            <!-- UPLOAD D'IMAGES PROFESSIONNEL -->
             <div class="form-group">
                 <label>Photos (2 images required)</label>
-                <div class="image-upload-container">
+                <div id="imageUploadContainer" class="image-upload-container">
+                    <!-- Image 1 -->
                     <div class="upload-box-modern" id="uploadBox1">
-                        <div class="upload-box-inner">
-                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <div class="upload-box-inner" id="uploadInner1">
+                            <div class="upload-icon-modern">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
                             <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress1" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill1" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText1">0%</span>
+                            </div>
                         </div>
                         <input type="file" class="image-input-modern" accept="image/*" data-index="0" id="imageInput0">
                         <div class="preview-modern" id="previewContainer0" style="display:none;">
                             <img id="previewImage0" src="#" alt="Preview">
-                            <button type="button" class="remove-image-modern" onclick="removeImageModern(0)"><i class="fas fa-times"></i></button>
+                            <button type="button" class="remove-image-modern" id="remove0" onclick="removeImageModern(0)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
                         </div>
                     </div>
+                    
+                    <!-- Image 2 -->
                     <div class="upload-box-modern" id="uploadBox2">
-                        <div class="upload-box-inner">
-                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <div class="upload-box-inner" id="uploadInner2">
+                            <div class="upload-icon-modern">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
                             <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress2" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText2">0%</span>
+                            </div>
                         </div>
                         <input type="file" class="image-input-modern" accept="image/*" data-index="1" id="imageInput1">
                         <div class="preview-modern" id="previewContainer1" style="display:none;">
                             <img id="previewImage1" src="#" alt="Preview">
-                            <button type="button" class="remove-image-modern" onclick="removeImageModern(1)"><i class="fas fa-times"></i></button>
+                            <button type="button" class="remove-image-modern" id="remove1" onclick="removeImageModern(1)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
                         </div>
                     </div>
                 </div>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
-            <button type="submit" class="btn-primary">Publish Event</button>
+            
+            <button type="submit" class="btn-primary" id="publishEventBtn">Publish Event</button>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
-<!-- PUBLISH CONFIRMATION -->
+<!-- ===== PUBLISH CONFIRMATION POPUP (PROFESSIONNEL) ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
-    <div class="publish-confirm-professional">
+    <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
-            <div class="publish-confirm-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="publish-confirm-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
             <h2>Confirm Publication</h2>
-            <p class="publish-confirm-sub">Review before publishing</p>
+            <p class="publish-confirm-sub">Please review all information before publishing your event</p>
             <button class="publish-confirm-close" onclick="closePublishConfirmPopup()"><i class="fas fa-times"></i></button>
         </div>
+        
         <div class="publish-confirm-body">
             <div class="publish-summary">
                 <div class="publish-summary-grid">
-                    <div class="publish-summary-item"><span class="publish-label">Title</span><span class="publish-value" id="confirmTitle">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Category</span><span class="publish-value" id="confirmCategory">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Country</span><span class="publish-value" id="confirmCountry">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Date</span><span class="publish-value" id="confirmDate">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Location</span><span class="publish-value" id="confirmLocation">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Price</span><span class="publish-value" id="confirmPrice">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Seats</span><span class="publish-value" id="confirmSeats">-</span></div>
-                    <div class="publish-summary-item"><span class="publish-label">Organizer</span><span class="publish-value" id="confirmOrganizer">-</span></div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Title</span>
+                        <span class="publish-value" id="confirmTitle">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Category</span>
+                        <span class="publish-value" id="confirmCategory">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Country</span>
+                        <span class="publish-value" id="confirmCountry">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Date & Time</span>
+                        <span class="publish-value" id="confirmDate">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Location</span>
+                        <span class="publish-value" id="confirmLocation">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Price</span>
+                        <span class="publish-value" id="confirmPrice">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Seats</span>
+                        <span class="publish-value" id="confirmSeats">-</span>
+                    </div>
+                    <div class="publish-summary-item">
+                        <span class="publish-label">Organizer</span>
+                        <span class="publish-value" id="confirmOrganizer">-</span>
+                    </div>
                 </div>
+                
                 <div class="publish-summary-full">
                     <div class="publish-summary-item full">
                         <span class="publish-label">Description</span>
                         <span class="publish-value" id="confirmDescription">-</span>
                     </div>
                 </div>
+                
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full">
+                        <span class="publish-label">Conditions</span>
+                        <span class="publish-value" id="confirmConditions">-</span>
+                    </div>
+                </div>
+                
                 <div class="publish-summary-full">
                     <div class="publish-summary-item full">
                         <span class="publish-label">Images</span>
@@ -197,6 +380,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="publish-confirm-footer">
             <button class="publish-btn cancel" onclick="closePublishConfirmPopup()">Cancel</button>
             <button class="publish-btn confirm" id="confirmPublishBtn">Publish Event</button>
@@ -204,31 +388,30 @@
     </div>
 </div>
 
-<!-- TICKETS PAGE -->
+<!-- ===== TICKETS PAGE ===== -->
 <div id="ticketsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">My Active Tickets</h2>
-        <div id="ticketsList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">My Active Tickets</h2><p class="events-sub">Your valid tickets</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- HISTORY PAGE -->
+<!-- ===== HISTORY PAGE ===== -->
 <div id="historyPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">Ticket History</h2>
-        <div id="historyList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">Ticket History</h2><p class="events-sub">All your purchased tickets</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- PROFILE PAGE -->
+<!-- ===== RATINGS PAGE ===== -->
+<div id="ratingsPage" class="hidden-page">
+    <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
+</div>
+
+<!-- ===== PROFILE PAGE ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
             <div class="profile-header-avatar">
-                <img id="profilePageAvatar" src="" alt="Avatar" style="display:none;width:100px;height:100px;border-radius:50%;object-fit:cover;">
-                <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large"><i class="fas fa-user"></i></div>
+                <img id="profilePageAvatar" src="" alt="Avatar" style="display:none; width:100px; height:100px; border-radius:50%; object-fit:cover;">
+                <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
+                    <i class="fas fa-user"></i>
+                </div>
                 <button class="profile-upload-btn" onclick="document.getElementById('profilePhotoInputPage').click()">
                     <i class="fas fa-camera"></i>
                 </button>
@@ -237,25 +420,37 @@
             <div class="profile-header-info">
                 <h2 id="profileNameDisplay">Guest</h2>
                 <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
+                <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
                 <div class="profile-badges">
-                    <span class="profile-badge"><i class="fas fa-ticket-alt"></i> <span id="ticketCount">0</span> tickets</span>
+                    <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> rating</span>
+                    <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
                 </div>
             </div>
         </div>
+        
         <div class="profile-stats-grid">
             <div class="stat-card clickable" onclick="goToMyEvents()">
                 <span class="stat-number" id="myEventsCount">0</span>
                 <span class="stat-label"><i class="fas fa-calendar-plus"></i> My Events</span>
+                <span class="stat-link">View all →</span>
             </div>
             <div class="stat-card clickable" onclick="goToTickets()">
-                <span class="stat-number" id="ticketCount2">0</span>
-                <span class="stat-label"><i class="fas fa-ticket-alt"></i> Tickets</span>
+                <span class="stat-number" id="ticketCount">0</span>
+                <span class="stat-label"><i class="fas fa-ticket-alt"></i> My Tickets</span>
+                <span class="stat-link">View all →</span>
             </div>
             <div class="stat-card clickable" onclick="goToHistory()">
                 <span class="stat-number" id="historyCount">0</span>
                 <span class="stat-label"><i class="fas fa-history"></i> History</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToRatings()">
+                <span class="stat-number" id="ratedCount">0</span>
+                <span class="stat-label"><i class="fas fa-star"></i> Rated</span>
+                <span class="stat-link">View all →</span>
             </div>
         </div>
+        
         <div class="profile-actions">
             <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
@@ -263,7 +458,37 @@
     </div>
 </div>
 
-<!-- SETTINGS PAGE -->
+<!-- ===== WHITEPAPER PAGE ===== -->
+<div id="whitepaperPage" class="hidden-page">
+    <div class="page-content">
+        <h2>Whitepaper</h2>
+        <p>Betix</p>
+        <p><strong>English Version:</strong> In progress.</p>
+        <p><strong>French Version:</strong> In progress.</p>
+    </div>
+</div>
+
+<!-- ===== FAQ PAGE ===== -->
+<div id="faqPage" class="hidden-page">
+    <div class="page-content faq-page-content">
+        <div class="faq-header">
+            <h2>Frequently Asked Questions</h2>
+            <p class="faq-subtitle">Everything you need to know about Betix</p>
+        </div>
+        <div class="faq-page-indicator">
+            <span>Page</span> <span id="faqPageNumber">1</span> / <span id="faqTotalPages">6</span>
+        </div>
+        <div id="faqContainer" class="faq-container"></div>
+        <div class="faq-pagination">
+            <button class="faq-nav-btn" id="faqPrevBtn">Previous</button>
+            <span class="faq-page-dots" id="faqPageDots"></span>
+            <button class="faq-nav-btn" id="faqNextBtn">Next</button>
+        </div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ===== SETTINGS PAGE ===== -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -271,21 +496,177 @@
             <p><strong>Theme</strong></p>
             <label><input type="checkbox" id="darkModeToggle"> Dark mode</label>
         </div>
+        <div class="settings-group">
+            <p><strong>Data</strong></p>
+            <button id="clearDataBtn" class="btn-danger">Clear my data</button>
+        </div>
     </div>
 </div>
 
-<!-- MY EVENTS PAGE -->
-<div id="myeventsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">My Events</h2>
-        <div id="myEventsList" class="events-grid-centered"></div>
+<!-- ===== ADMIN PAGE ===== -->
+<div id="adminPage" class="hidden-page">
+    <div class="page-content admin-content">
+        <h2>Administration</h2>
+        <p class="admin-subtitle">Manage your Betix platform</p>
+        
+        <div class="admin-session-timer">
+            <span>Session active</span>
+            <span id="adminSessionTimer">30:00</span>
+            <button class="admin-logout-btn" onclick="adminLogout()">Logout</button>
+        </div>
+        
+        <div class="admin-stats">
+            <div class="stat-card"><h3>Events</h3><p id="adminEventCount">0</p></div>
+            <div class="stat-card"><h3>Tickets</h3><p id="adminTicketCount">0</p></div>
+            <div class="stat-card"><h3>Users</h3><p id="adminUserCount">0</p></div>
+        </div>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="events">Events</button>
+            <button class="admin-tab" data-tab="slides">Carousel</button>
+            <button class="admin-tab" data-tab="users">Users</button>
+            <button class="admin-tab" data-tab="logs">Logs</button>
+            <button class="admin-tab" data-tab="settings">Settings</button>
+        </div>
+        
+        <div id="adminTabEvents" class="admin-tab-content active">
+            <div class="admin-actions">
+                <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;">Delete all</button>
+            </div>
+            <div id="adminEventsList"></div>
+        </div>
+        
+        <div id="adminTabSlides" class="admin-tab-content">
+            <div class="admin-actions">
+                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Add image</button>
+            </div>
+            <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
+                <h3 id="adminSlideFormTitle">Add carousel image</h3>
+                <div class="form-group">
+                    <label>Image</label>
+                    <div class="admin-upload-box" id="adminUploadBox">
+                        <span class="upload-icon"><i class="fas fa-image"></i></span>
+                        <p>Click to choose image</p>
+                        <input type="file" id="adminSlideImageInput" accept="image/*">
+                        <img class="preview-image" id="adminSlidePreview" style="display:none;">
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; margin-top:12px;">
+                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Save</button>
+                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Cancel</button>
+                </div>
+                <input type="hidden" id="adminEditSlideIndex" value="-1">
+            </div>
+            <div id="adminSlidesList"></div>
+        </div>
+        
+        <div id="adminTabUsers" class="admin-tab-content">
+            <div class="admin-users-filters">
+                <input type="text" id="adminUserSearch" placeholder="Search user...">
+            </div>
+            <div id="adminUsersList"></div>
+        </div>
+        
+        <div id="adminTabLogs" class="admin-tab-content">
+            <div class="admin-actions">
+                <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;">Clear logs</button>
+            </div>
+            <div id="adminLogsList"></div>
+        </div>
+        
+        <div id="adminTabSettings" class="admin-tab-content">
+            <div class="admin-settings">
+                <h3>Change Password</h3>
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" id="adminNewPassword" placeholder="Enter new password...">
+                </div>
+                <div class="form-group">
+                    <label>Confirm</label>
+                    <input type="password" id="adminConfirmPassword" placeholder="Confirm...">
+                </div>
+                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;">Change</button>
+                <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+                
+                <hr style="margin: 30px 0; border-color: #e5e7eb;">
+                
+                <h3>Information</h3>
+                <p><strong>Current password :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
+                <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
+                <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
+            </div>
+        </div>
+        
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
-<!-- EVENT DETAIL MODAL -->
-<div id="eventDetailModal" class="modal">
+<!-- ===== FOOTER ===== -->
+<footer class="betix-footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <div class="footer-logo">Betix</div>
+            <p class="footer-slogan">Decentralized Event Ticketing on Pi Network</p>
+            <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+            <div class="footer-contact">
+                <div><i class="fas fa-envelope"></i> betixservices@gmail.com</div>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Info</h4>
+            <ul>
+                <li><a href="#" onclick="showLegal('terms')">Terms of sale</a></li>
+                <li><a href="#" onclick="showLegal('terms')">Terms of use</a></li>
+                <li><a href="#" onclick="showLegal('privacy')">Privacy policy</a></li>
+                <li><a href="#" onclick="showLegal('privacy')">Accessibility statement</a></li>
+                <li><a href="#" onclick="showLegal('privacy')">Privacy choices</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">Fan ticket guide</a></li>
+                <li><a href="#" onclick="showLegal('legal')">Legal notices</a></li>
+                <li><a href="#" onclick="showLegal('cookies')">Cookie preferences</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Betix</h4>
+            <ul>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')">About us</a></li>
+                <li><a href="mailto:betixservices@gmail.com">Contact us</a></li>
+                <li><a href="#" onclick="event.preventDefault(); alert('Your feedback is important!')">Your feedback</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">Help</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Partners</h4>
+            <div class="footer-social">
+                <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank"><i class="fab fa-discord"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p class="footer-join">Join the Betix community</p>
+            <div style="margin-top: 12px;">
+                <span class="footer-badge"><i class="fas fa-check-circle"></i> Pi Network</span>
+                <span class="footer-badge"><i class="fas fa-lock"></i> Secure</span>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>2026 Betix. All rights reserved.</span>
+        <span>Built on Pi Network | Secured by Blockchain</span>
+    </div>
+</footer>
+
+<!-- ===== MODALS ===== -->
+<div id="legalModal" class="modal">
     <div class="modal-content">
+        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<!-- ===== EVENT DETAIL MODAL ===== -->
+<div id="eventDetailModal" class="modal">
+    <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
         <div id="eventDetailContent">
             <div class="event-detail-header">
@@ -293,10 +674,10 @@
                 <div class="event-detail-info">
                     <h2 id="detailTitle">Title</h2>
                     <div class="detail-meta">
-                        <span id="detailCategory">Category</span>
-                        <span id="detailDate">Date</span>
-                        <span id="detailLocation">Location</span>
-                        <span id="detailCountry">Country</span>
+                        <span class="detail-category" id="detailCategory">Category</span>
+                        <span class="detail-date" id="detailDate">Date</span>
+                        <span class="detail-location" id="detailLocation">Location</span>
+                        <span class="detail-country" id="detailCountry">Country</span>
                     </div>
                     <div class="detail-price-seats">
                         <span class="detail-price" id="detailPrice">0 Pi</span>
@@ -306,12 +687,25 @@
             </div>
             <div class="event-detail-body">
                 <div class="detail-section">
-                    <h3>Description</h3>
+                    <h3>Full description</h3>
                     <p id="detailDescription"></p>
                 </div>
                 <div class="detail-section">
-                    <h3>Organizer</h3>
-                    <p id="detailOrganizer"></p>
+                    <h3>Conditions</h3>
+                    <div id="detailConditions"></div>
+                </div>
+                <div class="detail-section">
+                    <h3>Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-grid-item"><span class="label">Organizer</span><span class="value" id="detailOrganizer">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Created on</span><span class="value" id="detailCreated">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Seats left</span><span class="value" id="detailBoosts">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Rating</span><span class="value" id="detailRating">-</span></div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <h3>Reviews</h3>
+                    <div id="detailReviews"></div>
                 </div>
             </div>
             <div class="event-detail-footer">
@@ -321,12 +715,13 @@
     </div>
 </div>
 
-<!-- QUANTITY POPUP -->
+<!-- ===== TICKET QUANTITY POPUP ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
         <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
+        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
         <div class="quantity-selector">
             <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
             <input type="number" id="ticketQuantity" value="1" min="1" max="10">
@@ -335,47 +730,89 @@
         <p style="font-size:0.85rem;color:var(--gray);">
             Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
+        <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
         <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
     </div>
 </div>
 
-<footer class="betix-footer">
-    <div class="footer-container">
-        <div class="footer-col">
-            <div class="footer-logo">Betix</div>
-            <p class="footer-slogan">Event Ticketing on Pi Network</p>
-            <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+<!-- ===== PURCHASE SUCCESS POPUP ===== -->
+<div id="successPopup" class="success-popup">
+    <div class="success-popup-content success-blue">
+        <div class="success-icon success-icon-blue">
+            <i class="fas fa-check-circle"></i>
         </div>
-        <div class="footer-col">
-            <h4>Info</h4>
-            <ul>
-                <li><a href="#" onclick="showLegal('terms')">Terms of use</a></li>
-                <li><a href="#" onclick="showLegal('privacy')">Privacy policy</a></li>
-                <li><a href="#" onclick="showLegal('legal')">Legal notices</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Contact</h4>
-            <ul>
-                <li><a href="mailto:betixservices@gmail.com">betixservices@gmail.com</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <span>2026 Betix. All rights reserved.</span>
-    </div>
-</footer>
-
-<!-- LEGAL MODAL -->
-<div id="legalModal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
-        <div id="modalContent"></div>
+        <h3 id="successTitle">Purchase successful</h3>
+        <p id="successMessage">Your tickets have been added successfully.</p>
+        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
+        <button class="btn-primary success-btn-blue" onclick="closeSuccessPopup()">OK</button>
     </div>
 </div>
 
 </div>
+
+<script>
+    window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
+</script>
+
+<script>
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,fr,pt,zh-CN,id,es,de,it,ja,ko,ru,ar,hi',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+            multilanguagePage: true
+        }, 'google_translate_element');
+        
+        setTimeout(function() {
+            var banner = document.querySelector('.goog-te-banner-frame');
+            if (banner) {
+                banner.style.display = 'none';
+                banner.style.height = '0px';
+                banner.style.visibility = 'hidden';
+            }
+            
+            var gadget = document.querySelector('.goog-te-gadget');
+            if (gadget) {
+                var textNodes = gadget.childNodes;
+                for (var i = 0; i < textNodes.length; i++) {
+                    if (textNodes[i].nodeType === 3) {
+                        textNodes[i].textContent = '';
+                    }
+                }
+            }
+            
+            var select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.style.display = 'inline-block';
+                select.style.padding = '4px 8px';
+                select.style.borderRadius = '6px';
+                select.style.border = '1px solid #e5e7eb';
+                select.style.fontSize = '0.8rem';
+                select.style.background = 'white';
+                select.style.color = '#1f2937';
+                select.style.width = '100%';
+                select.style.maxWidth = '180px';
+            }
+            
+            var iframes = document.querySelectorAll('iframe');
+            for (var i = 0; i < iframes.length; i++) {
+                var iframe = iframes[i];
+                if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') {
+                    iframe.style.display = 'none';
+                    iframe.style.visibility = 'hidden';
+                    iframe.style.height = '0px';
+                    iframe.style.width = '0px';
+                }
+            }
+            
+            document.body.style.top = '0px';
+            document.body.style.position = 'relative';
+        }, 500);
+    }
+</script>
 
 <script src="script.js"></script>
+
 </body>
 </html>
