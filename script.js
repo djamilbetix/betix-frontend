@@ -1,11 +1,88 @@
 // ============================================================
+// ===== FORCER LE CHARGEMENT DU SDK PI =====
+// ============================================================
+
+// Fonction pour charger le SDK Pi
+function loadPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        console.log('✅ Pi SDK déjà chargé');
+        return true;
+    }
+    
+    console.log('⏳ Tentative de chargement du Pi SDK...');
+    
+    var script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = function() {
+        console.log('✅ Pi SDK chargé avec succès !');
+        if (typeof Pi !== 'undefined') {
+            try {
+                Pi.init({ version: "2.0", sandbox: true });
+                console.log('✅ Pi initialisé');
+                window.piSDKReady = true;
+            } catch(e) {
+                console.warn('⚠️ Erreur init Pi:', e);
+            }
+        }
+        updateConnectButton();
+    };
+    script.onerror = function() {
+        console.error('❌ Échec du chargement du Pi SDK');
+        setTimeout(loadPiSDK, 2000);
+    };
+    document.head.appendChild(script);
+    return false;
+}
+
+loadPiSDK();
+
+var piSDKAttempts = 0;
+var piSDKInterval = setInterval(function() {
+    piSDKAttempts++;
+    if (typeof Pi !== 'undefined') {
+        console.log('✅ Pi SDK détecté après ' + piSDKAttempts + ' tentatives');
+        clearInterval(piSDKInterval);
+        if (!window.piSDKReady) {
+            try {
+                Pi.init({ version: "2.0", sandbox: true });
+                window.piSDKReady = true;
+                console.log('✅ Pi initialisé');
+                updateConnectButton();
+            } catch(e) {
+                console.warn('⚠️ Erreur init Pi:', e);
+            }
+        }
+    } else if (piSDKAttempts > 20) {
+        console.warn('⚠️ Pi SDK non chargé après 20 tentatives');
+        clearInterval(piSDKInterval);
+        var msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ff9800;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;text-align:center;max-width:90%;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+        msg.innerHTML = '⚠️ Pi SDK non chargé. Assurez-vous d\'être dans le Pi Browser. <button onclick="location.reload()" style="background:#fff;color:#ff9800;border:none;padding:4px 12px;border-radius:4px;margin-left:8px;cursor:pointer;">Recharger</button>';
+        document.body.appendChild(msg);
+    }
+}, 3000);
+
+function updateConnectButton() {
+    var btn = document.getElementById('sidebarWalletBtn');
+    if (btn) {
+        if (window.currentUser) {
+            btn.textContent = 'Disconnect';
+            btn.classList.add('disconnect');
+        } else {
+            btn.textContent = 'Connect Pi';
+            btn.classList.remove('disconnect');
+        }
+    }
+}
+
+// ============================================================
 // ===== CHARGEMENT RAPIDE - AFFICHAGE IMMÉDIAT =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🚀 Betix chargé !");
     
-    // Cacher le loader immédiatement
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
     
@@ -50,14 +127,16 @@ async function onIncompletePaymentFound(payment) {
 }
 
 // ============================================================
-// ===== CONNEXION PI - UNIQUEMENT =====
+// ===== CONNEXION PI =====
 // ============================================================
 
 async function connectToPi() {
     console.log("🔵 Connexion Pi...");
     
+    // Vérifier que le SDK Pi est chargé
     if (typeof Pi === 'undefined') {
-        alert("❌ Pi SDK non chargé. Ouvrez cette page dans le Pi Browser.");
+        alert("❌ Pi SDK non chargé. Assurez-vous d'être dans le Pi Browser.");
+        console.error("Pi SDK non disponible");
         return;
     }
 
@@ -87,6 +166,12 @@ async function connectToPi() {
                 .select()
                 .single();
             
+            if (error) {
+                console.error("❌ Erreur Supabase:", error);
+                alert("Erreur lors de l'enregistrement");
+                return;
+            }
+            
             if (savedUser) {
                 window.currentUser = savedUser;
                 localStorage.setItem('betix_user', JSON.stringify(savedUser));
@@ -97,7 +182,10 @@ async function connectToPi() {
                 alert('✅ Bienvenue ' + savedUser.username + ' !');
                 return savedUser;
             }
+        } else {
+            alert("❌ Authentification annulée");
         }
+        
     } catch (error) {
         console.error("❌ Erreur:", error);
         alert("Erreur: " + error.message);
