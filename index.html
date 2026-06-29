@@ -7,7 +7,7 @@
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
     <link rel="stylesheet" href="style.css">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
@@ -27,8 +27,6 @@
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 1000);
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
-    
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
@@ -86,7 +84,7 @@
         
         <div class="sidebar-language-selector">
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
-            <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
+            <select id="nativeLangSelect" class="lang-select-native-sidebar">
                 <option value="en">English</option>
                 <option value="fr">Français</option>
                 <option value="es">Español</option>
@@ -725,64 +723,6 @@
 
 <script>
     window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
-</script>
-
-<script>
-    function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'en',
-            includedLanguages: 'en,fr,pt,zh-CN,id,es,de,it,ja,ko,ru,ar,hi',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-            multilanguagePage: true
-        }, 'google_translate_element');
-        
-        setTimeout(function() {
-            var banner = document.querySelector('.goog-te-banner-frame');
-            if (banner) {
-                banner.style.display = 'none';
-                banner.style.height = '0px';
-                banner.style.visibility = 'hidden';
-            }
-            
-            var gadget = document.querySelector('.goog-te-gadget');
-            if (gadget) {
-                var textNodes = gadget.childNodes;
-                for (var i = 0; i < textNodes.length; i++) {
-                    if (textNodes[i].nodeType === 3) {
-                        textNodes[i].textContent = '';
-                    }
-                }
-            }
-            
-            var select = document.querySelector('.goog-te-combo');
-            if (select) {
-                select.style.display = 'inline-block';
-                select.style.padding = '4px 8px';
-                select.style.borderRadius = '6px';
-                select.style.border = '1px solid #e5e7eb';
-                select.style.fontSize = '0.8rem';
-                select.style.background = 'white';
-                select.style.color = '#1f2937';
-                select.style.width = '100%';
-                select.style.maxWidth = '180px';
-            }
-            
-            var iframes = document.querySelectorAll('iframe');
-            for (var i = 0; i < iframes.length; i++) {
-                var iframe = iframes[i];
-                if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') {
-                    iframe.style.display = 'none';
-                    iframe.style.visibility = 'hidden';
-                    iframe.style.height = '0px';
-                    iframe.style.width = '0px';
-                }
-            }
-            
-            document.body.style.top = '0px';
-            document.body.style.position = 'relative';
-        }, 500);
-    }
 </script>
 
 <script src="script.js"></script>
