@@ -23,7 +23,7 @@ console.log("Supabase initialized successfully");
 // ============================================================
 
 async function onIncompletePaymentFound(payment) {
-    console.log("Paiement incomplet trouvé:", payment);
+    console.log("Paiement incomplet trouve:", payment);
     return payment;
 }
 
@@ -33,14 +33,14 @@ async function onIncompletePaymentFound(payment) {
 
 function checkPiSDK() {
     if (typeof Pi !== 'undefined') {
-        console.log('Pi SDK chargé');
+        console.log('Pi SDK charge');
         return true;
     } else {
-        console.warn('Pi SDK non chargé, tentative de rechargement...');
+        console.warn('Pi SDK non charge, tentative de rechargement...');
         var script = document.createElement('script');
         script.src = 'https://sdk.minepi.com/pi-sdk.js';
         script.onload = function() {
-            console.log('Pi SDK rechargé avec succès');
+            console.log('Pi SDK recharge avec succes');
             if (typeof Pi !== 'undefined') {
                 Pi.init({ version: "2.0", sandbox: true });
             }
@@ -57,15 +57,15 @@ checkPiSDK();
 // ============================================================
 
 async function connectToPi() {
-    console.log("🔵 Tentative de connexion Pi...");
+    console.log("Tentative de connexion Pi...");
     
     try {
         if (typeof Pi === 'undefined') {
-            console.error("❌ Pi SDK non disponible");
-            if (confirm("Pi SDK non chargé. Utiliser le mode démo ?")) {
+            console.error("Pi SDK non disponible");
+            if (confirm("Pi SDK non charge. Utiliser le mode demo ?")) {
                 const demoUser = {
                     uid: 'demo_user_' + Date.now(),
-                    username: 'Demo User',
+                    username: 'Pionnier_Demo',
                     wallet_address: 'demo_wallet'
                 };
                 
@@ -79,8 +79,8 @@ async function connectToPi() {
                     window.currentUser = user;
                     localStorage.setItem('betix_user', JSON.stringify(user));
                     updateUIAfterLogin(user);
-                    addNotification('Welcome ' + user.username + '! (Demo mode)', 'info');
-                    alert('Connexion en mode démo !');
+                    addNotification('Bienvenue ' + user.username + '! (Mode demo)', 'info');
+                    alert('Connexion en mode demo reussie !');
                     return user;
                 }
             }
@@ -89,22 +89,22 @@ async function connectToPi() {
 
         try {
             Pi.init({ version: "2.0", sandbox: true });
-            console.log("✅ Pi SDK initialisé");
+            console.log("Pi SDK initialise");
         } catch (e) {
-            console.warn("⚠️ Pi déjà initialisé ou erreur:", e);
+            console.warn("Pi deja initialise ou erreur:", e);
         }
 
-        console.log("🔐 Demande d'authentification Pi...");
+        console.log("Demande d'authentification Pi...");
         
         const auth = await Pi.authenticate(
             ['username', 'payments'], 
             onIncompletePaymentFound
         );
         
-        console.log("📋 Résultat authentification:", auth);
+        console.log("Resultat authentification:", auth);
         
         if (auth && auth.user) {
-            console.log("✅ Authentification Pi réussie:", auth.user);
+            console.log("Authentification Pi reussie:", auth.user);
             
             const user = await saveOrGetPiUser({
                 pi_uid: auth.user.uid,
@@ -117,26 +117,26 @@ async function connectToPi() {
                 localStorage.setItem('betix_user', JSON.stringify(user));
                 
                 updateUIAfterLogin(user);
-                addNotification('Welcome ' + user.username + '!', 'info');
+                addNotification('Bienvenue ' + user.username + '!', 'info');
                 
-                console.log("✅ Utilisateur connecté:", user.username);
-                alert('Bienvenue ' + user.username + ' ! 🎉');
+                console.log("Utilisateur connecte:", user.username);
+                alert('Connexion reussie ! Bienvenue ' + user.username + ' !');
                 return user;
             }
         } else {
-            console.warn("⚠️ Authentification Pi échouée ou annulée");
-            alert("Authentification Pi annulée ou échouée. Veuillez réessayer.");
+            console.warn("Authentification annulee ou echouee");
+            alert("Authentification annulee. Veuillez reessayer.");
         }
         
     } catch (error) {
-        console.error("❌ Erreur connexion Pi:", error);
-        alert("Erreur de connexion: " + (error.message || "Veuillez réessayer"));
+        console.error("Erreur connexion Pi:", error);
+        alert("Erreur: " + (error.message || "Veuillez reessayer"));
     }
 }
 
 async function saveOrGetPiUser(piUser) {
     try {
-        console.log("🔍 Recherche utilisateur:", piUser.pi_uid);
+        console.log("Recherche utilisateur:", piUser.pi_uid);
         
         const { data: existing, error } = await supabaseClient
             .from('users')
@@ -145,7 +145,7 @@ async function saveOrGetPiUser(piUser) {
             .maybeSingle();
 
         if (error) {
-            console.error("❌ Erreur recherche:", error);
+            console.error("Erreur recherche:", error);
             return null;
         }
 
@@ -155,7 +155,7 @@ async function saveOrGetPiUser(piUser) {
                 .update({ last_login: new Date().toISOString() })
                 .eq('pi_uid', piUser.pi_uid);
             
-            console.log("✅ Utilisateur existant:", existing.username);
+            console.log("Utilisateur existant:", existing.username);
             return existing;
         }
 
@@ -172,17 +172,17 @@ async function saveOrGetPiUser(piUser) {
             .single();
 
         if (insertError) {
-            console.error("❌ Erreur création:", insertError);
+            console.error("Erreur creation:", insertError);
             return null;
         }
 
-        console.log("✨ Nouvel utilisateur créé:", newUser.username);
-        addNotification('Welcome ' + newUser.username + '! Your profile has been created.', 'event');
+        console.log("Nouvel utilisateur cree:", newUser.username);
+        addNotification('Bienvenue ' + newUser.username + '! Votre profil a ete cree.', 'event');
         
         return newUser;
 
     } catch (error) {
-        console.error("❌ Erreur saveOrGetPiUser:", error);
+        console.error("Erreur saveOrGetPiUser:", error);
         return null;
     }
 }
@@ -222,7 +222,7 @@ function updateUIAfterLogin(user) {
 }
 
 function disconnectPi() {
-    if (confirm('Are you sure you want to disconnect?')) {
+    if (confirm('Voulez-vous vous deconnecter ?')) {
         window.currentUser = null;
         localStorage.removeItem('betix_user');
         
@@ -243,7 +243,7 @@ function disconnectPi() {
         }
         
         updateAllProfileImages();
-        alert('Disconnected');
+        alert('Deconnecte');
     }
 }
 
