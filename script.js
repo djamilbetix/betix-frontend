@@ -2985,7 +2985,7 @@ function handleLogoClick() {
 }
 
 // ============================================================
-// ===== DOM CONTENT LOADED =====
+// ===== DOM CONTENT LOADED (CORRIGÉ) =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3003,9 +3003,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     detectLanguage();
     
-    if (!events.length) { 
-        loadEventsFromSupabase();
-    }
+    // Charger les événements depuis Supabase
+    loadEventsFromSupabase();
     
     initCountrySelectors();
     initFilters(); 
@@ -3168,18 +3167,38 @@ document.addEventListener('DOMContentLoaded', function() {
     var connectBtn = document.getElementById('sidebarWalletBtn');
     if (connectBtn) {
         console.log("Bouton Connect Pi trouvé !");
-        connectBtn.addEventListener('click', function(e) {
-            console.log("Clic sur Connect Pi");
+        // Supprimer tous les événements existants
+        connectBtn.replaceWith(connectBtn.cloneNode(true));
+        var newBtn = document.getElementById('sidebarWalletBtn');
+        
+        newBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            console.log("🖱️ Clic sur Connect Pi");
+            // Vérifier si l'utilisateur est déjà connecté
             if (window.currentUser) {
-                disconnectPi();
-            } else {
+                if (confirm('Voulez-vous vous déconnecter ?')) {
+                    disconnectPi();
+                }
+                return;
+            }
+            // Sinon, lancer la connexion
+            if (typeof connectToPi === 'function') {
                 connectToPi();
+            } else {
+                alert("Erreur: fonction connectToPi non trouvée");
             }
         });
+        console.log("✅ Bouton configuré !");
     } else {
-        console.error("Bouton #sidebarWalletBtn non trouvé !");
+        console.error("❌ Bouton #sidebarWalletBtn non trouvé !");
     }
+    
+    // ============================================================
+    // ===== FORCER L'AFFICHAGE DES ÉVÉNEMENTS =====
+    // ============================================================
+    setTimeout(function() {
+        renderEventsByCategory();
+    }, 1000);
     
     syncAllFromSupabase();
 
@@ -3191,7 +3210,12 @@ document.addEventListener('DOMContentLoaded', function() {
         syncAllToSupabase();
     });
     
-    if (window.currentUser || currentUser.wallet) {
+    // ============================================================
+    // ===== NE PAS RESTAURER LA SESSION AUTOMATIQUEMENT =====
+    // ============================================================
+    // On ne restaure la session que si l'utilisateur clique sur Connect Pi
+    // Pas de session automatique au chargement
+    if (window.currentUser) {
         updateUserInfo();
         updateProfilePage();
         updateAllProfileImages();
