@@ -7,7 +7,7 @@
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
     <link rel="stylesheet" href="style.css">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
@@ -786,65 +786,6 @@
 </script>
 
 <script src="script.js"></script>
-
-<!-- ===== FORCE CONNECT BUTTON ===== -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM charge - Configuration du bouton Connect Pi");
-    
-    function setupConnectButton() {
-        var btn = document.getElementById('sidebarWalletBtn');
-        if (!btn) {
-            console.log("Bouton pas encore trouve, reessai...");
-            setTimeout(setupConnectButton, 500);
-            return;
-        }
-        
-        console.log("Bouton trouve !");
-        
-        // Supprimer tous les evenements existants
-        var newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        
-        var finalBtn = document.getElementById('sidebarWalletBtn');
-        
-        finalBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log("CLIC SUR CONNECT PI !");
-            
-            if (window.currentUser) {
-                if (confirm('Voulez-vous vous deconnecter ?')) {
-                    disconnectPi();
-                }
-                return;
-            }
-            
-            if (typeof connectToPi === 'function') {
-                console.log("Appel de connectToPi()");
-                connectToPi();
-            } else {
-                console.error("connectToPi non definie");
-                alert("Erreur: fonction connectToPi non trouvee. Rafraichissez la page.");
-            }
-        });
-        
-        console.log("Bouton configure !");
-    }
-    
-    setupConnectButton();
-});
-
-// Fonction de secours
-window.forceConnectPi = function() {
-    console.log("Connexion forcee...");
-    if (typeof connectToPi === 'function') {
-        connectToPi();
-    } else {
-        alert("Erreur: fonction connectToPi non trouvee");
-    }
-};
-</script>
 
 </body>
 </html>
