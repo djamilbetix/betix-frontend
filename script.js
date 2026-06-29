@@ -53,6 +53,201 @@ function checkPiSDK() {
 checkPiSDK();
 
 // ============================================================
+// ===== CONNEXION PI =====
+// ============================================================
+
+async function connectToPi() {
+    console.log("🔵 Tentative de connexion Pi...");
+    
+    try {
+        if (typeof Pi === 'undefined') {
+            console.error("❌ Pi SDK non disponible");
+            if (confirm("Pi SDK non chargé. Utiliser le mode démo ?")) {
+                const demoUser = {
+                    uid: 'demo_user_' + Date.now(),
+                    username: 'Demo User',
+                    wallet_address: 'demo_wallet'
+                };
+                
+                const user = await saveOrGetPiUser({
+                    pi_uid: demoUser.uid,
+                    username: demoUser.username,
+                    wallet: demoUser.wallet_address
+                });
+                
+                if (user) {
+                    window.currentUser = user;
+                    localStorage.setItem('betix_user', JSON.stringify(user));
+                    updateUIAfterLogin(user);
+                    addNotification('Welcome ' + user.username + '! (Demo mode)', 'info');
+                    alert('Connexion en mode démo !');
+                    return user;
+                }
+            }
+            return;
+        }
+
+        try {
+            Pi.init({ version: "2.0", sandbox: true });
+            console.log("✅ Pi SDK initialisé");
+        } catch (e) {
+            console.warn("⚠️ Pi déjà initialisé ou erreur:", e);
+        }
+
+        console.log("🔐 Demande d'authentification Pi...");
+        
+        const auth = await Pi.authenticate(
+            ['username', 'payments'], 
+            onIncompletePaymentFound
+        );
+        
+        console.log("📋 Résultat authentification:", auth);
+        
+        if (auth && auth.user) {
+            console.log("✅ Authentification Pi réussie:", auth.user);
+            
+            const user = await saveOrGetPiUser({
+                pi_uid: auth.user.uid,
+                username: auth.user.username,
+                wallet: auth.user.wallet_address || null
+            });
+
+            if (user) {
+                window.currentUser = user;
+                localStorage.setItem('betix_user', JSON.stringify(user));
+                
+                updateUIAfterLogin(user);
+                addNotification('Welcome ' + user.username + '!', 'info');
+                
+                console.log("✅ Utilisateur connecté:", user.username);
+                alert('Bienvenue ' + user.username + ' ! 🎉');
+                return user;
+            }
+        } else {
+            console.warn("⚠️ Authentification Pi échouée ou annulée");
+            alert("Authentification Pi annulée ou échouée. Veuillez réessayer.");
+        }
+        
+    } catch (error) {
+        console.error("❌ Erreur connexion Pi:", error);
+        alert("Erreur de connexion: " + (error.message || "Veuillez réessayer"));
+    }
+}
+
+async function saveOrGetPiUser(piUser) {
+    try {
+        console.log("🔍 Recherche utilisateur:", piUser.pi_uid);
+        
+        const { data: existing, error } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('pi_uid', piUser.pi_uid)
+            .maybeSingle();
+
+        if (error) {
+            console.error("❌ Erreur recherche:", error);
+            return null;
+        }
+
+        if (existing) {
+            await supabaseClient
+                .from('users')
+                .update({ last_login: new Date().toISOString() })
+                .eq('pi_uid', piUser.pi_uid);
+            
+            console.log("✅ Utilisateur existant:", existing.username);
+            return existing;
+        }
+
+        const { data: newUser, error: insertError } = await supabaseClient
+            .from('users')
+            .insert({
+                pi_uid: piUser.pi_uid,
+                username: piUser.username,
+                wallet: piUser.wallet,
+                created_at: new Date().toISOString(),
+                last_login: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (insertError) {
+            console.error("❌ Erreur création:", insertError);
+            return null;
+        }
+
+        console.log("✨ Nouvel utilisateur créé:", newUser.username);
+        addNotification('Welcome ' + newUser.username + '! Your profile has been created.', 'event');
+        
+        return newUser;
+
+    } catch (error) {
+        console.error("❌ Erreur saveOrGetPiUser:", error);
+        return null;
+    }
+}
+
+function updateUIAfterLogin(user) {
+    const nameEl = document.getElementById('sidebarName');
+    if (nameEl) nameEl.textContent = user.username;
+
+    const walletEl = document.getElementById('sidebarWallet');
+    if (walletEl) walletEl.textContent = user.wallet ? user.wallet.substring(0, 15) + '...' : 'Not connected';
+
+    if (user.avatar_url) {
+        const img = document.getElementById('sidebarAvatarImage');
+        if (img) {
+            img.src = user.avatar_url;
+            img.style.display = 'block';
+        }
+        const text = document.getElementById('sidebarAvatarText');
+        if (text) text.style.display = 'none';
+    }
+
+    const btn = document.getElementById('sidebarWalletBtn');
+    if (btn) {
+        btn.textContent = 'Disconnect';
+        btn.onclick = function() { disconnectPi(); };
+        btn.classList.add('disconnect');
+    }
+
+    const profileBtn = document.getElementById('profileConnectBtnPage');
+    if (profileBtn) {
+        profileBtn.textContent = 'Disconnect';
+        profileBtn.onclick = function() { disconnectPi(); };
+    }
+
+    updateProfilePage();
+    updateAllProfileImages();
+}
+
+function disconnectPi() {
+    if (confirm('Are you sure you want to disconnect?')) {
+        window.currentUser = null;
+        localStorage.removeItem('betix_user');
+        
+        document.getElementById('sidebarName').textContent = 'Guest';
+        document.getElementById('sidebarWallet').textContent = 'Not connected';
+        
+        const btn = document.getElementById('sidebarWalletBtn');
+        if (btn) {
+            btn.textContent = 'Connect Pi';
+            btn.onclick = function() { connectToPi(); };
+            btn.classList.remove('disconnect');
+        }
+        
+        const profileBtn = document.getElementById('profileConnectBtnPage');
+        if (profileBtn) {
+            profileBtn.textContent = 'Connect Pi';
+            profileBtn.onclick = function() { connectToPi(); };
+        }
+        
+        updateAllProfileImages();
+        alert('Disconnected');
+    }
+}
+
+// ============================================================
 // ===== COMPRESSION D'IMAGES =====
 // ============================================================
 
@@ -299,205 +494,6 @@ function generateQRCode() {
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
 
 function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 86400000; }
-
-// ============================================================
-// ===== GESTION UTILISATEUR PI =====
-// ============================================================
-
-async function connectToPi() {
-    console.log("Tentative de connexion Pi...");
-    
-    try {
-        if (typeof Pi === 'undefined') {
-            console.error("Pi SDK non disponible");
-            if (confirm("Pi SDK non chargé. Utiliser le mode démo ?")) {
-                const demoUser = {
-                    uid: 'demo_user_' + Date.now(),
-                    username: 'Demo User',
-                    wallet_address: 'demo_wallet'
-                };
-                
-                const user = await saveOrGetPiUser({
-                    pi_uid: demoUser.uid,
-                    username: demoUser.username,
-                    wallet: demoUser.wallet_address
-                });
-                
-                if (user) {
-                    window.currentUser = user;
-                    localStorage.setItem('betix_user', JSON.stringify(user));
-                    updateUIAfterLogin(user);
-                    addNotification('Welcome ' + user.username + '! (Demo mode)', 'info');
-                    alert('Connexion en mode démo !');
-                    return user;
-                }
-            }
-            return;
-        }
-
-        try {
-            Pi.init({ version: "2.0", sandbox: true });
-            console.log("Pi SDK initialisé");
-        } catch (e) {
-            console.warn("Pi déjà initialisé ou erreur:", e);
-        }
-
-        console.log("Demande d'authentification Pi...");
-        
-        const auth = await Pi.authenticate(
-            ['username', 'payments'], 
-            onIncompletePaymentFound
-        );
-        
-        console.log("Résultat authentification:", auth);
-        
-        if (auth && auth.user) {
-            console.log("Authentification Pi réussie:", auth.user);
-            
-            const user = await saveOrGetPiUser({
-                pi_uid: auth.user.uid,
-                username: auth.user.username,
-                wallet: auth.user.wallet_address || null
-            });
-
-            if (user) {
-                window.currentUser = user;
-                localStorage.setItem('betix_user', JSON.stringify(user));
-                
-                updateUIAfterLogin(user);
-                addNotification('Welcome ' + user.username + '!', 'info');
-                
-                console.log("Utilisateur connecté:", user.username);
-                alert('Bienvenue ' + user.username + ' !');
-                return user;
-            }
-        } else {
-            console.warn("Authentification Pi échouée ou annulée");
-            alert("Authentification Pi annulée ou échouée. Veuillez réessayer.");
-        }
-        
-    } catch (error) {
-        console.error("Erreur connexion Pi:", error);
-        alert("Erreur de connexion: " + (error.message || "Veuillez réessayer"));
-    }
-}
-
-async function saveOrGetPiUser(piUser) {
-    try {
-        console.log("Recherche utilisateur:", piUser.pi_uid);
-        
-        const { data: existing, error } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('pi_uid', piUser.pi_uid)
-            .maybeSingle();
-
-        if (error) {
-            console.error("Erreur recherche:", error);
-            return null;
-        }
-
-        if (existing) {
-            await supabaseClient
-                .from('users')
-                .update({ last_login: new Date().toISOString() })
-                .eq('pi_uid', piUser.pi_uid);
-            
-            console.log("Utilisateur existant:", existing.username);
-            return existing;
-        }
-
-        const { data: newUser, error: insertError } = await supabaseClient
-            .from('users')
-            .insert({
-                pi_uid: piUser.pi_uid,
-                username: piUser.username,
-                wallet: piUser.wallet,
-                created_at: new Date().toISOString(),
-                last_login: new Date().toISOString()
-            })
-            .select()
-            .single();
-
-        if (insertError) {
-            console.error("Erreur creation:", insertError);
-            return null;
-        }
-
-        console.log("Nouvel utilisateur cree:", newUser.username);
-        addNotification('Welcome ' + newUser.username + '! Your profile has been created.', 'event');
-        
-        return newUser;
-
-    } catch (error) {
-        console.error("Erreur saveOrGetPiUser:", error);
-        return null;
-    }
-}
-
-function updateUIAfterLogin(user) {
-    const nameEl = document.getElementById('sidebarName');
-    if (nameEl) nameEl.textContent = user.username;
-
-    const walletEl = document.getElementById('sidebarWallet');
-    if (walletEl) walletEl.textContent = user.wallet ? user.wallet.substring(0, 15) + '...' : 'Not connected';
-
-    if (user.avatar_url) {
-        const img = document.getElementById('sidebarAvatarImage');
-        if (img) {
-            img.src = user.avatar_url;
-            img.style.display = 'block';
-        }
-        const text = document.getElementById('sidebarAvatarText');
-        if (text) text.style.display = 'none';
-    }
-
-    const btn = document.getElementById('sidebarWalletBtn');
-    if (btn) {
-        btn.textContent = 'Disconnect';
-        btn.onclick = disconnectPi;
-        btn.classList.add('disconnect');
-    }
-
-    const profileBtn = document.getElementById('profileConnectBtnPage');
-    if (profileBtn) {
-        profileBtn.textContent = 'Disconnect';
-        profileBtn.onclick = disconnectPi;
-    }
-
-    updateProfilePage();
-    updateAllProfileImages();
-}
-
-function disconnectPi() {
-    if (confirm('Are you sure you want to disconnect?')) {
-        window.currentUser = null;
-        localStorage.removeItem('betix_user');
-        
-        document.getElementById('sidebarName').textContent = 'Guest';
-        document.getElementById('sidebarWallet').textContent = 'Not connected';
-        
-        const btn = document.getElementById('sidebarWalletBtn');
-        if (btn) {
-            btn.textContent = 'Connect Pi';
-            btn.onclick = connectToPi;
-            btn.classList.remove('disconnect');
-        }
-        
-        const profileBtn = document.getElementById('profileConnectBtnPage');
-        if (profileBtn) {
-            profileBtn.textContent = 'Connect Pi';
-            profileBtn.onclick = connectToPi;
-        }
-        
-        updateAllProfileImages();
-        alert('Disconnected');
-    }
-}
-
-function disconnectPiSimple() {
-    disconnectPi();
-}
 
 // ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
@@ -1167,21 +1163,17 @@ function updateConnectButtons() {
         if (isConnected) {
             sidebarBtn.textContent = 'Disconnect';
             sidebarBtn.classList.add('disconnect');
-            sidebarBtn.onclick = function() { disconnectPi(); };
         } else {
             sidebarBtn.textContent = 'Connect Pi';
             sidebarBtn.classList.remove('disconnect');
-            sidebarBtn.onclick = function() { connectToPi(); };
         }
     }
     var profilePageBtn = document.getElementById('profileConnectBtnPage');
     if (profilePageBtn) {
         if (isConnected) {
             profilePageBtn.textContent = 'Disconnect';
-            profilePageBtn.onclick = function() { disconnectPi(); };
         } else {
             profilePageBtn.textContent = 'Connect Pi';
-            profilePageBtn.onclick = function() { connectToPi(); };
         }
     }
 }
@@ -3206,25 +3198,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (page) showPage(page); 
             closeSidebar(); 
         }); 
-    }
-    
-    // ============================================================
-    // ===== BOUTON CONNEXION PI (CORRIGÉ) =====
-    // ============================================================
-    var connectBtn = document.getElementById('sidebarWalletBtn');
-    if (connectBtn) {
-        console.log("Bouton Connect Pi trouvé !");
-        connectBtn.addEventListener('click', function(e) {
-            console.log("🖱️ Clic sur Connect Pi");
-            e.preventDefault();
-            if (window.currentUser) {
-                disconnectPi();
-            } else {
-                connectToPi();
-            }
-        });
-    } else {
-        console.error("❌ Bouton #sidebarWalletBtn non trouvé !");
     }
     
     syncAllFromSupabase();
