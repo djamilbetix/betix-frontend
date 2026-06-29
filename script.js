@@ -24,10 +24,33 @@ console.log("Supabase initialized successfully");
 
 async function onIncompletePaymentFound(payment) {
     console.log("Paiement incomplet trouvé:", payment);
-    // Cette fonction est appelée par le SDK Pi quand un paiement est incomplet
-    // Retourne le paiement pour que le SDK puisse continuer
     return payment;
 }
+
+// ============================================================
+// ===== VÉRIFICATION DU SDK PI =====
+// ============================================================
+
+function checkPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        console.log('Pi SDK chargé');
+        return true;
+    } else {
+        console.warn('Pi SDK non chargé, tentative de rechargement...');
+        var script = document.createElement('script');
+        script.src = 'https://sdk.minepi.com/pi-sdk.js';
+        script.onload = function() {
+            console.log('Pi SDK rechargé avec succès');
+            if (typeof Pi !== 'undefined') {
+                Pi.init({ version: "2.0", sandbox: true });
+            }
+        };
+        document.head.appendChild(script);
+        return false;
+    }
+}
+
+checkPiSDK();
 
 // ============================================================
 // ===== COMPRESSION D'IMAGES =====
@@ -282,16 +305,54 @@ function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_la
 // ============================================================
 
 async function connectToPi() {
+    console.log("Tentative de connexion Pi...");
+    
     try {
         if (typeof Pi === 'undefined') {
-            alert("Veuillez ouvrir cette page dans le Pi Browser");
+            console.error("Pi SDK non disponible");
+            if (confirm("Pi SDK non chargé. Utiliser le mode démo ?")) {
+                const demoUser = {
+                    uid: 'demo_user_' + Date.now(),
+                    username: 'Demo User',
+                    wallet_address: 'demo_wallet'
+                };
+                
+                const user = await saveOrGetPiUser({
+                    pi_uid: demoUser.uid,
+                    username: demoUser.username,
+                    wallet: demoUser.wallet_address
+                });
+                
+                if (user) {
+                    window.currentUser = user;
+                    localStorage.setItem('betix_user', JSON.stringify(user));
+                    updateUIAfterLogin(user);
+                    addNotification('Welcome ' + user.username + '! (Demo mode)', 'info');
+                    alert('Connexion en mode démo !');
+                    return user;
+                }
+            }
             return;
         }
 
-        const auth = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+        try {
+            Pi.init({ version: "2.0", sandbox: true });
+            console.log("Pi SDK initialisé");
+        } catch (e) {
+            console.warn("Pi déjà initialisé ou erreur:", e);
+        }
+
+        console.log("Demande d'authentification Pi...");
+        
+        const auth = await Pi.authenticate(
+            ['username', 'payments'], 
+            onIncompletePaymentFound
+        );
+        
+        console.log("Résultat authentification:", auth);
         
         if (auth && auth.user) {
-            console.log("Authentification Pi reussie:", auth.user);
+            console.log("Authentification Pi réussie:", auth.user);
             
             const user = await saveOrGetPiUser({
                 pi_uid: auth.user.uid,
@@ -306,13 +367,18 @@ async function connectToPi() {
                 updateUIAfterLogin(user);
                 addNotification('Welcome ' + user.username + '!', 'info');
                 
-                console.log("Utilisateur connecte:", user.username);
+                console.log("Utilisateur connecté:", user.username);
+                alert('Bienvenue ' + user.username + ' !');
                 return user;
             }
+        } else {
+            console.warn("Authentification Pi échouée ou annulée");
+            alert("Authentification Pi annulée ou échouée. Veuillez réessayer.");
         }
+        
     } catch (error) {
         console.error("Erreur connexion Pi:", error);
-        alert("Erreur de connexion: " + (error.message || "Veuillez reessayer"));
+        alert("Erreur de connexion: " + (error.message || "Veuillez réessayer"));
     }
 }
 
@@ -390,6 +456,7 @@ function updateUIAfterLogin(user) {
     if (btn) {
         btn.textContent = 'Disconnect';
         btn.onclick = disconnectPi;
+        btn.classList.add('disconnect');
     }
 
     const profileBtn = document.getElementById('profileConnectBtnPage');
@@ -414,6 +481,7 @@ function disconnectPi() {
         if (btn) {
             btn.textContent = 'Connect Pi';
             btn.onclick = connectToPi;
+            btn.classList.remove('disconnect');
         }
         
         const profileBtn = document.getElementById('profileConnectBtnPage');
@@ -422,6 +490,7 @@ function disconnectPi() {
             profileBtn.onclick = connectToPi;
         }
         
+        updateAllProfileImages();
         alert('Disconnected');
     }
 }
@@ -3139,15 +3208,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }); 
     }
     
+    // ============================================================
+    // ===== BOUTON CONNEXION PI (CORRIGÉ) =====
+    // ============================================================
     var connectBtn = document.getElementById('sidebarWalletBtn');
     if (connectBtn) {
-        connectBtn.addEventListener('click', function() {
-            if (window.currentUser || currentUser.wallet) {
+        console.log("Bouton Connect Pi trouvé !");
+        connectBtn.addEventListener('click', function(e) {
+            console.log("🖱️ Clic sur Connect Pi");
+            e.preventDefault();
+            if (window.currentUser) {
                 disconnectPi();
             } else {
                 connectToPi();
             }
         });
+    } else {
+        console.error("❌ Bouton #sidebarWalletBtn non trouvé !");
     }
     
     syncAllFromSupabase();
