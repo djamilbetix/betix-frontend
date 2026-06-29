@@ -19,6 +19,17 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log("Supabase initialized successfully");
 
 // ============================================================
+// ===== FONCTION PAIEMENT PI (OBLIGATOIRE) =====
+// ============================================================
+
+async function onIncompletePaymentFound(payment) {
+    console.log("Paiement incomplet trouvé:", payment);
+    // Cette fonction est appelée par le SDK Pi quand un paiement est incomplet
+    // Retourne le paiement pour que le SDK puisse continuer
+    return payment;
+}
+
+// ============================================================
 // ===== COMPRESSION D'IMAGES =====
 // ============================================================
 
@@ -237,6 +248,12 @@ var eventImagesList = {
     Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
     Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
 };
+
+var demoEvents = [
+    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
+    { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+];
 
 // ============================================================
 // ===== UTILITY FUNCTIONS =====
@@ -518,13 +535,7 @@ async function loadEventsFromSupabase() {
             console.log('Events loaded from Supabase:', events.length);
             return true;
         } else {
-            // Load demo events if no data
-            const demoEvents = [
-                { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', price: 0.0003, seatsTotal: 100, seatsLeft: 100, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString() },
-                { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', price: 0.0003, seatsTotal: 500, seatsLeft: 500, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString() },
-                { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', price: 0.0003, seatsTotal: 200, seatsLeft: 200, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString() }
-            ];
-            events = demoEvents;
+            events = JSON.parse(JSON.stringify(demoEvents));
             localStorage.setItem('betix_events', JSON.stringify(events));
             await syncEventsToSupabase();
             renderEventsByCategory();
@@ -1852,7 +1863,6 @@ async function confirmPurchase(eventId, quantity) {
     var user = window.currentUser || currentUser;
     
     try {
-        // Simuler un paiement Pi (à remplacer par le vrai SDK Pi)
         var ticketsAdded = [];
         for (var i = 0; i < quantity; i++) {
             var ticket = {
