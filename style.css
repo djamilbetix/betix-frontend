@@ -2077,21 +2077,21 @@ body {
 }
 
 .ticket-card.valid {
-    border-left-color: #4CAF50;
+    border-left: 4px solid #4CAF50;
 }
 
 .ticket-card.used {
-    border-left-color: #9E9E9E;
+    border-left: 4px solid #9E9E9E;
     opacity: 0.75;
 }
 
 .ticket-card.expired {
-    border-left-color: #FF9800;
+    border-left: 4px solid #FF9800;
     opacity: 0.85;
 }
 
 .ticket-card.cancelled {
-    border-left-color: #f44336;
+    border-left: 4px solid #f44336;
     opacity: 0.6;
 }
 
