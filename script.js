@@ -1,49 +1,144 @@
 // ============================================================
-// ===== CHARGEMENT RAPIDE - AFFICHAGE IMMÉDIAT =====
+// ===== CHARGEMENT RAPIDE =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🚀 Betix chargé !");
+    
+    // Cacher le loader
     var loader = document.getElementById('loader');
     var main = document.getElementById('main-content');
-    if (loader) { loader.style.display = 'none'; }
-    if (main) { main.style.display = 'block'; }
+    if (loader) loader.style.display = 'none';
+    if (main) main.style.display = 'block';
+    
+    // ============================================================
+    // ===== MENU HAMBURGER (3 BARRES) =====
+    // ============================================================
+    var menuBtn = document.getElementById('menuBtn');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('overlay');
+    var closeBtn = document.getElementById('closeSidebarBtn');
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("🖱️ Menu cliqué");
+            if (sidebar) sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('active');
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+        });
+    }
+    
+    // ============================================================
+    // ===== BOUTON CONNEXION PI =====
+    // ============================================================
+    var connectBtn = document.getElementById('sidebarWalletBtn');
+    if (connectBtn) {
+        connectBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("🖱️ Connect Pi cliqué");
+            if (window.currentUser) {
+                if (confirm('Voulez-vous vous déconnecter ?')) {
+                    disconnectPi();
+                }
+            } else {
+                connectToPi();
+            }
+        });
+    }
+    
+    // ============================================================
+    // ===== SIDEBAR ITEMS =====
+    // ============================================================
+    var sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            var page = this.dataset.page;
+            if (page) showPage(page);
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+        });
+    });
+    
+    // ============================================================
+    // ===== RESTAURER LA SESSION =====
+    // ============================================================
+    var savedUser = localStorage.getItem('betix_user');
+    if (savedUser) {
+        try {
+            var user = JSON.parse(savedUser);
+            window.currentUser = user;
+            updateUI(user);
+            console.log("🔄 Session restaurée:", user.username);
+        } catch(e) {
+            localStorage.removeItem('betix_user');
+        }
+    }
+    
+    // Si pas d'utilisateur, tenter la connexion
+    if (!window.currentUser) {
+        setTimeout(function() {
+            connectToPi();
+        }, 1000);
+    }
+    
+    // Charger les événements
+    loadEventsFromSupabase();
+    
+    console.log("✅ Betix prêt !");
 });
 
 // ============================================================
-// ===== SUPABASE CONFIGURATION =====
+// ===== FERMER LE SIDEBAR =====
 // ============================================================
 
-const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_UtFqjm07EZwJ9k5quAFYuA_n5vsEeGY";
+function closeSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+}
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log("✅ Supabase initialized");
+function openSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('overlay');
+    if (sidebar) sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('active');
+}
 
 // ============================================================
 // ===== CONNEXION PI + MODE DEMO =====
 // ============================================================
 
-// Fonction principale de connexion (Pi + Mode démo)
 async function connectToPi() {
     console.log("🔵 Connexion...");
     
-    // Vérifier le SDK Pi
     var piAvailable = (typeof Pi !== 'undefined');
     console.log("📡 Pi SDK disponible:", piAvailable);
     
-    // Si Pi n'est pas disponible, passer directement en mode démo
     if (!piAvailable) {
         console.log("⚠️ Pi SDK non disponible → Mode démo");
         return activateDemoMode();
     }
 
     try {
-        // Initialiser Pi
         Pi.init({ version: "2.0", sandbox: true });
         console.log("✅ Pi initialisé");
         
-        // Authentifier
         const auth = await Pi.authenticate(['username', 'payments'], function(payment) {
             console.log("💰 Paiement:", payment);
         });
@@ -51,7 +146,6 @@ async function connectToPi() {
         if (auth && auth.user) {
             console.log("✅ Pi connecté:", auth.user.username);
             
-            // Sauvegarder l'utilisateur Pi
             const user = {
                 pi_uid: auth.user.uid,
                 username: auth.user.username,
@@ -78,22 +172,18 @@ async function connectToPi() {
             }
         }
         
-        // Si l'authentification échoue → Mode démo
         console.log("⚠️ Authentification Pi échouée → Mode démo");
         return activateDemoMode();
         
     } catch (error) {
         console.error("❌ Erreur Pi:", error);
-        // En cas d'erreur → Mode démo
         return activateDemoMode();
     }
 }
 
-// Mode démo (utilisé en secours)
 function activateDemoMode() {
     console.log("🔄 Activation du mode démo");
     
-    // Vérifier si un utilisateur existe déjà en localStorage
     var savedUser = localStorage.getItem('betix_user');
     if (savedUser) {
         try {
@@ -107,7 +197,6 @@ function activateDemoMode() {
         } catch(e) {}
     }
     
-    // Créer un utilisateur démo
     const demoUser = {
         pi_uid: 'demo_' + Date.now(),
         username: 'Pionnier_Demo',
@@ -129,15 +218,12 @@ function activateDemoMode() {
 function updateUI(user) {
     if (!user) return;
     
-    // Nom
     var nameEl = document.getElementById('sidebarName');
     if (nameEl) nameEl.textContent = user.username;
     
-    // Wallet
     var walletEl = document.getElementById('sidebarWallet');
     if (walletEl) walletEl.textContent = user.wallet ? user.wallet.substring(0, 15) + '...' : 'Not connected';
     
-    // Avatar
     if (user.avatar_url) {
         var img = document.getElementById('sidebarAvatarImage');
         if (img) {
@@ -148,7 +234,6 @@ function updateUI(user) {
         if (text) text.style.display = 'none';
     }
     
-    // Bouton Connect/Disconnect
     var btn = document.getElementById('sidebarWalletBtn');
     if (btn) {
         btn.textContent = 'Disconnect';
@@ -167,17 +252,12 @@ function updateUI(user) {
         };
     }
     
-    // Profil
     var profileName = document.getElementById('profileNameDisplay');
     if (profileName) profileName.textContent = user.username;
     
     var profileWallet = document.getElementById('profileWalletDisplay');
     if (profileWallet) profileWallet.textContent = user.wallet || 'Not connected';
 }
-
-// ============================================================
-// ===== DÉCONNEXION =====
-// ============================================================
 
 function disconnectPi() {
     if (confirm('Voulez-vous vous déconnecter ?')) {
@@ -196,243 +276,17 @@ function disconnectPi() {
 }
 
 // ============================================================
-// ===== INITIALISATION =====
+// ===== SUPABASE CONFIGURATION =====
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("🚀 Betix prêt !");
-    
-    // Restaurer la session
-    var savedUser = localStorage.getItem('betix_user');
-    if (savedUser) {
-        try {
-            var user = JSON.parse(savedUser);
-            window.currentUser = user;
-            updateUI(user);
-            console.log("🔄 Session restaurée:", user.username);
-        } catch(e) {
-            localStorage.removeItem('betix_user');
-        }
-    }
-    
-    // Si pas d'utilisateur, tenter la connexion Pi ou mode démo
-    if (!window.currentUser) {
-        // Attendre un peu que le SDK Pi se charge
-        setTimeout(function() {
-            connectToPi();
-        }, 1000);
-    }
-    
-    // Bouton Connect Pi
-    var btn = document.getElementById('sidebarWalletBtn');
-    if (btn) {
-        btn.onclick = function() {
-            if (window.currentUser) {
-                disconnectPi();
-            } else {
-                connectToPi();
-            }
-        };
-    }
-    
-    // Initialiser les composants
-    if (typeof loadEventsFromSupabase === 'function') loadEventsFromSupabase();
-    if (typeof renderEventsByCategory === 'function') renderEventsByCategory();
-    if (typeof initHeroSlider === 'function') initHeroSlider();
-    if (typeof initChat === 'function') initChat();
-    if (typeof initFilters === 'function') initFilters();
-    if (typeof initCountrySelectors === 'function') initCountrySelectors();
-    
-    console.log("✅ Betix prêt !");
-});
+const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_UtFqjm07EZwJ9k5quAFYuA_n5vsEeGY";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+console.log("✅ Supabase initialized");
 
 // ============================================================
-// ===== FONCTIONS DE SAUVEGARDE (NÉCESSAIRES) =====
-// ============================================================
-
-function saveEvents() { 
-    localStorage.setItem('betix_events', JSON.stringify(events || []));
-    syncEventsToSupabase();
-}
-
-function saveTickets() { 
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets || []));
-    syncTicketsToSupabase();
-}
-
-function saveUser() { 
-    localStorage.setItem('betix_user', JSON.stringify(currentUser || {}));
-    saveUserToSupabase();
-}
-
-function saveNotifications() { 
-    localStorage.setItem('betix_notifications', JSON.stringify(notifications || []));
-    syncNotificationsToSupabase();
-}
-
-function saveChatMessages() {
-    localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages || []));
-    syncChatToSupabase();
-}
-
-function saveRatings() {
-    localStorage.setItem('betix_ratings', JSON.stringify(ratings || []));
-    syncRatingsToSupabase();
-}
-
-// ============================================================
-// ===== SYNC AVEC SUPABASE =====
-// ============================================================
-
-async function saveUserToSupabase() {
-    if (!window.currentUser && !currentUser?.wallet) return;
-    try {
-        var userData = {
-            wallet: currentUser?.wallet || window.currentUser?.wallet,
-            name: currentUser?.name || window.currentUser?.username || 'Guest',
-            ticketCount: tickets?.length || 0,
-            lastSeen: new Date().toLocaleString(),
-            profilePhoto: currentUser?.profilePhoto || window.currentUser?.avatar_url || null,
-            loyaltyPoints: currentUser?.loyaltyPoints || 0,
-            memberSince: currentUser?.memberSince || '2026'
-        };
-        await supabaseClient
-            .from('users')
-            .upsert(userData, { onConflict: 'wallet' });
-        console.log('✅ User saved to Supabase');
-    } catch (error) { console.error('Error saving user:', error); }
-}
-
-async function syncEventsToSupabase() {
-    try {
-        if (!events || events.length === 0) return;
-        await supabaseClient.from('events').delete().neq('id', '');
-        await supabaseClient.from('events').insert(events);
-        console.log('✅ Events synced');
-    } catch (error) { console.error('Error syncing events:', error); }
-}
-
-async function syncTicketsToSupabase() {
-    try {
-        if (!tickets || tickets.length === 0) return;
-        for (const ticket of tickets) {
-            await supabaseClient.from('tickets').upsert(ticket, { onConflict: 'id' });
-        }
-        console.log('✅ Tickets synced');
-    } catch (error) { console.error('Error syncing tickets:', error); }
-}
-
-async function syncNotificationsToSupabase() {
-    try {
-        if (!notifications || notifications.length === 0) return;
-        for (const notif of notifications) {
-            await supabaseClient.from('notifications').upsert(notif, { onConflict: 'id' });
-        }
-        console.log('✅ Notifications synced');
-    } catch (error) { console.error('Error syncing notifications:', error); }
-}
-
-async function syncChatToSupabase() {
-    try {
-        if (!chatMessages || chatMessages.length === 0) return;
-        for (const msg of chatMessages) {
-            await supabaseClient.from('chat_messages').upsert(msg, { onConflict: 'id' });
-        }
-        console.log('✅ Chat synced');
-    } catch (error) { console.error('Error syncing chat:', error); }
-}
-
-async function syncRatingsToSupabase() {
-    try {
-        if (!ratings || ratings.length === 0) return;
-        for (const rating of ratings) {
-            await supabaseClient.from('ratings').upsert(rating, { onConflict: 'id' });
-        }
-        console.log('✅ Ratings synced');
-    } catch (error) { console.error('Error syncing ratings:', error); }
-}
-
-// ============================================================
-// ===== FONCTIONS SUPABASE =====
-// ============================================================
-
-async function loadEventsFromSupabase() {
-    try {
-        const { data } = await supabaseClient.from('events').select('*').order('date', { ascending: true });
-        if (data && data.length > 0) {
-            window.events = data;
-            localStorage.setItem('betix_events', JSON.stringify(data));
-            renderEventsByCategory();
-            console.log('📅 Events loaded:', data.length);
-        }
-    } catch (error) { console.error('Error loading events:', error); }
-}
-
-async function loadTicketsFromSupabase() {
-    try {
-        const { data } = await supabaseClient.from('tickets').select('*').order('purchaseDate', { ascending: false });
-        if (data && data.length > 0) {
-            window.tickets = data;
-            localStorage.setItem('betix_tickets', JSON.stringify(data));
-            renderTickets();
-            renderHistory();
-            console.log('🎫 Tickets loaded:', data.length);
-        }
-    } catch (error) { console.error('Error loading tickets:', error); }
-}
-
-// ============================================================
-// ===== FONCTIONS DE RENDU (MINIMALES) =====
-// ============================================================
-
-function renderEventsByCategory() {
-    var container = document.getElementById('eventsByCategory');
-    if (!container) return;
-    var eventsData = window.events || [];
-    if (eventsData.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucun événement trouvé</p>';
-        return;
-    }
-    container.innerHTML = eventsData.map(function(e) {
-        return '<div class="event-card">' +
-            '<div class="event-card-banner">' +
-                '<img src="' + (e.image_url || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop') + '" alt="' + e.title + '">' +
-                '<span class="event-card-badge">' + (e.category || 'Événement') + '</span>' +
-            '</div>' +
-            '<div class="event-card-body">' +
-                '<div class="event-card-title">' + e.title + '</div>' +
-                '<div class="event-card-details">' +
-                    '<div class="detail-item">📅 ' + new Date(e.event_date || e.date).toLocaleDateString() + '</div>' +
-                    '<div class="detail-item">📍 ' + (e.location || 'En ligne') + '</div>' +
-                '</div>' +
-                '<div class="event-card-footer">' +
-                    '<div><span class="event-card-price">' + (e.price || 0) + ' Pi</span></div>' +
-                    '<button class="buy-btn" onclick="alert(\'Acheter: ' + e.title + '\')">Acheter</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
-    }).join('');
-}
-
-function renderTickets() {
-    var container = document.getElementById('ticketsList');
-    if (!container) return;
-    container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun billet actif</p>';
-}
-
-function renderHistory() {
-    var container = document.getElementById('historyList');
-    if (!container) return;
-    container.innerHTML = '<p style="text-align:center;padding:2rem;">Aucun historique</p>';
-}
-
-function initHeroSlider() { console.log('🎠 Hero slider initialisé'); }
-function initChat() { console.log('💬 Chat initialisé'); }
-function initFilters() { console.log('🔍 Filtres initialisés'); }
-function initCountrySelectors() { console.log('🌍 Pays initialisés'); }
-
-// ============================================================
-// ===== FONCTIONS DE NAVIGATION =====
+// ===== NAVIGATION =====
 // ============================================================
 
 function showPage(pageName) {
@@ -449,7 +303,66 @@ function showPage(pageName) {
         if (target) { target.style.display = 'block'; }
     }
     window.scrollTo(0, 0);
+    closeSidebar();
 }
+
+function goToMyEvents() { showPage('myevents'); }
+function goToTickets() { showPage('tickets'); }
+function goToHistory() { showPage('history'); }
+function goToRatings() { showPage('ratings'); }
+
+// ============================================================
+// ===== FONCTIONS SUPABASE =====
+// ============================================================
+
+var events = [];
+var tickets = [];
+var currentUser = null;
+
+async function loadEventsFromSupabase() {
+    try {
+        const { data } = await supabaseClient.from('events').select('*').order('date', { ascending: true });
+        if (data && data.length > 0) {
+            window.events = data;
+            localStorage.setItem('betix_events', JSON.stringify(data));
+            renderEventsByCategory();
+            console.log('📅 Events loaded:', data.length);
+        }
+    } catch (error) { console.error('Error loading events:', error); }
+}
+
+function renderEventsByCategory() {
+    var container = document.getElementById('eventsByCategory');
+    if (!container) return;
+    var eventsData = window.events || [];
+    if (eventsData.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">Aucun événement trouvé</p>';
+        return;
+    }
+    container.innerHTML = eventsData.map(function(e) {
+        return '<div class="event-card" onclick="openEventDetails(\'' + e.id + '\')">' +
+            '<div class="event-card-banner">' +
+                '<img src="' + (e.image_url || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop') + '" alt="' + e.title + '">' +
+                '<span class="event-card-badge">' + (e.category || 'Événement') + '</span>' +
+            '</div>' +
+            '<div class="event-card-body">' +
+                '<div class="event-card-title">' + e.title + '</div>' +
+                '<div class="event-card-details">' +
+                    '<div class="detail-item">📅 ' + new Date(e.event_date || e.date).toLocaleDateString() + '</div>' +
+                    '<div class="detail-item">📍 ' + (e.location || 'En ligne') + '</div>' +
+                '</div>' +
+                '<div class="event-card-footer">' +
+                    '<div><span class="event-card-price">' + (e.price || 0) + ' Pi</span></div>' +
+                    '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + e.id + '\')">Acheter</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+// ============================================================
+// ===== FONCTIONS DE NAVIGATION GÉNÉRALES =====
+// ============================================================
 
 function handleLogoClick() {
     var clicks = parseInt(localStorage.getItem('logo_clicks') || 0) + 1;
@@ -478,33 +391,43 @@ function showLegal(type) {
     if (content) content.innerHTML = '<h2>Informations légales</h2><p>Contenu en cours...</p>';
 }
 
-function closeSidebar() {
-    var s = document.getElementById('sidebar');
-    if (s) s.classList.remove('open');
-    var o = document.getElementById('overlay');
-    if (o) o.classList.remove('active');
+function filterByCountry(country) {
+    console.log('Filtre pays:', country);
 }
 
-function openSidebar() {
-    var s = document.getElementById('sidebar');
-    if (s) s.classList.add('open');
-    var o = document.getElementById('overlay');
-    if (o) o.classList.add('active');
+function openEventDetails(eventId) {
+    alert('Détails de l\'événement: ' + eventId);
+}
+
+function openQuantityPopup(eventId) {
+    alert('Achat de billet pour: ' + eventId);
 }
 
 // ============================================================
-// ===== GLOBAL VARIABLES =====
+// ===== ADMIN =====
 // ============================================================
 
-var events = [];
-var tickets = [];
-var currentUser = null;
-var notifications = [];
-var chatMessages = [];
-var ratings = [];
-var uploadedImages = {};
-var pageHistory = ['home'];
-var adminPassword = 'Betix@2026#';
+function adminLogout() {
+    localStorage.removeItem('betix_admin_password');
+    var adminBtn = document.getElementById('adminMenuItem');
+    if (adminBtn) adminBtn.style.display = 'none';
+    alert('Admin déconnecté');
+}
 
-console.log('✅ Betix chargé !');
+function adminChangePassword() {
+    var newPassword = document.getElementById('adminNewPassword').value;
+    var confirmPassword = document.getElementById('adminConfirmPassword').value;
+    if (newPassword && newPassword === confirmPassword) {
+        localStorage.setItem('betix_admin_password', newPassword);
+        alert('Mot de passe changé');
+    } else {
+        alert('Les mots de passe ne correspondent pas');
+    }
+}
+
+// ============================================================
+// ===== LOGS =====
+// ============================================================
+
+console.log('✅ Betix chargé avec succès !');
 console.log('📡 Mode: Connexion Pi ou Mode démo automatique');
