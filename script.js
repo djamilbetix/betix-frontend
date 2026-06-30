@@ -3,11 +3,11 @@
 // ============================================================
 
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_UtFqjm07EZwJ9k5quAFYuA_n5vsEeGY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-        persistSession: false,  // Désactivé car on utilise Pi Network
+        persistSession: false,
         autoRefreshToken: false,
         detectSessionInUrl: false
     },
@@ -122,7 +122,6 @@ async function compressEventImage(file) {
 
 async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
     try {
-        // Convertir base64 en blob
         const response = await fetch(base64Data);
         const blob = await response.blob();
         
@@ -136,7 +135,6 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
         
         if (error) throw error;
         
-        // Récupérer l'URL publique
         const { data: publicUrlData } = supabaseClient.storage
             .from(bucket)
             .getPublicUrl(filePath);
@@ -162,7 +160,6 @@ async function uploadEventImage(eventId, base64Data, index) {
 // ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
 
-// --- USERS ---
 async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, points = 0) {
     try {
         const now = new Date().toISOString();
@@ -175,7 +172,6 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
             updated_at: now
         };
         
-        // Vérifier si l'utilisateur existe
         const { data: existing, error: checkError } = await supabaseClient
             .from('users')
             .select('pi_uid')
@@ -187,7 +183,6 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
         }
         
         if (existing) {
-            // Mise à jour
             const { error } = await supabaseClient
                 .from('users')
                 .update(userData)
@@ -195,7 +190,6 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
             if (error) throw error;
             console.log('User updated in Supabase:', piUid);
         } else {
-            // Création
             userData.created_at = now;
             const { error } = await supabaseClient
                 .from('users')
@@ -220,7 +214,7 @@ async function loadUserFromSupabase(piUid) {
         
         if (error) {
             if (error.code === 'PGRST116') {
-                return null; // Utilisateur non trouvé
+                return null;
             }
             throw error;
         }
@@ -231,7 +225,6 @@ async function loadUserFromSupabase(piUid) {
     }
 }
 
-// --- EVENTS ---
 async function saveEventToSupabase(eventData) {
     try {
         const dbEvent = {
@@ -291,7 +284,6 @@ async function deleteEventFromSupabase(eventId) {
     }
 }
 
-// --- TICKETS ---
 async function saveTicketToSupabase(ticketData) {
     try {
         const dbTicket = {
@@ -333,7 +325,6 @@ async function loadTicketsFromSupabase(piUid) {
     }
 }
 
-// --- TRANSACTIONS ---
 async function saveTransactionToSupabase(transactionData) {
     try {
         const dbTransaction = {
@@ -360,7 +351,6 @@ async function saveTransactionToSupabase(transactionData) {
     }
 }
 
-// --- NOTIFICATIONS ---
 async function saveNotificationToSupabase(notificationData) {
     try {
         const dbNotification = {
@@ -629,10 +619,8 @@ async function syncNotificationsToSupabase() {
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
-    // Charger les événements
     const supabaseEvents = await loadEventsFromSupabase();
     if (supabaseEvents.length > 0) {
-        // Convertir les événements Supabase au format Betix
         events = supabaseEvents.map(e => ({
             id: e.id,
             title: e.title,
@@ -654,13 +642,11 @@ async function loadAllFromSupabase() {
         }));
         localStorage.setItem('betix_events', JSON.stringify(events));
     } else {
-        // Utiliser les événements de démo
         events = JSON.parse(JSON.stringify(demoEvents));
         localStorage.setItem('betix_events', JSON.stringify(events));
         await syncEventsToSupabase();
     }
     
-    // Charger les tickets si utilisateur connecté
     if (currentUser.piUid || currentUser.wallet) {
         const piUid = currentUser.piUid || currentUser.wallet;
         const supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -684,7 +670,6 @@ async function loadAllFromSupabase() {
         }
     }
     
-    // Charger les notifications
     if (currentUser.piUid || currentUser.wallet) {
         const piUid = currentUser.piUid || currentUser.wallet;
         const supabaseNotifs = await loadNotificationsFromSupabase(piUid);
@@ -1026,14 +1011,12 @@ async function handleProfilePhotoUpload(file) {
     try {
         var compressedData = await compressProfilePhoto(file);
         
-        // Upload vers Supabase Storage
         const piUid = currentUser.piUid || currentUser.wallet;
         if (piUid) {
             const publicUrl = await uploadProfilePhoto(piUid, compressedData);
             if (publicUrl) {
                 currentUser.profilePhoto = publicUrl;
             } else {
-                // Fallback: stocker en base64 localement
                 currentUser.profilePhoto = compressedData;
             }
         } else {
@@ -1262,7 +1245,6 @@ async function connectToPi() {
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             if (!currentUser.profilePhoto) currentUser.profilePhoto = null;
             
-            // Sauvegarder dans Supabase (création ou mise à jour)
             saveUser();
             await syncUserToSupabase();
             
@@ -1274,7 +1256,6 @@ async function connectToPi() {
             renderEventsByCategory();
             updateConnectButtons();
             
-            // Charger les données depuis Supabase
             await loadAllFromSupabase();
             
             alert('Pi account connected! Welcome ' + piUser.username);
@@ -1335,12 +1316,10 @@ async function confirmPurchase(eventId, quantity) {
                     saveEvents();
                     saveTickets();
                     
-                    // Sauvegarde dans Supabase
                     for (const ticket of ticketsAdded) {
                         await saveTicketToSupabase(ticket);
                     }
                     
-                    // Sauvegarde de la transaction
                     await saveTransactionToSupabase({
                         id: Date.now().toString(),
                         buyerWallet: currentUser.wallet,
@@ -1515,7 +1494,6 @@ async function confirmPublishEvent() {
     
     var newEvent = pendingEventData;
     
-    // Upload des images vers Supabase Storage
     var uploadedUrls = [];
     if (newEvent.images && newEvent.images.length > 0) {
         for (var i = 0; i < newEvent.images.length; i++) {
@@ -1524,7 +1502,7 @@ async function confirmPublishEvent() {
             if (url) {
                 uploadedUrls.push(url);
             } else {
-                uploadedUrls.push(imageData); // Fallback
+                uploadedUrls.push(imageData);
             }
         }
     }
@@ -3183,10 +3161,8 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
 
-    // Charger les données depuis Supabase au démarrage
     loadAllFromSupabase();
 
-    // Synchronisation périodique
     setInterval(function() {
         syncUserToSupabase();
         syncEventsToSupabase();
