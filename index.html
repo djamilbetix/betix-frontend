@@ -211,7 +211,6 @@
         <h2 class="events-title">My Events</h2>
         <p class="events-sub">Events you have created</p>
         <div id="myEventsList" class="events-grid-centered"></div>
-        <!-- Empty state sera géré par JavaScript -->
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
@@ -243,7 +242,6 @@
             </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
-            <!-- NOUVEAU : Durée de l'événement -->
             <div class="form-group">
                 <label>Duration</label>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -312,7 +310,6 @@
             </div>
             
             <button type="submit" class="btn-primary" id="publishEventBtn">Publish Event</button>
-            <!-- Indicateur de chargement pour éviter les doubles publications -->
             <div id="publishLoading" style="display:none; text-align:center; margin-top:12px; color:var(--gray);">
                 <i class="fas fa-spinner fa-spin"></i> Publishing...
             </div>
@@ -713,6 +710,7 @@
                 <div class="detail-section">
                     <h3>Information</h3>
                     <div class="detail-grid">
+                        <div class="detail-grid-item"><span class="label">Duration</span><span class="value" id="detailDuration">-</span></div>
                         <div class="detail-grid-item"><span class="label">Organizer</span><span class="value" id="detailOrganizer">-</span></div>
                         <div class="detail-grid-item"><span class="label">Created on</span><span class="value" id="detailCreated">-</span></div>
                         <div class="detail-grid-item"><span class="label">Seats left</span><span class="value" id="detailBoosts">-</span></div>
@@ -824,7 +822,15 @@
             
             document.body.style.top = '0px';
             document.body.style.position = 'relative';
-        }, 500);
+            
+            // ✅ FORCER LA TRADUCTION AU CHARGEMENT
+            var savedLang = localStorage.getItem('betix_language') || 'en';
+            var langSelect = document.querySelector('.goog-te-combo');
+            if (langSelect && langSelect.value !== savedLang) {
+                langSelect.value = savedLang;
+                langSelect.dispatchEvent(new Event('change'));
+            }
+        }, 1000);
     }
 </script>
 
