@@ -235,6 +235,7 @@ async function saveEventToSupabase(eventData) {
             image_url: eventData.coverImage || eventData.images?.[0] || '',
             location: eventData.location || '',
             event_date: eventData.date,
+            duration: eventData.duration || '1 day',
             category: eventData.category || '',
             ticket_price: eventData.price || 0,
             max_tickets: eventData.seatsTotal || 0,
@@ -627,6 +628,7 @@ async function loadAllFromSupabase() {
             category: e.category || '',
             country: e.country || 'France',
             date: e.event_date,
+            duration: e.duration || '1 day',
             location: e.location || '',
             description: e.description || '',
             conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
@@ -1463,6 +1465,11 @@ function openPublishConfirm(eventData) {
     document.getElementById('confirmCountry').textContent = eventData.country;
     var dateEvent = new Date(eventData.date);
     document.getElementById('confirmDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    // Afficher la durée
+    var durationText = eventData.durationValue + ' ' + eventData.durationUnit;
+    document.getElementById('confirmDuration').textContent = durationText;
+    
     document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
     document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
     document.getElementById('confirmSeats').textContent = eventData.seatsTotal;
@@ -1494,6 +1501,7 @@ async function confirmPublishEvent() {
     
     var newEvent = pendingEventData;
     
+    // Upload des images vers Supabase Storage
     var uploadedUrls = [];
     if (newEvent.images && newEvent.images.length > 0) {
         for (var i = 0; i < newEvent.images.length; i++) {
@@ -1510,6 +1518,10 @@ async function confirmPublishEvent() {
     newEvent.images = uploadedUrls;
     newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
     newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+    // Ajout de la durée
+    newEvent.duration = document.getElementById('eventDuration').value + ' ' + document.getElementById('eventDurationUnit').value;
+    newEvent.durationValue = parseInt(document.getElementById('eventDuration').value) || 1;
+    newEvent.durationUnit = document.getElementById('eventDurationUnit').value;
     
     events.push(newEvent);
     saveEvents();
@@ -1528,16 +1540,33 @@ async function confirmPublishEvent() {
     closePublishConfirmPopup();
     renderEventsByCategory();
     updateProfilePage();
+    
+    // Réactiver le bouton de publication
+    var publishBtn = document.getElementById('publishEventBtn');
+    var publishLoading = document.getElementById('publishLoading');
+    if (publishBtn) { publishBtn.style.display = 'block'; }
+    if (publishLoading) { publishLoading.style.display = 'none'; }
+    publishBtn.disabled = false;
+    
     alert('Event "' + newEvent.title + '" has been successfully published!');
     showPage('home');
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT (avec anti-double publication) =====
 // ============================================================
+
+var isPublishing = false;
 
 function createEvent(e) {
     e.preventDefault();
+    
+    // Bloquer les doubles publications
+    if (isPublishing) {
+        alert('Event is already being published. Please wait.');
+        return;
+    }
+    
     if (!currentUser.wallet) { 
         alert('Connect your Pi account first'); 
         return; 
@@ -1557,6 +1586,8 @@ function createEvent(e) {
     
     var category = document.getElementById('eventCategory').value;
     var country = document.getElementById('eventCountry').value;
+    var durationValue = parseInt(document.getElementById('eventDuration').value) || 1;
+    var durationUnit = document.getElementById('eventDurationUnit').value;
     
     var newEvent = {
         id: Date.now().toString(),
@@ -1564,6 +1595,9 @@ function createEvent(e) {
         category: category,
         country: country,
         date: document.getElementById('eventDate').value,
+        duration: durationValue + ' ' + durationUnit,
+        durationValue: durationValue,
+        durationUnit: durationUnit,
         location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value,
         conditions: conditions,
@@ -1583,6 +1617,13 @@ function createEvent(e) {
         alert('Please fill in all required fields'); 
         return; 
     }
+    
+    // Désactiver le bouton et afficher le chargement
+    var publishBtn = document.getElementById('publishEventBtn');
+    var publishLoading = document.getElementById('publishLoading');
+    isPublishing = true;
+    publishBtn.style.display = 'none';
+    publishLoading.style.display = 'block';
     
     openPublishConfirm(newEvent);
 }
@@ -1694,7 +1735,7 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY =====
+// ===== TICKETS AND HISTORY (avec affichage amélioré) =====
 // ============================================================
 
 function renderTickets() {
@@ -1702,8 +1743,30 @@ function renderTickets() {
     if (!container) return;
     var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No active tickets</p>'; return; }
-    container.innerHTML = active.map(function(t) { return '<div class="ticket-card"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Price :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Location :</strong> ' + escapeHtml(t.eventLocation || 'Not specified') + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong>Code :</strong> <code>' + t.qrCode + '</code></p></div>'; }).join('');
+    if (!active.length) { 
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-ticket-alt"></i><p>No active tickets</p><p class="empty-sub">You haven\'t purchased any tickets yet</p></div>';
+        return; 
+    }
+    container.innerHTML = active.map(function(t) { 
+        return '<div class="ticket-premium">' +
+            '<div class="ticket-header">' +
+                '<div class="ticket-event-name">' + escapeHtml(t.eventTitle) + '</div>' +
+                '<div class="ticket-status valid">Valid</div>' +
+            '</div>' +
+            '<div class="ticket-body">' +
+                '<div class="ticket-row"><span class="ticket-label">📅 Date</span><span class="ticket-value">' + formatDate(t.eventDate) + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">⏰ Time</span><span class="ticket-value">' + new Date(t.eventDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">📍 Location</span><span class="ticket-value">' + escapeHtml(t.eventLocation || 'Not specified') + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">🎫 Ticket #</span><span class="ticket-value">' + t.id + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">👤 Participant</span><span class="ticket-value">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">💰 Price</span><span class="ticket-value">' + t.price + ' Pi</span></div>' +
+            '</div>' +
+            '<div class="ticket-footer">' +
+                '<div class="ticket-qr">' + t.qrCode + '</div>' +
+                '<div class="ticket-buyer">' + escapeHtml(t.buyerName || t.buyerWallet) + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
 }
 
 function renderHistory() {
@@ -1711,8 +1774,28 @@ function renderHistory() {
     if (!container) return;
     var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
     old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No history</p>'; return; }
-    container.innerHTML = old.map(function(t) { return '<div class="ticket-card" style="opacity:0.8;"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Price :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p style="color:#ef4444;">Past event</p></div>'; }).join('');
+    if (!old.length) { 
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>No history</p><p class="empty-sub">Your past tickets will appear here</p></div>';
+        return; 
+    }
+    container.innerHTML = old.map(function(t) { 
+        return '<div class="ticket-premium expired">' +
+            '<div class="ticket-header">' +
+                '<div class="ticket-event-name">' + escapeHtml(t.eventTitle) + '</div>' +
+                '<div class="ticket-status expired">Expired</div>' +
+            '</div>' +
+            '<div class="ticket-body">' +
+                '<div class="ticket-row"><span class="ticket-label">📅 Date</span><span class="ticket-value">' + formatDate(t.eventDate) + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">📍 Location</span><span class="ticket-value">' + escapeHtml(t.eventLocation || 'Not specified') + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">👤 Participant</span><span class="ticket-value">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span></div>' +
+                '<div class="ticket-row"><span class="ticket-label">💰 Price</span><span class="ticket-value">' + t.price + ' Pi</span></div>' +
+            '</div>' +
+            '<div class="ticket-footer">' +
+                '<div class="ticket-qr">' + t.qrCode + '</div>' +
+                '<div class="ticket-buyer">' + escapeHtml(t.buyerName || t.buyerWallet) + '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
 }
 
 // ============================================================
@@ -1728,469 +1811,7 @@ function renderMyRatings() {
 }
 
 // ============================================================
-// ===== ADMIN FUNCTIONS =====
-// ============================================================
-
-function initAdmin() {
-    var adminItem = document.getElementById('adminMenuItem');
-    if (!adminItem) return;
-    var logo = document.querySelector('.logo');
-    var clicks = 0;
-    if (logo) logo.addEventListener('click', function() { 
-        clicks++; 
-        if (clicks === 5) { 
-            var pwd = prompt('Admin code:'); 
-            if (pwd === adminPassword || pwd === 'Betix@2026#') { 
-                localStorage.setItem('betix_admin_password', pwd);
-                adminPassword = pwd;
-                adminItem.style.display = 'block'; 
-                adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
-                adminItem.style.color = 'white';
-                addAdminLog('Admin authentication', 'Login via logo');
-                alert('Admin activated'); 
-            } 
-            clicks = 0; 
-        } 
-        setTimeout(function() { clicks = 0; }, 2000); 
-    });
-    if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
-        adminItem.style.display = 'block';
-        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
-        adminItem.style.color = 'white';
-    }
-}
-
-function addAdminLog(action, details) {
-    var log = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        date: new Date().toLocaleString('en-US'),
-        user: currentUser.wallet || 'Local Admin',
-        action: action,
-        details: details || ''
-    };
-    adminLogs.unshift(log);
-    if (adminLogs.length > 500) {
-        adminLogs = adminLogs.slice(0, 500);
-    }
-    localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
-    renderAdminLogs();
-}
-
-function renderAdminLogs() {
-    var container = document.getElementById('adminLogsList');
-    if (!container) return;
-    if (adminLogs.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">No logs available</p>';
-        return;
-    }
-    container.innerHTML = adminLogs.map(function(log) {
-        return '<div class="admin-log-item">' +
-            '<div>' +
-                '<span class="log-user">' + escapeHtml(log.user) + '</span>' +
-                ' <span class="log-action">' + escapeHtml(log.action) + '</span>' +
-                (log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : '') +
-            '</div>' +
-            '<span class="log-time">' + escapeHtml(log.date) + '</span>' +
-        '</div>';
-    }).join('');
-}
-
-function adminClearLogs() {
-    if (confirm('Clear all connection logs?')) {
-        adminLogs = [];
-        localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
-        renderAdminLogs();
-        addAdminLog('Logs cleared', 'All logs were deleted');
-        alert('Logs cleared');
-    }
-}
-
-function startAdminSession() {
-    addAdminLog('Admin login', 'Access to administration interface');
-    var lastLogin = localStorage.getItem('betix_admin_last_login');
-    var loginCount = parseInt(localStorage.getItem('betix_admin_login_count') || 0) + 1;
-    localStorage.setItem('betix_admin_login_count', loginCount);
-    localStorage.setItem('betix_admin_last_login', new Date().toLocaleString('en-US'));
-    adminSessionTimer = 1800;
-    updateAdminTimerDisplay();
-    if (adminTimerInterval) {
-        clearInterval(adminTimerInterval);
-    }
-    adminTimerInterval = setInterval(function() {
-        adminSessionTimer--;
-        updateAdminTimerDisplay();
-        if (adminSessionTimer <= 0) {
-            clearInterval(adminTimerInterval);
-            adminTimerInterval = null;
-            adminLogout();
-        }
-    }, 1000);
-    document.addEventListener('click', resetAdminTimer);
-    document.addEventListener('keydown', resetAdminTimer);
-    document.addEventListener('scroll', resetAdminTimer);
-}
-
-function resetAdminTimer() {
-    if (adminTimerInterval) {
-        adminSessionTimer = 1800;
-        updateAdminTimerDisplay();
-    }
-}
-
-function updateAdminTimerDisplay() {
-    var display = document.getElementById('adminSessionTimer');
-    if (display) {
-        var minutes = Math.floor(adminSessionTimer / 60);
-        var seconds = adminSessionTimer % 60;
-        display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-        if (adminSessionTimer < 300) {
-            display.style.color = '#ef4444';
-        } else if (adminSessionTimer < 600) {
-            display.style.color = '#f59e0b';
-        } else {
-            display.style.color = '#f5a623';
-        }
-    }
-}
-
-function adminLogout() {
-    if (adminTimerInterval) {
-        clearInterval(adminTimerInterval);
-        adminTimerInterval = null;
-    }
-    document.removeEventListener('click', resetAdminTimer);
-    document.removeEventListener('keydown', resetAdminTimer);
-    document.removeEventListener('scroll', resetAdminTimer);
-    addAdminLog('Admin logout', 'Session ended');
-    localStorage.removeItem('betix_admin_password');
-    var adminBtn = document.getElementById('adminMenuItem');
-    if (adminBtn) {
-        adminBtn.style.display = 'none';
-    }
-    alert('Admin session ended');
-    showPage('home');
-}
-
-function adminChangePassword() {
-    var newPassword = document.getElementById('adminNewPassword').value;
-    var confirmPassword = document.getElementById('adminConfirmPassword').value;
-    var message = document.getElementById('adminPasswordMessage');
-    if (!newPassword || newPassword.length < 6) {
-        message.textContent = 'Password must be at least 6 characters';
-        message.style.color = '#ef4444';
-        return;
-    }
-    if (newPassword !== confirmPassword) {
-        message.textContent = 'Passwords do not match';
-        message.style.color = '#ef4444';
-        return;
-    }
-    adminPassword = newPassword;
-    localStorage.setItem('betix_admin_password', newPassword);
-    message.textContent = 'Password changed successfully!';
-    message.style.color = '#10b981';
-    document.getElementById('adminNewPassword').value = '';
-    document.getElementById('adminConfirmPassword').value = '';
-    addAdminLog('Password changed', 'Admin password was updated');
-    setTimeout(function() {
-        message.textContent = '';
-    }, 3000);
-}
-
-function loadAdminPage() {
-    var storedPassword = localStorage.getItem('betix_admin_password');
-    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
-        alert('Access denied. Please authenticate via 5 clicks on the logo.');
-        showPage('home');
-        return;
-    }
-    if (storedPassword && storedPassword !== adminPassword) {
-        adminPassword = storedPassword;
-    }
-    document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
-    document.getElementById('adminTicketCount').innerText = tickets.length;
-    document.getElementById('adminEventCount').innerText = events.length;
-    var lastLogin = localStorage.getItem('betix_admin_last_login') || 'Never';
-    var loginCount = localStorage.getItem('betix_admin_login_count') || 0;
-    document.getElementById('adminLastLogin').textContent = lastLogin;
-    document.getElementById('adminLoginCount').textContent = loginCount;
-    document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
-    renderAdminEvents();
-    renderAdminSlides();
-    renderAdminUsers();
-    renderAdminLogs();
-    initAdminTabs();
-    if (!adminTimerInterval) {
-        startAdminSession();
-    }
-    var userSearch = document.getElementById('adminUserSearch');
-    if (userSearch) {
-        userSearch.addEventListener('input', function() {
-            filterAdminUsers(this.value);
-        });
-    }
-}
-
-function filterAdminUsers(query) {
-    var container = document.getElementById('adminUsersList');
-    if (!container) return;
-    var rows = container.querySelectorAll('tr');
-    var search = query.toLowerCase().trim();
-    rows.forEach(function(row, index) {
-        if (index === 0) return;
-        var text = row.textContent.toLowerCase();
-        if (search === '' || text.includes(search)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
-
-function renderAdminUsers() {
-    var container = document.getElementById('adminUsersList');
-    if (!container) return;
-    var html = '<table>';
-    html += '<tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
-    var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
-    var avgRating = 0;
-    if (userRatings.length > 0) {
-        avgRating = userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length;
-    }
-    html += '<tr><td>' + escapeHtml(currentUser.name) + ' <span style="color:#f5a623;font-size:0.7rem;">(you)</span></td>' +
-            '<td>' + (currentUser.wallet || 'Not connected') + '</td>' +
-            '<td>' + tickets.length + '</td>' +
-            '<td>' + (avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-') + '</td>' +
-            '<td>Active</td></tr>';
-    for (var i = 0; i < connectedUsers.length; i++) {
-        var u = connectedUsers[i];
-        if (u.wallet !== currentUser.wallet) {
-            var uRatings = ratings.filter(function(r) { return r.userWallet === u.wallet; });
-            var uAvg = 0;
-            if (uRatings.length > 0) {
-                uAvg = uRatings.reduce(function(a, r) { return a + r.rating; }, 0) / uRatings.length;
-            }
-            html += '<tr><td>' + escapeHtml(u.name) + '</td>' +
-                    '<td>' + (u.wallet || 'Not connected') + '</td>' +
-                    '<td>' + (u.ticketCount || 0) + '</td>' +
-                    '<td>' + (uAvg > 0 ? uAvg.toFixed(1) + '/5' : '-') + '</td>' +
-                    '<td>' + (u.lastSeen || 'Unknown') + '</td></tr>';
-        }
-    }
-    html += '</table>';
-    container.innerHTML = html;
-}
-
-function renderAdminEvents() {
-    var container = document.getElementById('adminEventsList');
-    if (!container) return;
-    if (events.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No events created</p>';
-        return;
-    }
-    container.innerHTML = events.map(function(e) {
-        return '<div class="admin-event-item">' +
-            '<div class="event-info">' +
-                '<strong>' + escapeHtml(e.title) + '</strong>' +
-                '<small>' + e.category + ' | ' + e.country + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
-                '<small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
-            '</div>' +
-            '<div class="event-actions">' +
-                '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Delete</button>' +
-            '</div>' +
-        '</div>';
-    }).join('');
-}
-
-function adminDeleteEvent(id) {
-    if (confirm('Delete this event?')) {
-        events = events.filter(function(e) { return e.id !== id; });
-        saveEvents();
-        deleteEventFromSupabase(id);
-        renderAdminEvents();
-        renderEventsByCategory();
-        document.getElementById('adminEventCount').innerText = events.length;
-        addAdminLog('Event deleted', 'ID: ' + id);
-        alert('Event deleted');
-    }
-}
-
-function adminDeleteAllEvents() {
-    if (confirm('Delete ALL events? This action is irreversible.')) {
-        events = [];
-        saveEvents();
-        renderAdminEvents();
-        renderEventsByCategory();
-        document.getElementById('adminEventCount').innerText = 0;
-        addAdminLog('All events deleted', 'Mass deletion');
-        alert('All events have been deleted');
-    }
-}
-
-function renderAdminSlides() {
-    var container = document.getElementById('adminSlidesList');
-    if (!container) return;
-    if (heroSlides.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>';
-        return;
-    }
-    container.innerHTML = heroSlides.map(function(slide, index) {
-        return '<div class="admin-slide-item">' +
-            '<img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'">' +
-            '<div class="slide-info">' +
-                '<h4>' + escapeHtml(slide.title) + '</h4>' +
-                '<p>' + (slide.badge || 'Uncategorized') + ' • ' + (slide.description || '') + '</p>' +
-            '</div>' +
-            '<div class="slide-actions">' +
-                '<button class="edit-btn" onclick="adminEditSlide(' + index + ')">Edit</button>' +
-                '<button class="delete-btn" onclick="adminDeleteSlide(' + index + ')">Delete</button>' +
-            '</div>' +
-        '</div>';
-    }).join('');
-}
-
-function adminShowSlideForm(index) {
-    var container = document.getElementById('adminSlideFormContainer');
-    var title = document.getElementById('adminSlideFormTitle');
-    var imageInput = document.getElementById('adminSlideImageInput');
-    var preview = document.getElementById('adminSlidePreview');
-    var uploadBox = document.getElementById('adminUploadBox');
-    preview.style.display = 'none';
-    preview.src = '';
-    uploadBox.classList.remove('has-image');
-    imageInput.value = '';
-    container.style.display = 'block';
-    if (index >= 0 && index < heroSlides.length) {
-        title.textContent = 'Edit carousel image';
-        document.getElementById('adminSlideBadge').value = heroSlides[index].badge || '';
-        document.getElementById('adminSlideTitle').value = heroSlides[index].title || '';
-        document.getElementById('adminSlideDesc').value = heroSlides[index].description || '';
-        document.getElementById('adminEditSlideIndex').value = index;
-        if (heroSlides[index].image) {
-            preview.src = heroSlides[index].image;
-            preview.style.display = 'block';
-            uploadBox.classList.add('has-image');
-        }
-    } else {
-        title.textContent = 'Add carousel image';
-        document.getElementById('adminSlideBadge').value = '';
-        document.getElementById('adminSlideTitle').value = '';
-        document.getElementById('adminSlideDesc').value = '';
-        document.getElementById('adminEditSlideIndex').value = '-1';
-    }
-    container.scrollIntoView({ behavior: 'smooth' });
-}
-
-function adminSaveSlide() {
-    var imageInput = document.getElementById('adminSlideImageInput');
-    var badgeInput = document.getElementById('adminSlideBadge');
-    var titleInput = document.getElementById('adminSlideTitle');
-    var descInput = document.getElementById('adminSlideDesc');
-    var editIndex = document.getElementById('adminEditSlideIndex');
-    var preview = document.getElementById('adminSlidePreview');
-    var badge = badgeInput.value.trim();
-    var title = titleInput.value.trim();
-    var description = descInput.value.trim();
-    if (!title) {
-        alert('Please enter a title');
-        return;
-    }
-    var imageData = null;
-    if (imageInput.files && imageInput.files[0]) {
-        var file = imageInput.files[0];
-        if (!file.type.startsWith('image/')) {
-            alert('Please select an image');
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Image is too large (max 5MB)');
-            return;
-        }
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            imageData = e.target.result;
-            saveSlideData(imageData, badge, title, description, parseInt(editIndex.value));
-        };
-        reader.readAsDataURL(file);
-    } else {
-        var index = parseInt(editIndex.value);
-        if (index >= 0 && index < heroSlides.length) {
-            imageData = heroSlides[index].image;
-            saveSlideData(imageData, badge, title, description, index);
-        } else {
-            alert('Please select an image');
-            return;
-        }
-    }
-}
-
-function saveSlideData(image, badge, title, description, index) {
-    var slideData = { image: image, badge: badge, title: title, description: description };
-    if (index >= 0 && index < heroSlides.length) {
-        heroSlides[index] = slideData;
-    } else {
-        heroSlides.push(slideData);
-    }
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-    adminCancelSlideForm();
-    renderAdminSlides();
-    initHeroSlider();
-    addAdminLog('Slide modified', 'Title: ' + title);
-    alert('Image saved successfully!');
-}
-
-function adminDeleteSlide(index) {
-    if (!confirm('Delete this carousel image?')) return;
-    var title = heroSlides[index]?.title || 'Untitled';
-    heroSlides.splice(index, 1);
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-    renderAdminSlides();
-    initHeroSlider();
-    addAdminLog('Slide deleted', 'Title: ' + title);
-}
-
-function adminEditSlide(index) {
-    adminShowSlideForm(index);
-}
-
-function adminCancelSlideForm() {
-    document.getElementById('adminSlideFormContainer').style.display = 'none';
-    document.getElementById('adminEditSlideIndex').value = '-1';
-    document.getElementById('adminSlideImageInput').value = '';
-    document.getElementById('adminSlidePreview').style.display = 'none';
-    document.getElementById('adminSlidePreview').src = '';
-    document.getElementById('adminUploadBox').classList.remove('has-image');
-}
-
-function initAdminTabs() {
-    var tabs = document.querySelectorAll('.admin-tab');
-    var contents = {
-        events: document.getElementById('adminTabEvents'),
-        slides: document.getElementById('adminTabSlides'),
-        users: document.getElementById('adminTabUsers'),
-        logs: document.getElementById('adminTabLogs'),
-        settings: document.getElementById('adminTabSettings')
-    };
-    tabs.forEach(function(tab) {
-        tab.addEventListener('click', function() {
-            tabs.forEach(function(t) { t.classList.remove('active'); });
-            this.classList.add('active');
-            for (var key in contents) {
-                if (contents[key]) {
-                    contents[key].classList.remove('active');
-                }
-            }
-            var tabName = this.dataset.tab;
-            if (contents[tabName]) {
-                contents[tabName].classList.add('active');
-            }
-        });
-    });
-}
-
-// ============================================================
-// ===== MY EVENTS =====
+// ===== MY EVENTS (version améliorée) =====
 // ============================================================
 
 function renderMyEvents() {
@@ -2200,18 +1821,38 @@ function renderMyEvents() {
         return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
     });
     if (myEvents.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
+        container.innerHTML = 
+            '<div class="empty-state">' +
+                '<i class="fas fa-calendar-plus" style="font-size:3rem;color:var(--primary);"></i>' +
+                '<h3 style="margin-top:1rem;">No events yet</h3>' +
+                '<p class="empty-sub">You haven\'t created any events. Start now!</p>' +
+                '<button class="btn-primary" onclick="showPage(\'create\')" style="width:auto;padding:10px 30px;margin-top:1rem;">Create Your First Event</button>' +
+            '</div>';
         return;
     }
     container.innerHTML = myEvents.map(function(e) {
         return renderMyEventCard(e);
     }).join('');
+    
+    // Mettre à jour les compteurs en temps réel
+    updateMyEventsStats();
+}
+
+function updateMyEventsStats() {
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    document.getElementById('myEventsCount').innerText = myEvents.length;
 }
 
 function renderMyEventCard(event) {
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    var durationText = event.duration || '1 day';
+    var timeAgo = getTimeAgo(event.createdAt);
+    
     var galleryHtml = '';
     if (event.images && event.images.length > 0) {
         galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
@@ -2222,28 +1863,123 @@ function renderMyEventCard(event) {
     } else {
         galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
     }
-    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
-    return '<div class="event-card" style="cursor:default;">' +
+    
+    return '<div class="event-card my-event-card" style="cursor:default;">' +
         galleryHtml +
         '<div class="event-info">' +
-            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-title">' + escapeHtml(event.title) + 
+                '<span class="event-time-ago">' + timeAgo + '</span>' +
+            '</div>' +
             '<div class="event-details-grid">' +
                 '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationText) + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
+                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> <span class="ticket-sold-count">' + ticketSold + '</span> sold</div>' +
                 '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
             '</div>' +
             '<div class="event-footer">' +
                 '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+                '<div class="event-actions">' +
+                    '<button class="btn-edit-event" onclick="event.stopPropagation(); openEditEvent(\'' + event.id + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+                '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
 }
 
 // ============================================================
-// ===== RENDER EVENTS =====
+// ===== TEMPS ÉCOULÉ (comme X/Twitter) =====
+// ============================================================
+
+function getTimeAgo(dateString) {
+    if (!dateString) return 'Just now';
+    var now = new Date();
+    var past = new Date(dateString);
+    var diffMs = now - past;
+    var diffSec = Math.floor(diffMs / 1000);
+    var diffMin = Math.floor(diffSec / 60);
+    var diffHour = Math.floor(diffMin / 60);
+    var diffDay = Math.floor(diffHour / 24);
+    
+    if (diffSec < 60) return 'Just now';
+    if (diffMin < 60) return diffMin + 'min';
+    if (diffHour < 24) return diffHour + 'h';
+    if (diffDay === 1) return 'Yesterday';
+    if (diffDay < 7) return diffDay + 'd';
+    
+    var date = new Date(dateString);
+    var month = date.toLocaleString('en-US', { month: 'short' });
+    var day = date.getDate();
+    var year = date.getFullYear();
+    
+    if (diffDay < 365) return day + ' ' + month;
+    return day + ' ' + month + ' ' + year;
+}
+
+// ============================================================
+// ===== MODIFIER UN ÉVÉNEMENT =====
+// ============================================================
+
+function openEditEvent(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) { alert('Event not found'); return; }
+    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) {
+        alert('You are not the organizer of this event');
+        return;
+    }
+    
+    // Créer un modal d'édition
+    var modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.id = 'editEventModal';
+    modal.innerHTML = 
+        '<div class="modal-content" style="max-width:600px;">' +
+            '<span class="modal-close" onclick="document.getElementById(\'editEventModal\').remove()"><i class="fas fa-times"></i></span>' +
+            '<h2>Edit Event</h2>' +
+            '<div class="form-group"><label>Description</label><textarea id="editDescription" rows="3">' + escapeHtml(event.description || '') + '</textarea></div>' +
+            '<div class="form-group"><label>Location</label><input type="text" id="editLocation" value="' + escapeHtml(event.location || '') + '"></div>' +
+            '<div class="form-group"><label>Conditions</label><textarea id="editConditions" rows="4">' + escapeHtml(event.conditions || '') + '</textarea></div>' +
+            '<div class="form-group"><label>Seats</label><input type="number" id="editSeats" value="' + event.seatsTotal + '" min="' + (event.seatsTotal - event.seatsLeft) + '"></div>' +
+            '<button class="btn-primary" onclick="saveEventEdit(\'' + event.id + '\')">Save Changes</button>' +
+        '</div>';
+    document.body.appendChild(modal);
+}
+
+async function saveEventEdit(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) { alert('Event not found'); return; }
+    
+    var description = document.getElementById('editDescription').value.trim();
+    var location = document.getElementById('editLocation').value.trim();
+    var conditions = document.getElementById('editConditions').value.trim();
+    var newSeats = parseInt(document.getElementById('editSeats').value);
+    
+    if (!description) { alert('Description is required'); return; }
+    if (!location) { alert('Location is required'); return; }
+    if (!conditions) { alert('Conditions are required'); return; }
+    if (!newSeats || newSeats < (event.seatsTotal - event.seatsLeft)) {
+        alert('Seats cannot be less than tickets already sold (' + (event.seatsTotal - event.seatsLeft) + ')');
+        return;
+    }
+    
+    event.description = description;
+    event.location = location;
+    event.conditions = conditions;
+    event.seatsTotal = newSeats;
+    event.seatsLeft = newSeats - (event.seatsTotal - event.seatsLeft);
+    
+    saveEvents();
+    renderMyEvents();
+    renderEventsByCategory();
+    
+    document.getElementById('editEventModal').remove();
+    alert('Event updated successfully!');
+}
+
+// ============================================================
+// ===== RENDER EVENTS (version améliorée) =====
 // ============================================================
 
 function renderEventsByCategory() {
@@ -2294,12 +2030,16 @@ function renderEventCard(event) {
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var durationText = event.duration || '1 day';
+    var timeAgo = getTimeAgo(event.createdAt);
+    
     var ratingStars = '';
     var fullStars = Math.floor(avgRating);
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    
     return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')" style="cursor:pointer;">' +
         '<div class="event-card-banner">' +
             '<img src="' + (event.coverImage || fallbackImage) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
@@ -2307,11 +2047,13 @@ function renderEventCard(event) {
         '</div>' +
         '<div class="event-card-body">' +
             '<div class="event-card-title">' + escapeHtml(event.title) + 
+                '<span class="event-time-ago" style="font-size:0.65rem;color:var(--gray);font-weight:400;display:block;margin-top:2px;">' + timeAgo + '</span>' +
                 '<span class="organizer-name"><i class="fas fa-user"></i> by ' + escapeHtml(organizerDisplay) + '</span>' +
             '</div>' +
             '<div class="event-card-details">' +
                 '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationText) + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
             '</div>' +
@@ -2339,18 +2081,28 @@ function openEventDetails(eventId) {
     }
     var modal = document.getElementById('eventDetailModal');
     var closeBtn = document.getElementById('eventDetailClose');
+    
+    // Nouvel ordre des informations
     document.getElementById('detailTitle').textContent = event.title;
     document.getElementById('detailCategory').textContent = event.category;
     document.getElementById('detailCountry').textContent = event.country || 'Not specified';
+    
     var dateEvent = new Date(event.date);
     document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('detailLocation').textContent = event.location || 'Online';
     document.getElementById('detailPrice').textContent = event.price + ' Pi';
     document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
     document.getElementById('detailDescription').textContent = event.description || 'No description';
-    document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
+    
+    // Organizer en bas
+    var organizerText = event.organizerName || event.organizer || 'Unknown';
+    document.getElementById('detailOrganizer').textContent = 'By @' + organizerText;
+    document.getElementById('detailOrganizer').style.color = '#f5a623';
+    document.getElementById('detailOrganizer').style.fontWeight = '600';
+    
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
+    
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -2369,6 +2121,7 @@ function openEventDetails(eventId) {
             conditionsContainer.innerHTML = '<p style="color: var(--gray);">No conditions specified</p>';
         }
     }
+    
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     var avgRating = 0;
     if (eventRatings.length > 0) {
@@ -2379,6 +2132,7 @@ function openEventDetails(eventId) {
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     document.getElementById('detailRating').textContent = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' reviews)' : 'Not yet rated';
+    
     var gallery = document.getElementById('detailGallery');
     gallery.innerHTML = '';
     if (event.images && event.images.length > 0) {
@@ -2415,6 +2169,7 @@ function openEventDetails(eventId) {
         defaultImg.style.cursor = 'pointer';
         gallery.appendChild(defaultImg);
     }
+    
     var reviewsContainer = document.getElementById('detailReviews');
     reviewsContainer.innerHTML = '';
     if (eventRatings.length > 0) {
@@ -2432,6 +2187,7 @@ function openEventDetails(eventId) {
     } else {
         reviewsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet</p>';
     }
+    
     document.getElementById('detailBuyBtn').onclick = function() {
         modal.classList.remove('show');
         document.body.style.overflow = '';
@@ -2978,6 +2734,468 @@ function handleLogoClick() {
             logoClickCount = 0;
         }
     }
+}
+
+// ============================================================
+// ===== ADMIN FUNCTIONS =====
+// ============================================================
+
+function initAdmin() {
+    var adminItem = document.getElementById('adminMenuItem');
+    if (!adminItem) return;
+    var logo = document.querySelector('.logo');
+    var clicks = 0;
+    if (logo) logo.addEventListener('click', function() { 
+        clicks++; 
+        if (clicks === 5) { 
+            var pwd = prompt('Admin code:'); 
+            if (pwd === adminPassword || pwd === 'Betix@2026#') { 
+                localStorage.setItem('betix_admin_password', pwd);
+                adminPassword = pwd;
+                adminItem.style.display = 'block'; 
+                adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+                adminItem.style.color = 'white';
+                addAdminLog('Admin authentication', 'Login via logo');
+                alert('Admin activated'); 
+            } 
+            clicks = 0; 
+        } 
+        setTimeout(function() { clicks = 0; }, 2000); 
+    });
+    if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
+        adminItem.style.display = 'block';
+        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+        adminItem.style.color = 'white';
+    }
+}
+
+function addAdminLog(action, details) {
+    var log = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleString('en-US'),
+        user: currentUser.wallet || 'Local Admin',
+        action: action,
+        details: details || ''
+    };
+    adminLogs.unshift(log);
+    if (adminLogs.length > 500) {
+        adminLogs = adminLogs.slice(0, 500);
+    }
+    localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+    renderAdminLogs();
+}
+
+function renderAdminLogs() {
+    var container = document.getElementById('adminLogsList');
+    if (!container) return;
+    if (adminLogs.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">No logs available</p>';
+        return;
+    }
+    container.innerHTML = adminLogs.map(function(log) {
+        return '<div class="admin-log-item">' +
+            '<div>' +
+                '<span class="log-user">' + escapeHtml(log.user) + '</span>' +
+                ' <span class="log-action">' + escapeHtml(log.action) + '</span>' +
+                (log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : '') +
+            '</div>' +
+            '<span class="log-time">' + escapeHtml(log.date) + '</span>' +
+        '</div>';
+    }).join('');
+}
+
+function adminClearLogs() {
+    if (confirm('Clear all connection logs?')) {
+        adminLogs = [];
+        localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+        renderAdminLogs();
+        addAdminLog('Logs cleared', 'All logs were deleted');
+        alert('Logs cleared');
+    }
+}
+
+function startAdminSession() {
+    addAdminLog('Admin login', 'Access to administration interface');
+    var lastLogin = localStorage.getItem('betix_admin_last_login');
+    var loginCount = parseInt(localStorage.getItem('betix_admin_login_count') || 0) + 1;
+    localStorage.setItem('betix_admin_login_count', loginCount);
+    localStorage.setItem('betix_admin_last_login', new Date().toLocaleString('en-US'));
+    adminSessionTimer = 1800;
+    updateAdminTimerDisplay();
+    if (adminTimerInterval) {
+        clearInterval(adminTimerInterval);
+    }
+    adminTimerInterval = setInterval(function() {
+        adminSessionTimer--;
+        updateAdminTimerDisplay();
+        if (adminSessionTimer <= 0) {
+            clearInterval(adminTimerInterval);
+            adminTimerInterval = null;
+            adminLogout();
+        }
+    }, 1000);
+    document.addEventListener('click', resetAdminTimer);
+    document.addEventListener('keydown', resetAdminTimer);
+    document.addEventListener('scroll', resetAdminTimer);
+}
+
+function resetAdminTimer() {
+    if (adminTimerInterval) {
+        adminSessionTimer = 1800;
+        updateAdminTimerDisplay();
+    }
+}
+
+function updateAdminTimerDisplay() {
+    var display = document.getElementById('adminSessionTimer');
+    if (display) {
+        var minutes = Math.floor(adminSessionTimer / 60);
+        var seconds = adminSessionTimer % 60;
+        display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        if (adminSessionTimer < 300) {
+            display.style.color = '#ef4444';
+        } else if (adminSessionTimer < 600) {
+            display.style.color = '#f59e0b';
+        } else {
+            display.style.color = '#f5a623';
+        }
+    }
+}
+
+function adminLogout() {
+    if (adminTimerInterval) {
+        clearInterval(adminTimerInterval);
+        adminTimerInterval = null;
+    }
+    document.removeEventListener('click', resetAdminTimer);
+    document.removeEventListener('keydown', resetAdminTimer);
+    document.removeEventListener('scroll', resetAdminTimer);
+    addAdminLog('Admin logout', 'Session ended');
+    localStorage.removeItem('betix_admin_password');
+    var adminBtn = document.getElementById('adminMenuItem');
+    if (adminBtn) {
+        adminBtn.style.display = 'none';
+    }
+    alert('Admin session ended');
+    showPage('home');
+}
+
+function adminChangePassword() {
+    var newPassword = document.getElementById('adminNewPassword').value;
+    var confirmPassword = document.getElementById('adminConfirmPassword').value;
+    var message = document.getElementById('adminPasswordMessage');
+    if (!newPassword || newPassword.length < 6) {
+        message.textContent = 'Password must be at least 6 characters';
+        message.style.color = '#ef4444';
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        message.textContent = 'Passwords do not match';
+        message.style.color = '#ef4444';
+        return;
+    }
+    adminPassword = newPassword;
+    localStorage.setItem('betix_admin_password', newPassword);
+    message.textContent = 'Password changed successfully!';
+    message.style.color = '#10b981';
+    document.getElementById('adminNewPassword').value = '';
+    document.getElementById('adminConfirmPassword').value = '';
+    addAdminLog('Password changed', 'Admin password was updated');
+    setTimeout(function() {
+        message.textContent = '';
+    }, 3000);
+}
+
+function loadAdminPage() {
+    var storedPassword = localStorage.getItem('betix_admin_password');
+    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
+        alert('Access denied. Please authenticate via 5 clicks on the logo.');
+        showPage('home');
+        return;
+    }
+    if (storedPassword && storedPassword !== adminPassword) {
+        adminPassword = storedPassword;
+    }
+    document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
+    document.getElementById('adminTicketCount').innerText = tickets.length;
+    document.getElementById('adminEventCount').innerText = events.length;
+    var lastLogin = localStorage.getItem('betix_admin_last_login') || 'Never';
+    var loginCount = localStorage.getItem('betix_admin_login_count') || 0;
+    document.getElementById('adminLastLogin').textContent = lastLogin;
+    document.getElementById('adminLoginCount').textContent = loginCount;
+    document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
+    renderAdminEvents();
+    renderAdminSlides();
+    renderAdminUsers();
+    renderAdminLogs();
+    initAdminTabs();
+    if (!adminTimerInterval) {
+        startAdminSession();
+    }
+    var userSearch = document.getElementById('adminUserSearch');
+    if (userSearch) {
+        userSearch.addEventListener('input', function() {
+            filterAdminUsers(this.value);
+        });
+    }
+}
+
+function filterAdminUsers(query) {
+    var container = document.getElementById('adminUsersList');
+    if (!container) return;
+    var rows = container.querySelectorAll('tr');
+    var search = query.toLowerCase().trim();
+    rows.forEach(function(row, index) {
+        if (index === 0) return;
+        var text = row.textContent.toLowerCase();
+        if (search === '' || text.includes(search)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function renderAdminUsers() {
+    var container = document.getElementById('adminUsersList');
+    if (!container) return;
+    var html = '<table>';
+    html += '<tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
+    var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+    var avgRating = 0;
+    if (userRatings.length > 0) {
+        avgRating = userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length;
+    }
+    html += '<tr><td>' + escapeHtml(currentUser.name) + ' <span style="color:#f5a623;font-size:0.7rem;">(you)</span></td>' +
+            '<td>' + (currentUser.wallet || 'Not connected') + '</td>' +
+            '<td>' + tickets.length + '</td>' +
+            '<td>' + (avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-') + '</td>' +
+            '<td>Active</td></tr>';
+    for (var i = 0; i < connectedUsers.length; i++) {
+        var u = connectedUsers[i];
+        if (u.wallet !== currentUser.wallet) {
+            var uRatings = ratings.filter(function(r) { return r.userWallet === u.wallet; });
+            var uAvg = 0;
+            if (uRatings.length > 0) {
+                uAvg = uRatings.reduce(function(a, r) { return a + r.rating; }, 0) / uRatings.length;
+            }
+            html += '<tr><td>' + escapeHtml(u.name) + '</td>' +
+                    '<td>' + (u.wallet || 'Not connected') + '</td>' +
+                    '<td>' + (u.ticketCount || 0) + '</td>' +
+                    '<td>' + (uAvg > 0 ? uAvg.toFixed(1) + '/5' : '-') + '</td>' +
+                    '<td>' + (u.lastSeen || 'Unknown') + '</td></tr>';
+        }
+    }
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+function renderAdminEvents() {
+    var container = document.getElementById('adminEventsList');
+    if (!container) return;
+    if (events.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No events created</p>';
+        return;
+    }
+    container.innerHTML = events.map(function(e) {
+        return '<div class="admin-event-item">' +
+            '<div class="event-info">' +
+                '<strong>' + escapeHtml(e.title) + '</strong>' +
+                '<small>' + e.category + ' | ' + e.country + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
+                '<small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
+            '</div>' +
+            '<div class="event-actions">' +
+                '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Delete</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function adminDeleteEvent(id) {
+    if (confirm('Delete this event?')) {
+        events = events.filter(function(e) { return e.id !== id; });
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents();
+        renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = events.length;
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert('Event deleted');
+    }
+}
+
+function adminDeleteAllEvents() {
+    if (confirm('Delete ALL events? This action is irreversible.')) {
+        events = [];
+        saveEvents();
+        renderAdminEvents();
+        renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = 0;
+        addAdminLog('All events deleted', 'Mass deletion');
+        alert('All events have been deleted');
+    }
+}
+
+function renderAdminSlides() {
+    var container = document.getElementById('adminSlidesList');
+    if (!container) return;
+    if (heroSlides.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>';
+        return;
+    }
+    container.innerHTML = heroSlides.map(function(slide, index) {
+        return '<div class="admin-slide-item">' +
+            '<img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'">' +
+            '<div class="slide-info">' +
+                '<h4>' + escapeHtml(slide.title) + '</h4>' +
+                '<p>' + (slide.badge || 'Uncategorized') + ' • ' + (slide.description || '') + '</p>' +
+            '</div>' +
+            '<div class="slide-actions">' +
+                '<button class="edit-btn" onclick="adminEditSlide(' + index + ')">Edit</button>' +
+                '<button class="delete-btn" onclick="adminDeleteSlide(' + index + ')">Delete</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function adminShowSlideForm(index) {
+    var container = document.getElementById('adminSlideFormContainer');
+    var title = document.getElementById('adminSlideFormTitle');
+    var imageInput = document.getElementById('adminSlideImageInput');
+    var preview = document.getElementById('adminSlidePreview');
+    var uploadBox = document.getElementById('adminUploadBox');
+    preview.style.display = 'none';
+    preview.src = '';
+    uploadBox.classList.remove('has-image');
+    imageInput.value = '';
+    container.style.display = 'block';
+    if (index >= 0 && index < heroSlides.length) {
+        title.textContent = 'Edit carousel image';
+        document.getElementById('adminSlideBadge').value = heroSlides[index].badge || '';
+        document.getElementById('adminSlideTitle').value = heroSlides[index].title || '';
+        document.getElementById('adminSlideDesc').value = heroSlides[index].description || '';
+        document.getElementById('adminEditSlideIndex').value = index;
+        if (heroSlides[index].image) {
+            preview.src = heroSlides[index].image;
+            preview.style.display = 'block';
+            uploadBox.classList.add('has-image');
+        }
+    } else {
+        title.textContent = 'Add carousel image';
+        document.getElementById('adminSlideBadge').value = '';
+        document.getElementById('adminSlideTitle').value = '';
+        document.getElementById('adminSlideDesc').value = '';
+        document.getElementById('adminEditSlideIndex').value = '-1';
+    }
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+function adminSaveSlide() {
+    var imageInput = document.getElementById('adminSlideImageInput');
+    var badgeInput = document.getElementById('adminSlideBadge');
+    var titleInput = document.getElementById('adminSlideTitle');
+    var descInput = document.getElementById('adminSlideDesc');
+    var editIndex = document.getElementById('adminEditSlideIndex');
+    var preview = document.getElementById('adminSlidePreview');
+    var badge = badgeInput.value.trim();
+    var title = titleInput.value.trim();
+    var description = descInput.value.trim();
+    if (!title) {
+        alert('Please enter a title');
+        return;
+    }
+    var imageData = null;
+    if (imageInput.files && imageInput.files[0]) {
+        var file = imageInput.files[0];
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image is too large (max 5MB)');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            imageData = e.target.result;
+            saveSlideData(imageData, badge, title, description, parseInt(editIndex.value));
+        };
+        reader.readAsDataURL(file);
+    } else {
+        var index = parseInt(editIndex.value);
+        if (index >= 0 && index < heroSlides.length) {
+            imageData = heroSlides[index].image;
+            saveSlideData(imageData, badge, title, description, index);
+        } else {
+            alert('Please select an image');
+            return;
+        }
+    }
+}
+
+function saveSlideData(image, badge, title, description, index) {
+    var slideData = { image: image, badge: badge, title: title, description: description };
+    if (index >= 0 && index < heroSlides.length) {
+        heroSlides[index] = slideData;
+    } else {
+        heroSlides.push(slideData);
+    }
+    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+    adminCancelSlideForm();
+    renderAdminSlides();
+    initHeroSlider();
+    addAdminLog('Slide modified', 'Title: ' + title);
+    alert('Image saved successfully!');
+}
+
+function adminDeleteSlide(index) {
+    if (!confirm('Delete this carousel image?')) return;
+    var title = heroSlides[index]?.title || 'Untitled';
+    heroSlides.splice(index, 1);
+    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+    renderAdminSlides();
+    initHeroSlider();
+    addAdminLog('Slide deleted', 'Title: ' + title);
+}
+
+function adminEditSlide(index) {
+    adminShowSlideForm(index);
+}
+
+function adminCancelSlideForm() {
+    document.getElementById('adminSlideFormContainer').style.display = 'none';
+    document.getElementById('adminEditSlideIndex').value = '-1';
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+}
+
+function initAdminTabs() {
+    var tabs = document.querySelectorAll('.admin-tab');
+    var contents = {
+        events: document.getElementById('adminTabEvents'),
+        slides: document.getElementById('adminTabSlides'),
+        users: document.getElementById('adminTabUsers'),
+        logs: document.getElementById('adminTabLogs'),
+        settings: document.getElementById('adminTabSettings')
+    };
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            for (var key in contents) {
+                if (contents[key]) {
+                    contents[key].classList.remove('active');
+                }
+            }
+            var tabName = this.dataset.tab;
+            if (contents[tabName]) {
+                contents[tabName].classList.add('active');
+            }
+        });
+    });
 }
 
 // ============================================================
