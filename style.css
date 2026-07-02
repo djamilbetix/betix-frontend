@@ -864,6 +864,7 @@ body {
     display: inline-block;
 }
 
+/* ===== NOUVEAU DESIGN DES CARTES ÉVÉNEMENTS ===== */
 .events-grid-centered {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -892,21 +893,21 @@ body {
 }
 
 .event-card {
-    background: white;
+    background: #ffffff;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.3s, box-shadow 0.3s;
-    position: relative;
-    max-width: 100%;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid #f0f0f0;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
+    position: relative;
 }
 
 .event-card:hover {
     transform: translateY(-6px);
-    box-shadow: var(--card-hover-shadow);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.10);
     border-color: #f5a623;
 }
 
@@ -915,92 +916,94 @@ body {
     overflow: hidden;
     height: 200px;
     background: #f3f4f6;
+    flex-shrink: 0;
 }
 
 .event-card-banner img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s;
+    transition: transform 0.5s ease;
 }
 
 .event-card:hover .event-card-banner img {
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
 
 .event-card-badge {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 14px;
+    left: 14px;
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
-    padding: 4px 12px;
+    padding: 4px 14px;
     border-radius: 20px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.3px;
+    text-transform: uppercase;
 }
 
 .event-card-body {
-    padding: 0.9rem 1rem 0.7rem;
+    padding: 1rem 1rem 0.8rem;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .event-card-title {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #0D47A1;
-    line-height: 1.2;
-    margin-bottom: 4px;
+    line-height: 1.25;
+    margin-bottom: 2px;
 }
 
 .event-card-title .event-time-ago {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--gray);
     font-weight: 400;
-    display: block;
-    margin-top: 2px;
+    display: inline-block;
+    margin-left: 6px;
 }
 
 .event-card-desc {
     font-size: 0.82rem;
     color: #4b5563;
-    background: #f3f4f6;
+    background: #f8fafc;
     padding: 6px 12px;
     border-radius: 8px;
-    margin: 6px 0 8px;
+    margin: 4px 0 6px;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    flex: 1;
 }
 
 .event-card-details {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px 12px;
-    font-size: 0.75rem;
+    gap: 3px 10px;
+    font-size: 0.72rem;
     color: #4b5563;
-    margin: 6px 0;
     background: #f8fafc;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 8px;
 }
 
 .event-card-details .detail-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .event-card-details .detail-item i {
     color: #f5a623;
-    font-size: 0.7rem;
-    width: 16px;
+    font-size: 0.65rem;
+    width: 14px;
     text-align: center;
 }
 
@@ -1018,7 +1021,7 @@ body {
 }
 
 .event-card-footer {
-    margin-top: auto;
+    margin-top: 4px;
     padding-top: 0.6rem;
     border-top: 1px solid #e5e7eb;
     display: flex;
@@ -1029,7 +1032,7 @@ body {
 }
 
 .event-card-footer .organizer-by {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--gray);
 }
 
@@ -1044,14 +1047,8 @@ body {
     color: #f5a623;
 }
 
-.event-card-price small {
-    font-size: 0.7rem;
-    font-weight: 400;
-    color: var(--gray);
-}
-
 .event-card-seats {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--gray);
 }
 
@@ -1059,18 +1056,19 @@ body {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
     border: none;
-    padding: 7px 16px;
+    padding: 6px 16px;
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     transition: opacity 0.2s;
     flex: 1;
     min-width: 80px;
+    text-align: center;
 }
 
 .buy-btn:hover {
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
 .rating-btn, .rated-badge {
