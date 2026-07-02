@@ -19,6 +19,37 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log("Supabase initialized (Storage only mode)");
 
 // ============================================================
+// ===== PI BROWSER SECURITY CHECK =====
+// ============================================================
+
+function checkPiBrowser() {
+    var isPiBrowser = false;
+    
+    if (typeof Pi !== 'undefined' && Pi.version) {
+        isPiBrowser = true;
+    }
+    
+    if (navigator.userAgent && navigator.userAgent.indexOf('PiBrowser') !== -1) {
+        isPiBrowser = true;
+    }
+    
+    if (!isPiBrowser && !localStorage.getItem('betix_pi_warning_dismissed')) {
+        var warning = document.getElementById('piBrowserCheck');
+        if (warning) {
+            warning.style.display = 'flex';
+        }
+    }
+}
+
+function dismissPiWarning() {
+    localStorage.setItem('betix_pi_warning_dismissed', 'true');
+    var warning = document.getElementById('piBrowserCheck');
+    if (warning) {
+        warning.style.display = 'none';
+    }
+}
+
+// ============================================================
 // ===== COUNTRY LIST WITH FLAGS =====
 // ============================================================
 
@@ -107,7 +138,6 @@ var countriesWithFlags = [
     { flag: '🇦🇪', name: 'United Arab Emirates' },
     { flag: '🇸🇦', name: 'Saudi Arabia' },
     { flag: '🇳🇱', name: 'Netherlands' },
-    { flag: '🇧🇪', name: 'Belgium' },
     { flag: '🇨🇿', name: 'Czech Republic' },
     { flag: '🇬🇷', name: 'Greece' },
     { flag: '🇭🇺', name: 'Hungary' },
@@ -719,9 +749,12 @@ async function syncNotificationsToSupabase() {
         var notif = notifications[i];
         var receiverPiUid = notif.userWallet || currentUser.wallet;
         await saveNotificationToSupabase({
-            ...notif,
+            id: notif.id,
             receiverPiUid: receiverPiUid,
-            title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification'
+            title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification',
+            message: notif.message || '',
+            read: notif.read || false,
+            date: notif.date || new Date().toISOString()
         });
     }
 }
@@ -849,14 +882,23 @@ function changeLanguage(lang) {
     if (nativeSelect) {
         nativeSelect.value = lang;
     }
+    
     var googleSelect = document.querySelector('.goog-te-combo');
     if (googleSelect) {
-        googleSelect.value = lang;
-        googleSelect.dispatchEvent(new Event('change'));
+        try {
+            googleSelect.value = lang;
+            googleSelect.dispatchEvent(new Event('change'));
+            var currentUrl = window.location.href.split('?')[0];
+            window.location.href = currentUrl + '?lang=' + lang;
+        } catch(e) {
+            console.log('Translation error:', e);
+            var currentUrl = window.location.href.split('?')[0];
+            window.location.href = currentUrl + '?lang=' + lang;
+        }
+    } else {
+        var currentUrl = window.location.href.split('?')[0];
+        window.location.href = currentUrl + '?lang=' + lang;
     }
-    setTimeout(function() {
-        location.reload();
-    }, 600);
 }
 
 function detectLanguage() {
@@ -1871,48 +1913,42 @@ function renderTickets() {
         var dateEvent = new Date(t.eventDate);
         var dateFormatted = dateEvent.toLocaleDateString('en-US');
         var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        var ticketNumber = t.id || 'N/A';
         
-        return '<div class="ticket-premium">' +
-            '<div class="ticket-header">' +
-                '<div class="ticket-event-name">' + escapeHtml(t.eventTitle) + '</div>' +
-                '<span class="ticket-status valid">Valid</span>' +
+        return '<div class="ticket-premium-betix">' +
+            '<div class="ticket-header-betix">' +
+                '<div class="ticket-title-betix">' + escapeHtml(t.eventTitle) + '</div>' +
+                '<span class="ticket-status-betix valid">Valid</span>' +
             '</div>' +
-            '<div class="ticket-body">' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Date</span>' +
-                    '<span class="ticket-value">' + dateFormatted + '</span>' +
+            '<div class="ticket-body-betix">' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Date</span>' +
+                    '<span class="ticket-value-betix">' + dateFormatted + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Time</span>' +
-                    '<span class="ticket-value">' + timeFormatted + '</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Time</span>' +
+                    '<span class="ticket-value-betix">' + timeFormatted + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Location</span>' +
-                    '<span class="ticket-value">' + escapeHtml(t.eventLocation || 'Not specified') + '</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Location</span>' +
+                    '<span class="ticket-value-betix">' + escapeHtml(t.eventLocation || 'Not specified') + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Ticket</span>' +
-                    '<span class="ticket-value">' + t.id + '</span>' +
-                '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Participant</span>' +
-                    '<span class="ticket-value">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
-                '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Price</span>' +
-                    '<span class="ticket-value">' + t.price + ' Pi</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Ticket</span>' +
+                    '<span class="ticket-value-betix highlight">' + ticketNumber.substring(0, 12) + '...</span>' +
                 '</div>' +
             '</div>' +
-            '<div class="ticket-footer">' +
-                '<div class="ticket-qr-code">' +
-                    '<i class="fas fa-qrcode" style="font-size:2rem;color:#0D47A1;"></i>' +
-                    '<span style="font-size:0.6rem;margin-top:4px;color:var(--gray);">' + t.qrCode + '</span>' +
+            '<div class="ticket-footer-betix">' +
+                '<div class="ticket-qr-betix">' +
+                    '<i class="fas fa-qrcode"></i>' +
+                    '<span>' + (t.qrCode || 'N/A') + '</span>' +
                 '</div>' +
-                '<div class="ticket-buyer-info">' +
-                    '<span style="font-weight:600;">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
-                    '<span style="font-size:0.7rem;color:var(--gray);">Participant</span>' +
+                '<div class="ticket-buyer-betix">' +
+                    '<span class="buyer-name">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
+                    '<span class="buyer-label">Participant</span>' +
                 '</div>' +
             '</div>' +
+            '<div class="ticket-number-betix">#' + ticketNumber + '</div>' +
         '</div>';
     }).join('');
 }
@@ -1935,48 +1971,42 @@ function renderHistory() {
         var dateEvent = new Date(t.eventDate);
         var dateFormatted = dateEvent.toLocaleDateString('en-US');
         var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        var ticketNumber = t.id || 'N/A';
         
-        return '<div class="ticket-premium expired">' +
-            '<div class="ticket-header">' +
-                '<div class="ticket-event-name">' + escapeHtml(t.eventTitle) + '</div>' +
-                '<span class="ticket-status expired">Expired</span>' +
+        return '<div class="ticket-premium-betix" style="opacity:0.7;">' +
+            '<div class="ticket-header-betix">' +
+                '<div class="ticket-title-betix">' + escapeHtml(t.eventTitle) + '</div>' +
+                '<span class="ticket-status-betix expired">Expired</span>' +
             '</div>' +
-            '<div class="ticket-body">' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Date</span>' +
-                    '<span class="ticket-value">' + dateFormatted + '</span>' +
+            '<div class="ticket-body-betix">' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Date</span>' +
+                    '<span class="ticket-value-betix">' + dateFormatted + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Time</span>' +
-                    '<span class="ticket-value">' + timeFormatted + '</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Time</span>' +
+                    '<span class="ticket-value-betix">' + timeFormatted + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Location</span>' +
-                    '<span class="ticket-value">' + escapeHtml(t.eventLocation || 'Not specified') + '</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Location</span>' +
+                    '<span class="ticket-value-betix">' + escapeHtml(t.eventLocation || 'Not specified') + '</span>' +
                 '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Ticket</span>' +
-                    '<span class="ticket-value">' + t.id + '</span>' +
-                '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Participant</span>' +
-                    '<span class="ticket-value">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
-                '</div>' +
-                '<div class="ticket-row">' +
-                    '<span class="ticket-label">Price</span>' +
-                    '<span class="ticket-value">' + t.price + ' Pi</span>' +
+                '<div class="ticket-row-betix">' +
+                    '<span class="ticket-label-betix">Ticket</span>' +
+                    '<span class="ticket-value-betix highlight">' + ticketNumber.substring(0, 12) + '...</span>' +
                 '</div>' +
             '</div>' +
-            '<div class="ticket-footer">' +
-                '<div class="ticket-qr-code">' +
-                    '<i class="fas fa-qrcode" style="font-size:2rem;color:#ef4444;"></i>' +
-                    '<span style="font-size:0.6rem;margin-top:4px;color:var(--gray);">' + t.qrCode + '</span>' +
+            '<div class="ticket-footer-betix">' +
+                '<div class="ticket-qr-betix">' +
+                    '<i class="fas fa-qrcode" style="color:#ef4444;"></i>' +
+                    '<span>' + (t.qrCode || 'N/A') + '</span>' +
                 '</div>' +
-                '<div class="ticket-buyer-info">' +
-                    '<span style="font-weight:600;">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
-                    '<span style="font-size:0.7rem;color:var(--gray);">Participant</span>' +
+                '<div class="ticket-buyer-betix">' +
+                    '<span class="buyer-name" style="color:#ef4444;">' + escapeHtml(t.buyerName || t.buyerWallet) + '</span>' +
+                    '<span class="buyer-label">Participant</span>' +
                 '</div>' +
             '</div>' +
+            '<div class="ticket-number-betix">#' + ticketNumber + '</div>' +
         '</div>';
     }).join('');
 }
@@ -2255,10 +2285,8 @@ function renderEventCard(event) {
             '<div class="event-card-stats">' +
                 '<span class="event-card-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</span>' +
             '</div>' +
-            '<div style="font-size:0.7rem;color:var(--gray);margin-top:4px;padding-top:4px;border-top:1px solid #f0f0f0;">' +
-                'By <span style="color:#f5a623;font-weight:600;">@' + escapeHtml(organizerDisplay) + '</span>' +
-            '</div>' +
             '<div class="event-card-footer">' +
+                '<div class="organizer-by">By <span>@' + escapeHtml(organizerDisplay) + '</span></div>' +
                 '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             '</div>' +
         '</div>' +
@@ -2282,9 +2310,21 @@ function openEventDetails(eventId) {
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     var durationText = event.duration || '1 day';
     
-    // Ordre des informations : 1. Titre, 2. Description, 3. Localisation, 4. Heure, 5. Date, 6. Durée, 7. Prix, 8. By @user
     document.getElementById('detailTitle').textContent = event.title;
+    document.getElementById('detailTitle').style.fontSize = '1.6rem';
+    document.getElementById('detailTitle').style.fontWeight = '700';
+    
+    var organizerText = event.organizerName || event.organizer || 'Unknown';
+    var organizerLine = document.getElementById('detailOrganizerLine');
+    if (organizerLine) {
+        organizerLine.innerHTML = 'By <span style="color:#f5a623;font-weight:600;">@' + escapeHtml(organizerText) + '</span>';
+    }
+    
     document.getElementById('detailDescription').textContent = event.description || 'No description';
+    document.getElementById('detailDescription').style.fontSize = '1rem';
+    document.getElementById('detailDescription').style.lineHeight = '1.6';
+    document.getElementById('detailDescription').style.color = '#4b5563';
+    
     document.getElementById('detailCategory').textContent = event.category;
     document.getElementById('detailCountry').textContent = event.country || 'Not specified';
     document.getElementById('detailLocation').textContent = event.location || 'Online';
@@ -2297,18 +2337,6 @@ function openEventDetails(eventId) {
     
     document.getElementById('detailPrice').textContent = event.price + ' Pi';
     document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
-    
-    var organizerText = event.organizerName || event.organizer || 'Unknown';
-    var organizerEl = document.getElementById('detailOrganizer');
-    if (organizerEl) {
-        organizerEl.innerHTML = 'By <span style="color:#f5a623;font-weight:700;">@' + escapeHtml(organizerText) + '</span>';
-        organizerEl.style.display = 'block';
-        organizerEl.style.marginTop = '1rem';
-        organizerEl.style.paddingTop = '0.8rem';
-        organizerEl.style.borderTop = '1px solid #e5e7eb';
-        organizerEl.style.fontSize = '0.9rem';
-        organizerEl.style.color = 'var(--gray)';
-    }
     
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
@@ -3425,6 +3453,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 800);
     }
     
+    checkPiBrowser();
     detectLanguage();
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
