@@ -32,22 +32,6 @@
 </head>
 <body>
 
-<!-- Pi Browser Security Check - UNIQUEMENT SUR NAVIGATEURS EXTERNES -->
-<div id="piBrowserCheck" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; flex-direction:column; padding:20px; text-align:center;">
-    <div style="background:linear-gradient(135deg, #0D47A1, #1a1a2e); border-radius:24px; padding:40px 30px; max-width:450px; width:100%; color:white; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-        <div style="font-size:4rem; margin-bottom:16px;">🔒</div>
-        <h2 style="font-size:1.4rem; margin-bottom:12px; color:#f5a623;">Security Notice</h2>
-        <p style="font-size:0.95rem; line-height:1.6; opacity:0.9; margin-bottom:20px;">
-            For security reasons, please open Betix using <strong style="color:#f5a623;">Pi Browser</strong> to continue login and access your account.
-        </p>
-        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <button onclick="location.reload()" style="background:#f5a623; color:#1a1a2e; border:none; padding:12px 24px; border-radius:40px; font-weight:600; cursor:pointer; font-size:0.9rem;">Retry</button>
-            <button onclick="dismissPiWarning()" style="background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.2); padding:12px 24px; border-radius:40px; cursor:pointer; font-size:0.9rem;">Continue Anyway</button>
-        </div>
-        <p style="font-size:0.7rem; opacity:0.5; margin-top:16px;">Pi Browser recommended for full functionality</p>
-    </div>
-</div>
-
 <div id="loader" class="loader-container">
     <div class="loader-spinner"></div>
     <p class="loader-text">Loading...</p>
@@ -848,7 +832,6 @@
                 }
             }
             
-            // Force translation after page load
             setTimeout(function() {
                 var langSelect2 = document.querySelector('.goog-te-combo');
                 if (langSelect2) {
@@ -875,7 +858,6 @@
         }
     });
     
-    // Force translation when language is selected from native dropdown
     document.addEventListener('DOMContentLoaded', function() {
         var nativeSelect = document.getElementById('nativeLangSelect');
         if (nativeSelect) {
