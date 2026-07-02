@@ -25,18 +25,39 @@ console.log("Supabase initialized (Storage only mode)");
 function checkPiBrowser() {
     var isPiBrowser = false;
     
-    if (typeof Pi !== 'undefined' && Pi.version) {
-        isPiBrowser = true;
-    }
+    // Vérifier via Pi SDK
+    try {
+        if (typeof Pi !== 'undefined' && Pi.version) {
+            isPiBrowser = true;
+        }
+    } catch(e) {}
     
-    if (navigator.userAgent && navigator.userAgent.indexOf('PiBrowser') !== -1) {
-        isPiBrowser = true;
-    }
+    // Vérifier via l'User-Agent
+    try {
+        if (navigator.userAgent && navigator.userAgent.indexOf('PiBrowser') !== -1) {
+            isPiBrowser = true;
+        }
+    } catch(e) {}
     
+    // Vérifier via l'URL
+    try {
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('pibrowser') === 'true') {
+            isPiBrowser = true;
+        }
+    } catch(e) {}
+    
+    // Si ce n'est PAS Pi Browser ET que l'utilisateur n'a pas déjà fermé l'avertissement
     if (!isPiBrowser && !localStorage.getItem('betix_pi_warning_dismissed')) {
         var warning = document.getElementById('piBrowserCheck');
         if (warning) {
             warning.style.display = 'flex';
+        }
+    } else {
+        // Si c'est Pi Browser, cacher l'avertissement
+        var warning = document.getElementById('piBrowserCheck');
+        if (warning) {
+            warning.style.display = 'none';
         }
     }
 }
