@@ -25,21 +25,18 @@ console.log("Supabase initialized (Storage only mode)");
 function checkPiBrowser() {
     var isPiBrowser = false;
     
-    // Vérifier via Pi SDK
     try {
         if (typeof Pi !== 'undefined' && Pi.version) {
             isPiBrowser = true;
         }
     } catch(e) {}
     
-    // Vérifier via l'User-Agent
     try {
         if (navigator.userAgent && navigator.userAgent.indexOf('PiBrowser') !== -1) {
             isPiBrowser = true;
         }
     } catch(e) {}
     
-    // Vérifier via l'URL
     try {
         var urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('pibrowser') === 'true') {
@@ -47,14 +44,14 @@ function checkPiBrowser() {
         }
     } catch(e) {}
     
-    // Si ce n'est PAS Pi Browser ET que l'utilisateur n'a pas déjà fermé l'avertissement
     if (!isPiBrowser && !localStorage.getItem('betix_pi_warning_dismissed')) {
-        var warning = document.getElementById('piBrowserCheck');
-        if (warning) {
-            warning.style.display = 'flex';
-        }
+        setTimeout(function() {
+            var warning = document.getElementById('piBrowserCheck');
+            if (warning && warning.style.display !== 'flex') {
+                warning.style.display = 'flex';
+            }
+        }, 1500);
     } else {
-        // Si c'est Pi Browser, cacher l'avertissement
         var warning = document.getElementById('piBrowserCheck');
         if (warning) {
             warning.style.display = 'none';
@@ -909,8 +906,13 @@ function changeLanguage(lang) {
         try {
             googleSelect.value = lang;
             googleSelect.dispatchEvent(new Event('change'));
-            var currentUrl = window.location.href.split('?')[0];
-            window.location.href = currentUrl + '?lang=' + lang;
+            setTimeout(function() {
+                var currentUrl = window.location.href.split('?')[0];
+                var urlLang = new URLSearchParams(window.location.search).get('lang');
+                if (urlLang !== lang) {
+                    window.location.href = currentUrl + '?lang=' + lang;
+                }
+            }, 500);
         } catch(e) {
             console.log('Translation error:', e);
             var currentUrl = window.location.href.split('?')[0];
@@ -934,13 +936,25 @@ function detectLanguage() {
     if (nativeSelect) {
         nativeSelect.value = savedLang;
     }
+    
+    setTimeout(function() {
+        var googleSelect = document.querySelector('.goog-te-combo');
+        if (googleSelect) {
+            if (googleSelect.value !== savedLang) {
+                googleSelect.value = savedLang;
+                googleSelect.dispatchEvent(new Event('change'));
+            }
+        }
+    }, 1000);
+    
     setTimeout(function() {
         var googleSelect = document.querySelector('.goog-te-combo');
         if (googleSelect && googleSelect.value !== savedLang) {
             googleSelect.value = savedLang;
             googleSelect.dispatchEvent(new Event('change'));
         }
-    }, 800);
+    }, 2500);
+    
     return savedLang;
 }
 
@@ -3474,7 +3488,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 800);
     }
     
-    checkPiBrowser();
+    setTimeout(function() {
+        checkPiBrowser();
+    }, 1200);
+    
     detectLanguage();
     
     if (!events.length) { events = JSON.parse(JSON.stringify(demoEvents)); saveEvents(); }
