@@ -2284,7 +2284,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD - VERSION PREMIUM =====
+// ===== RENDER EVENT CARD - VERSION SIMPLE & PROFESSIONNELLE =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -2292,107 +2292,135 @@ function renderEventCard(event) {
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
     
-    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 20) {
-        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
-    }
-    
     var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    // Badge category icon
-    var categoryIcons = {
-        'Concert': 'fa-music',
-        'Sport': 'fa-futbol',
-        'Football': 'fa-futbol',
-        'Conference': 'fa-users',
-        'Training': 'fa-graduation-cap',
-        'Cinema': 'fa-film',
-        'Festival': 'fa-star',
-        'Theatre': 'fa-masks-theater',
-        'Dance': 'fa-dance',
-        'Exhibition': 'fa-palette',
-        'Gala': 'fa-crown',
-        'Seminar': 'fa-chalkboard-user'
+    // Drapeau par pays
+    var flagEmojis = {
+        'France': '🇫🇷',
+        'RDC': '🇨🇩',
+        'Congo': '🇨🇬',
+        'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭',
+        'Canada': '🇨🇦',
+        'Senegal': '🇸🇳',
+        'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮',
+        'Ivory Coast': '🇨🇮',
+        'Mali': '🇲🇱',
+        'Niger': '🇳🇪',
+        'Nigeria': '🇳🇬',
+        'South Africa': '🇿🇦',
+        'Angola': '🇦🇴',
+        'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪',
+        'Tanzania': '🇹🇿',
+        'Uganda': '🇺🇬',
+        'Rwanda': '🇷🇼',
+        'Burundi': '🇧🇮',
+        'Ethiopia': '🇪🇹',
+        'Somalia': '🇸🇴',
+        'Djibouti': '🇩🇯',
+        'Eritrea': '🇪🇷',
+        'Sudan': '🇸🇩',
+        'South Sudan': '🇸🇸',
+        'Egypt': '🇪🇬',
+        'Libya': '🇱🇾',
+        'Tunisia': '🇹🇳',
+        'Algeria': '🇩🇿',
+        'Morocco': '🇲🇦',
+        'Mauritania': '🇲🇷',
+        'Ghana': '🇬🇭',
+        'Guinea': '🇬🇳',
+        'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯',
+        'Togo': '🇹🇬',
+        'Liberia': '🇱🇷',
+        'Sierra Leone': '🇸🇱',
+        'Gambia': '🇬🇲',
+        'Guinea-Bissau': '🇬🇼',
+        'Cape Verde': '🇨🇻',
+        'Sao Tome': '🇸🇹',
+        'Gabon': '🇬🇦',
+        'Equatorial Guinea': '🇬🇶',
+        'Central African Republic': '🇨🇫',
+        'Chad': '🇹🇩',
+        'Madagascar': '🇲🇬',
+        'Comoros': '🇰🇲',
+        'Mauritius': '🇲🇺',
+        'Seychelles': '🇸🇨',
+        'Zambia': '🇿🇲',
+        'Zimbabwe': '🇿🇼',
+        'Botswana': '🇧🇼',
+        'Namibia': '🇳🇦',
+        'Lesotho': '🇱🇸',
+        'Eswatini': '🇸🇿',
+        'Malawi': '🇲🇼',
+        'Spain': '🇪🇸',
+        'Portugal': '🇵🇹',
+        'Germany': '🇩🇪',
+        'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧',
+        'United States': '🇺🇸',
+        'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦',
+        'Turkey': '🇹🇷',
+        'Iran': '🇮🇷',
+        'China': '🇨🇳',
+        'Japan': '🇯🇵',
+        'India': '🇮🇳',
+        'Indonesia': '🇮🇩',
+        'Australia': '🇦🇺',
+        'Mexico': '🇲🇽',
+        'Argentina': '🇦🇷',
+        'Brazil': '🇧🇷',
+        'Denmark': '🇩🇰',
+        'Sweden': '🇸🇪',
+        'Austria': '🇦🇹'
     };
-    var iconClass = categoryIcons[event.category] || 'fa-calendar';
     
-    // Split title for two colors
-    var titleParts = event.title.split(' ');
-    var mid = Math.ceil(titleParts.length / 2);
-    var part1 = titleParts.slice(0, mid).join(' ');
-    var part2 = titleParts.slice(mid).join(' ');
+    var countryFlag = flagEmojis[event.country] || '🌍';
+    var countryDisplay = event.country || 'International';
     
-    // Description (max 3 lines)
+    // Description (max 2 lignes)
     var desc = event.description || '';
-    if (desc.length > 120) {
-        desc = desc.substring(0, 117) + '...';
-    }
-    
-    // Info items
-    var conditionDisplay = event.conditions ? (event.conditions.split('\n')[0] || 'Standard') : 'Standard';
-    if (conditionDisplay.length > 12) {
-        conditionDisplay = conditionDisplay.substring(0, 10) + '...';
+    if (desc.length > 100) {
+        desc = desc.substring(0, 97) + '...';
     }
     
     var priceDisplay = event.price + ' Pi';
-    if (event.price < 0.001) {
-        priceDisplay = (event.price * 1000).toFixed(0) + ' mPi';
-    }
     
-    return '<div class="event-card-premium" onclick="openEventDetails(\'' + event.id + '\')">' +
+    return '<div class="event-card-simple" onclick="openEventDetails(\'' + event.id + '\')">' +
         
-        // Badge
-        '<div class="category-badge">' +
-            '<i class="fas ' + iconClass + '"></i> ' + escapeHtml(event.category) +
-        '</div>' +
-        
-        // Title
-        '<div class="event-title-premium">' +
-            '<span class="title-part1">' + escapeHtml(part1) + '</span>' +
-            (part2 ? ' <span class="title-part2">' + escapeHtml(part2) + '</span>' : '') +
-        '</div>' +
-        
-        // Description
-        (desc ? '<div class="event-desc-premium">' + escapeHtml(desc) + '</div>' : '') +
-        
-        // Poster
-        '<div class="poster-wrapper">' +
+        // Poster avec badge catégorie en haut à gauche
+        '<div class="poster-wrapper-simple">' +
             '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '<span class="category-badge-simple">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
         
-        // Info grid (4 columns)
-        '<div class="info-grid">' +
-            '<div class="info-item">' +
-                '<div class="info-icon"><i class="fas fa-clipboard-list"></i></div>' +
-                '<span class="info-label">Condition</span>' +
-                '<span class="info-value">' + escapeHtml(conditionDisplay) + '</span>' +
+        // Contenu
+        '<div class="card-content">' +
+            
+            // Titre en grand
+            '<div class="event-title-simple">' + escapeHtml(event.title) + '</div>' +
+            
+            // Description
+            (desc ? '<div class="event-desc-simple">' + escapeHtml(desc) + '</div>' : '') +
+            
+            // Footer avec pays + drapeau et prix
+            '<div class="card-footer-simple">' +
+                '<span class="country-flag">' +
+                    '<span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) +
+                '</span>' +
+                '<span class="event-price-simple">' + priceDisplay + '</span>' +
             '</div>' +
-            '<div class="info-item">' +
-                '<div class="info-icon"><i class="fas fa-calendar-day"></i></div>' +
-                '<span class="info-label">Date</span>' +
-                '<span class="info-value">' + dateFormatted + '</span>' +
-            '</div>' +
-            '<div class="info-item">' +
-                '<div class="info-icon"><i class="fas fa-clock"></i></div>' +
-                '<span class="info-label">Heure</span>' +
-                '<span class="info-value">' + timeFormatted + '</span>' +
-            '</div>' +
-            '<div class="info-item">' +
-                '<div class="info-icon"><i class="fas fa-coins"></i></div>' +
-                '<span class="info-label">Prix</span>' +
-                '<span class="info-value">' + priceDisplay + '</span>' +
-            '</div>' +
+            
+            // Bouton Buy Ticket (sans icône)
+            '<button class="buy-btn-simple" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            
         '</div>' +
-        
-        // Buy button
-        '<button class="buy-btn-premium" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' +
-            '<i class="fas fa-shopping-cart"></i> Acheter' +
-        '</button>' +
         
     '</div>';
 }
