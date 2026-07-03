@@ -2333,10 +2333,15 @@ function renderEventCard(event) {
         desc = desc.substring(0, 117) + '...';
     }
     
-    // Organisateur
+    // Organisateur - format By @username
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) {
         organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    }
+    // Si le nom ne commence pas par @, on l'ajoute
+    var organizerFormatted = organizerDisplay;
+    if (!organizerFormatted.startsWith('@')) {
+        organizerFormatted = '@' + organizerFormatted;
     }
     
     // Rating / New badge
@@ -2364,11 +2369,13 @@ function renderEventCard(event) {
         // Contenu
         '<div class="card-content-classic">' +
             
-            // Titre + Organisateur
+            // Titre
             '<div class="event-title-classic">' +
                 escapeHtml(event.title) +
-                ' <span class="org-name">by ' + escapeHtml(organizerDisplay) + '</span>' +
             '</div>' +
+            
+            // Description (après le titre)
+            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
             
             // Grille d'informations (Date, Lieu, Heure, Pays)
             '<div class="info-grid-classic">' +
@@ -2377,9 +2384,6 @@ function renderEventCard(event) {
                 '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
-            
-            // Description
-            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
             
             // Footer (rating, prix, places)
             '<div class="card-footer-classic">' +
@@ -2392,6 +2396,11 @@ function renderEventCard(event) {
             
             // Bouton Buy Ticket
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            
+            // Organisateur en bas du bouton avec icône 🙎‍♂️
+            '<div class="event-organizer-classic">' +
+                '🙎‍♂️ By ' + escapeHtml(organizerFormatted) +
+            '</div>' +
             
         '</div>' +
         
