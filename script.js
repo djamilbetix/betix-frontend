@@ -2284,7 +2284,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD - VERSION SIMPLE & PROFESSIONNELLE =====
+// ===== RENDER EVENT CARD - STYLE CLASSIQUE =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -2293,92 +2293,35 @@ function renderEventCard(event) {
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
     
     var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    // Drapeau par pays
+    // Drapeau par pays (liste complète)
     var flagEmojis = {
-        'France': '🇫🇷',
-        'RDC': '🇨🇩',
-        'Congo': '🇨🇬',
-        'Belgium': '🇧🇪',
-        'Switzerland': '🇨🇭',
-        'Canada': '🇨🇦',
-        'Senegal': '🇸🇳',
-        'Cameroon': '🇨🇲',
-        'Cote d\'Ivoire': '🇨🇮',
-        'Ivory Coast': '🇨🇮',
-        'Mali': '🇲🇱',
-        'Niger': '🇳🇪',
-        'Nigeria': '🇳🇬',
-        'South Africa': '🇿🇦',
-        'Angola': '🇦🇴',
-        'Mozambique': '🇲🇿',
-        'Kenya': '🇰🇪',
-        'Tanzania': '🇹🇿',
-        'Uganda': '🇺🇬',
-        'Rwanda': '🇷🇼',
-        'Burundi': '🇧🇮',
-        'Ethiopia': '🇪🇹',
-        'Somalia': '🇸🇴',
-        'Djibouti': '🇩🇯',
-        'Eritrea': '🇪🇷',
-        'Sudan': '🇸🇩',
-        'South Sudan': '🇸🇸',
-        'Egypt': '🇪🇬',
-        'Libya': '🇱🇾',
-        'Tunisia': '🇹🇳',
-        'Algeria': '🇩🇿',
-        'Morocco': '🇲🇦',
-        'Mauritania': '🇲🇷',
-        'Ghana': '🇬🇭',
-        'Guinea': '🇬🇳',
-        'Burkina Faso': '🇧🇫',
-        'Benin': '🇧🇯',
-        'Togo': '🇹🇬',
-        'Liberia': '🇱🇷',
-        'Sierra Leone': '🇸🇱',
-        'Gambia': '🇬🇲',
-        'Guinea-Bissau': '🇬🇼',
-        'Cape Verde': '🇨🇻',
-        'Sao Tome': '🇸🇹',
-        'Gabon': '🇬🇦',
-        'Equatorial Guinea': '🇬🇶',
-        'Central African Republic': '🇨🇫',
-        'Chad': '🇹🇩',
-        'Madagascar': '🇲🇬',
-        'Comoros': '🇰🇲',
-        'Mauritius': '🇲🇺',
-        'Seychelles': '🇸🇨',
-        'Zambia': '🇿🇲',
-        'Zimbabwe': '🇿🇼',
-        'Botswana': '🇧🇼',
-        'Namibia': '🇳🇦',
-        'Lesotho': '🇱🇸',
-        'Eswatini': '🇸🇿',
-        'Malawi': '🇲🇼',
-        'Spain': '🇪🇸',
-        'Portugal': '🇵🇹',
-        'Germany': '🇩🇪',
-        'Italy': '🇮🇹',
-        'United Kingdom': '🇬🇧',
-        'United States': '🇺🇸',
-        'Russia': '🇷🇺',
-        'Ukraine': '🇺🇦',
-        'Turkey': '🇹🇷',
-        'Iran': '🇮🇷',
-        'China': '🇨🇳',
-        'Japan': '🇯🇵',
-        'India': '🇮🇳',
-        'Indonesia': '🇮🇩',
-        'Australia': '🇦🇺',
-        'Mexico': '🇲🇽',
-        'Argentina': '🇦🇷',
-        'Brazil': '🇧🇷',
-        'Denmark': '🇩🇰',
-        'Sweden': '🇸🇪',
-        'Austria': '🇦🇹'
+        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮', 'Ivory Coast': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪',
+        'Nigeria': '🇳🇬', 'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
+        'Burundi': '🇧🇮', 'Ethiopia': '🇪🇹', 'Somalia': '🇸🇴', 'Djibouti': '🇩🇯',
+        'Eritrea': '🇪🇷', 'Sudan': '🇸🇩', 'South Sudan': '🇸🇸', 'Egypt': '🇪🇬',
+        'Libya': '🇱🇾', 'Tunisia': '🇹🇳', 'Algeria': '🇩🇿', 'Morocco': '🇲🇦',
+        'Mauritania': '🇲🇷', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
+        'Gambia': '🇬🇲', 'Guinea-Bissau': '🇬🇼', 'Cape Verde': '🇨🇻', 'Sao Tome': '🇸🇹',
+        'Gabon': '🇬🇦', 'Equatorial Guinea': '🇬🇶', 'Central African Republic': '🇨🇫',
+        'Chad': '🇹🇩', 'Madagascar': '🇲🇬', 'Comoros': '🇰🇲', 'Mauritius': '🇲🇺',
+        'Seychelles': '🇸🇨', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼',
+        'Namibia': '🇳🇦', 'Lesotho': '🇱🇸', 'Eswatini': '🇸🇿', 'Malawi': '🇲🇼',
+        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'Iran': '🇮🇷', 'China': '🇨🇳',
+        'Japan': '🇯🇵', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺',
+        'Mexico': '🇲🇽', 'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰',
+        'Sweden': '🇸🇪', 'Austria': '🇦🇹'
     };
     
     var countryFlag = flagEmojis[event.country] || '🌍';
@@ -2386,39 +2329,69 @@ function renderEventCard(event) {
     
     // Description (max 2 lignes)
     var desc = event.description || '';
-    if (desc.length > 100) {
-        desc = desc.substring(0, 97) + '...';
+    if (desc.length > 120) {
+        desc = desc.substring(0, 117) + '...';
+    }
+    
+    // Organisateur
+    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
+    if (organizerDisplay.length > 20) {
+        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    }
+    
+    // Rating / New badge
+    var ratingDisplay = '';
+    if (eventRatings.length > 0) {
+        var stars = '';
+        var fullStars = Math.floor(avgRating);
+        for (var i = 0; i < fullStars; i++) stars += '★';
+        for (var i = fullStars; i < 5; i++) stars += '☆';
+        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
+    } else {
+        ratingDisplay = '<span class="new-badge">New</span>';
     }
     
     var priceDisplay = event.price + ' Pi';
     
-    return '<div class="event-card-simple" onclick="openEventDetails(\'' + event.id + '\')">' +
+    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
         
-        // Poster avec badge catégorie en haut à gauche
-        '<div class="poster-wrapper-simple">' +
+        // Poster avec badge catégorie
+        '<div class="poster-wrapper-classic">' +
             '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="category-badge-simple">' + escapeHtml(event.category) + '</span>' +
+            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
         
         // Contenu
-        '<div class="card-content">' +
+        '<div class="card-content-classic">' +
             
-            // Titre en grand
-            '<div class="event-title-simple">' + escapeHtml(event.title) + '</div>' +
-            
-            // Description
-            (desc ? '<div class="event-desc-simple">' + escapeHtml(desc) + '</div>' : '') +
-            
-            // Footer avec pays + drapeau et prix
-            '<div class="card-footer-simple">' +
-                '<span class="country-flag">' +
-                    '<span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) +
-                '</span>' +
-                '<span class="event-price-simple">' + priceDisplay + '</span>' +
+            // Titre + Organisateur
+            '<div class="event-title-classic">' +
+                escapeHtml(event.title) +
+                ' <span class="org-name">by ' + escapeHtml(organizerDisplay) + '</span>' +
             '</div>' +
             
-            // Bouton Buy Ticket (sans icône)
-            '<button class="buy-btn-simple" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            // Grille d'informations (Date, Lieu, Heure, Pays)
+            '<div class="info-grid-classic">' +
+                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
+            '</div>' +
+            
+            // Description
+            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
+            
+            // Footer (rating, prix, places)
+            '<div class="card-footer-classic">' +
+                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
+                '<span>' +
+                    '<span class="event-price-classic">' + priceDisplay + '</span>' +
+                    ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
+                '</span>' +
+            '</div>' +
+            
+            // Bouton Buy Ticket
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             
         '</div>' +
         
