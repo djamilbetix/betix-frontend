@@ -11,6 +11,7 @@
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -28,6 +29,7 @@
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
     
+    <!-- Google Translate Script -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -58,6 +60,7 @@
     </div>
 </header>
 
+<!-- ===== SIDEBAR ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -88,9 +91,9 @@
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
             <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
                 <option value="en">English</option>
-                <option value="fr">Francais</option>
-                <option value="es">Espanol</option>
-                <option value="pt">Portugues</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
                 <option value="zh">中文</option>
                 <option value="id">Indonesia</option>
                 <option value="ar">العربية</option>
@@ -134,6 +137,7 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
+<!-- ===== NOTIFICATIONS PAGE ===== -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
@@ -201,6 +205,7 @@
     </div>
 </div>
 
+<!-- ===== MY EVENTS PAGE ===== -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Events</h2>
@@ -210,6 +215,7 @@
     </div>
 </div>
 
+<!-- ===== CREATE EVENT PAGE ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -235,21 +241,6 @@
                 </select>
             </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
-            
-            <div class="form-group">
-                <label>Duration</label>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input type="number" id="eventDuration" value="1" min="1" style="width:80px;">
-                    <select id="eventDurationUnit" style="flex:1; min-width:100px;">
-                        <option value="hours">Hour(s)</option>
-                        <option value="days" selected>Day(s)</option>
-                        <option value="weeks">Week(s)</option>
-                        <option value="months">Month(s)</option>
-                        <option value="years">Year(s)</option>
-                    </select>
-                </div>
-            </div>
-            
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
             <div class="form-group">
@@ -300,18 +291,16 @@
                         </div>
                     </div>
                 </div>
-                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
             <button type="submit" class="btn-primary" id="publishEventBtn">Publish Event</button>
-            <div id="publishLoading" style="display:none; text-align:center; margin-top:12px; color:var(--gray);">
-                <i class="fas fa-spinner fa-spin"></i> Publishing...
-            </div>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
+<!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
@@ -341,10 +330,6 @@
                     <div class="publish-summary-item">
                         <span class="publish-label">Date & Time</span>
                         <span class="publish-value" id="confirmDate">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Duration</span>
-                        <span class="publish-value" id="confirmDuration">-</span>
                     </div>
                     <div class="publish-summary-item">
                         <span class="publish-label">Location</span>
@@ -394,33 +379,22 @@
     </div>
 </div>
 
+<!-- ===== TICKETS PAGE ===== -->
 <div id="ticketsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">My Active Tickets</h2>
-        <p class="events-sub">Your valid tickets</p>
-        <div id="ticketsList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">My Active Tickets</h2><p class="events-sub">Your valid tickets</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
+<!-- ===== HISTORY PAGE ===== -->
 <div id="historyPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">Ticket History</h2>
-        <p class="events-sub">All your purchased tickets</p>
-        <div id="historyList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">Ticket History</h2><p class="events-sub">All your purchased tickets</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
+<!-- ===== RATINGS PAGE ===== -->
 <div id="ratingsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">My Ratings</h2>
-        <p class="events-sub">Events you rated</p>
-        <div id="myRatingsList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
+<!-- ===== PROFILE PAGE ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -475,6 +449,7 @@
     </div>
 </div>
 
+<!-- ===== WHITEPAPER PAGE ===== -->
 <div id="whitepaperPage" class="hidden-page">
     <div class="page-content">
         <h2>Whitepaper</h2>
@@ -484,6 +459,7 @@
     </div>
 </div>
 
+<!-- ===== FAQ PAGE ===== -->
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
         <div class="faq-header">
@@ -503,6 +479,7 @@
     </div>
 </div>
 
+<!-- ===== SETTINGS PAGE ===== -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -517,6 +494,7 @@
     </div>
 </div>
 
+<!-- ===== ADMIN PAGE ===== -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -614,6 +592,7 @@
     </div>
 </div>
 
+<!-- ===== FOOTER ===== -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -668,6 +647,7 @@
     </div>
 </footer>
 
+<!-- ===== MODALS ===== -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
@@ -675,6 +655,7 @@
     </div>
 </div>
 
+<!-- ===== EVENT DETAIL MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
@@ -683,7 +664,6 @@
                 <div class="event-detail-gallery" id="detailGallery"></div>
                 <div class="event-detail-info">
                     <h2 id="detailTitle">Title</h2>
-                    <div id="detailOrganizerLine" style="font-size:0.85rem; color:var(--gray); margin-top:2px;"></div>
                     <div class="detail-meta">
                         <span class="detail-category" id="detailCategory">Category</span>
                         <span class="detail-date" id="detailDate">Date</span>
@@ -708,7 +688,7 @@
                 <div class="detail-section">
                     <h3>Information</h3>
                     <div class="detail-grid">
-                        <div class="detail-grid-item"><span class="label">Duration</span><span class="value" id="detailDuration">-</span></div>
+                        <div class="detail-grid-item"><span class="label">Organizer</span><span class="value" id="detailOrganizer">-</span></div>
                         <div class="detail-grid-item"><span class="label">Created on</span><span class="value" id="detailCreated">-</span></div>
                         <div class="detail-grid-item"><span class="label">Seats left</span><span class="value" id="detailBoosts">-</span></div>
                         <div class="detail-grid-item"><span class="label">Rating</span><span class="value" id="detailRating">-</span></div>
@@ -726,6 +706,7 @@
     </div>
 </div>
 
+<!-- ===== TICKET QUANTITY POPUP ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
@@ -745,6 +726,7 @@
     </div>
 </div>
 
+<!-- ===== PURCHASE SUCCESS POPUP ===== -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
@@ -802,8 +784,6 @@
                 select.style.color = '#1f2937';
                 select.style.width = '100%';
                 select.style.maxWidth = '180px';
-                select.style.marginTop = '4px';
-                select.style.cursor = 'pointer';
             }
             
             var iframes = document.querySelectorAll('iframe');
@@ -819,58 +799,8 @@
             
             document.body.style.top = '0px';
             document.body.style.position = 'relative';
-            
-            var savedLang = localStorage.getItem('betix_language') || 'en';
-            var langSelect = document.querySelector('.goog-te-combo');
-            if (langSelect) {
-                try {
-                    langSelect.value = savedLang;
-                    langSelect.dispatchEvent(new Event('change'));
-                    console.log('Language set to:', savedLang);
-                } catch(e) {
-                    console.log('Language selection not ready yet');
-                }
-            }
-            
-            setTimeout(function() {
-                var langSelect2 = document.querySelector('.goog-te-combo');
-                if (langSelect2) {
-                    var currentLang = localStorage.getItem('betix_language') || 'en';
-                    if (langSelect2.value !== currentLang) {
-                        langSelect2.value = currentLang;
-                        langSelect2.dispatchEvent(new Event('change'));
-                    }
-                }
-            }, 2000);
-            
-        }, 1500);
+        }, 500);
     }
-    
-    document.addEventListener('change', function(e) {
-        if (e.target.classList && e.target.classList.contains('goog-te-combo')) {
-            var lang = e.target.value;
-            localStorage.setItem('betix_language', lang);
-            var nativeSelect = document.getElementById('nativeLangSelect');
-            if (nativeSelect) {
-                nativeSelect.value = lang;
-            }
-            console.log('Language changed to:', lang);
-        }
-    });
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        var nativeSelect = document.getElementById('nativeLangSelect');
-        if (nativeSelect) {
-            nativeSelect.addEventListener('change', function() {
-                var lang = this.value;
-                var googleSelect = document.querySelector('.goog-te-combo');
-                if (googleSelect) {
-                    googleSelect.value = lang;
-                    googleSelect.dispatchEvent(new Event('change'));
-                }
-            });
-        }
-    });
 </script>
 
 <script src="script.js"></script>
