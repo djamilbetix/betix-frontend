@@ -2647,7 +2647,7 @@ function renderEventCard(event) {
             
             // Organisateur en bas du bouton avec icône (à gauche)
             '<div class="event-organizer-classic">' +
-                '<span class="org-icon">🙎‍♂️</span> By ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
             
         '</div>' +
