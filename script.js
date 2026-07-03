@@ -3443,6 +3443,28 @@ document.addEventListener('DOMContentLoaded', function() {
     var clearDataBtn = document.getElementById('clearDataBtn');
     var backBtn = document.getElementById('backBtn');
     
+    // ==== CORRECTION : Menu (trois barres) ====
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            openSidebar();
+        });
+    }
+    
+    if (closeSidebarBtn) {
+        closeSidebarBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+    
     var profilePhotoInputSidebar = document.getElementById('profilePhotoInputSidebar');
     if (profilePhotoInputSidebar) {
         profilePhotoInputSidebar.addEventListener('change', function() {
@@ -3504,9 +3526,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    if (menuBtn) menuBtn.addEventListener('click', openSidebar);
-    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
     if (eventForm) eventForm.addEventListener('submit', createEvent);
     if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
     if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
