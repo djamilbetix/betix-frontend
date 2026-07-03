@@ -238,7 +238,9 @@ async function saveEventToSupabase(eventData) {
             category: eventData.category || '',
             ticket_price: eventData.price || 0,
             max_tickets: eventData.seatsTotal || 0,
-            created_at: eventData.createdAt || new Date().toISOString()
+            created_at: eventData.createdAt || new Date().toISOString(),
+            duration_value: eventData.durationValue || null,
+            duration_unit: eventData.durationUnit || null
         };
         
         const { error } = await supabaseClient
@@ -266,6 +268,22 @@ async function loadEventsFromSupabase() {
     } catch (error) {
         console.error('Error loading events from Supabase:', error);
         return [];
+    }
+}
+
+async function updateEventInSupabase(eventId, updates) {
+    try {
+        const { error } = await supabaseClient
+            .from('events')
+            .update(updates)
+            .eq('id', eventId);
+        
+        if (error) throw error;
+        console.log('Event updated in Supabase:', eventId);
+        return true;
+    } catch (error) {
+        console.error('Error updating event in Supabase:', error);
+        return false;
     }
 }
 
@@ -638,7 +656,9 @@ async function loadAllFromSupabase() {
             organizer: e.organizer_pi_uid || '',
             organizerName: e.organizer_name || '',
             createdAt: e.created_at || new Date().toISOString(),
-            boosts: 0
+            boosts: 0,
+            durationValue: e.duration_value || null,
+            durationUnit: e.duration_unit || null
         }));
         localStorage.setItem('betix_events', JSON.stringify(events));
     } else {
@@ -719,7 +739,7 @@ function renderChatMessages() {
 }
 
 // ============================================================
-// ===== LANGUAGE MANAGEMENT =====
+// ===== LANGUAGE MANAGEMENT (AVEC GOOGLE TRANSLATE) =====
 // ============================================================
 
 function changeLanguage(lang) {
@@ -728,14 +748,27 @@ function changeLanguage(lang) {
     if (nativeSelect) {
         nativeSelect.value = lang;
     }
+    
+    // Utiliser Google Translate
     var googleSelect = document.querySelector('.goog-te-combo');
     if (googleSelect) {
         googleSelect.value = lang;
         googleSelect.dispatchEvent(new Event('change'));
     }
+    
+    // Si Google Translate n'est pas encore chargé, réessayer
+    setTimeout(function() {
+        var googleSelectRetry = document.querySelector('.goog-te-combo');
+        if (googleSelectRetry && googleSelectRetry.value !== lang) {
+            googleSelectRetry.value = lang;
+            googleSelectRetry.dispatchEvent(new Event('change'));
+        }
+    }, 1000);
+    
+    // Recharger la page après un délai pour appliquer la traduction
     setTimeout(function() {
         location.reload();
-    }, 600);
+    }, 800);
 }
 
 function detectLanguage() {
@@ -750,14 +783,27 @@ function detectLanguage() {
     if (nativeSelect) {
         nativeSelect.value = savedLang;
     }
+    
+    // Appliquer la traduction Google Translate
     setTimeout(function() {
         var googleSelect = document.querySelector('.goog-te-combo');
         if (googleSelect && googleSelect.value !== savedLang) {
             googleSelect.value = savedLang;
             googleSelect.dispatchEvent(new Event('change'));
         }
-    }, 800);
+    }, 1500);
+    
     return savedLang;
+}
+
+// Fonction pour forcer la traduction
+function forceTranslation(lang) {
+    var googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) {
+        googleSelect.value = lang || 'en';
+        googleSelect.dispatchEvent(new Event('change'));
+        localStorage.setItem('betix_language', lang || 'en');
+    }
 }
 
 // ============================================================
@@ -1299,6 +1345,7 @@ async function confirmPurchase(eventId, quantity) {
                             eventTitle: event.title,
                             eventDate: event.date,
                             eventLocation: event.location,
+                            category: event.category || '',
                             price: event.price,
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: piUser ? piUser.username : currentUser.name,
@@ -1306,7 +1353,8 @@ async function confirmPurchase(eventId, quantity) {
                             purchaseDate: new Date().toISOString(),
                             purchaseDateTime: new Date().toLocaleString('en-US'),
                             transactionId: txid,
-                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i
+                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i,
+                            status: 'Valid'
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -1452,7 +1500,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION =====
+// ===== PUBLISH CONFIRMATION (AVEC DURÉE) =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1469,6 +1517,17 @@ function openPublishConfirm(eventData) {
     document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
     document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
     document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
+    
+    // Afficher la durée si présente
+    var durationDisplay = document.getElementById('confirmDuration');
+    if (durationDisplay) {
+        if (eventData.durationValue && eventData.durationUnit) {
+            durationDisplay.textContent = eventData.durationValue + ' ' + eventData.durationUnit;
+            durationDisplay.style.display = 'block';
+        } else {
+            durationDisplay.style.display = 'none';
+        }
+    }
     
     var imagesContainer = document.getElementById('confirmImages');
     imagesContainer.innerHTML = '';
@@ -1533,7 +1592,7 @@ async function confirmPublishEvent() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT (AVEC DURÉE) =====
 // ============================================================
 
 function createEvent(e) {
@@ -1558,6 +1617,11 @@ function createEvent(e) {
     var category = document.getElementById('eventCategory').value;
     var country = document.getElementById('eventCountry').value;
     
+    // Récupérer la durée
+    var durationValue = document.getElementById('eventDurationValue').value;
+    var durationUnit = document.getElementById('eventDurationUnit').value;
+    var durationValueNum = durationValue ? parseInt(durationValue) : null;
+    
     var newEvent = {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
@@ -1576,7 +1640,9 @@ function createEvent(e) {
         organizerPiUid: currentUser.piUid || currentUser.wallet,
         organizerName: currentUser.name,
         createdAt: new Date().toISOString(),
-        boosts: 0
+        boosts: 0,
+        durationValue: durationValueNum,
+        durationUnit: durationUnit
     };
     
     if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
@@ -1585,6 +1651,113 @@ function createEvent(e) {
     }
     
     openPublishConfirm(newEvent);
+}
+
+// ============================================================
+// ===== MODIFIER UN ÉVÉNEMENT =====
+// ============================================================
+
+var editingEventId = null;
+
+function openEditEventModal(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) {
+        alert('You are not the organizer of this event');
+        return;
+    }
+    
+    editingEventId = eventId;
+    
+    document.getElementById('editEventDescription').value = event.description || '';
+    document.getElementById('editEventLocation').value = event.location || '';
+    document.getElementById('editEventConditions').value = event.conditions || '';
+    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
+    
+    // Remplir la durée si présente
+    document.getElementById('editEventDurationValue').value = event.durationValue || '';
+    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
+    
+    document.getElementById('editEventModal').classList.add('show');
+}
+
+function closeEditEventModal() {
+    document.getElementById('editEventModal').classList.remove('show');
+    editingEventId = null;
+}
+
+async function saveEventEdits() {
+    if (!editingEventId) return;
+    
+    var event = events.find(function(e) { return e.id === editingEventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    var description = document.getElementById('editEventDescription').value.trim();
+    var location = document.getElementById('editEventLocation').value.trim();
+    var conditions = document.getElementById('editEventConditions').value.trim();
+    var seatsTotal = parseInt(document.getElementById('editEventSeats').value);
+    var durationValue = document.getElementById('editEventDurationValue').value;
+    var durationUnit = document.getElementById('editEventDurationUnit').value;
+    
+    if (!seatsTotal || seatsTotal < 1) {
+        alert('Please enter a valid number of seats');
+        return;
+    }
+    
+    // Vérifier que le nombre de places ne diminue pas en dessous des places déjà vendues
+    var ticketsSold = tickets.filter(function(t) { return t.eventId === editingEventId; }).length;
+    if (seatsTotal < ticketsSold) {
+        alert('You cannot reduce the number of seats below the number already sold (' + ticketsSold + ' seats sold)');
+        return;
+    }
+    
+    var updates = {
+        description: description,
+        location: location,
+        conditions: conditions,
+        seatsTotal: seatsTotal,
+        seatsLeft: seatsTotal - ticketsSold,
+        durationValue: durationValue ? parseInt(durationValue) : null,
+        durationUnit: durationUnit || null
+    };
+    
+    // Mettre à jour l'événement en mémoire
+    event.description = updates.description;
+    event.location = updates.location;
+    event.conditions = updates.conditions;
+    event.seatsTotal = updates.seatsTotal;
+    event.seatsLeft = updates.seatsLeft;
+    event.durationValue = updates.durationValue;
+    event.durationUnit = updates.durationUnit;
+    
+    saveEvents();
+    
+    // Mettre à jour dans Supabase
+    await updateEventInSupabase(editingEventId, {
+        description: updates.description,
+        location: updates.location,
+        conditions: updates.conditions,
+        max_tickets: updates.seatsTotal,
+        duration_value: updates.durationValue,
+        duration_unit: updates.durationUnit
+    });
+    
+    addNotification(
+        'Event "' + event.title + '" has been updated',
+        'event'
+    );
+    
+    closeEditEventModal();
+    renderEventsByCategory();
+    renderMyEvents();
+    alert('Event updated successfully!');
 }
 
 // ============================================================
@@ -1694,7 +1867,7 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY =====
+// ===== TICKETS AND HISTORY (AVEC DESIGN PREMIUM) =====
 // ============================================================
 
 function renderTickets() {
@@ -1702,8 +1875,11 @@ function renderTickets() {
     if (!container) return;
     var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No active tickets</p>'; return; }
-    container.innerHTML = active.map(function(t) { return '<div class="ticket-card"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Price :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Location :</strong> ' + escapeHtml(t.eventLocation || 'Not specified') + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p><strong>Code :</strong> <code>' + t.qrCode + '</code></p></div>'; }).join('');
+    if (!active.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
+        return; 
+    }
+    container.innerHTML = active.map(function(t) { return renderTicketCard(t, 'valid'); }).join('');
 }
 
 function renderHistory() {
@@ -1711,8 +1887,61 @@ function renderHistory() {
     if (!container) return;
     var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
     old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No history</p>'; return; }
-    container.innerHTML = old.map(function(t) { return '<div class="ticket-card" style="opacity:0.8;"><h3>' + escapeHtml(t.eventTitle) + '</h3><p><strong>Buyer :</strong> ' + escapeHtml(t.buyerName || t.buyerWallet) + '</p><p><strong>Price :</strong> ' + t.price + ' Pi</p><p><strong>Date :</strong> ' + formatDate(t.eventDate) + '</p><p><strong>Purchased on :</strong> ' + formatDateTime(t.purchaseDate) + '</p><p style="color:#ef4444;">Past event</p></div>'; }).join('');
+    if (!old.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No history</p>'; 
+        return; 
+    }
+    container.innerHTML = old.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
+}
+
+function renderTicketCard(ticket, status) {
+    var dateEvent = new Date(ticket.eventDate);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var statusClass = status === 'valid' ? 'valid' : 'past';
+    var statusText = status === 'valid' ? 'Valid' : 'Past Event';
+    
+    // QR Code simplifié (généré à partir de l'ID du ticket)
+    var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
+    var shortQr = qrCode.length > 12 ? qrCode.substring(0, 10) + '...' : qrCode;
+    
+    var participantName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
+    if (participantName.length > 20) {
+        participantName = participantName.substring(0, 18) + '...';
+    }
+    
+    var categoryDisplay = ticket.category || 'Event';
+    
+    // Emplacement pour le logo Betix (sera remplacé plus tard)
+    var logoPlaceholder = 'BETIX';
+    
+    return '<div class="ticket-card-premium">' +
+        '<div class="ticket-header">' +
+            '<span class="ticket-status ' + statusClass + '">' + statusText + '</span>' +
+            '<span class="ticket-number">#' + ticket.id.substring(0, 8).toUpperCase() + '</span>' +
+        '</div>' +
+        '<div class="ticket-body">' +
+            '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
+            '<span class="ticket-category">' + escapeHtml(categoryDisplay) + '</span>' +
+            '<div class="ticket-info-grid">' +
+                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">Location</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">Price</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
+            '</div>' +
+            '<div class="ticket-footer">' +
+                '<div class="ticket-qr">' +
+                    '<div class="qr-code">' + shortQr + '</div>' +
+                    '<div><span class="qr-label">Ticket Code</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
+                '</div>' +
+                '<div class="ticket-participant">' +
+                    'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="ticket-logo-placeholder">' + logoPlaceholder + '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -2190,7 +2419,7 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== MY EVENTS =====
+// ===== MY EVENTS (AVEC BOUTON MODIFIER) =====
 // ============================================================
 
 function renderMyEvents() {
@@ -2223,7 +2452,14 @@ function renderMyEventCard(event) {
         galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
     }
     var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
-    return '<div class="event-card" style="cursor:default;">' +
+    
+    // Afficher la durée si présente
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
+    }
+    
+    return '<div class="event-card" style="cursor:default; position:relative;">' +
         galleryHtml +
         '<div class="event-info">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
@@ -2234,9 +2470,13 @@ function renderMyEventCard(event) {
                 '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
                 '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
+                durationDisplay +
             '</div>' +
-            '<div class="event-footer">' +
+            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
                 '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+                '<div style="display:flex; gap:8px;">' +
+                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
+                '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
@@ -2333,12 +2573,11 @@ function renderEventCard(event) {
         desc = desc.substring(0, 117) + '...';
     }
     
-    // Organisateur - format By @username
+    // Organisateur - format By @username (en bas à gauche)
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) {
         organizerDisplay = organizerDisplay.substring(0, 18) + '...';
     }
-    // Si le nom ne commence pas par @, on l'ajoute
     var organizerFormatted = organizerDisplay;
     if (!organizerFormatted.startsWith('@')) {
         organizerFormatted = '@' + organizerFormatted;
@@ -2357,6 +2596,12 @@ function renderEventCard(event) {
     }
     
     var priceDisplay = event.price + ' Pi';
+    
+    // Afficher la durée si présente
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
+    }
     
     return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
         
@@ -2385,6 +2630,9 @@ function renderEventCard(event) {
                 '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
             
+            // Durée (si présente)
+            durationDisplay +
+            
             // Footer (rating, prix, places)
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
@@ -2397,9 +2645,9 @@ function renderEventCard(event) {
             // Bouton Buy Ticket
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             
-            // Organisateur en bas du bouton avec icône 🙎‍♂️
+            // Organisateur en bas du bouton avec icône (à gauche)
             '<div class="event-organizer-classic">' +
-                '🙎‍♂️ By ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon">🙎‍♂️</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
             
         '</div>' +
@@ -2431,6 +2679,18 @@ function openEventDetails(eventId) {
     document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
+    
+    // Afficher la durée si présente
+    var durationDisplay = document.getElementById('detailDuration');
+    if (durationDisplay) {
+        if (event.durationValue && event.durationUnit) {
+            durationDisplay.textContent = 'Duration: ' + event.durationValue + ' ' + event.durationUnit;
+            durationDisplay.style.display = 'block';
+        } else {
+            durationDisplay.style.display = 'none';
+        }
+    }
+    
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -2717,7 +2977,7 @@ var faqData = [
     [
         { q: "How to create an event?", a: "Connect, click 'Create Event' and fill out the form." },
         { q: "Conditions to be an organizer?", a: "Have an active Pi Network account and comply with the terms of use." },
-        { q: "Can I modify an event?", a: "Yes, from the 'My Events' section (coming soon)." },
+        { q: "Can I modify an event?", a: "Yes, from the 'My Events' section." },
         { q: "How to boost my event?", a: "By paying a small amount in Pi to increase visibility." }
     ],
     [
