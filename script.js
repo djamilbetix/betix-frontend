@@ -532,7 +532,6 @@ var adminTimerInterval = null;
 var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
 
-// Flag pour éviter les boucles de synchronisation
 var isSyncing = false;
 
 // ============================================================
@@ -622,71 +621,42 @@ function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
 
 // ============================================================
-// ===== FONCTIONS DE SAUVEGARDE AVEC SYNC ROBUSTE =====
+// ===== FONCTIONS DE SAUVEGARDE =====
 // ============================================================
 
 function saveEvents() { 
-    try {
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        // Ne pas appeler syncEventsToSupabase ici pour éviter les boucles
-        console.log('Events saved locally:', events.length);
-    } catch (error) {
-        console.error('Error saving events locally:', error);
-    }
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    console.log('Events saved locally:', events.length);
 }
 
 function saveTickets() { 
-    try {
-        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-        console.log('Tickets saved locally:', tickets.length);
-    } catch (error) {
-        console.error('Error saving tickets locally:', error);
-    }
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    console.log('Tickets saved locally:', tickets.length);
 }
 
 function saveUser() { 
-    try {
-        localStorage.setItem('betix_user', JSON.stringify(currentUser));
-        console.log('User saved locally');
-    } catch (error) {
-        console.error('Error saving user locally:', error);
-    }
+    localStorage.setItem('betix_user', JSON.stringify(currentUser));
+    console.log('User saved locally');
 }
 
 function saveNotifications() { 
-    try {
-        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    } catch (error) {
-        console.error('Error saving notifications locally:', error);
-    }
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
 }
 
 function saveChatMessages() {
-    try {
-        localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
-    } catch (error) {
-        console.error('Error saving chat messages:', error);
-    }
+    localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages));
 }
 
 function saveRatings() {
-    try {
-        localStorage.setItem('betix_ratings', JSON.stringify(ratings));
-    } catch (error) {
-        console.error('Error saving ratings:', error);
-    }
+    localStorage.setItem('betix_ratings', JSON.stringify(ratings));
 }
 
 function saveConnectedUsers() {
-    try {
-        localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-    } catch (error) {
-        console.error('Error saving connected users:', error);
-    }
+    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
 }
 
 // ============================================================
-// ===== SYNC FUNCTIONS ROBUSTES (Supabase) =====
+// ===== SYNC FUNCTIONS =====
 // ============================================================
 
 async function syncUserToSupabase() {
@@ -743,17 +713,15 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD FUNCTIONS ROBUSTES (Supabase) =====
+// ===== LOAD FUNCTIONS =====
 // ============================================================
 
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
     try {
-        // Charger les événements depuis Supabase
         const supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents.length > 0) {
-            // Convertir les données Supabase au format local
             var loadedEvents = supabaseEvents.map(e => ({
                 id: e.id,
                 title: e.title,
@@ -776,7 +744,6 @@ async function loadAllFromSupabase() {
                 durationUnit: e.duration_unit || null
             }));
             
-            // Éviter les doublons en vérifiant par ID
             var existingIds = new Set(events.map(e => e.id));
             var newEvents = loadedEvents.filter(e => !existingIds.has(e.id));
             
@@ -784,11 +751,9 @@ async function loadAllFromSupabase() {
                 events = events.concat(newEvents);
                 console.log('Added new events from Supabase:', newEvents.length);
             } else {
-                // Si aucun nouvel événement, garder les événements locaux
                 console.log('No new events from Supabase');
             }
         } else {
-            // Si Supabase est vide, utiliser les événements locaux ou les démos
             if (events.length === 0) {
                 events = JSON.parse(JSON.stringify(demoEvents));
                 localStorage.setItem('betix_events', JSON.stringify(events));
@@ -797,7 +762,6 @@ async function loadAllFromSupabase() {
         }
         localStorage.setItem('betix_events', JSON.stringify(events));
         
-        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             const piUid = currentUser.piUid || currentUser.wallet;
             const supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -829,7 +793,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             const piUid = currentUser.piUid || currentUser.wallet;
             const supabaseNotifs = await loadNotificationsFromSupabase(piUid);
@@ -871,18 +834,14 @@ async function deleteEventSafely(eventId) {
     if (!confirm('Delete this event?')) return false;
     
     try {
-        // Supprimer de Supabase
-        var supabaseSuccess = await deleteEventFromSupabase(eventId);
+        await deleteEventFromSupabase(eventId);
         
-        // Supprimer du localStorage et de la mémoire
         events = events.filter(function(e) { return e.id !== eventId; });
         saveEvents();
         
-        // Supprimer les tickets associés
         tickets = tickets.filter(function(t) { return t.eventId !== eventId; });
         saveTickets();
         
-        // Recharger depuis Supabase pour être sûr
         await loadAllFromSupabase();
         
         renderAdminEvents();
@@ -947,7 +906,7 @@ function renderChatMessages() {
 }
 
 // ============================================================
-// ===== LANGUAGE MANAGEMENT (AVEC GOOGLE TRANSLATE) =====
+// ===== LANGUAGE MANAGEMENT =====
 // ============================================================
 
 function changeLanguage(lang) {
@@ -1138,7 +1097,7 @@ function goToHistory() { showPage('history'); }
 function goToRatings() { showPage('ratings'); }
 
 // ============================================================
-// ===== MODERN IMAGE UPLOAD WITH COMPRESSION =====
+// ===== IMAGE UPLOAD =====
 // ============================================================
 
 async function handleImageUploadModern(file, index) {
@@ -1231,7 +1190,7 @@ function getUploadedImages() {
 }
 
 // ============================================================
-// ===== PROFILE PHOTO AVEC COMPRESSION ET UPLOAD SUPABASE =====
+// ===== PROFILE PHOTO =====
 // ============================================================
 
 async function handleProfilePhotoUpload(file) {
@@ -1510,7 +1469,7 @@ async function connectToPi() {
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
 
 // ============================================================
-// ===== CONFIRMATION ACHAT - PAIEMENT PI NETWORK =====
+// ===== CONFIRMATION ACHAT =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1590,10 +1549,6 @@ async function confirmPurchase(eventId, quantity) {
         });
     } catch (error) { alert("Error: " + error.message); }
 }
-
-// ============================================================
-// ===== CONFIRMATION D'ACHAT DEPUIS LA POPUP =====
-// ============================================================
 
 function confirmPurchaseFromPopup() {
     if (!selectedEventForPurchase) {
@@ -1694,7 +1649,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION (AVEC DURÉE) =====
+// ===== PUBLISH CONFIRMATION =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1763,7 +1718,6 @@ async function confirmPublishEvent() {
     newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
     newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
     
-    // Vérifier si un événement avec le même ID existe déjà
     var existingEventIndex = events.findIndex(function(e) { return e.id === newEvent.id; });
     if (existingEventIndex !== -1) {
         events[existingEventIndex] = newEvent;
@@ -1772,8 +1726,6 @@ async function confirmPublishEvent() {
     }
     
     saveEvents();
-    
-    // Sync avec Supabase
     await saveEventToSupabase(newEvent);
     
     document.getElementById('eventForm').reset();
@@ -1795,7 +1747,7 @@ async function confirmPublishEvent() {
 }
 
 // ============================================================
-// ===== CREATE EVENT (AVEC DURÉE ET LIMITES) =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 function createEvent(e) {
@@ -1817,7 +1769,6 @@ function createEvent(e) {
         return;
     }
     
-    // Limites de caractères
     var description = document.getElementById('eventDescription').value.trim();
     if (description.length > 500) {
         alert('Description is too long (max 500 characters)');
@@ -1929,7 +1880,6 @@ async function saveEventEdits() {
     var durationValue = document.getElementById('editEventDurationValue').value;
     var durationUnit = document.getElementById('editEventDurationUnit').value;
     
-    // Limites de caractères
     if (description.length > 500) {
         alert('Description is too long (max 500 characters)');
         return;
@@ -2100,7 +2050,7 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY (AVEC DESIGN PREMIUM) =====
+// ===== TICKETS AND HISTORY =====
 // ============================================================
 
 function renderTickets() {
@@ -2636,7 +2586,7 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== MY EVENTS (AVEC BOUTON MODIFIER) =====
+// ===== MY EVENTS =====
 // ============================================================
 
 function renderMyEvents() {
@@ -2670,7 +2620,6 @@ function renderMyEventCard(event) {
     }
     var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
     
-    // Récupérer le drapeau du pays
     var flagEmojis = {
         'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
         'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
@@ -2766,7 +2715,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD - AVEC DURÉE AU LIEU DU PAYS =====
+// ===== RENDER EVENT CARD - AVEC DURÉE À LA PLACE DU PAYS =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -2781,41 +2730,11 @@ function renderEventCard(event) {
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    // Drapeau par pays
-    var flagEmojis = {
-        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
-        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
-        'Cote d\'Ivoire': '🇨🇮', 'Ivory Coast': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪',
-        'Nigeria': '🇳🇬', 'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
-        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
-        'Burundi': '🇧🇮', 'Ethiopia': '🇪🇹', 'Somalia': '🇸🇴', 'Djibouti': '🇩🇯',
-        'Eritrea': '🇪🇷', 'Sudan': '🇸🇩', 'South Sudan': '🇸🇸', 'Egypt': '🇪🇬',
-        'Libya': '🇱🇾', 'Tunisia': '🇹🇳', 'Algeria': '🇩🇿', 'Morocco': '🇲🇦',
-        'Mauritania': '🇲🇷', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
-        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
-        'Gambia': '🇬🇲', 'Guinea-Bissau': '🇬🇼', 'Cape Verde': '🇨🇻', 'Sao Tome': '🇸🇹',
-        'Gabon': '🇬🇦', 'Equatorial Guinea': '🇬🇶', 'Central African Republic': '🇨🇫',
-        'Chad': '🇹🇩', 'Madagascar': '🇲🇬', 'Comoros': '🇰🇲', 'Mauritius': '🇲🇺',
-        'Seychelles': '🇸🇨', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼',
-        'Namibia': '🇳🇦', 'Lesotho': '🇱🇸', 'Eswatini': '🇸🇿', 'Malawi': '🇲🇼',
-        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
-        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
-        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'Iran': '🇮🇷', 'China': '🇨🇳',
-        'Japan': '🇯🇵', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺',
-        'Mexico': '🇲🇽', 'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰',
-        'Sweden': '🇸🇪', 'Austria': '🇦🇹'
-    };
-    
-    var countryFlag = flagEmojis[event.country] || '🌍';
-    var countryDisplay = event.country || 'International';
-    
-    // Description (max 2 lignes - 120 caractères)
     var desc = event.description || '';
     if (desc.length > 120) {
         desc = desc.substring(0, 117) + '...';
     }
     
-    // Organisateur - format By @username (en bas à gauche)
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) {
         organizerDisplay = organizerDisplay.substring(0, 18) + '...';
@@ -2825,7 +2744,6 @@ function renderEventCard(event) {
         organizerFormatted = '@' + organizerFormatted;
     }
     
-    // Rating / New badge
     var ratingDisplay = '';
     if (eventRatings.length > 0) {
         var stars = '';
@@ -2839,35 +2757,32 @@ function renderEventCard(event) {
     
     var priceDisplay = event.price + ' Pi';
     
-    // Afficher la durée (afficher l'info au lieu du pays)
+    // ============================================================
+    // AFFICHER LA DURÉE À LA PLACE DU PAYS SUR LA CARTE D'ACCUEIL
+    // ============================================================
     var durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
         durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
     } else {
-        // Si pas de durée, afficher le pays à la place
-        durationDisplay = '<span class="event-duration-display"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</span>';
+        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> Not specified</span>';
     }
     
     return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
         
-        // Poster avec badge catégorie
         '<div class="poster-wrapper-classic">' +
             '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
         
-        // Contenu
         '<div class="card-content-classic">' +
             
-            // Titre
             '<div class="event-title-classic">' +
                 escapeHtml(event.title) +
             '</div>' +
             
-            // Description (après le titre)
             (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
             
-            // Grille d'informations (Date, Lieu, Heure, Durée/Pays)
+            // Grille d'informations (Date, Lieu, Heure, DURÉE à la place du pays)
             '<div class="info-grid-classic">' +
                 '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
@@ -2875,7 +2790,6 @@ function renderEventCard(event) {
                 '<div class="info-item-classic">' + durationDisplay + '</div>' +
             '</div>' +
             
-            // Footer (rating, prix, places)
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
                 '<span>' +
@@ -2884,10 +2798,8 @@ function renderEventCard(event) {
                 '</span>' +
             '</div>' +
             
-            // Bouton Buy Ticket
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             
-            // Organisateur en bas du bouton avec icône (à gauche)
             '<div class="event-organizer-classic">' +
                 '<span class="org-icon">🙎‍♂️</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
@@ -2922,7 +2834,6 @@ function openEventDetails(eventId) {
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
     
-    // Afficher la durée si présente
     var durationDisplay = document.getElementById('detailDuration');
     if (durationDisplay) {
         if (event.durationValue && event.durationUnit) {
@@ -3075,7 +2986,7 @@ function initFilters() {
 }
 
 // ============================================================
-// ===== INIT COUNTRY SELECTORS (AVEC DRAPEAUX) =====
+// ===== INIT COUNTRY SELECTORS =====
 // ============================================================
 
 function initCountrySelectors() {
@@ -3581,7 +3492,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     detectLanguage();
     
-    // Charger les événements depuis le localStorage d'abord
     var savedEvents = localStorage.getItem('betix_events');
     if (savedEvents) {
         try {
@@ -3758,12 +3668,10 @@ document.addEventListener('DOMContentLoaded', function() {
     bindActivityListeners(); 
     startSessionMonitor();
 
-    // Charger depuis Supabase après le chargement initial
     setTimeout(function() {
         loadAllFromSupabase();
     }, 1000);
 
-    // Sync périodique
     setInterval(function() {
         syncEventsToSupabase();
         syncTicketsToSupabase();
