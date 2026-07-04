@@ -892,7 +892,7 @@ body {
 }
 
 /* ============================================================
-   ===== EVENT CARD - STYLE CLASSIQUE (comme sur l'image) =====
+   ===== EVENT CARD - STYLE CLASSIQUE =====
    ============================================================ */
 
 .event-card-classic {
@@ -983,7 +983,7 @@ body {
     min-height: 2.4rem;
 }
 
-/* ---- Grille d'informations (Date, Lieu, Heure, Pays) ---- */
+/* ---- Grille d'informations (Date, Lieu, Heure, Durée/Pays) ---- */
 .event-card-classic .info-grid-classic {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1013,6 +1013,20 @@ body {
 .event-card-classic .info-grid-classic .info-item-classic .flag-icon {
     font-size: 0.9rem;
     margin-right: 2px;
+}
+
+/* ---- Durée display ---- */
+.event-card-classic .event-duration-display {
+    font-size: 0.75rem;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.event-card-classic .event-duration-display i {
+    color: #f5a623;
+    font-size: 0.7rem;
 }
 
 /* ---- Footer avec note, prix, places ---- */
@@ -1087,7 +1101,7 @@ body {
     transform: scale(0.97);
 }
 
-/* ---- Organisateur en bas du bouton (ajouté) ---- */
+/* ---- Organisateur en bas du bouton (à gauche) ---- */
 .event-card-classic .event-organizer-classic {
     text-align: left;
     font-size: 0.75rem;
@@ -1149,6 +1163,10 @@ body.dark-mode .event-card-classic .event-organizer-classic {
 
 body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     color: #d1d5db;
+}
+
+body.dark-mode .event-card-classic .event-duration-display {
+    color: #9ca3af;
 }
 
 /* ---- Responsive ---- */
@@ -1236,7 +1254,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     box-shadow: 0 12px 40px rgba(0,0,0,0.12);
 }
 
-/* ---- Ticket Header (couleur selon statut) ---- */
 .ticket-card-premium .ticket-header {
     padding: 16px 20px 12px;
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
@@ -1275,7 +1292,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     font-family: monospace;
 }
 
-/* ---- Ticket Body ---- */
 .ticket-card-premium .ticket-body {
     padding: 18px 20px 16px;
     display: flex;
@@ -1303,7 +1319,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     width: fit-content;
 }
 
-/* ---- Ticket Info Grid ---- */
 .ticket-card-premium .ticket-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1341,7 +1356,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     color: var(--dark, #1a1a2e);
 }
 
-/* ---- Ticket Footer (QR Code + Participant) ---- */
 .ticket-card-premium .ticket-footer {
     display: flex;
     align-items: center;
@@ -1390,7 +1404,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     color: var(--dark, #1a1a2e);
 }
 
-/* ---- Betix Logo placeholder ---- */
 .ticket-card-premium .ticket-logo-placeholder {
     position: absolute;
     bottom: 12px;
@@ -1402,7 +1415,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     text-transform: uppercase;
 }
 
-/* ---- Dark mode ticket ---- */
 body.dark-mode .ticket-card-premium {
     background: #1f2937;
     border-color: #374151;
@@ -1440,7 +1452,6 @@ body.dark-mode .ticket-card-premium .ticket-logo-placeholder {
     color: rgba(255,255,255,0.05);
 }
 
-/* ---- Ticket Responsive ---- */
 @media (max-width: 480px) {
     .ticket-card-premium .ticket-body .ticket-event-title {
         font-size: 1rem;
@@ -1546,6 +1557,30 @@ body.dark-mode .ticket-card-premium .ticket-logo-placeholder {
     border-color: #d1d5db;
 }
 
+body.dark-mode .modal-edit-event .form-group input,
+body.dark-mode .modal-edit-event .form-group textarea,
+body.dark-mode .modal-edit-event .form-group select {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode .modal-edit-event .form-group input:focus,
+body.dark-mode .modal-edit-event .form-group textarea:focus,
+body.dark-mode .modal-edit-event .form-group select:focus {
+    border-color: #f5a623;
+}
+
+body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal {
+    color: #9ca3af;
+    border-color: #4b5563;
+}
+
+body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
+    background: #374151;
+    border-color: #6b7280;
+}
+
 /* ============================================================
    ===== DURÉE ÉVÉNEMENT =====
    ============================================================ */
@@ -1588,21 +1623,6 @@ body.dark-mode .ticket-card-premium .ticket-logo-placeholder {
     box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
 }
 
-/* ---- Affichage durée sur carte ---- */
-.event-duration-display {
-    font-size: 0.7rem;
-    color: var(--gray);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.event-duration-display i {
-    color: #f5a623;
-    font-size: 0.7rem;
-}
-
-/* ---- Dark mode duration ---- */
 body.dark-mode .event-duration-wrapper input[type="number"],
 body.dark-mode .event-duration-wrapper select {
     background: #374151;
@@ -1615,32 +1635,8 @@ body.dark-mode .event-duration-wrapper select:focus {
     border-color: #f5a623;
 }
 
-body.dark-mode .modal-edit-event .form-group input,
-body.dark-mode .modal-edit-event .form-group textarea,
-body.dark-mode .modal-edit-event .form-group select {
-    background: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-
-body.dark-mode .modal-edit-event .form-group input:focus,
-body.dark-mode .modal-edit-event .form-group textarea:focus,
-body.dark-mode .modal-edit-event .form-group select:focus {
-    border-color: #f5a623;
-}
-
-body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal {
-    color: #9ca3af;
-    border-color: #4b5563;
-}
-
-body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
-    background: #374151;
-    border-color: #6b7280;
-}
-
 /* ============================================================
-   ===== FIN TICKET CARD PREMIUM =====
+   ===== AUTRES STYLES EXISTANTS =====
    ============================================================ */
 
 .event-card {
