@@ -22,14 +22,15 @@ console.log("Supabase initialized (Storage only mode)");
 // ===== COMPRESSION D'IMAGES =====
 // ============================================================
 
-function compressImage(file, options = {}) {
-    return new Promise((resolve, reject) => {
+function compressImage(file, options) {
+    options = options || {};
+    return new Promise(function(resolve, reject) {
         if (!file || !file.type.startsWith('image/')) {
             reject(new Error('Le fichier n\'est pas une image'));
             return;
         }
 
-        const config = {
+        var config = {
             maxWidth: options.maxWidth || 800,
             maxHeight: options.maxHeight || 800,
             quality: options.quality || 0.7,
@@ -38,51 +39,51 @@ function compressImage(file, options = {}) {
         };
 
         if (file.size / (1024 * 1024) < 0.2) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) { resolve(e.target.result); };
             reader.onerror = function() { reject(new Error('Erreur de lecture du fichier')); };
             reader.readAsDataURL(file);
             return;
         }
 
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onload = function(event) {
-            const img = new Image();
+            var img = new Image();
             img.onload = function() {
-                let width = img.width;
-                let height = img.height;
+                var width = img.width;
+                var height = img.height;
                 
                 if (width > config.maxWidth || height > config.maxHeight) {
-                    const ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
+                    var ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
                     width = Math.round(width * ratio);
                     height = Math.round(height * ratio);
                 }
                 
-                const canvas = document.createElement('canvas');
+                var canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext('2d');
                 
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                let format = config.format;
+                var format = config.format;
                 if (format === 'image/webp') {
-                    const testCanvas = document.createElement('canvas');
+                    var testCanvas = document.createElement('canvas');
                     testCanvas.width = 1;
                     testCanvas.height = 1;
-                    const testData = testCanvas.toDataURL('image/webp');
+                    var testData = testCanvas.toDataURL('image/webp');
                     if (!testData || testData.indexOf('image/webp') === -1) {
                         format = 'image/jpeg';
                     }
                 }
                 
-                let compressedDataUrl = canvas.toDataURL(format, config.quality);
+                var compressedDataUrl = canvas.toDataURL(format, config.quality);
                 
-                const compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
+                var compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
                 if (compressedSize > config.maxSizeMB && config.quality > 0.3) {
-                    const newQuality = Math.max(0.3, config.quality - 0.2);
+                    var newQuality = Math.max(0.3, config.quality - 0.2);
                     compressedDataUrl = canvas.toDataURL(format, newQuality);
                 }
                 
@@ -122,10 +123,10 @@ async function compressEventImage(file) {
 
 async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
     try {
-        const response = await fetch(base64Data);
-        const blob = await response.blob();
+        var response = await fetch(base64Data);
+        var blob = await response.blob();
         
-        const { data, error } = await supabaseClient.storage
+        var result = await supabaseClient.storage
             .from(bucket)
             .upload(filePath, blob, {
                 contentType: blob.type,
@@ -133,9 +134,9 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
                 upsert: true
             });
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         
-        const { data: publicUrlData } = supabaseClient.storage
+        var publicUrlData = supabaseClient.storage
             .from(bucket)
             .getPublicUrl(filePath);
         
@@ -147,12 +148,12 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
 }
 
 async function uploadProfilePhoto(piUid, base64Data) {
-    const filePath = `${piUid}/avatar_${Date.now()}.webp`;
+    var filePath = piUid + '/avatar_' + Date.now() + '.webp';
     return await uploadToSupabaseStorage('avatars', filePath, base64Data);
 }
 
 async function uploadEventImage(eventId, base64Data, index) {
-    const filePath = `${eventId}/image_${index}_${Date.now()}.webp`;
+    var filePath = eventId + '/image_' + index + '_' + Date.now() + '.webp';
     return await uploadToSupabaseStorage('events-images', filePath, base64Data);
 }
 
@@ -160,10 +161,12 @@ async function uploadEventImage(eventId, base64Data, index) {
 // ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
 
-async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, points = 0) {
+async function saveUserToSupabase(piUid, username, wallet, avatarUrl, points) {
+    avatarUrl = avatarUrl || null;
+    points = points || 0;
     try {
-        const now = new Date().toISOString();
-        const userData = {
+        var now = new Date().toISOString();
+        var userData = {
             pi_uid: piUid,
             username: username,
             wallet: wallet,
@@ -172,29 +175,29 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
             updated_at: now
         };
         
-        const { data: existing, error: checkError } = await supabaseClient
+        var checkResult = await supabaseClient
             .from('users')
             .select('pi_uid')
             .eq('pi_uid', piUid)
             .single();
         
-        if (checkError && checkError.code !== 'PGRST116') {
-            throw checkError;
+        if (checkResult.error && checkResult.error.code !== 'PGRST116') {
+            throw checkResult.error;
         }
         
-        if (existing) {
-            const { error } = await supabaseClient
+        if (checkResult.data) {
+            var updateResult = await supabaseClient
                 .from('users')
                 .update(userData)
                 .eq('pi_uid', piUid);
-            if (error) throw error;
+            if (updateResult.error) throw updateResult.error;
             console.log('User updated in Supabase:', piUid);
         } else {
             userData.created_at = now;
-            const { error } = await supabaseClient
+            var insertResult = await supabaseClient
                 .from('users')
                 .insert(userData);
-            if (error) throw error;
+            if (insertResult.error) throw insertResult.error;
             console.log('User created in Supabase:', piUid);
         }
         return true;
@@ -206,19 +209,19 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
 
 async function loadUserFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        var result = await supabaseClient
             .from('users')
             .select('*')
             .eq('pi_uid', piUid)
             .single();
         
-        if (error) {
-            if (error.code === 'PGRST116') {
+        if (result.error) {
+            if (result.error.code === 'PGRST116') {
                 return null;
             }
-            throw error;
+            throw result.error;
         }
-        return data;
+        return result.data;
     } catch (error) {
         console.error('Error loading user from Supabase:', error);
         return null;
@@ -227,12 +230,12 @@ async function loadUserFromSupabase(piUid) {
 
 async function saveEventToSupabase(eventData) {
     try {
-        const dbEvent = {
+        var dbEvent = {
             id: eventData.id,
             organizer_pi_uid: eventData.organizerPiUid || eventData.organizer,
             title: eventData.title,
             description: eventData.description || '',
-            image_url: eventData.coverImage || eventData.images?.[0] || '',
+            image_url: eventData.coverImage || (eventData.images && eventData.images[0]) || '',
             location: eventData.location || '',
             event_date: eventData.date,
             category: eventData.category || '',
@@ -243,11 +246,11 @@ async function saveEventToSupabase(eventData) {
             duration_unit: eventData.durationUnit || null
         };
         
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('events')
             .upsert(dbEvent, { onConflict: 'id' });
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         console.log('Event saved to Supabase:', eventData.id);
         return true;
     } catch (error) {
@@ -258,13 +261,13 @@ async function saveEventToSupabase(eventData) {
 
 async function loadEventsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var result = await supabaseClient
             .from('events')
             .select('*')
             .order('event_date', { ascending: true });
         
-        if (error) throw error;
-        return data || [];
+        if (result.error) throw result.error;
+        return result.data || [];
     } catch (error) {
         console.error('Error loading events from Supabase:', error);
         return [];
@@ -273,12 +276,12 @@ async function loadEventsFromSupabase() {
 
 async function updateEventInSupabase(eventId, updates) {
     try {
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('events')
             .update(updates)
             .eq('id', eventId);
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         console.log('Event updated in Supabase:', eventId);
         return true;
     } catch (error) {
@@ -289,11 +292,11 @@ async function updateEventInSupabase(eventId, updates) {
 
 async function deleteEventFromSupabase(eventId) {
     try {
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('events')
             .delete()
             .eq('id', eventId);
-        if (error) throw error;
+        if (result.error) throw result.error;
         console.log('Event deleted from Supabase:', eventId);
         return true;
     } catch (error) {
@@ -303,13 +306,13 @@ async function deleteEventFromSupabase(eventId) {
 }
 
 // ============================================================
-// ===== TICKET FUNCTIONS CORRIGÉES =====
+// ===== TICKET FUNCTIONS =====
 // ============================================================
 
 async function saveTicketToSupabase(ticketData) {
     try {
         console.log('Saving ticket to Supabase:', ticketData.id);
-        const dbTicket = {
+        var dbTicket = {
             id: ticketData.id,
             event_id: ticketData.eventId,
             event_title: ticketData.eventTitle || 'Event',
@@ -325,12 +328,12 @@ async function saveTicketToSupabase(ticketData) {
             category: ticketData.category || ''
         };
         
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('tickets')
             .upsert(dbTicket, { onConflict: 'id' });
         
-        if (error) {
-            console.error('Error saving ticket to Supabase:', error);
+        if (result.error) {
+            console.error('Error saving ticket to Supabase:', result.error);
             return false;
         }
         console.log('Ticket saved to Supabase successfully:', ticketData.id);
@@ -344,18 +347,18 @@ async function saveTicketToSupabase(ticketData) {
 async function loadTicketsFromSupabase(piUid) {
     try {
         console.log('Loading tickets from Supabase for user:', piUid);
-        const { data, error } = await supabaseClient
+        var result = await supabaseClient
             .from('tickets')
             .select('*')
             .eq('buyer_pi_uid', piUid)
             .order('purchase_date', { ascending: false });
         
-        if (error) {
-            console.error('Error loading tickets from Supabase:', error);
+        if (result.error) {
+            console.error('Error loading tickets from Supabase:', result.error);
             return [];
         }
-        console.log('Tickets loaded from Supabase:', data ? data.length : 0);
-        return data || [];
+        console.log('Tickets loaded from Supabase:', result.data ? result.data.length : 0);
+        return result.data || [];
     } catch (error) {
         console.error('Error loading tickets from Supabase:', error);
         return [];
@@ -364,7 +367,7 @@ async function loadTicketsFromSupabase(piUid) {
 
 async function saveTransactionToSupabase(transactionData) {
     try {
-        const dbTransaction = {
+        var dbTransaction = {
             id: transactionData.id || Date.now().toString(),
             buyer_pi_uid: transactionData.buyerWallet || transactionData.buyerPiUid,
             event_id: transactionData.eventId,
@@ -375,11 +378,11 @@ async function saveTransactionToSupabase(transactionData) {
             created_at: transactionData.date || new Date().toISOString()
         };
         
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('transactions')
             .insert(dbTransaction);
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         console.log('Transaction saved to Supabase:', dbTransaction.id);
         return true;
     } catch (error) {
@@ -390,7 +393,7 @@ async function saveTransactionToSupabase(transactionData) {
 
 async function saveNotificationToSupabase(notificationData) {
     try {
-        const dbNotification = {
+        var dbNotification = {
             id: notificationData.id || Date.now().toString(),
             receiver_pi_uid: notificationData.receiverPiUid || notificationData.userWallet,
             title: notificationData.title || 'Notification',
@@ -399,11 +402,11 @@ async function saveNotificationToSupabase(notificationData) {
             created_at: notificationData.date || new Date().toISOString()
         };
         
-        const { error } = await supabaseClient
+        var result = await supabaseClient
             .from('notifications')
             .insert(dbNotification);
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         console.log('Notification saved to Supabase');
         return true;
     } catch (error) {
@@ -414,14 +417,14 @@ async function saveNotificationToSupabase(notificationData) {
 
 async function loadNotificationsFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        var result = await supabaseClient
             .from('notifications')
             .select('*')
             .eq('receiver_pi_uid', piUid)
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
-        return data || [];
+        if (result.error) throw result.error;
+        return result.data || [];
     } catch (error) {
         console.error('Error loading notifications from Supabase:', error);
         return [];
@@ -684,7 +687,7 @@ function saveConnectedUsers() {
 
 async function syncUserToSupabase() {
     if (!currentUser.piUid && !currentUser.wallet) return;
-    const piUid = currentUser.piUid || currentUser.wallet;
+    var piUid = currentUser.piUid || currentUser.wallet;
     await saveUserToSupabase(
         piUid,
         currentUser.name || 'User',
@@ -698,8 +701,8 @@ async function syncEventsToSupabase() {
     if (isSyncing) return;
     isSyncing = true;
     try {
-        for (const event of events) {
-            await saveEventToSupabase(event);
+        for (var i = 0; i < events.length; i++) {
+            await saveEventToSupabase(events[i]);
         }
         console.log('All events synced to Supabase');
     } catch (error) {
@@ -713,8 +716,8 @@ async function syncTicketsToSupabase() {
     console.log('Syncing tickets to Supabase... Total tickets:', tickets.length);
     try {
         var successCount = 0;
-        for (const ticket of tickets) {
-            var result = await saveTicketToSupabase(ticket);
+        for (var i = 0; i < tickets.length; i++) {
+            var result = await saveTicketToSupabase(tickets[i]);
             if (result) successCount++;
         }
         console.log('Tickets synced to Supabase:', successCount, '/', tickets.length);
@@ -725,8 +728,9 @@ async function syncTicketsToSupabase() {
 
 async function syncNotificationsToSupabase() {
     try {
-        for (const notif of notifications) {
-            const receiverPiUid = notif.userWallet || currentUser.wallet;
+        for (var i = 0; i < notifications.length; i++) {
+            var notif = notifications[i];
+            var receiverPiUid = notif.userWallet || currentUser.wallet;
             await saveNotificationToSupabase({
                 ...notif,
                 receiverPiUid: receiverPiUid,
@@ -739,42 +743,42 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD FUNCTIONS (CORRIGÉES) =====
+// ===== LOAD FUNCTIONS =====
 // ============================================================
 
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
     try {
-        // ============================================================
         // 1. CHARGER LES ÉVÉNEMENTS
-        // ============================================================
-        const supabaseEvents = await loadEventsFromSupabase();
+        var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents.length > 0) {
-            var loadedEvents = supabaseEvents.map(e => ({
-                id: e.id,
-                title: e.title,
-                category: e.category || '',
-                country: e.country || 'France',
-                date: e.event_date,
-                location: e.location || '',
-                description: e.description || '',
-                conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
-                price: e.ticket_price || 0.0003,
-                seatsTotal: e.max_tickets || 100,
-                seatsLeft: e.max_tickets || 100,
-                images: e.image_url ? [e.image_url] : [],
-                coverImage: e.image_url || '',
-                organizer: e.organizer_pi_uid || '',
-                organizerName: e.organizer_name || '',
-                createdAt: e.created_at || new Date().toISOString(),
-                boosts: 0,
-                durationValue: e.duration_value || null,
-                durationUnit: e.duration_unit || null
-            }));
+            var loadedEvents = supabaseEvents.map(function(e) {
+                return {
+                    id: e.id,
+                    title: e.title,
+                    category: e.category || '',
+                    country: e.country || 'France',
+                    date: e.event_date,
+                    location: e.location || '',
+                    description: e.description || '',
+                    conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
+                    price: e.ticket_price || 0.0003,
+                    seatsTotal: e.max_tickets || 100,
+                    seatsLeft: e.max_tickets || 100,
+                    images: e.image_url ? [e.image_url] : [],
+                    coverImage: e.image_url || '',
+                    organizer: e.organizer_pi_uid || '',
+                    organizerName: e.organizer_name || '',
+                    createdAt: e.created_at || new Date().toISOString(),
+                    boosts: 0,
+                    durationValue: e.duration_value || null,
+                    durationUnit: e.duration_unit || null
+                };
+            });
             
-            var existingIds = new Set(events.map(e => e.id));
-            var newEvents = loadedEvents.filter(e => !existingIds.has(e.id));
+            var existingIds = new Set(events.map(function(e) { return e.id; }));
+            var newEvents = loadedEvents.filter(function(e) { return !existingIds.has(e.id); });
             
             if (newEvents.length > 0) {
                 events = events.concat(newEvents);
@@ -789,39 +793,36 @@ async function loadAllFromSupabase() {
         }
         localStorage.setItem('betix_events', JSON.stringify(events));
         
-        // ============================================================
-        // 2. CHARGER LES TICKETS - CORRIGÉ : ON GARDE TOUS LES TICKETS LOCAUX
-        // ============================================================
+        // 2. CHARGER LES TICKETS
         if (currentUser.piUid || currentUser.wallet) {
-            const piUid = currentUser.piUid || currentUser.wallet;
+            var piUid = currentUser.piUid || currentUser.wallet;
             console.log('Loading tickets for user:', piUid);
             
-            // Charger les tickets depuis Supabase
-            const supabaseTickets = await loadTicketsFromSupabase(piUid);
-            
-            var existingTicketIds = new Set(tickets.map(t => t.id));
+            var supabaseTickets = await loadTicketsFromSupabase(piUid);
+            var existingTicketIds = new Set(tickets.map(function(t) { return t.id; }));
             
             if (supabaseTickets && supabaseTickets.length > 0) {
-                var loadedTickets = supabaseTickets.map(t => ({
-                    id: t.id,
-                    eventId: t.event_id,
-                    eventTitle: t.event_title || t.event_id || 'Event',
-                    eventDate: t.expiration_date || new Date().toISOString(),
-                    eventLocation: t.event_location || '',
-                    price: t.price || 0,
-                    buyerWallet: t.buyer_pi_uid,
-                    buyerName: t.buyer_name || t.buyer_pi_uid || 'Anonymous',
-                    userWallet: t.buyer_pi_uid,
-                    purchaseDate: t.purchase_date || new Date().toISOString(),
-                    purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
-                    transactionId: t.transaction_id || '',
-                    qrCode: t.qr_code || 'BETIX-' + Date.now(),
-                    category: t.category || '',
-                    status: t.status || 'Valid'
-                }));
+                var loadedTickets = supabaseTickets.map(function(t) {
+                    return {
+                        id: t.id,
+                        eventId: t.event_id,
+                        eventTitle: t.event_title || t.event_id || 'Event',
+                        eventDate: t.expiration_date || new Date().toISOString(),
+                        eventLocation: t.event_location || '',
+                        price: t.price || 0,
+                        buyerWallet: t.buyer_pi_uid,
+                        buyerName: t.buyer_name || t.buyer_pi_uid || 'Anonymous',
+                        userWallet: t.buyer_pi_uid,
+                        purchaseDate: t.purchase_date || new Date().toISOString(),
+                        purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
+                        transactionId: t.transaction_id || '',
+                        qrCode: t.qr_code || 'BETIX-' + Date.now(),
+                        category: t.category || '',
+                        status: t.status || 'Valid'
+                    };
+                });
                 
-                // Ajouter UNIQUEMENT les nouveaux tickets (ceux pas déjà en local)
-                var newTickets = loadedTickets.filter(t => !existingTicketIds.has(t.id));
+                var newTickets = loadedTickets.filter(function(t) { return !existingTicketIds.has(t.id); });
                 
                 if (newTickets.length > 0) {
                     tickets = tickets.concat(newTickets);
@@ -833,28 +834,27 @@ async function loadAllFromSupabase() {
                 console.log('No tickets in Supabase, keeping all local tickets:', tickets.length);
             }
             
-            // TOUJOURS sauvegarder dans localStorage (ne jamais supprimer)
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             console.log('Tickets saved to localStorage:', tickets.length);
         }
         
-        // ============================================================
         // 3. CHARGER LES NOTIFICATIONS
-        // ============================================================
         if (currentUser.piUid || currentUser.wallet) {
-            const piUid = currentUser.piUid || currentUser.wallet;
-            const supabaseNotifs = await loadNotificationsFromSupabase(piUid);
+            var piUid = currentUser.piUid || currentUser.wallet;
+            var supabaseNotifs = await loadNotificationsFromSupabase(piUid);
             if (supabaseNotifs.length > 0) {
-                var loadedNotifs = supabaseNotifs.map(n => ({
-                    id: n.id,
-                    message: n.message || n.title || '',
-                    type: n.type || 'info',
-                    read: n.is_read || false,
-                    date: n.created_at || new Date().toISOString()
-                }));
+                var loadedNotifs = supabaseNotifs.map(function(n) {
+                    return {
+                        id: n.id,
+                        message: n.message || n.title || '',
+                        type: n.type || 'info',
+                        read: n.is_read || false,
+                        date: n.created_at || new Date().toISOString()
+                    };
+                });
                 
-                var notifIds = new Set(notifications.map(n => n.id));
-                var newNotifs = loadedNotifs.filter(n => !notifIds.has(n.id));
+                var notifIds = new Set(notifications.map(function(n) { return n.id; }));
+                var newNotifs = loadedNotifs.filter(function(n) { return !notifIds.has(n.id); });
                 
                 if (newNotifs.length > 0) {
                     notifications = notifications.concat(newNotifs);
@@ -864,9 +864,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // ============================================================
-        // 4. RENDRE LES VUES
-        // ============================================================
         renderEventsByCategory();
         renderTickets();
         renderHistory();
@@ -876,7 +873,9 @@ async function loadAllFromSupabase() {
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== SUPPRESSION D'ÉVÉNEMENT ROBUSTE =====
 // ============================================================
 
@@ -1260,9 +1259,9 @@ async function handleProfilePhotoUpload(file) {
     try {
         var compressedData = await compressProfilePhoto(file);
         
-        const piUid = currentUser.piUid || currentUser.wallet;
+        var piUid = currentUser.piUid || currentUser.wallet;
         if (piUid) {
-            const publicUrl = await uploadProfilePhoto(piUid, compressedData);
+            var publicUrl = await uploadProfilePhoto(piUid, compressedData);
             if (publicUrl) {
                 currentUser.profilePhoto = publicUrl;
             } else {
@@ -1519,7 +1518,7 @@ async function connectToPi() {
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
 
 // ============================================================
-// ===== CONFIRMATION ACHAT (CORRIGÉE AVEC SAUVEGARDE FORCE) =====
+// ===== CONFIRMATION ACHAT =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1567,22 +1566,15 @@ async function confirmPurchase(eventId, quantity) {
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
                     
-                    // ============================================================
-                    // SAUVEGARDE LOCALE IMMÉDIATE
-                    // ============================================================
                     saveEvents();
                     saveTickets();
                     console.log('Tickets saved locally:', tickets.length);
                     
-                    // ============================================================
-                    // SAUVEGARDE SUPABASE IMMÉDIATE
-                    // ============================================================
-                    for (const ticket of ticketsAdded) {
-                        await saveTicketToSupabase(ticket);
-                        console.log('Ticket saved to Supabase:', ticket.id);
+                    for (var j = 0; j < ticketsAdded.length; j++) {
+                        await saveTicketToSupabase(ticketsAdded[j]);
+                        console.log('Ticket saved to Supabase:', ticketsAdded[j].id);
                     }
                     
-                    // Vérification
                     var savedTickets = localStorage.getItem('betix_tickets');
                     if (savedTickets) {
                         var parsed = JSON.parse(savedTickets);
@@ -1769,13 +1761,48 @@ function closePublishConfirmPopup() {
 }
 
 // ============================================================
-// ===== CONFIRMER PUBLICATION AVEC LOADER =====
+// ===== LOADER - FONCTIONS =====
+// ============================================================
+
+function showLoader(message) {
+    var existingLoader = document.getElementById('betixLoader');
+    if (existingLoader) {
+        existingLoader.style.display = 'flex';
+        var msgEl = document.getElementById('betixLoaderMessage');
+        if (msgEl && message) {
+            msgEl.textContent = message;
+        }
+        return;
+    }
+    
+    var loaderDiv = document.createElement('div');
+    loaderDiv.id = 'betixLoader';
+    loaderDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:99999;transition:opacity 0.3s ease;';
+    
+    loaderDiv.innerHTML = '<div style="background:#ffffff;border-radius:20px;padding:40px 50px 35px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:320px;width:90%;animation:popIn 0.3s ease;"><div style="width:60px;height:60px;border:4px solid #e5e7eb;border-top:4px solid #0D47A1;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div><p id="betixLoaderMessage" style="margin:0;font-size:1rem;font-weight:500;color:#1f2937;">' + (message || 'Loading...') + '</p><p style="margin:4px 0 0;font-size:0.75rem;color:#9ca3af;">Please wait</p></div><style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes popIn{0%{transform:scale(0.8);opacity:0}100%{transform:scale(1);opacity:1}}</style>';
+    
+    document.body.appendChild(loaderDiv);
+}
+
+function hideLoader() {
+    var loader = document.getElementById('betixLoader');
+    if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(function() {
+            if (loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+            }
+        }, 300);
+    }
+}
+
+// ============================================================
+// ===== CONFIRMER PUBLICATION =====
 // ============================================================
 
 async function confirmPublishEvent() {
     if (!pendingEventData) return;
     
-    // Afficher le loader
     showLoader('Publishing your event...');
     
     try {
@@ -1830,100 +1857,6 @@ async function confirmPublishEvent() {
         console.error('Error publishing event:', error);
         hideLoader();
         alert('Error publishing event. Please try again.');
-    }
-}
-
-// ============================================================
-// ===== LOADER - FONCTIONS =====
-// ============================================================
-
-function showLoader(message) {
-    // Vérifier si le loader existe déjà
-    var existingLoader = document.getElementById('betixLoader');
-    if (existingLoader) {
-        existingLoader.style.display = 'flex';
-        var msgEl = document.getElementById('betixLoaderMessage');
-        if (msgEl && message) {
-            msgEl.textContent = message;
-        }
-        return;
-    }
-    
-    // Créer le loader
-    var loaderDiv = document.createElement('div');
-    loaderDiv.id = 'betixLoader';
-    loaderDiv.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 99999;
-        transition: opacity 0.3s ease;
-    `;
-    
-    loaderDiv.innerHTML = `
-        <div style="
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 40px 50px 35px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 320px;
-            width: 90%;
-            animation: popIn 0.3s ease;
-        ">
-            <div style="
-                width: 60px;
-                height: 60px;
-                border: 4px solid #e5e7eb;
-                border-top: 4px solid #0D47A1;
-                border-radius: 50%;
-                animation: spin 0.8s linear infinite;
-                margin: 0 auto 16px;
-            "></div>
-            <p id="betixLoaderMessage" style="
-                margin: 0;
-                font-size: 1rem;
-                font-weight: 500;
-                color: #1f2937;
-            ">${message || 'Loading...'}</p>
-            <p style="
-                margin: 4px 0 0;
-                font-size: 0.75rem;
-                color: #9ca3af;
-            ">Please wait</p>
-        </div>
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            @keyframes popIn {
-                0% { transform: scale(0.8); opacity: 0; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-        </style>
-    `;
-    
-    document.body.appendChild(loaderDiv);
-}
-
-function hideLoader() {
-    var loader = document.getElementById('betixLoader');
-    if (loader) {
-        loader.style.opacity = '0';
-        setTimeout(function() {
-            if (loader.parentNode) {
-                loader.parentNode.removeChild(loader);
-            }
-        }, 300);
     }
 }
 
@@ -2160,7 +2093,9 @@ function closeSuccessPopup() {
     if (popup) {
         popup.classList.remove('show');
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== PROFILE =====
 // ============================================================
 
@@ -3014,7 +2949,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD - AVEC DURÉE =====
+// ===== RENDER EVENT CARD =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -3096,7 +3031,7 @@ function renderEventCard(event) {
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             
             '<div class="event-organizer-classic">' +
-                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon">🙎‍♂️</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
             
         '</div>' +
