@@ -2801,7 +2801,7 @@ function renderEventCard(event) {
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             
             '<div class="event-organizer-classic">' +
-                '<span class="org-icon">🙎‍♂️</span> By ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
             
         '</div>' +
