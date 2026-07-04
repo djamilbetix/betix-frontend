@@ -739,7 +739,7 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD FUNCTIONS =====
+// ===== LOAD FUNCTIONS (CORRIGÉES) =====
 // ============================================================
 
 async function loadAllFromSupabase() {
@@ -790,13 +790,16 @@ async function loadAllFromSupabase() {
         localStorage.setItem('betix_events', JSON.stringify(events));
         
         // ============================================================
-        // 2. CHARGER LES TICKETS - CORRIGÉ
+        // 2. CHARGER LES TICKETS - CORRIGÉ : ON GARDE TOUS LES TICKETS LOCAUX
         // ============================================================
         if (currentUser.piUid || currentUser.wallet) {
             const piUid = currentUser.piUid || currentUser.wallet;
             console.log('Loading tickets for user:', piUid);
             
+            // Charger les tickets depuis Supabase
             const supabaseTickets = await loadTicketsFromSupabase(piUid);
+            
+            var existingTicketIds = new Set(tickets.map(t => t.id));
             
             if (supabaseTickets && supabaseTickets.length > 0) {
                 var loadedTickets = supabaseTickets.map(t => ({
@@ -817,18 +820,20 @@ async function loadAllFromSupabase() {
                     status: t.status || 'Valid'
                 }));
                 
-                var existingTicketIds = new Set(tickets.map(t => t.id));
+                // Ajouter UNIQUEMENT les nouveaux tickets (ceux pas déjà en local)
                 var newTickets = loadedTickets.filter(t => !existingTicketIds.has(t.id));
                 
                 if (newTickets.length > 0) {
                     tickets = tickets.concat(newTickets);
                     console.log('Added new tickets from Supabase:', newTickets.length);
+                } else {
+                    console.log('No new tickets from Supabase, keeping all local tickets:', tickets.length);
                 }
-                console.log('Total tickets after sync:', tickets.length);
             } else {
-                console.log('No tickets found in Supabase, keeping local tickets:', tickets.length);
+                console.log('No tickets in Supabase, keeping all local tickets:', tickets.length);
             }
             
+            // TOUJOURS sauvegarder dans localStorage (ne jamais supprimer)
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             console.log('Tickets saved to localStorage:', tickets.length);
         }
@@ -871,9 +876,7 @@ async function loadAllFromSupabase() {
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== SUPPRESSION D'ÉVÉNEMENT ROBUSTE =====
 // ============================================================
 
@@ -1516,7 +1519,7 @@ async function connectToPi() {
 async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
 
 // ============================================================
-// ===== CONFIRMATION ACHAT (CORRIGÉE) =====
+// ===== CONFIRMATION ACHAT (CORRIGÉE AVEC SAUVEGARDE FORCE) =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1564,12 +1567,16 @@ async function confirmPurchase(eventId, quantity) {
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
                     
-                    // Sauvegarde locale immédiate
+                    // ============================================================
+                    // SAUVEGARDE LOCALE IMMÉDIATE
+                    // ============================================================
                     saveEvents();
                     saveTickets();
                     console.log('Tickets saved locally:', tickets.length);
                     
-                    // Sauvegarde Supabase
+                    // ============================================================
+                    // SAUVEGARDE SUPABASE IMMÉDIATE
+                    // ============================================================
                     for (const ticket of ticketsAdded) {
                         await saveTicketToSupabase(ticket);
                         console.log('Ticket saved to Supabase:', ticket.id);
@@ -1714,7 +1721,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION =====
+// ===== PUBLISH CONFIRMATION AVEC LOADER =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1761,54 +1768,163 @@ function closePublishConfirmPopup() {
     pendingEventData = null;
 }
 
+// ============================================================
+// ===== CONFIRMER PUBLICATION AVEC LOADER =====
+// ============================================================
+
 async function confirmPublishEvent() {
     if (!pendingEventData) return;
     
-    var newEvent = pendingEventData;
+    // Afficher le loader
+    showLoader('Publishing your event...');
     
-    var uploadedUrls = [];
-    if (newEvent.images && newEvent.images.length > 0) {
-        for (var i = 0; i < newEvent.images.length; i++) {
-            var imageData = newEvent.images[i];
-            var url = await uploadEventImage(newEvent.id, imageData, i);
-            if (url) {
-                uploadedUrls.push(url);
-            } else {
-                uploadedUrls.push(imageData);
+    try {
+        var newEvent = pendingEventData;
+        
+        var uploadedUrls = [];
+        if (newEvent.images && newEvent.images.length > 0) {
+            for (var i = 0; i < newEvent.images.length; i++) {
+                var imageData = newEvent.images[i];
+                var url = await uploadEventImage(newEvent.id, imageData, i);
+                if (url) {
+                    uploadedUrls.push(url);
+                } else {
+                    uploadedUrls.push(imageData);
+                }
             }
         }
+        
+        newEvent.images = uploadedUrls;
+        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
+        newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+        
+        var existingEventIndex = events.findIndex(function(e) { return e.id === newEvent.id; });
+        if (existingEventIndex !== -1) {
+            events[existingEventIndex] = newEvent;
+        } else {
+            events.push(newEvent);
+        }
+        
+        saveEvents();
+        await saveEventToSupabase(newEvent);
+        
+        document.getElementById('eventForm').reset();
+        for (var i = 0; i < 2; i++) {
+            removeImageModern(i);
+        }
+        uploadedImages = {};
+        
+        addNotification(
+            'New event "' + newEvent.title + '" has been published!',
+            'event'
+        );
+        
+        closePublishConfirmPopup();
+        hideLoader();
+        renderEventsByCategory();
+        updateProfilePage();
+        alert('Event "' + newEvent.title + '" has been successfully published!');
+        showPage('home');
+        
+    } catch (error) {
+        console.error('Error publishing event:', error);
+        hideLoader();
+        alert('Error publishing event. Please try again.');
+    }
+}
+
+// ============================================================
+// ===== LOADER - FONCTIONS =====
+// ============================================================
+
+function showLoader(message) {
+    // Vérifier si le loader existe déjà
+    var existingLoader = document.getElementById('betixLoader');
+    if (existingLoader) {
+        existingLoader.style.display = 'flex';
+        var msgEl = document.getElementById('betixLoaderMessage');
+        if (msgEl && message) {
+            msgEl.textContent = message;
+        }
+        return;
     }
     
-    newEvent.images = uploadedUrls;
-    newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
-    newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+    // Créer le loader
+    var loaderDiv = document.createElement('div');
+    loaderDiv.id = 'betixLoader';
+    loaderDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        transition: opacity 0.3s ease;
+    `;
     
-    var existingEventIndex = events.findIndex(function(e) { return e.id === newEvent.id; });
-    if (existingEventIndex !== -1) {
-        events[existingEventIndex] = newEvent;
-    } else {
-        events.push(newEvent);
+    loaderDiv.innerHTML = `
+        <div style="
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px 50px 35px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 320px;
+            width: 90%;
+            animation: popIn 0.3s ease;
+        ">
+            <div style="
+                width: 60px;
+                height: 60px;
+                border: 4px solid #e5e7eb;
+                border-top: 4px solid #0D47A1;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto 16px;
+            "></div>
+            <p id="betixLoaderMessage" style="
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 500;
+                color: #1f2937;
+            ">${message || 'Loading...'}</p>
+            <p style="
+                margin: 4px 0 0;
+                font-size: 0.75rem;
+                color: #9ca3af;
+            ">Please wait</p>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes popIn {
+                0% { transform: scale(0.8); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(loaderDiv);
+}
+
+function hideLoader() {
+    var loader = document.getElementById('betixLoader');
+    if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(function() {
+            if (loader.parentNode) {
+                loader.parentNode.removeChild(loader);
+            }
+        }, 300);
     }
-    
-    saveEvents();
-    await saveEventToSupabase(newEvent);
-    
-    document.getElementById('eventForm').reset();
-    for (var i = 0; i < 2; i++) {
-        removeImageModern(i);
-    }
-    uploadedImages = {};
-    
-    addNotification(
-        'New event "' + newEvent.title + '" has been published!',
-        'event'
-    );
-    
-    closePublishConfirmPopup();
-    renderEventsByCategory();
-    updateProfilePage();
-    alert('Event "' + newEvent.title + '" has been successfully published!');
-    showPage('home');
 }
 
 // ============================================================
@@ -2044,9 +2160,7 @@ function closeSuccessPopup() {
     if (popup) {
         popup.classList.remove('show');
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== PROFILE =====
 // ============================================================
 
@@ -2942,7 +3056,6 @@ function renderEventCard(event) {
     
     var priceDisplay = event.price + ' Pi';
     
-    // Durée à la place du pays
     var durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
         durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
