@@ -2050,7 +2050,7 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY =====
+// ===== TICKETS AND HISTORY (AVEC DESCRIPTION STANDARD BETIX) =====
 // ============================================================
 
 function renderTickets() {
@@ -2077,6 +2077,10 @@ function renderHistory() {
     container.innerHTML = old.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
 }
 
+// ============================================================
+// ===== RENDER TICKET CARD - AVEC DESCRIPTION STANDARD =====
+// ============================================================
+
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2096,20 +2100,40 @@ function renderTicketCard(ticket, status) {
     var categoryDisplay = ticket.category || 'Event';
     var logoPlaceholder = 'BETIX';
     
+    // ============================================================
+    // DESCRIPTION STANDARD BETIX (identique pour tous les tickets)
+    // ============================================================
+    var standardDescription = 'Billet électronique officiel Betix confirmant votre participation à cet événement. Présentez ce ticket (QR Code ou code du billet) lors du contrôle d\'accès.';
+    
     return '<div class="ticket-card-premium">' +
         '<div class="ticket-header">' +
             '<span class="ticket-status ' + statusClass + '">' + statusText + '</span>' +
             '<span class="ticket-number">#' + ticket.id.substring(0, 8).toUpperCase() + '</span>' +
         '</div>' +
         '<div class="ticket-body">' +
+            // Titre de l'événement
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
+            
+            // Catégorie
             '<span class="ticket-category">' + escapeHtml(categoryDisplay) + '</span>' +
+            
+            // ============================================================
+            // DESCRIPTION STANDARD BETIX
+            // ============================================================
+            '<div class="ticket-description-standard">' +
+                '<i class="fas fa-check-circle" style="color:#10b981; font-size:0.75rem; margin-right:4px;"></i> ' +
+                standardDescription +
+            '</div>' +
+            
+            // Grille d'informations
             '<div class="ticket-info-grid">' +
                 '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">Location</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">Price</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
             '</div>' +
+            
+            // Footer avec QR Code et Participant
             '<div class="ticket-footer">' +
                 '<div class="ticket-qr">' +
                     '<div class="qr-code">' + shortQr + '</div>' +
@@ -2120,6 +2144,7 @@ function renderTicketCard(ticket, status) {
                 '</div>' +
             '</div>' +
         '</div>' +
+        // Logo Betix en bas à droite
         '<div class="ticket-logo-placeholder">' + logoPlaceholder + '</div>' +
     '</div>';
 }
