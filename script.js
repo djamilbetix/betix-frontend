@@ -239,7 +239,6 @@ async function saveEventToSupabase(eventData) {
             image_url: eventData.coverImage || (eventData.images && eventData.images.length > 0 ? eventData.images[0] : ''),
             images: eventData.images ? JSON.stringify(eventData.images) : '[]',
             location: eventData.location || '',
-            country: eventData.country || '',
             event_date: eventData.date,
             duration: eventData.duration || '',
             duration_value: eventData.durationValue || 1,
@@ -418,220 +417,6 @@ async function loadNotificationsFromSupabase(piUid) {
 }
 
 // ============================================================
-// ===== COUNTRY LIST WITH FLAGS =====
-// ============================================================
-
-var countriesWithFlags = [
-    { name: 'Afghanistan', flag: '🇦🇫' },
-    { name: 'Albania', flag: '🇦🇱' },
-    { name: 'Algeria', flag: '🇩🇿' },
-    { name: 'Andorra', flag: '🇦🇩' },
-    { name: 'Angola', flag: '🇦🇴' },
-    { name: 'Antigua and Barbuda', flag: '🇦🇬' },
-    { name: 'Argentina', flag: '🇦🇷' },
-    { name: 'Armenia', flag: '🇦🇲' },
-    { name: 'Australia', flag: '🇦🇺' },
-    { name: 'Austria', flag: '🇦🇹' },
-    { name: 'Azerbaijan', flag: '🇦🇿' },
-    { name: 'Bahamas', flag: '🇧🇸' },
-    { name: 'Bahrain', flag: '🇧🇭' },
-    { name: 'Bangladesh', flag: '🇧🇩' },
-    { name: 'Barbados', flag: '🇧🇧' },
-    { name: 'Belarus', flag: '🇧🇾' },
-    { name: 'Belgium', flag: '🇧🇪' },
-    { name: 'Belize', flag: '🇧🇿' },
-    { name: 'Benin', flag: '🇧🇯' },
-    { name: 'Bhutan', flag: '🇧🇹' },
-    { name: 'Bolivia', flag: '🇧🇴' },
-    { name: 'Bosnia and Herzegovina', flag: '🇧🇦' },
-    { name: 'Botswana', flag: '🇧🇼' },
-    { name: 'Brazil', flag: '🇧🇷' },
-    { name: 'Brunei', flag: '🇧🇳' },
-    { name: 'Bulgaria', flag: '🇧🇬' },
-    { name: 'Burkina Faso', flag: '🇧🇫' },
-    { name: 'Burundi', flag: '🇧🇮' },
-    { name: 'Cabo Verde', flag: '🇨🇻' },
-    { name: 'Cambodia', flag: '🇰🇭' },
-    { name: 'Cameroon', flag: '🇨🇲' },
-    { name: 'Canada', flag: '🇨🇦' },
-    { name: 'Central African Republic', flag: '🇨🇫' },
-    { name: 'Chad', flag: '🇹🇩' },
-    { name: 'Chile', flag: '🇨🇱' },
-    { name: 'China', flag: '🇨🇳' },
-    { name: 'Colombia', flag: '🇨🇴' },
-    { name: 'Comoros', flag: '🇰🇲' },
-    { name: 'Congo', flag: '🇨🇬' },
-    { name: 'Costa Rica', flag: '🇨🇷' },
-    { name: 'Croatia', flag: '🇭🇷' },
-    { name: 'Cuba', flag: '🇨🇺' },
-    { name: 'Cyprus', flag: '🇨🇾' },
-    { name: 'Czech Republic', flag: '🇨🇿' },
-    { name: 'Denmark', flag: '🇩🇰' },
-    { name: 'Djibouti', flag: '🇩🇯' },
-    { name: 'Dominica', flag: '🇩🇲' },
-    { name: 'Dominican Republic', flag: '🇩🇴' },
-    { name: 'Ecuador', flag: '🇪🇨' },
-    { name: 'Egypt', flag: '🇪🇬' },
-    { name: 'El Salvador', flag: '🇸🇻' },
-    { name: 'Equatorial Guinea', flag: '🇬🇶' },
-    { name: 'Eritrea', flag: '🇪🇷' },
-    { name: 'Estonia', flag: '🇪🇪' },
-    { name: 'Eswatini', flag: '🇸🇿' },
-    { name: 'Ethiopia', flag: '🇪🇹' },
-    { name: 'Fiji', flag: '🇫🇯' },
-    { name: 'Finland', flag: '🇫🇮' },
-    { name: 'France', flag: '🇫🇷' },
-    { name: 'Gabon', flag: '🇬🇦' },
-    { name: 'Gambia', flag: '🇬🇲' },
-    { name: 'Georgia', flag: '🇬🇪' },
-    { name: 'Germany', flag: '🇩🇪' },
-    { name: 'Ghana', flag: '🇬🇭' },
-    { name: 'Greece', flag: '🇬🇷' },
-    { name: 'Grenada', flag: '🇬🇩' },
-    { name: 'Guatemala', flag: '🇬🇹' },
-    { name: 'Guinea', flag: '🇬🇳' },
-    { name: 'Guinea-Bissau', flag: '🇬🇼' },
-    { name: 'Guyana', flag: '🇬🇾' },
-    { name: 'Haiti', flag: '🇭🇹' },
-    { name: 'Honduras', flag: '🇭🇳' },
-    { name: 'Hungary', flag: '🇭🇺' },
-    { name: 'Iceland', flag: '🇮🇸' },
-    { name: 'India', flag: '🇮🇳' },
-    { name: 'Indonesia', flag: '🇮🇩' },
-    { name: 'Iran', flag: '🇮🇷' },
-    { name: 'Iraq', flag: '🇮🇶' },
-    { name: 'Ireland', flag: '🇮🇪' },
-    { name: 'Israel', flag: '🇮🇱' },
-    { name: 'Italy', flag: '🇮🇹' },
-    { name: 'Jamaica', flag: '🇯🇲' },
-    { name: 'Japan', flag: '🇯🇵' },
-    { name: 'Jordan', flag: '🇯🇴' },
-    { name: 'Kazakhstan', flag: '🇰🇿' },
-    { name: 'Kenya', flag: '🇰🇪' },
-    { name: 'Kiribati', flag: '🇰🇮' },
-    { name: 'Kuwait', flag: '🇰🇼' },
-    { name: 'Kyrgyzstan', flag: '🇰🇬' },
-    { name: 'Laos', flag: '🇱🇦' },
-    { name: 'Latvia', flag: '🇱🇻' },
-    { name: 'Lebanon', flag: '🇱🇧' },
-    { name: 'Lesotho', flag: '🇱🇸' },
-    { name: 'Liberia', flag: '🇱🇷' },
-    { name: 'Libya', flag: '🇱🇾' },
-    { name: 'Liechtenstein', flag: '🇱🇮' },
-    { name: 'Lithuania', flag: '🇱🇹' },
-    { name: 'Luxembourg', flag: '🇱🇺' },
-    { name: 'Madagascar', flag: '🇲🇬' },
-    { name: 'Malawi', flag: '🇲🇼' },
-    { name: 'Malaysia', flag: '🇲🇾' },
-    { name: 'Maldives', flag: '🇲🇻' },
-    { name: 'Mali', flag: '🇲🇱' },
-    { name: 'Malta', flag: '🇲🇹' },
-    { name: 'Marshall Islands', flag: '🇲🇭' },
-    { name: 'Mauritania', flag: '🇲🇷' },
-    { name: 'Mauritius', flag: '🇲🇺' },
-    { name: 'Mexico', flag: '🇲🇽' },
-    { name: 'Micronesia', flag: '🇫🇲' },
-    { name: 'Moldova', flag: '🇲🇩' },
-    { name: 'Monaco', flag: '🇲🇨' },
-    { name: 'Mongolia', flag: '🇲🇳' },
-    { name: 'Montenegro', flag: '🇲🇪' },
-    { name: 'Morocco', flag: '🇲🇦' },
-    { name: 'Mozambique', flag: '🇲🇿' },
-    { name: 'Myanmar', flag: '🇲🇲' },
-    { name: 'Namibia', flag: '🇳🇦' },
-    { name: 'Nauru', flag: '🇳🇷' },
-    { name: 'Nepal', flag: '🇳🇵' },
-    { name: 'Netherlands', flag: '🇳🇱' },
-    { name: 'New Zealand', flag: '🇳🇿' },
-    { name: 'Nicaragua', flag: '🇳🇮' },
-    { name: 'Niger', flag: '🇳🇪' },
-    { name: 'Nigeria', flag: '🇳🇬' },
-    { name: 'North Macedonia', flag: '🇲🇰' },
-    { name: 'Norway', flag: '🇳🇴' },
-    { name: 'Oman', flag: '🇴🇲' },
-    { name: 'Pakistan', flag: '🇵🇰' },
-    { name: 'Palau', flag: '🇵🇼' },
-    { name: 'Palestine', flag: '🇵🇸' },
-    { name: 'Panama', flag: '🇵🇦' },
-    { name: 'Papua New Guinea', flag: '🇵🇬' },
-    { name: 'Paraguay', flag: '🇵🇾' },
-    { name: 'Peru', flag: '🇵🇪' },
-    { name: 'Philippines', flag: '🇵🇭' },
-    { name: 'Poland', flag: '🇵🇱' },
-    { name: 'Portugal', flag: '🇵🇹' },
-    { name: 'Qatar', flag: '🇶🇦' },
-    { name: 'Romania', flag: '🇷🇴' },
-    { name: 'Russia', flag: '🇷🇺' },
-    { name: 'Rwanda', flag: '🇷🇼' },
-    { name: 'Saint Kitts and Nevis', flag: '🇰🇳' },
-    { name: 'Saint Lucia', flag: '🇱🇨' },
-    { name: 'Saint Vincent', flag: '🇻🇨' },
-    { name: 'Samoa', flag: '🇼🇸' },
-    { name: 'San Marino', flag: '🇸🇲' },
-    { name: 'Sao Tome and Principe', flag: '🇸🇹' },
-    { name: 'Saudi Arabia', flag: '🇸🇦' },
-    { name: 'Senegal', flag: '🇸🇳' },
-    { name: 'Serbia', flag: '🇷🇸' },
-    { name: 'Seychelles', flag: '🇸🇨' },
-    { name: 'Sierra Leone', flag: '🇸🇱' },
-    { name: 'Singapore', flag: '🇸🇬' },
-    { name: 'Slovakia', flag: '🇸🇰' },
-    { name: 'Slovenia', flag: '🇸🇮' },
-    { name: 'Solomon Islands', flag: '🇸🇧' },
-    { name: 'Somalia', flag: '🇸🇴' },
-    { name: 'South Africa', flag: '🇿🇦' },
-    { name: 'South Korea', flag: '🇰🇷' },
-    { name: 'South Sudan', flag: '🇸🇸' },
-    { name: 'Spain', flag: '🇪🇸' },
-    { name: 'Sri Lanka', flag: '🇱🇰' },
-    { name: 'Sudan', flag: '🇸🇩' },
-    { name: 'Suriname', flag: '🇸🇷' },
-    { name: 'Sweden', flag: '🇸🇪' },
-    { name: 'Switzerland', flag: '🇨🇭' },
-    { name: 'Syria', flag: '🇸🇾' },
-    { name: 'Taiwan', flag: '🇹🇼' },
-    { name: 'Tajikistan', flag: '🇹🇯' },
-    { name: 'Tanzania', flag: '🇹🇿' },
-    { name: 'Thailand', flag: '🇹🇭' },
-    { name: 'Timor-Leste', flag: '🇹🇱' },
-    { name: 'Togo', flag: '🇹🇬' },
-    { name: 'Tonga', flag: '🇹🇴' },
-    { name: 'Trinidad and Tobago', flag: '🇹🇹' },
-    { name: 'Tunisia', flag: '🇹🇳' },
-    { name: 'Turkey', flag: '🇹🇷' },
-    { name: 'Turkmenistan', flag: '🇹🇲' },
-    { name: 'Tuvalu', flag: '🇹🇻' },
-    { name: 'Uganda', flag: '🇺🇬' },
-    { name: 'Ukraine', flag: '🇺🇦' },
-    { name: 'United Arab Emirates', flag: '🇦🇪' },
-    { name: 'United Kingdom', flag: '🇬🇧' },
-    { name: 'United States', flag: '🇺🇸' },
-    { name: 'Uruguay', flag: '🇺🇾' },
-    { name: 'Uzbekistan', flag: '🇺🇿' },
-    { name: 'Vanuatu', flag: '🇻🇺' },
-    { name: 'Vatican City', flag: '🇻🇦' },
-    { name: 'Venezuela', flag: '🇻🇪' },
-    { name: 'Vietnam', flag: '🇻🇳' },
-    { name: 'Yemen', flag: '🇾🇪' },
-    { name: 'Zambia', flag: '🇿🇲' },
-    { name: 'Zimbabwe', flag: '🇿🇼' }
-];
-
-countriesWithFlags.sort(function(a, b) {
-    return a.name.localeCompare(b.name);
-});
-
-var countryNames = countriesWithFlags.map(function(c) { return c.name; });
-var countryFlags = {};
-countriesWithFlags.forEach(function(c) {
-    countryFlags[c.name] = c.flag;
-});
-
-function getCountryFlag(countryName) {
-    return countryFlags[countryName] || '';
-}
-
-// ============================================================
 // ===== GLOBAL VARIABLES =====
 // ============================================================
 
@@ -732,9 +517,9 @@ var eventImagesList = {
 };
 
 var demoEvents = [
-    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
-    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
-    { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 day', durationValue: 1, durationUnit: 'days' }
+    { id: '1', title: 'Jazz Concert', category: 'Concert', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
+    { id: '2', title: 'Football Match', category: 'Sport', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
+    { id: '3', title: 'Blockchain Conference', category: 'Conference', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 day', durationValue: 1, durationUnit: 'days' }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -863,6 +648,7 @@ async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
     try {
+        // 1. Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -884,7 +670,6 @@ async function loadAllFromSupabase() {
                     id: e.id,
                     title: e.title || 'Untitled',
                     category: e.category || '',
-                    country: e.country || 'France',
                     date: e.event_date || new Date().toISOString(),
                     location: e.location || '',
                     description: e.description || '',
@@ -910,6 +695,7 @@ async function loadAllFromSupabase() {
             await syncEventsToSupabase();
         }
         
+        // 2. Charger les tickets de l'utilisateur connecté
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -959,6 +745,7 @@ async function loadAllFromSupabase() {
             }
         }
         
+        // 3. Charger les notifications de l'utilisateur connecté
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid);
@@ -1317,26 +1104,6 @@ function getUploadedImages() {
         }
     }
     return images;
-}
-
-// ============================================================
-// ===== COUNTRY SEARCH =====
-// ============================================================
-
-function filterCountryOptions() {
-    var searchInput = document.getElementById('countrySearch');
-    var select = document.getElementById('eventCountry');
-    if (!searchInput || !select) return;
-    var query = searchInput.value.toLowerCase().trim();
-    var options = select.options;
-    for (var i = 0; i < options.length; i++) {
-        var text = options[i].text.toLowerCase();
-        if (query === '' || text.includes(query)) {
-            options[i].style.display = '';
-        } else {
-            options[i].style.display = 'none';
-        }
-    }
 }
 
 // ============================================================
@@ -1840,7 +1607,6 @@ function openPublishConfirm(eventData) {
     
     document.getElementById('confirmTitle').textContent = eventData.title;
     document.getElementById('confirmCategory').textContent = eventData.category;
-    document.getElementById('confirmCountry').textContent = eventData.country + ' ' + getCountryFlag(eventData.country);
     var dateEvent = new Date(eventData.date);
     document.getElementById('confirmDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('confirmDuration').textContent = formatDuration(eventData.durationValue, eventData.durationUnit);
@@ -1960,7 +1726,6 @@ function createEvent(e) {
     }
     
     var category = document.getElementById('eventCategory').value;
-    var country = document.getElementById('eventCountry').value;
     var durationValue = parseFloat(document.getElementById('eventDuration').value) || 1;
     var durationUnit = document.getElementById('eventDurationUnit').value;
     
@@ -1968,7 +1733,6 @@ function createEvent(e) {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
         category: category,
-        country: country,
         date: document.getElementById('eventDate').value,
         location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value,
@@ -2466,7 +2230,7 @@ function renderAdminEvents() {
         return '<div class="admin-event-item">' +
             '<div class="event-info">' +
                 '<strong>' + escapeHtml(e.title) + '</strong>' +
-                '<small>' + e.category + ' | ' + e.country + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
+                '<small>' + e.category + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
                 '<small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
             '</div>' +
             '<div class="event-actions">' +
@@ -2727,9 +2491,8 @@ function renderEventsByCategory() {
     if (!container) return;
     var filtered = events.filter(function(e) { 
         var matchCategory = (currentFilter === 'All' || e.category === currentFilter);
-        var matchCountry = (currentCountryFilter === 'All' || e.country === currentCountryFilter);
         var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
-        return matchCategory && matchCountry && matchSearch;
+        return matchCategory && matchSearch;
     });
     if (filtered.length === 0) { 
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
@@ -2764,9 +2527,6 @@ function renderEventCard(event) {
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 15) {
-        organizerDisplay = organizerDisplay.substring(0, 12) + '...';
-    }
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -2775,8 +2535,9 @@ function renderEventCard(event) {
     var fullStars = Math.floor(avgRating);
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
-    var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
+    var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) : 'New';
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    
     return '<div class="event-card-modern" onclick="openEventDetails(\'' + event.id + '\')">' +
         '<div class="event-banner">' +
             '<img src="' + (event.coverImage || fallbackImage) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
@@ -2793,12 +2554,15 @@ function renderEventCard(event) {
             '</div>' +
             (event.description ? '<div class="event-desc">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
             '<div class="event-footer">' +
-                '<div>' +
+                '<div class="event-left">' +
                     '<span class="event-price">' + event.price + ' Pi</span>' +
                     ' <span class="event-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
+                    ' <span class="event-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</span>' +
                 '</div>' +
-                '<div class="event-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</div>' +
                 '<button class="buy-btn-small" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy</button>' +
+            '</div>' +
+            '<div style="margin-top:6px; font-size:0.6rem; color:var(--gray); display:flex; align-items:center; gap:4px;">' +
+                '<i class="fas fa-user" style="color:#f5a623;font-size:0.5rem;"></i> @' + escapeHtml(organizerDisplay) +
             '</div>' +
         '</div>' +
     '</div>';
@@ -2818,7 +2582,6 @@ function openEventDetails(eventId) {
     var closeBtn = document.getElementById('eventDetailClose');
     document.getElementById('detailTitle').textContent = event.title;
     document.getElementById('detailCategory').textContent = event.category;
-    document.getElementById('detailCountry').textContent = event.country || 'Not specified';
     var dateEvent = new Date(event.date);
     document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('detailLocation').textContent = event.location || 'Online';
@@ -2982,31 +2745,6 @@ function initCountrySelectors() {
         allOption.value = 'All';
         allOption.textContent = 'All';
         filterSelect.appendChild(allOption);
-        
-        for (var i = 0; i < countriesWithFlags.length; i++) {
-            var country = countriesWithFlags[i];
-            var option = document.createElement('option');
-            option.value = country.name;
-            option.textContent = country.flag + ' ' + country.name;
-            if (country.name === currentCountryFilter) {
-                option.selected = true;
-            }
-            filterSelect.appendChild(option);
-        }
-    }
-    var eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        for (var i = 0; i < countriesWithFlags.length; i++) {
-            var country = countriesWithFlags[i];
-            var option = document.createElement('option');
-            option.value = country.name;
-            option.textContent = country.flag + ' ' + country.name;
-            if (country.name === 'France') {
-                option.selected = true;
-            }
-            eventSelect.appendChild(option);
-        }
     }
 }
 
@@ -3421,15 +3159,6 @@ function initHeroSlider() {
         hero.onmouseleave = startAutoPlay;
     }
     startAutoPlay();
-}
-
-// ============================================================
-// ===== FILTER BY COUNTRY =====
-// ============================================================
-
-function filterByCountry(country) {
-    currentCountryFilter = country;
-    renderEventsByCategory();
 }
 
 // ============================================================
