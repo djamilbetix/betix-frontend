@@ -16,20 +16,21 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
     }
 });
 
-console.log("Supabase initialized (Storage only mode)");
+console.log("Supabase initialized");
 
 // ============================================================
 // ===== COMPRESSION D'IMAGES =====
 // ============================================================
 
-function compressImage(file, options = {}) {
-    return new Promise((resolve, reject) => {
+function compressImage(file, options) {
+    options = options || {};
+    return new Promise(function(resolve, reject) {
         if (!file || !file.type.startsWith('image/')) {
             reject(new Error('Le fichier n\'est pas une image'));
             return;
         }
 
-        const config = {
+        var config = {
             maxWidth: options.maxWidth || 800,
             maxHeight: options.maxHeight || 800,
             quality: options.quality || 0.7,
@@ -38,51 +39,51 @@ function compressImage(file, options = {}) {
         };
 
         if (file.size / (1024 * 1024) < 0.2) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) { resolve(e.target.result); };
             reader.onerror = function() { reject(new Error('Erreur de lecture du fichier')); };
             reader.readAsDataURL(file);
             return;
         }
 
-        const reader = new FileReader();
+        var reader = new FileReader();
         reader.onload = function(event) {
-            const img = new Image();
+            var img = new Image();
             img.onload = function() {
-                let width = img.width;
-                let height = img.height;
+                var width = img.width;
+                var height = img.height;
                 
                 if (width > config.maxWidth || height > config.maxHeight) {
-                    const ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
+                    var ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
                     width = Math.round(width * ratio);
                     height = Math.round(height * ratio);
                 }
                 
-                const canvas = document.createElement('canvas');
+                var canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext('2d');
                 
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                let format = config.format;
+                var format = config.format;
                 if (format === 'image/webp') {
-                    const testCanvas = document.createElement('canvas');
+                    var testCanvas = document.createElement('canvas');
                     testCanvas.width = 1;
                     testCanvas.height = 1;
-                    const testData = testCanvas.toDataURL('image/webp');
+                    var testData = testCanvas.toDataURL('image/webp');
                     if (!testData || testData.indexOf('image/webp') === -1) {
                         format = 'image/jpeg';
                     }
                 }
                 
-                let compressedDataUrl = canvas.toDataURL(format, config.quality);
+                var compressedDataUrl = canvas.toDataURL(format, config.quality);
                 
-                const compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
+                var compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
                 if (compressedSize > config.maxSizeMB && config.quality > 0.3) {
-                    const newQuality = Math.max(0.3, config.quality - 0.2);
+                    var newQuality = Math.max(0.3, config.quality - 0.2);
                     compressedDataUrl = canvas.toDataURL(format, newQuality);
                 }
                 
@@ -122,10 +123,10 @@ async function compressEventImage(file) {
 
 async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
     try {
-        const response = await fetch(base64Data);
-        const blob = await response.blob();
+        var response = await fetch(base64Data);
+        var blob = await response.blob();
         
-        const { data, error } = await supabaseClient.storage
+        var { data, error } = await supabaseClient.storage
             .from(bucket)
             .upload(filePath, blob, {
                 contentType: blob.type,
@@ -135,7 +136,7 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
         
         if (error) throw error;
         
-        const { data: publicUrlData } = supabaseClient.storage
+        var { data: publicUrlData } = supabaseClient.storage
             .from(bucket)
             .getPublicUrl(filePath);
         
@@ -147,12 +148,12 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
 }
 
 async function uploadProfilePhoto(piUid, base64Data) {
-    const filePath = `${piUid}/avatar_${Date.now()}.webp`;
+    var filePath = piUid + '/avatar_' + Date.now() + '.webp';
     return await uploadToSupabaseStorage('avatars', filePath, base64Data);
 }
 
 async function uploadEventImage(eventId, base64Data, index) {
-    const filePath = `${eventId}/image_${index}_${Date.now()}.webp`;
+    var filePath = eventId + '/image_' + index + '_' + Date.now() + '.webp';
     return await uploadToSupabaseStorage('events-images', filePath, base64Data);
 }
 
@@ -160,10 +161,12 @@ async function uploadEventImage(eventId, base64Data, index) {
 // ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
 
-async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, points = 0) {
+async function saveUserToSupabase(piUid, username, wallet, avatarUrl, points) {
+    avatarUrl = avatarUrl || null;
+    points = points || 0;
     try {
-        const now = new Date().toISOString();
-        const userData = {
+        var now = new Date().toISOString();
+        var userData = {
             pi_uid: piUid,
             username: username,
             wallet: wallet,
@@ -172,7 +175,7 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
             updated_at: now
         };
         
-        const { data: existing, error: checkError } = await supabaseClient
+        var { data: existing, error: checkError } = await supabaseClient
             .from('users')
             .select('pi_uid')
             .eq('pi_uid', piUid)
@@ -183,7 +186,7 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
         }
         
         if (existing) {
-            const { error } = await supabaseClient
+            var { error } = await supabaseClient
                 .from('users')
                 .update(userData)
                 .eq('pi_uid', piUid);
@@ -191,7 +194,7 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
             console.log('User updated in Supabase:', piUid);
         } else {
             userData.created_at = now;
-            const { error } = await supabaseClient
+            var { error } = await supabaseClient
                 .from('users')
                 .insert(userData);
             if (error) throw error;
@@ -206,7 +209,7 @@ async function saveUserToSupabase(piUid, username, wallet, avatarUrl = null, poi
 
 async function loadUserFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('users')
             .select('*')
             .eq('pi_uid', piUid)
@@ -227,13 +230,13 @@ async function loadUserFromSupabase(piUid) {
 
 async function saveEventToSupabase(eventData) {
     try {
-        const dbEvent = {
+        var dbEvent = {
             id: eventData.id,
             organizer_pi_uid: eventData.organizerPiUid || eventData.organizer,
             organizer_name: eventData.organizerName || eventData.organizer || '',
             title: eventData.title,
             description: eventData.description || '',
-            image_url: eventData.coverImage || eventData.images?.[0] || '',
+            image_url: eventData.coverImage || (eventData.images && eventData.images.length > 0 ? eventData.images[0] : ''),
             images: eventData.images ? JSON.stringify(eventData.images) : '[]',
             location: eventData.location || '',
             country: eventData.country || '',
@@ -244,13 +247,13 @@ async function saveEventToSupabase(eventData) {
             category: eventData.category || '',
             ticket_price: eventData.price || 0,
             max_tickets: eventData.seatsTotal || 0,
-            seats_left: eventData.seatsLeft || eventData.seatsTotal || 0,
+            seats_left: eventData.seatsLeft !== undefined && eventData.seatsLeft !== null ? eventData.seatsLeft : eventData.seatsTotal || 0,
             conditions: eventData.conditions || '',
             created_at: eventData.createdAt || new Date().toISOString(),
             boosts: eventData.boosts || 0
         };
         
-        const { error } = await supabaseClient
+        var { error } = await supabaseClient
             .from('events')
             .upsert(dbEvent, { onConflict: 'id' });
         
@@ -265,7 +268,7 @@ async function saveEventToSupabase(eventData) {
 
 async function loadEventsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('events')
             .select('*')
             .order('event_date', { ascending: true });
@@ -280,7 +283,7 @@ async function loadEventsFromSupabase() {
 
 async function deleteEventFromSupabase(eventId) {
     try {
-        const { error } = await supabaseClient
+        var { error } = await supabaseClient
             .from('events')
             .delete()
             .eq('id', eventId);
@@ -295,7 +298,7 @@ async function deleteEventFromSupabase(eventId) {
 
 async function saveTicketToSupabase(ticketData) {
     try {
-        const dbTicket = {
+        var dbTicket = {
             id: ticketData.id,
             event_id: ticketData.eventId,
             event_title: ticketData.eventTitle || '',
@@ -318,7 +321,7 @@ async function saveTicketToSupabase(ticketData) {
             purchase_date: ticketData.purchaseDate || new Date().toISOString()
         };
         
-        const { error } = await supabaseClient
+        var { error } = await supabaseClient
             .from('tickets')
             .upsert(dbTicket, { onConflict: 'id' });
         
@@ -333,7 +336,7 @@ async function saveTicketToSupabase(ticketData) {
 
 async function loadTicketsFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('tickets')
             .select('*')
             .eq('buyer_pi_uid', piUid)
@@ -349,7 +352,7 @@ async function loadTicketsFromSupabase(piUid) {
 
 async function saveTransactionToSupabase(transactionData) {
     try {
-        const dbTransaction = {
+        var dbTransaction = {
             id: transactionData.id || Date.now().toString(),
             buyer_pi_uid: transactionData.buyerWallet || transactionData.buyerPiUid,
             event_id: transactionData.eventId,
@@ -360,7 +363,7 @@ async function saveTransactionToSupabase(transactionData) {
             created_at: transactionData.date || new Date().toISOString()
         };
         
-        const { error } = await supabaseClient
+        var { error } = await supabaseClient
             .from('transactions')
             .insert(dbTransaction);
         
@@ -375,7 +378,7 @@ async function saveTransactionToSupabase(transactionData) {
 
 async function saveNotificationToSupabase(notificationData) {
     try {
-        const dbNotification = {
+        var dbNotification = {
             id: notificationData.id || Date.now().toString(),
             receiver_pi_uid: notificationData.receiverPiUid || notificationData.userWallet,
             title: notificationData.title || 'Notification',
@@ -385,7 +388,7 @@ async function saveNotificationToSupabase(notificationData) {
             created_at: notificationData.date || new Date().toISOString()
         };
         
-        const { error } = await supabaseClient
+        var { error } = await supabaseClient
             .from('notifications')
             .insert(dbNotification);
         
@@ -400,7 +403,7 @@ async function saveNotificationToSupabase(notificationData) {
 
 async function loadNotificationsFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        var { data, error } = await supabaseClient
             .from('notifications')
             .select('*')
             .eq('receiver_pi_uid', piUid)
@@ -614,7 +617,6 @@ var countriesWithFlags = [
     { name: 'Zimbabwe', flag: '🇿🇼' }
 ];
 
-// Pays triés par ordre alphabétique
 countriesWithFlags.sort(function(a, b) {
     return a.name.localeCompare(b.name);
 });
@@ -730,7 +732,7 @@ var eventImagesList = {
 };
 
 var demoEvents = [
-    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 hours', durationValue: 2, durationUnit: 'hours' },
+    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
     { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
     { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 day', durationValue: 1, durationUnit: 'days' }
 ];
@@ -758,23 +760,47 @@ function formatDuration(value, unit) {
 // ============================================================
 
 function saveEvents() { 
-    localStorage.setItem('betix_events', JSON.stringify(events));
-    syncEventsToSupabase();
+    try {
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        syncEventsToSupabase().catch(function(err) {
+            console.error('Erreur sync events:', err);
+        });
+    } catch (e) {
+        console.error('Erreur saveEvents:', e);
+    }
 }
 
 function saveTickets() { 
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    syncTicketsToSupabase();
+    try {
+        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        syncTicketsToSupabase().catch(function(err) {
+            console.error('Erreur sync tickets:', err);
+        });
+    } catch (e) {
+        console.error('Erreur saveTickets:', e);
+    }
 }
 
 function saveUser() { 
-    localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncUserToSupabase();
+    try {
+        localStorage.setItem('betix_user', JSON.stringify(currentUser));
+        syncUserToSupabase().catch(function(err) {
+            console.error('Erreur sync user:', err);
+        });
+    } catch (e) {
+        console.error('Erreur saveUser:', e);
+    }
 }
 
 function saveNotifications() { 
-    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncNotificationsToSupabase();
+    try {
+        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+        syncNotificationsToSupabase().catch(function(err) {
+            console.error('Erreur sync notifications:', err);
+        });
+    } catch (e) {
+        console.error('Erreur saveNotifications:', e);
+    }
 }
 
 function saveChatMessages() {
@@ -795,7 +821,7 @@ function saveConnectedUsers() {
 
 async function syncUserToSupabase() {
     if (!currentUser.piUid && !currentUser.wallet) return;
-    const piUid = currentUser.piUid || currentUser.wallet;
+    var piUid = currentUser.piUid || currentUser.wallet;
     await saveUserToSupabase(
         piUid,
         currentUser.name || 'User',
@@ -806,20 +832,21 @@ async function syncUserToSupabase() {
 }
 
 async function syncEventsToSupabase() {
-    for (const event of events) {
-        await saveEventToSupabase(event);
+    for (var i = 0; i < events.length; i++) {
+        await saveEventToSupabase(events[i]);
     }
 }
 
 async function syncTicketsToSupabase() {
-    for (const ticket of tickets) {
-        await saveTicketToSupabase(ticket);
+    for (var i = 0; i < tickets.length; i++) {
+        await saveTicketToSupabase(tickets[i]);
     }
 }
 
 async function syncNotificationsToSupabase() {
-    for (const notif of notifications) {
-        const receiverPiUid = notif.userWallet || currentUser.wallet;
+    for (var i = 0; i < notifications.length; i++) {
+        var notif = notifications[i];
+        var receiverPiUid = notif.userWallet || currentUser.wallet;
         await saveNotificationToSupabase({
             ...notif,
             receiverPiUid: receiverPiUid,
@@ -835,106 +862,164 @@ async function syncNotificationsToSupabase() {
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
-    const supabaseEvents = await loadEventsFromSupabase();
-    if (supabaseEvents.length > 0) {
-        events = supabaseEvents.map(e => ({
-            id: e.id,
-            title: e.title,
-            category: e.category || '',
-            country: e.country || 'France',
-            date: e.event_date,
-            location: e.location || '',
-            description: e.description || '',
-            conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
-            price: e.ticket_price || 0.0003,
-            seatsTotal: e.max_tickets || 100,
-            seatsLeft: e.seats_left !== undefined ? e.seats_left : e.max_tickets || 100,
-            images: e.images ? JSON.parse(e.images) : (e.image_url ? [e.image_url] : []),
-            coverImage: e.image_url || '',
-            organizer: e.organizer_pi_uid || '',
-            organizerName: e.organizer_name || '',
-            createdAt: e.created_at || new Date().toISOString(),
-            boosts: e.boosts || 0,
-            duration: e.duration || '',
-            durationValue: e.duration_value || 1,
-            durationUnit: e.duration_unit || 'hours'
-        }));
-        localStorage.setItem('betix_events', JSON.stringify(events));
-    } else {
-        events = JSON.parse(JSON.stringify(demoEvents));
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        await syncEventsToSupabase();
-    }
-    
-    if (currentUser.piUid || currentUser.wallet) {
-        const piUid = currentUser.piUid || currentUser.wallet;
-        const supabaseTickets = await loadTicketsFromSupabase(piUid);
-        if (supabaseTickets.length > 0) {
-            tickets = supabaseTickets.map(t => ({
-                id: t.id,
-                eventId: t.event_id,
-                eventTitle: t.event_title || 'Event',
-                eventCategory: t.event_category || '',
-                eventDate: t.event_date || new Date().toISOString(),
-                eventLocation: t.event_location || '',
-                eventDuration: t.event_duration || '',
-                price: t.price || 0,
-                quantity: t.quantity || 1,
-                ticketType: t.ticket_type || 'Standard',
-                buyerWallet: t.buyer_pi_uid,
-                buyerName: t.buyer_name || t.buyer_pi_uid,
-                userWallet: t.buyer_pi_uid,
-                purchaseDate: t.purchase_date || new Date().toISOString(),
-                purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
-                transactionId: t.transaction_id || '',
-                qrCode: t.qr_code || 'BETIX-' + Date.now(),
-                ticketCode: t.ticket_code || 'BETIX-' + Date.now().toString().substring(0, 8),
-                orderNumber: t.order_number || 'ORD-' + Date.now().toString().substring(0, 10),
-                status: t.status || 'Valid',
-                paymentStatus: t.payment_status || 'Paid',
-                validationTime: t.validation_time || null
-            }));
-            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-        } else {
-            const localTickets = localStorage.getItem('betix_tickets');
-            if (localTickets) {
+    try {
+        var supabaseEvents = await loadEventsFromSupabase();
+        if (supabaseEvents && supabaseEvents.length > 0) {
+            events = supabaseEvents.map(function(e) {
+                var images = [];
                 try {
-                    tickets = JSON.parse(localTickets);
-                    tickets = tickets.filter(t => t.userWallet === piUid || t.buyerWallet === piUid);
-                    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-                    await syncTicketsToSupabase();
-                } catch (e) {
-                    console.error('Error parsing local tickets:', e);
-                    tickets = [];
+                    if (e.images) {
+                        if (typeof e.images === 'string') {
+                            images = JSON.parse(e.images);
+                        } else if (Array.isArray(e.images)) {
+                            images = e.images;
+                        }
+                    }
+                } catch (parseErr) {
+                    console.warn('Erreur parsing images:', parseErr);
+                    images = e.image_url ? [e.image_url] : [];
+                }
+                
+                return {
+                    id: e.id,
+                    title: e.title || 'Untitled',
+                    category: e.category || '',
+                    country: e.country || 'France',
+                    date: e.event_date || new Date().toISOString(),
+                    location: e.location || '',
+                    description: e.description || '',
+                    conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
+                    price: e.ticket_price || 0.0003,
+                    seatsTotal: e.max_tickets || 100,
+                    seatsLeft: e.seats_left !== undefined && e.seats_left !== null ? e.seats_left : e.max_tickets || 100,
+                    images: images.length > 0 ? images : (e.image_url ? [e.image_url] : []),
+                    coverImage: e.image_url || (images.length > 0 ? images[0] : ''),
+                    organizer: e.organizer_pi_uid || '',
+                    organizerName: e.organizer_name || '',
+                    createdAt: e.created_at || new Date().toISOString(),
+                    boosts: e.boosts || 0,
+                    duration: e.duration || '',
+                    durationValue: e.duration_value || 1,
+                    durationUnit: e.duration_unit || 'hours'
+                };
+            });
+            localStorage.setItem('betix_events', JSON.stringify(events));
+        } else {
+            events = JSON.parse(JSON.stringify(demoEvents));
+            localStorage.setItem('betix_events', JSON.stringify(events));
+            await syncEventsToSupabase();
+        }
+        
+        if (currentUser.piUid || currentUser.wallet) {
+            var piUid = currentUser.piUid || currentUser.wallet;
+            var supabaseTickets = await loadTicketsFromSupabase(piUid);
+            if (supabaseTickets && supabaseTickets.length > 0) {
+                tickets = supabaseTickets.map(function(t) {
+                    return {
+                        id: t.id,
+                        eventId: t.event_id,
+                        eventTitle: t.event_title || 'Event',
+                        eventCategory: t.event_category || '',
+                        eventDate: t.event_date || new Date().toISOString(),
+                        eventLocation: t.event_location || '',
+                        eventDuration: t.event_duration || '',
+                        price: t.price || 0,
+                        quantity: t.quantity || 1,
+                        ticketType: t.ticket_type || 'Standard',
+                        buyerWallet: t.buyer_pi_uid,
+                        buyerName: t.buyer_name || t.buyer_pi_uid,
+                        userWallet: t.buyer_pi_uid,
+                        purchaseDate: t.purchase_date || new Date().toISOString(),
+                        purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
+                        transactionId: t.transaction_id || '',
+                        qrCode: t.qr_code || 'BETIX-' + Date.now(),
+                        ticketCode: t.ticket_code || 'BETIX-' + Date.now().toString().substring(0, 8),
+                        orderNumber: t.order_number || 'ORD-' + Date.now().toString().substring(0, 10),
+                        status: t.status || 'Valid',
+                        paymentStatus: t.payment_status || 'Paid',
+                        validationTime: t.validation_time || null
+                    };
+                });
+                localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            } else {
+                var localTickets = localStorage.getItem('betix_tickets');
+                if (localTickets) {
+                    try {
+                        var parsedTickets = JSON.parse(localTickets);
+                        tickets = parsedTickets.filter(function(t) {
+                            return t.userWallet === piUid || t.buyerWallet === piUid;
+                        });
+                        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+                        await syncTicketsToSupabase();
+                    } catch (e) {
+                        console.error('Erreur parsing local tickets:', e);
+                        tickets = [];
+                    }
                 }
             }
         }
-    }
-    
-    if (currentUser.piUid || currentUser.wallet) {
-        const piUid = currentUser.piUid || currentUser.wallet;
-        const supabaseNotifs = await loadNotificationsFromSupabase(piUid);
-        if (supabaseNotifs.length > 0) {
-            notifications = supabaseNotifs.map(n => ({
-                id: n.id,
-                message: n.message || n.title || '',
-                type: n.type || 'info',
-                read: n.is_read || false,
-                date: n.created_at || new Date().toISOString()
-            }));
-            localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-            updateNotifBadgeHeader();
+        
+        if (currentUser.piUid || currentUser.wallet) {
+            var piUid = currentUser.piUid || currentUser.wallet;
+            var supabaseNotifs = await loadNotificationsFromSupabase(piUid);
+            if (supabaseNotifs && supabaseNotifs.length > 0) {
+                notifications = supabaseNotifs.map(function(n) {
+                    return {
+                        id: n.id,
+                        message: n.message || n.title || '',
+                        type: n.type || 'info',
+                        read: n.is_read || false,
+                        date: n.created_at || new Date().toISOString()
+                    };
+                });
+                localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+                updateNotifBadgeHeader();
+            }
         }
+        
+        initialDataLoaded = true;
+        
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
+        updateProfilePage();
+        updateAllProfileImages();
+        console.log('All data loaded from Supabase');
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        loadFromLocalStorage();
     }
+}
+
+function loadFromLocalStorage() {
+    console.log('Loading from localStorage fallback...');
     
-    initialDataLoaded = true;
+    try {
+        var savedEvents = localStorage.getItem('betix_events');
+        if (savedEvents) {
+            var parsed = JSON.parse(savedEvents);
+            if (parsed && parsed.length > 0) {
+                events = parsed;
+            }
+        }
+        
+        var savedTickets = localStorage.getItem('betix_tickets');
+        if (savedTickets) {
+            var parsedTickets = JSON.parse(savedTickets);
+            if (parsedTickets && parsedTickets.length > 0) {
+                tickets = parsedTickets;
+            }
+        }
+    } catch (e) {
+        console.error('Erreur fallback:', e);
+    }
     
     renderEventsByCategory();
     renderTickets();
     renderHistory();
     updateProfilePage();
     updateAllProfileImages();
-    console.log('All data loaded from Supabase');
 }
 
 // ============================================================
@@ -1133,7 +1218,7 @@ function addNotification(message, type) {
 }
 
 // ============================================================
-// ===== NAVIGATION PROFIL =====
+// ===== NAVIGATION =====
 // ============================================================
 
 function goToMyEvents() { showPage('myevents'); }
@@ -1142,7 +1227,7 @@ function goToHistory() { showPage('history'); }
 function goToRatings() { showPage('ratings'); }
 
 // ============================================================
-// ===== MODERN IMAGE UPLOAD WITH COMPRESSION =====
+// ===== IMAGE UPLOAD =====
 // ============================================================
 
 async function handleImageUploadModern(file, index) {
@@ -1255,7 +1340,7 @@ function filterCountryOptions() {
 }
 
 // ============================================================
-// ===== PROFILE PHOTO AVEC COMPRESSION ET UPLOAD SUPABASE =====
+// ===== PROFILE PHOTO =====
 // ============================================================
 
 async function handleProfilePhotoUpload(file) {
@@ -1275,9 +1360,9 @@ async function handleProfilePhotoUpload(file) {
     try {
         var compressedData = await compressProfilePhoto(file);
         
-        const piUid = currentUser.piUid || currentUser.wallet;
+        var piUid = currentUser.piUid || currentUser.wallet;
         if (piUid) {
-            const publicUrl = await uploadProfilePhoto(piUid, compressedData);
+            var publicUrl = await uploadProfilePhoto(piUid, compressedData);
             if (publicUrl) {
                 currentUser.profilePhoto = publicUrl;
             } else {
@@ -1523,7 +1608,7 @@ async function connectToPi() {
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             if (!currentUser.profilePhoto) currentUser.profilePhoto = null;
             
-            const userData = await loadUserFromSupabase(currentUser.piUid);
+            var userData = await loadUserFromSupabase(currentUser.piUid);
             if (userData) {
                 currentUser.name = userData.username || currentUser.name;
                 currentUser.profilePhoto = userData.avatar_url || currentUser.profilePhoto;
@@ -1613,8 +1698,8 @@ async function confirmPurchase(eventId, quantity) {
                     saveEvents();
                     saveTickets();
                     
-                    for (const ticket of ticketsAdded) {
-                        await saveTicketToSupabase(ticket);
+                    for (var t = 0; t < ticketsAdded.length; t++) {
+                        await saveTicketToSupabase(ticketsAdded[t]);
                     }
                     
                     await saveTransactionToSupabase({
@@ -1647,10 +1732,6 @@ async function confirmPurchase(eventId, quantity) {
         });
     } catch (error) { alert("Error: " + error.message); }
 }
-
-// ============================================================
-// ===== CONFIRMATION D'ACHAT DEPUIS LA POPUP =====
-// ============================================================
 
 function confirmPurchaseFromPopup() {
     if (!selectedEventForPurchase) {
@@ -1946,16 +2027,13 @@ function renderPremiumTicket(ticket) {
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
             '<div class="ticket-event-category"><i class="fas fa-tag"></i> ' + escapeHtml(ticket.eventCategory || 'Event') + '</div>' +
             '<div class="ticket-description">' +
-                'Official Betix electronic ticket confirming your participation in this event. ' +
-                'Please present this ticket (QR Code or ticket code) at the entrance.' +
+                'Official Betix ticket - Present this ticket at the entrance.' +
             '</div>' +
             '<div class="ticket-info-grid">' +
-                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="label">Date:</span> <span class="value">' + dateFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="label">Time:</span> <span class="value">' + timeFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="label">Location:</span> <span class="value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-hourglass-half"></i> <span class="label">Duration:</span> <span class="value">' + escapeHtml(ticket.eventDuration || 'Not specified') + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-user"></i> <span class="label">Organizer:</span> <span class="value">@' + escapeHtml(ticket.buyerName || ticket.buyerWallet) + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="label">Ticket Type:</span> <span class="value">' + escapeHtml(ticket.ticketType || 'Standard') + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + ' ' + timeFormatted + '</div>' +
+                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(ticket.eventLocation || 'Online') + '</div>' +
+                '<div class="ticket-info-item"><i class="fas fa-user"></i> @' + escapeHtml(ticket.buyerName || ticket.buyerWallet) + '</div>' +
+                '<div class="ticket-info-item"><i class="fas fa-tag"></i> ' + escapeHtml(ticket.ticketType || 'Standard') + '</div>' +
             '</div>' +
             '<div class="ticket-price-qty">' +
                 '<div class="price"><i class="fas fa-coins"></i> ' + ticket.price + ' Pi</div>' +
@@ -1965,16 +2043,15 @@ function renderPremiumTicket(ticket) {
             '<div class="ticket-qr-section">' +
                 '<div class="qr-container">' + qrCodeHtml + '</div>' +
                 '<div class="qr-info">' +
-                    '<div class="ticket-code"><i class="fas fa-barcode"></i> ' + escapeHtml(ticket.ticketCode || ticket.qrCode || 'N/A') + '</div>' +
-                    '<div class="ticket-id"><span>Order #:</span> ' + escapeHtml(ticket.orderNumber || 'N/A') + ' | <span>Ticket ID:</span> ' + escapeHtml(ticket.id || 'N/A') + '</div>' +
-                    '<div class="ticket-id" style="margin-top:2px;"><span>Purchased:</span> ' + purchaseFormatted + ' at ' + purchaseTime + ' | <span>Payment:</span> ' + (ticket.paymentStatus || 'Paid') + '</div>' +
-                    (ticket.transactionId ? '<div class="ticket-id" style="margin-top:2px;"><span>Transaction:</span> ' + escapeHtml(ticket.transactionId.substring(0, 16)) + '...</div>' : '') +
+                    '<div class="ticket-code">' + escapeHtml(ticket.ticketCode || ticket.qrCode || 'N/A') + '</div>' +
+                    '<div class="ticket-id">Order: ' + escapeHtml(ticket.orderNumber || 'N/A') + ' | ID: ' + escapeHtml(ticket.id || 'N/A') + '</div>' +
+                    '<div class="ticket-id">Purchased: ' + purchaseFormatted + ' ' + purchaseTime + ' | ' + (ticket.paymentStatus || 'Paid') + '</div>' +
                 '</div>' +
             '</div>' +
         '</div>' +
         '<div class="ticket-footer">' +
-            '<div class="footer-left"><i class="fas fa-check-circle" style="color:#10b981;"></i> Valid ticket</div>' +
-            '<div class="footer-right"><i class="fas fa-shield-alt"></i> Powered by Betix <span style="margin:0 4px;">•</span> Secure Digital Ticketing</div>' +
+            '<div class="footer-left"><i class="fas fa-check-circle"></i> Valid ticket</div>' +
+            '<div class="footer-right"><i class="fas fa-shield-alt"></i> Powered by Betix</div>' +
         '</div>' +
     '</div>';
 }
@@ -2620,20 +2697,22 @@ function renderMyEventCard(event) {
     }
     var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
     var durationDisplay = event.duration || formatDuration(event.durationValue, event.durationUnit);
-    return '<div class="event-card" style="cursor:default;">' +
-        galleryHtml +
-        '<div class="event-info">' +
+    return '<div class="event-card-modern" style="cursor:default;">' +
+        '<div class="event-banner">' +
+            '<img src="' + (event.coverImage || eventImagesList[event.category]) + '" alt="' + escapeHtml(event.title) + '">' +
+            '<span class="event-badge">' + escapeHtml(event.category) + '</span>' +
+        '</div>' +
+        '<div class="event-body">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-organizer"><i class="fas fa-user"></i> by @' + escapeHtml(event.organizerName || event.organizer) + '</div>' +
             '<div class="event-details-grid">' +
                 '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationDisplay) + '</div>' +
-                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
-                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
             '</div>' +
             '<div class="event-footer">' +
-                '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+                '<div><span class="event-price">' + event.price + ' Pi</span> <span class="event-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span></div>' +
             '</div>' +
         '</div>' +
     '</div>';
@@ -2698,28 +2777,28 @@ function renderEventCard(event) {
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')" style="cursor:pointer;">' +
-        '<div class="event-card-banner">' +
+    return '<div class="event-card-modern" onclick="openEventDetails(\'' + event.id + '\')">' +
+        '<div class="event-banner">' +
             '<img src="' + (event.coverImage || fallbackImage) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
+            '<span class="event-badge">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
-        '<div class="event-card-body">' +
-            '<div class="event-card-title">' + escapeHtml(event.title) + 
-                '<span class="organizer-name"><i class="fas fa-user"></i> by ' + escapeHtml(organizerDisplay) + '</span>' +
-            '</div>' +
-            '<div class="event-card-details">' +
+        '<div class="event-body">' +
+            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-organizer"><i class="fas fa-user"></i> by @' + escapeHtml(organizerDisplay) + '</div>' +
+            '<div class="event-details-grid">' +
                 '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationDisplay) + '</div>' +
             '</div>' +
-            (event.description ? '<div class="event-card-desc">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
-            '<div class="event-card-stats">' +
-                '<span class="event-card-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</span>' +
-            '</div>' +
-            '<div class="event-card-footer">' +
-                '<div><span class="event-card-price">' + event.price + ' Pi</span> <span class="event-card-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span></div>' +
-                '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            (event.description ? '<div class="event-desc">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
+            '<div class="event-footer">' +
+                '<div>' +
+                    '<span class="event-price">' + event.price + ' Pi</span>' +
+                    ' <span class="event-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
+                '</div>' +
+                '<div class="event-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</div>' +
+                '<button class="buy-btn-small" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy</button>' +
             '</div>' +
         '</div>' +
     '</div>';
