@@ -1005,8 +1005,12 @@ body {
     align-items: center;
     padding-top: 8px;
     border-top: 1px solid #e5e7eb;
-    flex-wrap: wrap;
-    gap: 4px;
+}
+
+.event-card-modern .event-body .event-footer .event-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .event-card-modern .event-body .event-footer .event-price {
@@ -1025,6 +1029,18 @@ body {
     color: var(--warning);
 }
 
+.event-card-modern .event-body .event-footer .event-organizer-bottom {
+    font-size: 0.6rem;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.event-card-modern .event-body .event-footer .event-organizer-bottom i {
+    color: #f5a623;
+}
+
 .event-card-modern .buy-btn-small {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
@@ -1035,6 +1051,7 @@ body {
     font-weight: 600;
     font-size: 0.7rem;
     transition: opacity 0.2s;
+    flex-shrink: 0;
 }
 
 .event-card-modern .buy-btn-small:hover {
