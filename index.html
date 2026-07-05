@@ -11,7 +11,6 @@
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -29,7 +28,6 @@
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
     
-    <!-- Google Translate Script -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -60,7 +58,6 @@
     </div>
 </header>
 
-<!-- ===== SIDEBAR ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -137,7 +134,6 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ===== NOTIFICATIONS PAGE ===== -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
@@ -205,7 +201,6 @@
     </div>
 </div>
 
-<!-- ===== MY EVENTS PAGE (avec bouton Edit) ===== -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Events</h2>
@@ -215,7 +210,6 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE (avec durée) ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -237,26 +231,26 @@
                 </select>
             </div>
             <div class="form-group"><label>Country</label>
-                <select id="eventCountry">
+                <div class="country-search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="countrySearch" placeholder="Search country..." oninput="filterCountryOptions()">
+                </div>
+                <select id="eventCountry" style="height:200px;">
                 </select>
             </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
-            
-            <!-- Durée de l'événement -->
-            <div class="form-group">
-                <label>Duration</label>
-                <div class="event-duration-wrapper">
-                    <input type="number" id="eventDurationValue" placeholder="1" min="0" step="0.5" value="1">
+            <div class="form-group"><label>Duration</label>
+                <div class="duration-group">
+                    <input type="number" id="eventDuration" value="1" min="0.5" step="0.5">
                     <select id="eventDurationUnit">
-                        <option value="hours">Hours</option>
-                        <option value="days">Days</option>
-                        <option value="weeks">Weeks</option>
-                        <option value="months">Months</option>
-                        <option value="years">Years</option>
+                        <option value="hours">Hour(s)</option>
+                        <option value="days">Day(s)</option>
+                        <option value="weeks">Week(s)</option>
+                        <option value="months">Month(s)</option>
+                        <option value="years">Year(s)</option>
                     </select>
                 </div>
             </div>
-            
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
             <div class="form-group">
@@ -316,7 +310,6 @@
     </div>
 </div>
 
-<!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
@@ -394,37 +387,26 @@
         
         <div class="publish-confirm-footer">
             <button class="publish-btn cancel" onclick="closePublishConfirmPopup()">Cancel</button>
-            <button class="publish-btn confirm" id="confirmPublishBtn">Publish Event</button>
+            <button class="publish-btn confirm" id="confirmPublishBtn">
+                <span class="btn-text">Publish Event</span>
+                <span class="btn-loader"><span class="spinner"></span> Publishing...</span>
+            </button>
         </div>
     </div>
 </div>
 
-<!-- ===== TICKETS PAGE (design premium) ===== -->
 <div id="ticketsPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">My Active Tickets</h2>
-        <p class="events-sub">Your valid tickets</p>
-        <div id="ticketsList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">My Active Tickets</h2><p class="events-sub">Your valid tickets</p><div id="ticketsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== HISTORY PAGE (design premium) ===== -->
 <div id="historyPage" class="hidden-page">
-    <div class="events-container">
-        <h2 class="events-title">Ticket History</h2>
-        <p class="events-sub">All your purchased tickets</p>
-        <div id="historyList"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
+    <div class="events-container"><h2 class="events-title">Ticket History</h2><p class="events-sub">All your purchased tickets</p><div id="historyList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== RATINGS PAGE ===== -->
 <div id="ratingsPage" class="hidden-page">
     <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== PROFILE PAGE ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -479,7 +461,6 @@
     </div>
 </div>
 
-<!-- ===== WHITEPAPER PAGE ===== -->
 <div id="whitepaperPage" class="hidden-page">
     <div class="page-content">
         <h2>Whitepaper</h2>
@@ -489,7 +470,6 @@
     </div>
 </div>
 
-<!-- ===== FAQ PAGE ===== -->
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
         <div class="faq-header">
@@ -509,7 +489,6 @@
     </div>
 </div>
 
-<!-- ===== SETTINGS PAGE ===== -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -524,7 +503,6 @@
     </div>
 </div>
 
-<!-- ===== ADMIN PAGE ===== -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -622,7 +600,6 @@
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -677,7 +654,6 @@
     </div>
 </footer>
 
-<!-- ===== MODALS ===== -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
@@ -685,7 +661,6 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
@@ -698,13 +673,12 @@
                         <span class="detail-category" id="detailCategory">Category</span>
                         <span class="detail-date" id="detailDate">Date</span>
                         <span class="detail-location" id="detailLocation">Location</span>
-                        <span class="detail-country" id="detailCountry">Country</span>
+                        <span class="detail-duration" id="detailDuration">Duration</span>
                     </div>
                     <div class="detail-price-seats">
                         <span class="detail-price" id="detailPrice">0 Pi</span>
                         <span class="detail-seats" id="detailSeats">0/0 seats</span>
                     </div>
-                    <div style="margin-top:4px; font-size:0.8rem; color:var(--gray);" id="detailDuration"></div>
                 </div>
             </div>
             <div class="event-detail-body">
@@ -737,55 +711,6 @@
     </div>
 </div>
 
-<!-- ===== MODIFIER ÉVÉNEMENT - MODAL ===== -->
-<div id="editEventModal" class="modal modal-edit-event">
-    <div class="modal-content">
-        <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
-        <h2 style="margin-bottom: 16px; color: var(--dark);">Edit Event</h2>
-        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 16px;">Modify the fields below to update your event</p>
-        
-        <div class="form-group">
-            <label>Description</label>
-            <textarea id="editEventDescription" rows="3" placeholder="Describe your event..."></textarea>
-        </div>
-        
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" id="editEventLocation" placeholder="Ex: Paris, Olympia">
-        </div>
-        
-        <div class="form-group">
-            <label>Conditions</label>
-            <textarea id="editEventConditions" rows="3" placeholder="Participation conditions..."></textarea>
-        </div>
-        
-        <div class="form-group">
-            <label>Seats</label>
-            <input type="number" id="editEventSeats" placeholder="Number of seats" min="1">
-        </div>
-        
-        <div class="form-group">
-            <label>Duration</label>
-            <div class="event-duration-wrapper">
-                <input type="number" id="editEventDurationValue" placeholder="1" min="0" step="0.5">
-                <select id="editEventDurationUnit">
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                    <option value="months">Months</option>
-                    <option value="years">Years</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button class="btn-secondary-modal" onclick="closeEditEventModal()">Cancel</button>
-            <button class="btn-primary" onclick="saveEventEdits()">Save Changes</button>
-        </div>
-    </div>
-</div>
-
-<!-- ===== TICKET QUANTITY POPUP ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
@@ -805,7 +730,6 @@
     </div>
 </div>
 
-<!-- ===== PURCHASE SUCCESS POPUP ===== -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
