@@ -230,17 +230,24 @@ async function saveEventToSupabase(eventData) {
         const dbEvent = {
             id: eventData.id,
             organizer_pi_uid: eventData.organizerPiUid || eventData.organizer,
+            organizer_name: eventData.organizerName || eventData.organizer || '',
             title: eventData.title,
             description: eventData.description || '',
             image_url: eventData.coverImage || eventData.images?.[0] || '',
+            images: eventData.images ? JSON.stringify(eventData.images) : '[]',
             location: eventData.location || '',
+            country: eventData.country || '',
             event_date: eventData.date,
+            duration: eventData.duration || '',
+            duration_value: eventData.durationValue || 1,
+            duration_unit: eventData.durationUnit || 'hours',
             category: eventData.category || '',
             ticket_price: eventData.price || 0,
             max_tickets: eventData.seatsTotal || 0,
+            seats_left: eventData.seatsLeft || eventData.seatsTotal || 0,
+            conditions: eventData.conditions || '',
             created_at: eventData.createdAt || new Date().toISOString(),
-            duration_value: eventData.durationValue || null,
-            duration_unit: eventData.durationUnit || null
+            boosts: eventData.boosts || 0
         };
         
         const { error } = await supabaseClient
@@ -271,22 +278,6 @@ async function loadEventsFromSupabase() {
     }
 }
 
-async function updateEventInSupabase(eventId, updates) {
-    try {
-        const { error } = await supabaseClient
-            .from('events')
-            .update(updates)
-            .eq('id', eventId);
-        
-        if (error) throw error;
-        console.log('Event updated in Supabase:', eventId);
-        return true;
-    } catch (error) {
-        console.error('Error updating event in Supabase:', error);
-        return false;
-    }
-}
-
 async function deleteEventFromSupabase(eventId) {
     try {
         const { error } = await supabaseClient
@@ -307,24 +298,24 @@ async function saveTicketToSupabase(ticketData) {
         const dbTicket = {
             id: ticketData.id,
             event_id: ticketData.eventId,
-            buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet,
-            qr_code: ticketData.qrCode || '',
-            status: ticketData.status || 'Valid',
-            purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            expiration_date: ticketData.eventDate || null,
             event_title: ticketData.eventTitle || '',
-            event_category: ticketData.category || '',
+            event_category: ticketData.eventCategory || '',
+            event_date: ticketData.eventDate || '',
             event_location: ticketData.eventLocation || '',
-            event_date: ticketData.eventDate || null,
+            event_duration: ticketData.eventDuration || '',
+            buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet,
+            buyer_name: ticketData.buyerName || ticketData.buyerWallet || '',
             price: ticketData.price || 0,
-            organizer: ticketData.organizer || '',
-            buyer_name: ticketData.buyerName || '',
             quantity: ticketData.quantity || 1,
+            ticket_type: ticketData.ticketType || 'Standard',
+            qr_code: ticketData.qrCode || '',
+            ticket_code: ticketData.ticketCode || '',
+            order_number: ticketData.orderNumber || '',
             transaction_id: ticketData.transactionId || '',
+            status: ticketData.status || 'Valid',
             payment_status: ticketData.paymentStatus || 'Paid',
             validation_time: ticketData.validationTime || null,
-            order_number: ticketData.orderNumber || '',
-            ticket_code: ticketData.ticketCode || ticketData.qrCode || ''
+            purchase_date: ticketData.purchaseDate || new Date().toISOString()
         };
         
         const { error } = await supabaseClient
@@ -389,6 +380,7 @@ async function saveNotificationToSupabase(notificationData) {
             receiver_pi_uid: notificationData.receiverPiUid || notificationData.userWallet,
             title: notificationData.title || 'Notification',
             message: notificationData.message || '',
+            type: notificationData.type || 'info',
             is_read: notificationData.read || false,
             created_at: notificationData.date || new Date().toISOString()
         };
@@ -423,29 +415,219 @@ async function loadNotificationsFromSupabase(piUid) {
 }
 
 // ============================================================
-// ===== COUNTRY LIST =====
+// ===== COUNTRY LIST WITH FLAGS =====
 // ============================================================
 
-var countriesList = [
-    'All',
-    'Afghanistan', 'Algeria', 'Angola', 'Argentina', 'Australia',
-    'Austria', 'Belgium', 'Benin', 'Botswana', 'Brazil',
-    'Burkina Faso', 'Burundi', 'Cameroon', 'Canada', 'Cape Verde',
-    'Central African Republic', 'Chad', 'China', 'Comoros',
-    'Congo', 'Cote d\'Ivoire', 'Denmark', 'Djibouti', 'Egypt',
-    'Equatorial Guinea', 'Eritrea', 'Eswatini', 'Ethiopia',
-    'France', 'Gabon', 'Gambia', 'Germany', 'Ghana', 'Guinea',
-    'Guinea-Bissau', 'India', 'Indonesia', 'Iran', 'Italy',
-    'Japan', 'Kenya', 'Lesotho', 'Liberia', 'Libya',
-    'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius',
-    'Mexico', 'Morocco', 'Mozambique', 'Namibia', 'Niger',
-    'Nigeria', 'Portugal', 'RDC', 'Russia', 'Rwanda',
-    'Sao Tome', 'Senegal', 'Seychelles', 'Sierra Leone',
-    'Somalia', 'South Africa', 'South Sudan', 'Spain',
-    'Sudan', 'Sweden', 'Switzerland', 'Tanzania', 'Togo',
-    'Tunisia', 'Turkey', 'Uganda', 'Ukraine',
-    'United Kingdom', 'United States', 'Zambia', 'Zimbabwe'
+var countriesWithFlags = [
+    { name: 'Afghanistan', flag: '🇦🇫' },
+    { name: 'Albania', flag: '🇦🇱' },
+    { name: 'Algeria', flag: '🇩🇿' },
+    { name: 'Andorra', flag: '🇦🇩' },
+    { name: 'Angola', flag: '🇦🇴' },
+    { name: 'Antigua and Barbuda', flag: '🇦🇬' },
+    { name: 'Argentina', flag: '🇦🇷' },
+    { name: 'Armenia', flag: '🇦🇲' },
+    { name: 'Australia', flag: '🇦🇺' },
+    { name: 'Austria', flag: '🇦🇹' },
+    { name: 'Azerbaijan', flag: '🇦🇿' },
+    { name: 'Bahamas', flag: '🇧🇸' },
+    { name: 'Bahrain', flag: '🇧🇭' },
+    { name: 'Bangladesh', flag: '🇧🇩' },
+    { name: 'Barbados', flag: '🇧🇧' },
+    { name: 'Belarus', flag: '🇧🇾' },
+    { name: 'Belgium', flag: '🇧🇪' },
+    { name: 'Belize', flag: '🇧🇿' },
+    { name: 'Benin', flag: '🇧🇯' },
+    { name: 'Bhutan', flag: '🇧🇹' },
+    { name: 'Bolivia', flag: '🇧🇴' },
+    { name: 'Bosnia and Herzegovina', flag: '🇧🇦' },
+    { name: 'Botswana', flag: '🇧🇼' },
+    { name: 'Brazil', flag: '🇧🇷' },
+    { name: 'Brunei', flag: '🇧🇳' },
+    { name: 'Bulgaria', flag: '🇧🇬' },
+    { name: 'Burkina Faso', flag: '🇧🇫' },
+    { name: 'Burundi', flag: '🇧🇮' },
+    { name: 'Cabo Verde', flag: '🇨🇻' },
+    { name: 'Cambodia', flag: '🇰🇭' },
+    { name: 'Cameroon', flag: '🇨🇲' },
+    { name: 'Canada', flag: '🇨🇦' },
+    { name: 'Central African Republic', flag: '🇨🇫' },
+    { name: 'Chad', flag: '🇹🇩' },
+    { name: 'Chile', flag: '🇨🇱' },
+    { name: 'China', flag: '🇨🇳' },
+    { name: 'Colombia', flag: '🇨🇴' },
+    { name: 'Comoros', flag: '🇰🇲' },
+    { name: 'Congo', flag: '🇨🇬' },
+    { name: 'Costa Rica', flag: '🇨🇷' },
+    { name: 'Croatia', flag: '🇭🇷' },
+    { name: 'Cuba', flag: '🇨🇺' },
+    { name: 'Cyprus', flag: '🇨🇾' },
+    { name: 'Czech Republic', flag: '🇨🇿' },
+    { name: 'Denmark', flag: '🇩🇰' },
+    { name: 'Djibouti', flag: '🇩🇯' },
+    { name: 'Dominica', flag: '🇩🇲' },
+    { name: 'Dominican Republic', flag: '🇩🇴' },
+    { name: 'Ecuador', flag: '🇪🇨' },
+    { name: 'Egypt', flag: '🇪🇬' },
+    { name: 'El Salvador', flag: '🇸🇻' },
+    { name: 'Equatorial Guinea', flag: '🇬🇶' },
+    { name: 'Eritrea', flag: '🇪🇷' },
+    { name: 'Estonia', flag: '🇪🇪' },
+    { name: 'Eswatini', flag: '🇸🇿' },
+    { name: 'Ethiopia', flag: '🇪🇹' },
+    { name: 'Fiji', flag: '🇫🇯' },
+    { name: 'Finland', flag: '🇫🇮' },
+    { name: 'France', flag: '🇫🇷' },
+    { name: 'Gabon', flag: '🇬🇦' },
+    { name: 'Gambia', flag: '🇬🇲' },
+    { name: 'Georgia', flag: '🇬🇪' },
+    { name: 'Germany', flag: '🇩🇪' },
+    { name: 'Ghana', flag: '🇬🇭' },
+    { name: 'Greece', flag: '🇬🇷' },
+    { name: 'Grenada', flag: '🇬🇩' },
+    { name: 'Guatemala', flag: '🇬🇹' },
+    { name: 'Guinea', flag: '🇬🇳' },
+    { name: 'Guinea-Bissau', flag: '🇬🇼' },
+    { name: 'Guyana', flag: '🇬🇾' },
+    { name: 'Haiti', flag: '🇭🇹' },
+    { name: 'Honduras', flag: '🇭🇳' },
+    { name: 'Hungary', flag: '🇭🇺' },
+    { name: 'Iceland', flag: '🇮🇸' },
+    { name: 'India', flag: '🇮🇳' },
+    { name: 'Indonesia', flag: '🇮🇩' },
+    { name: 'Iran', flag: '🇮🇷' },
+    { name: 'Iraq', flag: '🇮🇶' },
+    { name: 'Ireland', flag: '🇮🇪' },
+    { name: 'Israel', flag: '🇮🇱' },
+    { name: 'Italy', flag: '🇮🇹' },
+    { name: 'Jamaica', flag: '🇯🇲' },
+    { name: 'Japan', flag: '🇯🇵' },
+    { name: 'Jordan', flag: '🇯🇴' },
+    { name: 'Kazakhstan', flag: '🇰🇿' },
+    { name: 'Kenya', flag: '🇰🇪' },
+    { name: 'Kiribati', flag: '🇰🇮' },
+    { name: 'Kuwait', flag: '🇰🇼' },
+    { name: 'Kyrgyzstan', flag: '🇰🇬' },
+    { name: 'Laos', flag: '🇱🇦' },
+    { name: 'Latvia', flag: '🇱🇻' },
+    { name: 'Lebanon', flag: '🇱🇧' },
+    { name: 'Lesotho', flag: '🇱🇸' },
+    { name: 'Liberia', flag: '🇱🇷' },
+    { name: 'Libya', flag: '🇱🇾' },
+    { name: 'Liechtenstein', flag: '🇱🇮' },
+    { name: 'Lithuania', flag: '🇱🇹' },
+    { name: 'Luxembourg', flag: '🇱🇺' },
+    { name: 'Madagascar', flag: '🇲🇬' },
+    { name: 'Malawi', flag: '🇲🇼' },
+    { name: 'Malaysia', flag: '🇲🇾' },
+    { name: 'Maldives', flag: '🇲🇻' },
+    { name: 'Mali', flag: '🇲🇱' },
+    { name: 'Malta', flag: '🇲🇹' },
+    { name: 'Marshall Islands', flag: '🇲🇭' },
+    { name: 'Mauritania', flag: '🇲🇷' },
+    { name: 'Mauritius', flag: '🇲🇺' },
+    { name: 'Mexico', flag: '🇲🇽' },
+    { name: 'Micronesia', flag: '🇫🇲' },
+    { name: 'Moldova', flag: '🇲🇩' },
+    { name: 'Monaco', flag: '🇲🇨' },
+    { name: 'Mongolia', flag: '🇲🇳' },
+    { name: 'Montenegro', flag: '🇲🇪' },
+    { name: 'Morocco', flag: '🇲🇦' },
+    { name: 'Mozambique', flag: '🇲🇿' },
+    { name: 'Myanmar', flag: '🇲🇲' },
+    { name: 'Namibia', flag: '🇳🇦' },
+    { name: 'Nauru', flag: '🇳🇷' },
+    { name: 'Nepal', flag: '🇳🇵' },
+    { name: 'Netherlands', flag: '🇳🇱' },
+    { name: 'New Zealand', flag: '🇳🇿' },
+    { name: 'Nicaragua', flag: '🇳🇮' },
+    { name: 'Niger', flag: '🇳🇪' },
+    { name: 'Nigeria', flag: '🇳🇬' },
+    { name: 'North Macedonia', flag: '🇲🇰' },
+    { name: 'Norway', flag: '🇳🇴' },
+    { name: 'Oman', flag: '🇴🇲' },
+    { name: 'Pakistan', flag: '🇵🇰' },
+    { name: 'Palau', flag: '🇵🇼' },
+    { name: 'Palestine', flag: '🇵🇸' },
+    { name: 'Panama', flag: '🇵🇦' },
+    { name: 'Papua New Guinea', flag: '🇵🇬' },
+    { name: 'Paraguay', flag: '🇵🇾' },
+    { name: 'Peru', flag: '🇵🇪' },
+    { name: 'Philippines', flag: '🇵🇭' },
+    { name: 'Poland', flag: '🇵🇱' },
+    { name: 'Portugal', flag: '🇵🇹' },
+    { name: 'Qatar', flag: '🇶🇦' },
+    { name: 'Romania', flag: '🇷🇴' },
+    { name: 'Russia', flag: '🇷🇺' },
+    { name: 'Rwanda', flag: '🇷🇼' },
+    { name: 'Saint Kitts and Nevis', flag: '🇰🇳' },
+    { name: 'Saint Lucia', flag: '🇱🇨' },
+    { name: 'Saint Vincent', flag: '🇻🇨' },
+    { name: 'Samoa', flag: '🇼🇸' },
+    { name: 'San Marino', flag: '🇸🇲' },
+    { name: 'Sao Tome and Principe', flag: '🇸🇹' },
+    { name: 'Saudi Arabia', flag: '🇸🇦' },
+    { name: 'Senegal', flag: '🇸🇳' },
+    { name: 'Serbia', flag: '🇷🇸' },
+    { name: 'Seychelles', flag: '🇸🇨' },
+    { name: 'Sierra Leone', flag: '🇸🇱' },
+    { name: 'Singapore', flag: '🇸🇬' },
+    { name: 'Slovakia', flag: '🇸🇰' },
+    { name: 'Slovenia', flag: '🇸🇮' },
+    { name: 'Solomon Islands', flag: '🇸🇧' },
+    { name: 'Somalia', flag: '🇸🇴' },
+    { name: 'South Africa', flag: '🇿🇦' },
+    { name: 'South Korea', flag: '🇰🇷' },
+    { name: 'South Sudan', flag: '🇸🇸' },
+    { name: 'Spain', flag: '🇪🇸' },
+    { name: 'Sri Lanka', flag: '🇱🇰' },
+    { name: 'Sudan', flag: '🇸🇩' },
+    { name: 'Suriname', flag: '🇸🇷' },
+    { name: 'Sweden', flag: '🇸🇪' },
+    { name: 'Switzerland', flag: '🇨🇭' },
+    { name: 'Syria', flag: '🇸🇾' },
+    { name: 'Taiwan', flag: '🇹🇼' },
+    { name: 'Tajikistan', flag: '🇹🇯' },
+    { name: 'Tanzania', flag: '🇹🇿' },
+    { name: 'Thailand', flag: '🇹🇭' },
+    { name: 'Timor-Leste', flag: '🇹🇱' },
+    { name: 'Togo', flag: '🇹🇬' },
+    { name: 'Tonga', flag: '🇹🇴' },
+    { name: 'Trinidad and Tobago', flag: '🇹🇹' },
+    { name: 'Tunisia', flag: '🇹🇳' },
+    { name: 'Turkey', flag: '🇹🇷' },
+    { name: 'Turkmenistan', flag: '🇹🇲' },
+    { name: 'Tuvalu', flag: '🇹🇻' },
+    { name: 'Uganda', flag: '🇺🇬' },
+    { name: 'Ukraine', flag: '🇺🇦' },
+    { name: 'United Arab Emirates', flag: '🇦🇪' },
+    { name: 'United Kingdom', flag: '🇬🇧' },
+    { name: 'United States', flag: '🇺🇸' },
+    { name: 'Uruguay', flag: '🇺🇾' },
+    { name: 'Uzbekistan', flag: '🇺🇿' },
+    { name: 'Vanuatu', flag: '🇻🇺' },
+    { name: 'Vatican City', flag: '🇻🇦' },
+    { name: 'Venezuela', flag: '🇻🇪' },
+    { name: 'Vietnam', flag: '🇻🇳' },
+    { name: 'Yemen', flag: '🇾🇪' },
+    { name: 'Zambia', flag: '🇿🇲' },
+    { name: 'Zimbabwe', flag: '🇿🇼' }
 ];
+
+// Pays triés par ordre alphabétique
+countriesWithFlags.sort(function(a, b) {
+    return a.name.localeCompare(b.name);
+});
+
+var countryNames = countriesWithFlags.map(function(c) { return c.name; });
+var countryFlags = {};
+countriesWithFlags.forEach(function(c) {
+    countryFlags[c.name] = c.flag;
+});
+
+function getCountryFlag(countryName) {
+    return countryFlags[countryName] || '';
+}
 
 // ============================================================
 // ===== GLOBAL VARIABLES =====
@@ -481,6 +663,8 @@ var adminSessionTimer = 1800;
 var adminTimerInterval = null;
 var adminLogs = [];
 var adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
+
+var initialDataLoaded = false;
 
 // ============================================================
 // ===== HERO SLIDES =====
@@ -546,27 +730,28 @@ var eventImagesList = {
 };
 
 var demoEvents = [
-    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '4', title: 'Crypto Training', category: 'Training', country: 'France', date: '2026-08-01T09:00', location: 'Online', description: 'Learn to trade and invest in cryptocurrencies', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0003, seatsTotal: 50, seatsLeft: 50, images: [eventImagesList.Training], coverImage: eventImagesList.Training, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '5', title: 'Movie Premiere', category: 'Cinema', country: 'France', date: '2026-08-05T19:00', location: 'Paris', description: 'Exclusive film premiere', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Cinema], coverImage: eventImagesList.Cinema, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '6', title: 'Music Festival', category: 'Festival', country: 'France', date: '2026-08-10T12:00', location: 'Nice', description: '3 days of festivities with over 20 artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 1000, seatsLeft: 1000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '7', title: 'Theatre Play', category: 'Theatre', country: 'France', date: '2026-07-18T19:30', location: 'Paris, Theatre National', description: 'A captivating play about love and redemption', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0002, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Theatre], coverImage: eventImagesList.Theatre, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '8', title: 'Dance Show', category: 'Dance', country: 'France', date: '2026-07-22T20:00', location: 'Lyon, Opera', description: 'A breathtaking contemporary dance show', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.00025, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Dance], coverImage: eventImagesList.Dance, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '9', title: 'Modern Art Exhibition', category: 'Exhibition', country: 'France', date: '2026-07-28T10:00', location: 'Paris, Centre Pompidou', description: 'Discover works by the greatest modern artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.00015, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Exhibition], coverImage: eventImagesList.Exhibition, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '10', title: 'Charity Gala', category: 'Gala', country: 'France', date: '2026-08-02T19:00', location: 'Paris, Palais des Congres', description: 'An elegant gala evening supporting charitable causes', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nFormal attire required', price: 0.0005, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Gala], coverImage: eventImagesList.Gala, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '11', title: 'Innovation Seminar', category: 'Seminar', country: 'France', date: '2026-08-08T09:00', location: 'Paris, La Defense', description: 'Seminar on innovation and new technologies', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.00035, seatsTotal: 80, seatsLeft: 80, images: [eventImagesList.Seminar], coverImage: eventImagesList.Seminar, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '12', title: 'Football Derby', category: 'Sport', country: 'RDC', date: '2026-07-19T19:00', location: 'Kinshasa, Stade des Martyrs', description: 'A massive football derby between rival teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0004, seatsTotal: 2000, seatsLeft: 2000, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '13', title: 'Basketball Match', category: 'Sport', country: 'RDC', date: '2026-07-25T16:00', location: 'Kinshasa, Gymnasium', description: 'Basketball match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0002, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Sport], coverImage: eventImagesList.Sport, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '14', title: 'Rumba Festival', category: 'Festival', country: 'RDC', date: '2026-08-01T14:00', location: 'Kinshasa, Place du 30 Juin', description: 'Celebrating Congolese Rumba with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.0003, seatsTotal: 3000, seatsLeft: 3000, images: [eventImagesList.Festival], coverImage: eventImagesList.Festival, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '15', title: 'Tech Africa Conference', category: 'Conference', country: 'RDC', date: '2026-08-05T09:00', location: 'Kinshasa, Cite de l\'UA', description: 'Conference on new technologies in Africa', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.00025, seatsTotal: 300, seatsLeft: 300, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 },
-    { id: '16', title: 'African Art Exhibition', category: 'Exhibition', country: 'RDC', date: '2026-08-10T10:00', location: 'Kinshasa, Musee National', description: 'Exhibition dedicated to modern and traditional African art', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)', price: 0.00015, seatsTotal: 150, seatsLeft: 150, images: [eventImagesList.Exhibition], coverImage: eventImagesList.Exhibition, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0 }
+    { id: '1', title: 'Jazz Concert', category: 'Concert', country: 'France', date: '2026-07-15T20:00', location: 'Paris, Olympia', description: 'An exceptional jazz evening with international artists', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance\nRespect event rules', price: 0.0003, seatsTotal: 100, seatsLeft: 100, images: [eventImagesList.Concert], coverImage: eventImagesList.Concert, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 hours', durationValue: 2, durationUnit: 'hours' },
+    { id: '2', title: 'Football Match', category: 'Sport', country: 'France', date: '2026-07-20T18:00', location: 'Marseille', description: 'Friendly match between local teams', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nPresent ticket at entrance', price: 0.0003, seatsTotal: 500, seatsLeft: 500, images: [eventImagesList.Football], coverImage: eventImagesList.Football, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '2 hours', durationValue: 2, durationUnit: 'hours' },
+    { id: '3', title: 'Blockchain Conference', category: 'Conference', country: 'France', date: '2026-07-25T14:00', location: 'Lyon', description: 'Discover the future of blockchain and Web3', conditions: 'Active Pi Network wallet\nPayment in Pi (indicated amount)\nRegistration required', price: 0.0003, seatsTotal: 200, seatsLeft: 200, images: [eventImagesList.Conference], coverImage: eventImagesList.Conference, organizer: 'Demo', organizerName: 'Demo', createdAt: new Date().toISOString(), boosts: 0, duration: '1 day', durationValue: 1, durationUnit: 'days' }
 ];
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
+
+function formatDuration(value, unit) {
+    if (!value && value !== 0) return 'Not specified';
+    var v = parseFloat(value) || 1;
+    var unitMap = {
+        'hours': v === 1 ? 'hour' : 'hours',
+        'days': v === 1 ? 'day' : 'days',
+        'weeks': v === 1 ? 'week' : 'weeks',
+        'months': v === 1 ? 'month' : 'months',
+        'years': v === 1 ? 'year' : 'years'
+    };
+    var unitStr = unitMap[unit] || unit || 'hours';
+    return v + ' ' + unitStr;
+}
 
 // ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
@@ -663,15 +848,16 @@ async function loadAllFromSupabase() {
             conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
             price: e.ticket_price || 0.0003,
             seatsTotal: e.max_tickets || 100,
-            seatsLeft: e.max_tickets || 100,
-            images: e.image_url ? [e.image_url] : [],
+            seatsLeft: e.seats_left !== undefined ? e.seats_left : e.max_tickets || 100,
+            images: e.images ? JSON.parse(e.images) : (e.image_url ? [e.image_url] : []),
             coverImage: e.image_url || '',
             organizer: e.organizer_pi_uid || '',
             organizerName: e.organizer_name || '',
             createdAt: e.created_at || new Date().toISOString(),
-            boosts: 0,
-            durationValue: e.duration_value || null,
-            durationUnit: e.duration_unit || null
+            boosts: e.boosts || 0,
+            duration: e.duration || '',
+            durationValue: e.duration_value || 1,
+            durationUnit: e.duration_unit || 'hours'
         }));
         localStorage.setItem('betix_events', JSON.stringify(events));
     } else {
@@ -688,10 +874,13 @@ async function loadAllFromSupabase() {
                 id: t.id,
                 eventId: t.event_id,
                 eventTitle: t.event_title || 'Event',
-                eventDate: t.expiration_date || new Date().toISOString(),
+                eventCategory: t.event_category || '',
+                eventDate: t.event_date || new Date().toISOString(),
                 eventLocation: t.event_location || '',
-                category: t.event_category || '',
+                eventDuration: t.event_duration || '',
                 price: t.price || 0,
+                quantity: t.quantity || 1,
+                ticketType: t.ticket_type || 'Standard',
                 buyerWallet: t.buyer_pi_uid,
                 buyerName: t.buyer_name || t.buyer_pi_uid,
                 userWallet: t.buyer_pi_uid,
@@ -699,15 +888,26 @@ async function loadAllFromSupabase() {
                 purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
                 transactionId: t.transaction_id || '',
                 qrCode: t.qr_code || 'BETIX-' + Date.now(),
+                ticketCode: t.ticket_code || 'BETIX-' + Date.now().toString().substring(0, 8),
+                orderNumber: t.order_number || 'ORD-' + Date.now().toString().substring(0, 10),
                 status: t.status || 'Valid',
                 paymentStatus: t.payment_status || 'Paid',
-                validationTime: t.validation_time || null,
-                orderNumber: t.order_number || '',
-                ticketCode: t.ticket_code || t.qr_code || '',
-                quantity: t.quantity || 1,
-                organizer: t.organizer || ''
+                validationTime: t.validation_time || null
             }));
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        } else {
+            const localTickets = localStorage.getItem('betix_tickets');
+            if (localTickets) {
+                try {
+                    tickets = JSON.parse(localTickets);
+                    tickets = tickets.filter(t => t.userWallet === piUid || t.buyerWallet === piUid);
+                    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+                    await syncTicketsToSupabase();
+                } catch (e) {
+                    console.error('Error parsing local tickets:', e);
+                    tickets = [];
+                }
+            }
         }
     }
     
@@ -727,10 +927,13 @@ async function loadAllFromSupabase() {
         }
     }
     
+    initialDataLoaded = true;
+    
     renderEventsByCategory();
     renderTickets();
     renderHistory();
     updateProfilePage();
+    updateAllProfileImages();
     console.log('All data loaded from Supabase');
 }
 
@@ -760,7 +963,7 @@ function renderChatMessages() {
 }
 
 // ============================================================
-// ===== LANGUAGE MANAGEMENT (AVEC GOOGLE TRANSLATE) =====
+// ===== LANGUAGE MANAGEMENT =====
 // ============================================================
 
 function changeLanguage(lang) {
@@ -769,27 +972,14 @@ function changeLanguage(lang) {
     if (nativeSelect) {
         nativeSelect.value = lang;
     }
-    
-    // Utiliser Google Translate
     var googleSelect = document.querySelector('.goog-te-combo');
     if (googleSelect) {
         googleSelect.value = lang;
         googleSelect.dispatchEvent(new Event('change'));
     }
-    
-    // Si Google Translate n'est pas encore chargé, réessayer
-    setTimeout(function() {
-        var googleSelectRetry = document.querySelector('.goog-te-combo');
-        if (googleSelectRetry && googleSelectRetry.value !== lang) {
-            googleSelectRetry.value = lang;
-            googleSelectRetry.dispatchEvent(new Event('change'));
-        }
-    }, 1000);
-    
-    // Recharger la page après un délai pour appliquer la traduction
     setTimeout(function() {
         location.reload();
-    }, 800);
+    }, 600);
 }
 
 function detectLanguage() {
@@ -804,27 +994,14 @@ function detectLanguage() {
     if (nativeSelect) {
         nativeSelect.value = savedLang;
     }
-    
-    // Appliquer la traduction Google Translate
     setTimeout(function() {
         var googleSelect = document.querySelector('.goog-te-combo');
         if (googleSelect && googleSelect.value !== savedLang) {
             googleSelect.value = savedLang;
             googleSelect.dispatchEvent(new Event('change'));
         }
-    }, 1500);
-    
+    }, 800);
     return savedLang;
-}
-
-// Fonction pour forcer la traduction
-function forceTranslation(lang) {
-    var googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) {
-        googleSelect.value = lang || 'en';
-        googleSelect.dispatchEvent(new Event('change'));
-        localStorage.setItem('betix_language', lang || 'en');
-    }
 }
 
 // ============================================================
@@ -1058,6 +1235,26 @@ function getUploadedImages() {
 }
 
 // ============================================================
+// ===== COUNTRY SEARCH =====
+// ============================================================
+
+function filterCountryOptions() {
+    var searchInput = document.getElementById('countrySearch');
+    var select = document.getElementById('eventCountry');
+    if (!searchInput || !select) return;
+    var query = searchInput.value.toLowerCase().trim();
+    var options = select.options;
+    for (var i = 0; i < options.length; i++) {
+        var text = options[i].text.toLowerCase();
+        if (query === '' || text.includes(query)) {
+            options[i].style.display = '';
+        } else {
+            options[i].style.display = 'none';
+        }
+    }
+}
+
+// ============================================================
 // ===== PROFILE PHOTO AVEC COMPRESSION ET UPLOAD SUPABASE =====
 // ============================================================
 
@@ -1157,6 +1354,11 @@ function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_la
 
 function disconnectPi() {
     if (confirm('Are you sure you want to disconnect your Pi account?')) {
+        syncUserToSupabase();
+        syncTicketsToSupabase();
+        syncEventsToSupabase();
+        syncNotificationsToSupabase();
+        
         currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0, profilePhoto: null };
         piUser = null;
         saveUser();
@@ -1170,6 +1372,11 @@ function disconnectPi() {
         updateAllProfileImages();
         updateConnectButtons();
         closeSidebar();
+        
+        setTimeout(function() {
+            loadAllFromSupabase();
+        }, 500);
+        
         alert('You are disconnected');
     }
 }
@@ -1293,7 +1500,11 @@ async function connectToPi() {
             updateAllProfileImages();
             renderEventsByCategory();
             updateConnectButtons();
-            loadAllFromSupabase();
+            
+            setTimeout(function() {
+                loadAllFromSupabase();
+            }, 500);
+            
             alert('Pi account connected (demo mode)! Welcome Demo User');
             closeSidebar();
             return;
@@ -1311,6 +1522,14 @@ async function connectToPi() {
             currentUser.name = piUser.username;
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             if (!currentUser.profilePhoto) currentUser.profilePhoto = null;
+            
+            const userData = await loadUserFromSupabase(currentUser.piUid);
+            if (userData) {
+                currentUser.name = userData.username || currentUser.name;
+                currentUser.profilePhoto = userData.avatar_url || currentUser.profilePhoto;
+                currentUser.loyaltyPoints = userData.points || 0;
+                currentUser.memberSince = userData.created_at ? new Date(userData.created_at).getFullYear().toString() : '2026';
+            }
             
             saveUser();
             await syncUserToSupabase();
@@ -1359,31 +1578,32 @@ async function confirmPurchase(eventId, quantity) {
             onReadyForServerCompletion: function(paymentId, txid) {
                 fetch(BACKEND_URL + '/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId: paymentId, txid: txid, amount: totalPrice, metadata: { eventId: event.id, quantity: quantity } }) }).then(async function() {
                     var ticketsAdded = [];
-                    var orderNumber = 'BETIX-' + Date.now().toString().slice(-8);
+                    var orderNumber = 'ORD-' + Date.now().toString().substring(0, 10);
                     for (var i = 0; i < quantity; i++) {
-                        var ticketCode = 'BETIX-' + Date.now().toString().slice(-6) + '-' + (i + 1) + '-' + txid.substring(0, 4);
+                        var ticketCode = 'TICKET-' + Date.now().toString().substring(0, 8) + '-' + String(i + 1).padStart(3, '0');
                         var ticket = {
                             id: Date.now().toString() + '-' + i,
                             eventId: event.id,
                             eventTitle: event.title,
+                            eventCategory: event.category || '',
                             eventDate: event.date,
-                            eventLocation: event.location,
-                            category: event.category || '',
+                            eventLocation: event.location || '',
+                            eventDuration: event.duration || '',
                             price: event.price,
+                            quantity: quantity,
+                            ticketType: 'Standard',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: piUser ? piUser.username : currentUser.name,
                             userWallet: currentUser.wallet,
                             purchaseDate: new Date().toISOString(),
                             purchaseDateTime: new Date().toLocaleString('en-US'),
                             transactionId: txid,
-                            qrCode: ticketCode,
+                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i,
+                            ticketCode: ticketCode,
+                            orderNumber: orderNumber,
                             status: 'Valid',
                             paymentStatus: 'Paid',
-                            validationTime: null,
-                            orderNumber: orderNumber,
-                            ticketCode: ticketCode,
-                            quantity: quantity,
-                            organizer: event.organizerName || event.organizer
+                            validationTime: null
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -1412,11 +1632,13 @@ async function confirmPurchase(eventId, quantity) {
                         'Purchase of ' + quantity + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
                         'purchase'
                     );
+                    
+                    syncUserToSupabase();
+                    
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
-                    syncUserToSupabase();
                     showSuccessPopup(event, ticketsAdded, quantity);
                 });
             },
@@ -1529,7 +1751,7 @@ function updateTotalPrice() {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION (AVEC DURÉE ET LOADING) =====
+// ===== PUBLISH CONFIRMATION =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1537,26 +1759,16 @@ function openPublishConfirm(eventData) {
     
     document.getElementById('confirmTitle').textContent = eventData.title;
     document.getElementById('confirmCategory').textContent = eventData.category;
-    document.getElementById('confirmCountry').textContent = eventData.country;
+    document.getElementById('confirmCountry').textContent = eventData.country + ' ' + getCountryFlag(eventData.country);
     var dateEvent = new Date(eventData.date);
     document.getElementById('confirmDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('confirmDuration').textContent = formatDuration(eventData.durationValue, eventData.durationUnit);
     document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
     document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
     document.getElementById('confirmSeats').textContent = eventData.seatsTotal;
     document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
     document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
     document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
-    
-    // Afficher la durée si présente
-    var durationDisplay = document.getElementById('confirmDuration');
-    if (durationDisplay) {
-        if (eventData.durationValue && eventData.durationUnit) {
-            durationDisplay.textContent = eventData.durationValue + ' ' + eventData.durationUnit;
-            durationDisplay.style.display = 'block';
-        } else {
-            durationDisplay.style.display = 'none';
-        }
-    }
     
     var imagesContainer = document.getElementById('confirmImages');
     imagesContainer.innerHTML = '';
@@ -1569,26 +1781,16 @@ function openPublishConfirm(eventData) {
         }
     }
     
-    // Réinitialiser le bouton de confirmation (enlever le loading)
-    var confirmBtn = document.getElementById('confirmPublishBtn');
-    if (confirmBtn) {
-        confirmBtn.classList.remove('loading');
-        confirmBtn.disabled = false;
-        confirmBtn.innerHTML = 'Publish Event';
-    }
-    
     document.getElementById('publishConfirmPopup').classList.add('show');
 }
 
 function closePublishConfirmPopup() {
     document.getElementById('publishConfirmPopup').classList.remove('show');
     pendingEventData = null;
-    // Réinitialiser le bouton
     var confirmBtn = document.getElementById('confirmPublishBtn');
     if (confirmBtn) {
         confirmBtn.classList.remove('loading');
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = 'Publish Event';
     }
 }
 
@@ -1596,9 +1798,10 @@ async function confirmPublishEvent() {
     if (!pendingEventData) return;
     
     var confirmBtn = document.getElementById('confirmPublishBtn');
-    confirmBtn.classList.add('loading');
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="btn-text">Publishing...</span>';
+    if (confirmBtn) {
+        confirmBtn.classList.add('loading');
+        confirmBtn.disabled = true;
+    }
     
     try {
         var newEvent = pendingEventData;
@@ -1619,6 +1822,7 @@ async function confirmPublishEvent() {
         newEvent.images = uploadedUrls;
         newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
         newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+        newEvent.organizerName = currentUser.name || currentUser.wallet;
         
         events.push(newEvent);
         saveEvents();
@@ -1634,6 +1838,8 @@ async function confirmPublishEvent() {
             'event'
         );
         
+        syncUserToSupabase();
+        
         closePublishConfirmPopup();
         renderEventsByCategory();
         updateProfilePage();
@@ -1641,16 +1847,16 @@ async function confirmPublishEvent() {
         showPage('home');
     } catch (error) {
         console.error('Error publishing event:', error);
-        alert('Error publishing event. Please try again.');
-    } finally {
-        confirmBtn.classList.remove('loading');
-        confirmBtn.disabled = false;
-        confirmBtn.innerHTML = 'Publish Event';
+        alert('An error occurred while publishing. Please try again.');
+        if (confirmBtn) {
+            confirmBtn.classList.remove('loading');
+            confirmBtn.disabled = false;
+        }
     }
 }
 
 // ============================================================
-// ===== CREATE EVENT (AVEC DURÉE) =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 function createEvent(e) {
@@ -1674,11 +1880,8 @@ function createEvent(e) {
     
     var category = document.getElementById('eventCategory').value;
     var country = document.getElementById('eventCountry').value;
-    
-    // Récupérer la durée
-    var durationValue = document.getElementById('eventDurationValue').value;
+    var durationValue = parseFloat(document.getElementById('eventDuration').value) || 1;
     var durationUnit = document.getElementById('eventDurationUnit').value;
-    var durationValueNum = durationValue ? parseInt(durationValue) : null;
     
     var newEvent = {
         id: Date.now().toString(),
@@ -1699,7 +1902,8 @@ function createEvent(e) {
         organizerName: currentUser.name,
         createdAt: new Date().toISOString(),
         boosts: 0,
-        durationValue: durationValueNum,
+        duration: formatDuration(durationValue, durationUnit),
+        durationValue: durationValue,
         durationUnit: durationUnit
     };
     
@@ -1712,114 +1916,71 @@ function createEvent(e) {
 }
 
 // ============================================================
-// ===== MODIFIER UN ÉVÉNEMENT =====
+// ===== RENDER TICKET PREMIUM =====
 // ============================================================
 
-var editingEventId = null;
-
-function openEditEventModal(eventId) {
-    var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) {
-        alert('Event not found');
-        return;
-    }
+function renderPremiumTicket(ticket) {
+    var dateEvent = new Date(ticket.eventDate);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var purchaseDate = new Date(ticket.purchaseDate);
+    var purchaseFormatted = purchaseDate.toLocaleDateString('en-US');
+    var purchaseTime = purchaseDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
-    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) {
-        alert('You are not the organizer of this event');
-        return;
-    }
+    var statusClass = ticket.status === 'Valid' ? '' : ticket.status === 'Cancelled' ? 'cancelled' : 'used';
+    var statusIcon = ticket.status === 'Valid' ? 'fa-check-circle' : ticket.status === 'Cancelled' ? 'fa-times-circle' : 'fa-clock';
     
-    editingEventId = eventId;
+    var qrCodeHtml = ticket.qrCode ? 
+        '<img src="' + ticket.qrCode + '" alt="QR Code">' : 
+        '<div class="qr-placeholder"><i class="fas fa-qrcode"></i></div>';
     
-    document.getElementById('editEventDescription').value = event.description || '';
-    document.getElementById('editEventLocation').value = event.location || '';
-    document.getElementById('editEventConditions').value = event.conditions || '';
-    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
-    
-    // Remplir la durée si présente
-    document.getElementById('editEventDurationValue').value = event.durationValue || '';
-    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
-    
-    document.getElementById('editEventModal').classList.add('show');
-}
-
-function closeEditEventModal() {
-    document.getElementById('editEventModal').classList.remove('show');
-    editingEventId = null;
-}
-
-async function saveEventEdits() {
-    if (!editingEventId) return;
-    
-    var event = events.find(function(e) { return e.id === editingEventId; });
-    if (!event) {
-        alert('Event not found');
-        return;
-    }
-    
-    var description = document.getElementById('editEventDescription').value.trim();
-    var location = document.getElementById('editEventLocation').value.trim();
-    var conditions = document.getElementById('editEventConditions').value.trim();
-    var seatsTotal = parseInt(document.getElementById('editEventSeats').value);
-    var durationValue = document.getElementById('editEventDurationValue').value;
-    var durationUnit = document.getElementById('editEventDurationUnit').value;
-    
-    if (!seatsTotal || seatsTotal < 1) {
-        alert('Please enter a valid number of seats');
-        return;
-    }
-    
-    // Vérifier que le nombre de places ne diminue pas en dessous des places déjà vendues
-    var ticketsSold = tickets.filter(function(t) { return t.eventId === editingEventId; }).length;
-    if (seatsTotal < ticketsSold) {
-        alert('You cannot reduce the number of seats below the number already sold (' + ticketsSold + ' seats sold)');
-        return;
-    }
-    
-    var updates = {
-        description: description,
-        location: location,
-        conditions: conditions,
-        seatsTotal: seatsTotal,
-        seatsLeft: seatsTotal - ticketsSold,
-        durationValue: durationValue ? parseInt(durationValue) : null,
-        durationUnit: durationUnit || null
-    };
-    
-    // Mettre à jour l'événement en mémoire
-    event.description = updates.description;
-    event.location = updates.location;
-    event.conditions = updates.conditions;
-    event.seatsTotal = updates.seatsTotal;
-    event.seatsLeft = updates.seatsLeft;
-    event.durationValue = updates.durationValue;
-    event.durationUnit = updates.durationUnit;
-    
-    saveEvents();
-    
-    // Mettre à jour dans Supabase
-    await updateEventInSupabase(editingEventId, {
-        description: updates.description,
-        location: updates.location,
-        conditions: updates.conditions,
-        max_tickets: updates.seatsTotal,
-        duration_value: updates.durationValue,
-        duration_unit: updates.durationUnit
-    });
-    
-    addNotification(
-        'Event "' + event.title + '" has been updated',
-        'event'
-    );
-    
-    closeEditEventModal();
-    renderEventsByCategory();
-    renderMyEvents();
-    alert('Event updated successfully!');
+    return '<div class="ticket-premium">' +
+        '<div class="ticket-watermark">BETIX</div>' +
+        '<div class="ticket-corner-left"></div>' +
+        '<div class="ticket-corner-right"></div>' +
+        '<div class="ticket-header">' +
+            '<div class="ticket-brand"><i class="fas fa-ticket-alt"></i> Betix</div>' +
+            '<div class="ticket-status ' + statusClass + '"><i class="fas ' + statusIcon + '"></i> ' + ticket.status + '</div>' +
+        '</div>' +
+        '<div class="ticket-body">' +
+            '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
+            '<div class="ticket-event-category"><i class="fas fa-tag"></i> ' + escapeHtml(ticket.eventCategory || 'Event') + '</div>' +
+            '<div class="ticket-description">' +
+                'Official Betix electronic ticket confirming your participation in this event. ' +
+                'Please present this ticket (QR Code or ticket code) at the entrance.' +
+            '</div>' +
+            '<div class="ticket-info-grid">' +
+                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="label">Date:</span> <span class="value">' + dateFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="label">Time:</span> <span class="value">' + timeFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="label">Location:</span> <span class="value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-hourglass-half"></i> <span class="label">Duration:</span> <span class="value">' + escapeHtml(ticket.eventDuration || 'Not specified') + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-user"></i> <span class="label">Organizer:</span> <span class="value">@' + escapeHtml(ticket.buyerName || ticket.buyerWallet) + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="label">Ticket Type:</span> <span class="value">' + escapeHtml(ticket.ticketType || 'Standard') + '</span></div>' +
+            '</div>' +
+            '<div class="ticket-price-qty">' +
+                '<div class="price"><i class="fas fa-coins"></i> ' + ticket.price + ' Pi</div>' +
+                '<div class="qty"><i class="fas fa-ticket-alt"></i> x' + (ticket.quantity || 1) + '</div>' +
+            '</div>' +
+            '<div class="ticket-divider"></div>' +
+            '<div class="ticket-qr-section">' +
+                '<div class="qr-container">' + qrCodeHtml + '</div>' +
+                '<div class="qr-info">' +
+                    '<div class="ticket-code"><i class="fas fa-barcode"></i> ' + escapeHtml(ticket.ticketCode || ticket.qrCode || 'N/A') + '</div>' +
+                    '<div class="ticket-id"><span>Order #:</span> ' + escapeHtml(ticket.orderNumber || 'N/A') + ' | <span>Ticket ID:</span> ' + escapeHtml(ticket.id || 'N/A') + '</div>' +
+                    '<div class="ticket-id" style="margin-top:2px;"><span>Purchased:</span> ' + purchaseFormatted + ' at ' + purchaseTime + ' | <span>Payment:</span> ' + (ticket.paymentStatus || 'Paid') + '</div>' +
+                    (ticket.transactionId ? '<div class="ticket-id" style="margin-top:2px;"><span>Transaction:</span> ' + escapeHtml(ticket.transactionId.substring(0, 16)) + '...</div>' : '') +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="ticket-footer">' +
+            '<div class="footer-left"><i class="fas fa-check-circle" style="color:#10b981;"></i> Valid ticket</div>' +
+            '<div class="footer-right"><i class="fas fa-shield-alt"></i> Powered by Betix <span style="margin:0 4px;">•</span> Secure Digital Ticketing</div>' +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
-// ===== PURCHASE SUCCESS POPUP =====
+// ===== SUCCESS POPUP =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity) {
@@ -1836,16 +1997,17 @@ function showSuccessPopup(event, ticketsList, quantity) {
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     var totalPrice = qty * event.price;
-    var codeDisplay = ticket.qrCode || 'N/A';
+    var codeDisplay = ticket.ticketCode || ticket.qrCode || 'N/A';
     info.innerHTML = 
         '<div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">' + escapeHtml(event.country || 'Not specified') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Duration</span><span class="ticket-value">' + escapeHtml(event.duration || 'Not specified') + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Organizer</span><span class="ticket-value">' + escapeHtml(event.organizerName || event.organizer) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">' + qty + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
+        '<div class="ticket-line"><span class="ticket-label">Ticket Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Order #</span><span class="ticket-value">' + (ticket.orderNumber || 'N/A') + '</span></div>';
     popup.classList.add('show');
 }
 
@@ -1925,123 +2087,28 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY (AVEC DESIGN PREMIUM PROFESSIONNEL) =====
+// ===== TICKETS AND HISTORY =====
 // ============================================================
 
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
-    var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
+    var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date() && t.status !== 'Cancelled'; });
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!active.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
-        return; 
-    }
-    container.innerHTML = active.map(function(t) { return renderProfessionalTicket(t, 'valid'); }).join('');
+    if (!active.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No active tickets</p>'; return; }
+    container.innerHTML = active.map(function(t) { return renderPremiumTicket(t); }).join('');
 }
 
 function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
-    var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
+    var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date() || t.status === 'Cancelled'; });
     old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!old.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No history</p>'; 
-        return; 
-    }
-    container.innerHTML = old.map(function(t) { return renderProfessionalTicket(t, 'past'); }).join('');
-}
-
-function renderProfessionalTicket(ticket, status) {
-    var dateEvent = new Date(ticket.eventDate);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var statusClass = status === 'valid' ? 'valid' : 'past';
-    var statusText = status === 'valid' ? 'Valid' : 'Past Event';
-    
-    var qrCode = ticket.qrCode || ticket.ticketCode || 'BETIX-' + ticket.id.substring(0, 8);
-    var shortQr = qrCode.length > 16 ? qrCode.substring(0, 14) + '...' : qrCode;
-    
-    var participantName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
-    if (participantName.length > 25) {
-        participantName = participantName.substring(0, 22) + '...';
-    }
-    
-    var categoryDisplay = ticket.category || 'Event';
-    var organizerDisplay = ticket.organizer || 'Betix';
-    
-    var orderNumber = ticket.orderNumber || '#' + ticket.id.substring(0, 8).toUpperCase();
-    var ticketCodeDisplay = ticket.ticketCode || qrCode;
-    var paymentStatus = ticket.paymentStatus || 'Paid';
-    var validationTime = ticket.validationTime ? new Date(ticket.validationTime).toLocaleString('en-US') : '—';
-    var quantity = ticket.quantity || 1;
-    var transactionId = ticket.transactionId || '—';
-    
-    // Description officielle Betix
-    var officialDescription = 'Official Betix digital ticket confirming your participation in this event. Present this ticket (QR Code or ticket code) at the entrance.';
-    
-    return '<div class="ticket-professional">' +
-        '<div class="ticket-notch-left"></div>' +
-        '<div class="ticket-notch-right"></div>' +
-        
-        // Header
-        '<div class="ticket-pro-header">' +
-            '<div class="ticket-pro-title-group">' +
-                '<div class="ticket-pro-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
-                '<span class="ticket-pro-category">' + escapeHtml(categoryDisplay) + '</span>' +
-            '</div>' +
-            '<span class="ticket-pro-status-badge ' + statusClass + '">' + statusText + '</span>' +
-        '</div>' +
-        
-        // Body
-        '<div class="ticket-pro-body">' +
-            // Description officielle Betix
-            '<div class="ticket-pro-description">' + officialDescription + '</div>' +
-            
-            // Info Grid
-            '<div class="ticket-pro-info-grid">' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-pro-label">Date</span> <span class="ticket-pro-value">' + dateFormatted + '</span></div>' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-clock"></i> <span class="ticket-pro-label">Time</span> <span class="ticket-pro-value">' + timeFormatted + '</span></div>' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-pro-label">Location</span> <span class="ticket-pro-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-tag"></i> <span class="ticket-pro-label">Price</span> <span class="ticket-pro-value">' + (ticket.price || 0) + ' Pi</span></div>' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-user-tie"></i> <span class="ticket-pro-label">Organizer</span> <span class="ticket-pro-value">' + escapeHtml(organizerDisplay) + '</span></div>' +
-                '<div class="ticket-pro-info-item"><i class="fas fa-layer-group"></i> <span class="ticket-pro-label">Quantity</span> <span class="ticket-pro-value">' + quantity + '</span></div>' +
-                (validationTime !== '—' ? '<div class="ticket-pro-info-item"><i class="fas fa-check-circle"></i> <span class="ticket-pro-label">Validated</span> <span class="ticket-pro-value">' + validationTime + '</span></div>' : '') +
-                '<div class="ticket-pro-info-item"><i class="fas fa-credit-card"></i> <span class="ticket-pro-label">Payment</span> <span class="ticket-pro-value">' + paymentStatus + '</span></div>' +
-            '</div>' +
-            
-            // Divider
-            '<div class="ticket-pro-divider">' +
-                '<span class="divider-line"></span>' +
-                '<span class="divider-text">QR Code</span>' +
-                '<span class="divider-line"></span>' +
-            '</div>' +
-            
-            // QR Section
-            '<div class="ticket-pro-qr-section">' +
-                '<div class="ticket-pro-qr-code">' + shortQr + '</div>' +
-                '<div class="ticket-pro-qr-info">' +
-                    '<span class="ticket-pro-qr-label">Ticket Code</span>' +
-                    '<span class="ticket-pro-qr-code-text">' + escapeHtml(ticketCodeDisplay) + '</span>' +
-                    '<span class="ticket-pro-participant">👤 ' + escapeHtml(participantName) + '</span>' +
-                '</div>' +
-            '</div>' +
-        '</div>' +
-        
-        // Footer
-        '<div class="ticket-pro-footer">' +
-            '<div class="ticket-pro-footer-left">' +
-                '<span class="ticket-pro-order-info">Order <span>' + escapeHtml(orderNumber) + '</span></span>' +
-                '<span class="ticket-pro-order-info">Ticket <span>' + escapeHtml(ticket.id.substring(0, 10).toUpperCase()) + '</span></span>' +
-                (transactionId !== '—' ? '<span class="ticket-pro-order-info">Tx <span>' + transactionId.substring(0, 12) + '...</span></span>' : '') +
-            '</div>' +
-            '<div class="ticket-pro-footer-right">' +
-                'Purchased ' + new Date(ticket.purchaseDate).toLocaleDateString('en-US') + ' at ' + new Date(ticket.purchaseDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) +
-                '<br><span class="ticket-pro-powered">Powered by Betix</span> • Secure Digital Ticketing' +
-            '</div>' +
-        '</div>' +
-    '</div>';
+    if (!old.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No history</p>'; return; }
+    container.innerHTML = old.map(function(t) { 
+        var ticketHtml = renderPremiumTicket(t);
+        return ticketHtml.replace('Valid', t.status === 'Cancelled' ? 'Cancelled' : 'Past');
+    }).join('');
 }
 
 // ============================================================
@@ -2519,7 +2586,7 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== MY EVENTS (AVEC BOUTON MODIFIER) =====
+// ===== MY EVENTS =====
 // ============================================================
 
 function renderMyEvents() {
@@ -2552,14 +2619,8 @@ function renderMyEventCard(event) {
         galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
     }
     var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
-    
-    // Afficher la durée si présente
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
-    }
-    
-    return '<div class="event-card" style="cursor:default; position:relative;">' +
+    var durationDisplay = event.duration || formatDuration(event.durationValue, event.durationUnit);
+    return '<div class="event-card" style="cursor:default;">' +
         galleryHtml +
         '<div class="event-info">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
@@ -2567,16 +2628,12 @@ function renderMyEventCard(event) {
                 '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationDisplay) + '</div>' +
                 '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
                 '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
-                durationDisplay +
             '</div>' +
-            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
+            '<div class="event-footer">' +
                 '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
-                '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
@@ -2623,135 +2680,48 @@ function renderEventsByCategory() {
     container.innerHTML = html;
 }
 
-// ============================================================
-// ===== RENDER EVENT CARD - STYLE CLASSIQUE =====
-// ============================================================
-
 function renderEventCard(event) {
     var avgRating = 0;
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
-    
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
-    
-    // Drapeau par pays (liste complète)
-    var flagEmojis = {
-        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
-        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
-        'Cote d\'Ivoire': '🇨🇮', 'Ivory Coast': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪',
-        'Nigeria': '🇳🇬', 'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
-        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
-        'Burundi': '🇧🇮', 'Ethiopia': '🇪🇹', 'Somalia': '🇸🇴', 'Djibouti': '🇩🇯',
-        'Eritrea': '🇪🇷', 'Sudan': '🇸🇩', 'South Sudan': '🇸🇸', 'Egypt': '🇪🇬',
-        'Libya': '🇱🇾', 'Tunisia': '🇹🇳', 'Algeria': '🇩🇿', 'Morocco': '🇲🇦',
-        'Mauritania': '🇲🇷', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
-        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
-        'Gambia': '🇬🇲', 'Guinea-Bissau': '🇬🇼', 'Cape Verde': '🇨🇻', 'Sao Tome': '🇸🇹',
-        'Gabon': '🇬🇦', 'Equatorial Guinea': '🇬🇶', 'Central African Republic': '🇨🇫',
-        'Chad': '🇹🇩', 'Madagascar': '🇲🇬', 'Comoros': '🇰🇲', 'Mauritius': '🇲🇺',
-        'Seychelles': '🇸🇨', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼',
-        'Namibia': '🇳🇦', 'Lesotho': '🇱🇸', 'Eswatini': '🇸🇿', 'Malawi': '🇲🇼',
-        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
-        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
-        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'Iran': '🇮🇷', 'China': '🇨🇳',
-        'Japan': '🇯🇵', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺',
-        'Mexico': '🇲🇽', 'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰',
-        'Sweden': '🇸🇪', 'Austria': '🇦🇹'
-    };
-    
-    var countryFlag = flagEmojis[event.country] || '🌍';
-    var countryDisplay = event.country || 'International';
-    
-    // Description (max 2 lignes)
-    var desc = event.description || '';
-    if (desc.length > 120) {
-        desc = desc.substring(0, 117) + '...';
-    }
-    
-    // Organisateur - format By @username (en bas à gauche)
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 20) {
-        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    if (organizerDisplay.length > 15) {
+        organizerDisplay = organizerDisplay.substring(0, 12) + '...';
     }
-    var organizerFormatted = organizerDisplay;
-    if (!organizerFormatted.startsWith('@')) {
-        organizerFormatted = '@' + organizerFormatted;
-    }
-    
-    // Rating / New badge
-    var ratingDisplay = '';
-    if (eventRatings.length > 0) {
-        var stars = '';
-        var fullStars = Math.floor(avgRating);
-        for (var i = 0; i < fullStars; i++) stars += '★';
-        for (var i = fullStars; i < 5; i++) stars += '☆';
-        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
-    } else {
-        ratingDisplay = '<span class="new-badge">New</span>';
-    }
-    
-    var priceDisplay = event.price + ' Pi';
-    
-    // Afficher la durée si présente
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
-    }
-    
-    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
-        
-        // Poster avec badge catégorie
-        '<div class="poster-wrapper-classic">' +
-            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var durationDisplay = event.duration || formatDuration(event.durationValue, event.durationUnit);
+    var ratingStars = '';
+    var fullStars = Math.floor(avgRating);
+    for (var i = 0; i < fullStars; i++) ratingStars += '★';
+    for (var i = fullStars; i < 5; i++) ratingStars += '☆';
+    var ratingHtml = avgRating > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')' : 'New';
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    return '<div class="event-card" onclick="openEventDetails(\'' + event.id + '\')" style="cursor:pointer;">' +
+        '<div class="event-card-banner">' +
+            '<img src="' + (event.coverImage || fallbackImage) + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '<span class="event-card-badge">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
-        
-        // Contenu
-        '<div class="card-content-classic">' +
-            
-            // Titre
-            '<div class="event-title-classic">' +
-                escapeHtml(event.title) +
+        '<div class="event-card-body">' +
+            '<div class="event-card-title">' + escapeHtml(event.title) + 
+                '<span class="organizer-name"><i class="fas fa-user"></i> by ' + escapeHtml(organizerDisplay) + '</span>' +
             '</div>' +
-            
-            // Description (après le titre)
-            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
-            
-            // Grille d'informations (Date, Lieu, Heure, Pays)
-            '<div class="info-grid-classic">' +
-                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
+            '<div class="event-card-details">' +
+                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-hourglass-half"></i> ' + escapeHtml(durationDisplay) + '</div>' +
             '</div>' +
-            
-            // Durée (si présente)
-            durationDisplay +
-            
-            // Footer (rating, prix, places)
-            '<div class="card-footer-classic">' +
-                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
-                '<span>' +
-                    '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                    ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
-                '</span>' +
+            (event.description ? '<div class="event-card-desc">' + escapeHtml(event.description.substring(0, 80)) + (event.description.length > 80 ? '...' : '') + '</div>' : '') +
+            '<div class="event-card-stats">' +
+                '<span class="event-card-rating"><i class="fas fa-star"></i> ' + ratingHtml + '</span>' +
             '</div>' +
-            
-            // Bouton Buy Ticket
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
-            
-            // Organisateur en bas du bouton avec icône (à gauche)
-            '<div class="event-organizer-classic">' +
-                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
+            '<div class="event-card-footer">' +
+                '<div><span class="event-card-price">' + event.price + ' Pi</span> <span class="event-card-seats">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span></div>' +
+                '<button class="buy-btn" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             '</div>' +
-            
         '</div>' +
-        
     '</div>';
 }
 
@@ -2773,24 +2743,13 @@ function openEventDetails(eventId) {
     var dateEvent = new Date(event.date);
     document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('detailLocation').textContent = event.location || 'Online';
+    document.getElementById('detailDuration').textContent = event.duration || formatDuration(event.durationValue, event.durationUnit);
     document.getElementById('detailPrice').textContent = event.price + ' Pi';
     document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
     document.getElementById('detailDescription').textContent = event.description || 'No description';
     document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
     document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
-    
-    // Afficher la durée si présente
-    var durationDisplay = document.getElementById('detailDuration');
-    if (durationDisplay) {
-        if (event.durationValue && event.durationUnit) {
-            durationDisplay.textContent = 'Duration: ' + event.durationValue + ' ' + event.durationUnit;
-            durationDisplay.style.display = 'block';
-        } else {
-            durationDisplay.style.display = 'none';
-        }
-    }
-    
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -2940,12 +2899,17 @@ function initCountrySelectors() {
     var filterSelect = document.getElementById('countrySelect');
     if (filterSelect) {
         filterSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
+        var allOption = document.createElement('option');
+        allOption.value = 'All';
+        allOption.textContent = 'All';
+        filterSelect.appendChild(allOption);
+        
+        for (var i = 0; i < countriesWithFlags.length; i++) {
+            var country = countriesWithFlags[i];
             var option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (country === currentCountryFilter) {
+            option.value = country.name;
+            option.textContent = country.flag + ' ' + country.name;
+            if (country.name === currentCountryFilter) {
                 option.selected = true;
             }
             filterSelect.appendChild(option);
@@ -2954,13 +2918,12 @@ function initCountrySelectors() {
     var eventSelect = document.getElementById('eventCountry');
     if (eventSelect) {
         eventSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
-            if (country === 'All') continue;
+        for (var i = 0; i < countriesWithFlags.length; i++) {
+            var country = countriesWithFlags[i];
             var option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (country === 'France') {
+            option.value = country.name;
+            option.textContent = country.flag + ' ' + country.name;
+            if (country.name === 'France') {
                 option.selected = true;
             }
             eventSelect.appendChild(option);
@@ -3077,7 +3040,7 @@ var faqData = [
     [
         { q: "How to create an event?", a: "Connect, click 'Create Event' and fill out the form." },
         { q: "Conditions to be an organizer?", a: "Have an active Pi Network account and comply with the terms of use." },
-        { q: "Can I modify an event?", a: "Yes, from the 'My Events' section." },
+        { q: "Can I modify an event?", a: "Yes, from the 'My Events' section (coming soon)." },
         { q: "How to boost my event?", a: "By paying a small amount in Pi to increase visibility." }
     ],
     [
