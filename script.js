@@ -575,7 +575,8 @@ async function saveEventToSupabase(eventData) {
             created_at: eventData.createdAt || new Date().toISOString(),
             duration_value: eventData.durationValue || null,
             duration_unit: eventData.durationUnit || null,
-            country: eventData.country || ''
+            country: eventData.country || '',
+            ticket_types: eventData.ticketTypes || null
         };
         
         var { error } = await supabaseClient
@@ -650,7 +651,8 @@ async function saveTicketToSupabase(ticketData) {
             ticket_type: ticketData.ticketType || 'Standard',
             quantity: ticketData.quantity || 1,
             transaction_id: ticketData.transactionId || '',
-            payment_status: ticketData.paymentStatus || 'Paid'
+            payment_status: ticketData.paymentStatus || 'Paid',
+            ticket_price: ticketData.price || 0
         };
         
         var { error } = await supabaseClient
@@ -837,6 +839,14 @@ async function loadAllFromSupabase() {
     var supabaseEvents = await loadEventsFromSupabase();
     if (supabaseEvents.length > 0) {
         events = supabaseEvents.map(function(e) {
+            var ticketTypes = null;
+            try {
+                if (e.ticket_types) {
+                    ticketTypes = typeof e.ticket_types === 'string' ? JSON.parse(e.ticket_types) : e.ticket_types;
+                }
+            } catch (err) {
+                ticketTypes = null;
+            }
             return {
                 id: e.id,
                 title: e.title,
@@ -856,7 +866,8 @@ async function loadAllFromSupabase() {
                 createdAt: e.created_at || new Date().toISOString(),
                 boosts: 0,
                 durationValue: e.duration_value || null,
-                durationUnit: e.duration_unit || null
+                durationUnit: e.duration_unit || null,
+                ticketTypes: ticketTypes || { standard: { enabled: true, price: e.ticket_price || 0.0003 } }
             };
         });
         localStorage.setItem('betix_events', JSON.stringify(events));
@@ -876,7 +887,7 @@ async function loadAllFromSupabase() {
                     eventTitle: t.event_title || 'Event',
                     eventDate: t.expiration_date || new Date().toISOString(),
                     eventLocation: t.event_location || '',
-                    price: t.price || 0,
+                    price: t.ticket_price || t.price || 0,
                     buyerWallet: t.buyer_pi_uid,
                     buyerName: t.buyer_name || t.buyer_pi_uid,
                     userWallet: t.buyer_pi_uid,
@@ -1157,77 +1168,19 @@ function disconnectPi() {
 function logout() { disconnectPi(); }
 
 // ============================================================
-// ===== PROFILE PHOTO =====
+// ===== PROFILE PHOTO (SUPPRIMÉ) =====
 // ============================================================
 
+// La fonctionnalité de photo de profil a été supprimée
+// Les fonctions suivantes sont conservées vides pour éviter les erreurs
+
 async function handleProfilePhotoUpload(file) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        alert('Please select an image');
-        return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-        alert('Image is too large (max 10MB)');
-        return;
-    }
-    
-    var loadingMsg = document.getElementById('profilePhotoLoading');
-    if (loadingMsg) loadingMsg.style.display = 'block';
-    
-    try {
-        var compressedData = await compressProfilePhoto(file);
-        
-        var piUid = currentUser.piUid || currentUser.wallet;
-        if (piUid) {
-            var publicUrl = await uploadProfilePhoto(piUid, compressedData);
-            if (publicUrl) {
-                currentUser.profilePhoto = publicUrl;
-            } else {
-                currentUser.profilePhoto = compressedData;
-            }
-        } else {
-            currentUser.profilePhoto = compressedData;
-        }
-        
-        saveUser();
-        updateAllProfileImages();
-        alert('Profile photo updated successfully!');
-    } catch (error) {
-        console.error('Error compressing image:', error);
-        alert('Error compressing image. Please try with a smaller image.');
-    } finally {
-        if (loadingMsg) loadingMsg.style.display = 'none';
-    }
+    // Fonction désactivée
+    alert('Profile photo feature is currently disabled.');
 }
 
 function updateAllProfileImages() {
-    var photo = currentUser.profilePhoto || '';
-    var sidebarImg = document.getElementById('sidebarAvatarImage');
-    var sidebarText = document.getElementById('sidebarAvatarText');
-    if (sidebarImg && sidebarText) {
-        if (photo) {
-            sidebarImg.src = photo;
-            sidebarImg.style.display = 'block';
-            sidebarText.style.display = 'none';
-        } else {
-            sidebarImg.style.display = 'none';
-            sidebarText.style.display = 'flex';
-            if (sidebarText) sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
-        }
-    }
-    var profileImg = document.getElementById('profilePageAvatar');
-    var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
-    if (profileImg && profilePlaceholder) {
-        if (photo) {
-            profileImg.src = photo;
-            profileImg.style.display = 'block';
-            profilePlaceholder.style.display = 'none';
-        } else {
-            profileImg.style.display = 'none';
-            profilePlaceholder.style.display = 'flex';
-            profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
-        }
-    }
+    // Fonction désactivée
 }
 
 // ============================================================
@@ -1242,15 +1195,9 @@ function updateUserInfo() {
     if (sidebarName) sidebarName.innerText = currentUser.name;
     if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Not connected';
     if (sidebarImg && sidebarText) {
-        if (currentUser.profilePhoto) {
-            sidebarImg.src = currentUser.profilePhoto;
-            sidebarImg.style.display = 'block';
-            sidebarText.style.display = 'none';
-        } else {
-            sidebarImg.style.display = 'none';
-            sidebarText.style.display = 'flex';
-            sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
-        }
+        sidebarImg.style.display = 'none';
+        sidebarText.style.display = 'flex';
+        sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
     }
     updateConnectButtons();
 }
@@ -1293,15 +1240,9 @@ function updateProfilePage() {
     var profileImg = document.getElementById('profilePageAvatar');
     var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
     if (profileImg && profilePlaceholder) {
-        if (currentUser.profilePhoto) {
-            profileImg.src = currentUser.profilePhoto;
-            profileImg.style.display = 'block';
-            profilePlaceholder.style.display = 'none';
-        } else {
-            profileImg.style.display = 'none';
-            profilePlaceholder.style.display = 'flex';
-            profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
-        }
+        profileImg.style.display = 'none';
+        profilePlaceholder.style.display = 'flex';
+        profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
     }
     updateConnectButtons();
 }
@@ -1757,6 +1698,10 @@ function renderTicketPremium(ticket, status) {
     var purchaseTimeFormatted = purchaseDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     var officialDesc = 'Official Betix digital ticket confirming your participation in this event. Present this ticket (QR Code or ticket code) at the entrance.';
     
+    var ticketTypeBadge = ticketType === 'VIP' ? 
+        '<span class="ticket-type-badge vip">VIP</span>' : 
+        '<span class="ticket-type-badge standard">Standard</span>';
+    
     return '<div class="ticket-premium">' +
         '<div class="ticket-inner">' +
             '<div class="ticket-watermark">BETIX</div>' +
@@ -1766,7 +1711,7 @@ function renderTicketPremium(ticket, status) {
                 '<span class="ticket-order-id">Order #' + orderNumber + '</span>' +
             '</div>' +
             '<div class="ticket-body">' +
-                '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle || 'Event') + '</div>' +
+                '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle || 'Event') + ' ' + ticketTypeBadge + '</div>' +
                 '<span class="ticket-category-badge">' + escapeHtml(categoryDisplay) + '</span>' +
                 '<div class="ticket-official-desc">' + officialDesc + '</div>' +
                 '<div class="ticket-info-grid">' +
@@ -1804,10 +1749,11 @@ function renderTicketPremium(ticket, status) {
 }
 
 // ============================================================
-// ===== QUANTITY POPUP =====
+// ===== QUANTITY POPUP AVEC TYPES DE BILLETS =====
 // ============================================================
 
 var selectedEventForPurchase = null;
+var selectedTicketType = 'standard';
 var currentTicketQuantity = 1;
 
 function openQuantityPopup(eventId) {
@@ -1822,12 +1768,15 @@ function openQuantityPopup(eventId) {
     
     selectedEventForPurchase = event;
     currentTicketQuantity = 1;
+    selectedTicketType = 'standard';
+    
     var popup = document.getElementById('quantityPopup');
     var titleEl = document.getElementById('quantityEventTitle');
     var infoEl = document.getElementById('quantityEventInfo');
     var maxInfo = document.getElementById('maxQuantityInfo');
     var quantityInput = document.getElementById('ticketQuantity');
     var totalDisplay = document.getElementById('totalPriceDisplay');
+    var typeSelector = document.getElementById('ticketTypeSelector');
     
     if (titleEl) titleEl.textContent = event.title;
     if (infoEl) {
@@ -1843,10 +1792,60 @@ function openQuantityPopup(eventId) {
         quantityInput.max = Math.min(event.seatsLeft, 10);
         quantityInput.min = 1;
     }
-    if (totalDisplay) {
-        totalDisplay.textContent = event.price + ' Pi';
+    
+    // Générer les options de types de billets
+    if (typeSelector) {
+        typeSelector.innerHTML = '';
+        var ticketTypes = event.ticketTypes || { standard: { enabled: true, price: event.price || 0.0003 } };
+        var hasSelected = false;
+        
+        if (ticketTypes.standard && ticketTypes.standard.enabled) {
+            var divStd = document.createElement('div');
+            divStd.className = 'ticket-type-option selected';
+            divStd.dataset.type = 'standard';
+            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + ticketTypes.standard.price + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divStd.onclick = function() { selectTicketType('standard'); };
+            typeSelector.appendChild(divStd);
+            hasSelected = true;
+        }
+        
+        if (ticketTypes.vip && ticketTypes.vip.enabled) {
+            var divVip = document.createElement('div');
+            divVip.className = 'ticket-type-option';
+            divVip.dataset.type = 'vip';
+            divVip.innerHTML = '<span class="type-name">VIP</span><span class="type-price">' + ticketTypes.vip.price + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divVip.onclick = function() { selectTicketType('vip'); };
+            typeSelector.appendChild(divVip);
+            if (!hasSelected) {
+                divVip.classList.add('selected');
+                selectedTicketType = 'vip';
+                hasSelected = true;
+            }
+        }
+        
+        // Si aucune catégorie n'est sélectionnée, forcer Standard
+        if (!hasSelected) {
+            var divStd = document.createElement('div');
+            divStd.className = 'ticket-type-option selected';
+            divStd.dataset.type = 'standard';
+            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + (event.price || 0.0003) + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divStd.onclick = function() { selectTicketType('standard'); };
+            typeSelector.appendChild(divStd);
+            selectedTicketType = 'standard';
+        }
     }
+    
+    updateTotalPrice();
     popup.classList.add('show');
+}
+
+function selectTicketType(type) {
+    selectedTicketType = type;
+    var options = document.querySelectorAll('.ticket-type-option');
+    for (var i = 0; i < options.length; i++) {
+        options[i].classList.toggle('selected', options[i].dataset.type === type);
+    }
+    updateTotalPrice();
 }
 
 function closeQuantityPopup() {
@@ -1872,7 +1871,19 @@ function updateTotalPrice() {
     var totalDisplay = document.getElementById('totalPriceDisplay');
     if (!input || !totalDisplay || !selectedEventForPurchase) return;
     var qty = parseInt(input.value) || 1;
-    var total = qty * selectedEventForPurchase.price;
+    
+    var ticketTypes = selectedEventForPurchase.ticketTypes || { standard: { enabled: true, price: selectedEventForPurchase.price || 0.0003 } };
+    var price = 0;
+    
+    if (selectedTicketType === 'vip' && ticketTypes.vip && ticketTypes.vip.enabled) {
+        price = ticketTypes.vip.price || 0;
+    } else if (ticketTypes.standard && ticketTypes.standard.enabled) {
+        price = ticketTypes.standard.price || selectedEventForPurchase.price || 0.0003;
+    } else {
+        price = selectedEventForPurchase.price || 0.0003;
+    }
+    
+    var total = qty * price;
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
@@ -1904,7 +1915,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== PURCHASE =====
+// ===== PURCHASE AVEC TYPE DE BILLET =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -1912,15 +1923,30 @@ async function confirmPurchase(eventId, quantity) {
     if (!event) { alert('Event not found'); return; }
     if (quantity > event.seatsLeft) { alert('Only ' + event.seatsLeft + ' seats available'); return; }
     
-    var totalPrice = quantity * event.price;
-    if (!confirm('Buy ' + quantity + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) { return; }
+    var ticketTypes = event.ticketTypes || { standard: { enabled: true, price: event.price || 0.0003 } };
+    var price = 0;
+    var ticketTypeName = 'Standard';
+    
+    if (selectedTicketType === 'vip' && ticketTypes.vip && ticketTypes.vip.enabled) {
+        price = ticketTypes.vip.price || 0;
+        ticketTypeName = 'VIP';
+    } else if (ticketTypes.standard && ticketTypes.standard.enabled) {
+        price = ticketTypes.standard.price || event.price || 0.0003;
+        ticketTypeName = 'Standard';
+    } else {
+        price = event.price || 0.0003;
+        ticketTypeName = 'Standard';
+    }
+    
+    var totalPrice = quantity * price;
+    if (!confirm('Buy ' + quantity + ' ' + ticketTypeName + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) { return; }
     closeQuantityPopup();
     
     try {
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
-            memo: quantity + ' ticket(s): ' + event.title,
-            metadata: { eventId: event.id, eventTitle: event.title, quantity: quantity }
+            memo: quantity + ' ' + ticketTypeName + ' ticket(s): ' + event.title,
+            metadata: { eventId: event.id, eventTitle: event.title, quantity: quantity, ticketType: ticketTypeName }
         }, {
             onReadyForServerApproval: function(paymentId) {
                 fetch(BACKEND_URL + '/api/pi/approve', { 
@@ -1937,7 +1963,7 @@ async function confirmPurchase(eventId, quantity) {
                         paymentId: paymentId, 
                         txid: txid, 
                         amount: totalPrice, 
-                        metadata: { eventId: event.id, quantity: quantity } 
+                        metadata: { eventId: event.id, quantity: quantity, ticketType: ticketTypeName } 
                     }) 
                 }).then(async function() {
                     var ticketsAdded = [];
@@ -1949,7 +1975,7 @@ async function confirmPurchase(eventId, quantity) {
                             eventDate: event.date,
                             eventLocation: event.location,
                             category: event.category || '',
-                            price: event.price,
+                            price: price,
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: piUser ? piUser.username : currentUser.name,
                             userWallet: currentUser.wallet,
@@ -1958,7 +1984,7 @@ async function confirmPurchase(eventId, quantity) {
                             transactionId: txid,
                             qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i,
                             status: 'Valid',
-                            ticketType: 'Standard',
+                            ticketType: ticketTypeName,
                             quantity: quantity,
                             paymentStatus: 'Paid'
                         };
@@ -1986,7 +2012,7 @@ async function confirmPurchase(eventId, quantity) {
                     });
                     
                     addNotification(
-                        'Purchase of ' + quantity + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
+                        'Purchase of ' + quantity + ' ' + ticketTypeName + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
                         'purchase'
                     );
                     renderEventsByCategory();
@@ -2022,16 +2048,19 @@ function showSuccessPopup(event, ticketsList, quantity) {
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    var totalPrice = qty * event.price;
+    var totalPrice = qty * (ticket.price || 0);
     var codeDisplay = ticket.qrCode || 'N/A';
+    var typeDisplay = ticket.ticketType || 'Standard';
     
     info.innerHTML = 
         '<div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">' + typeDisplay + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">' + escapeHtml(event.country || 'Not specified') + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Organizer</span><span class="ticket-value">' + escapeHtml(event.organizerName || event.organizer) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">' + qty + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Price per ticket</span><span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
     
@@ -2046,7 +2075,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== IMAGE UPLOAD MODERN =====
+// ===== IMAGE UPLOAD MODERN (CORRIGÉ) =====
 // ============================================================
 
 async function handleImageUploadModern(file, index) {
@@ -2095,6 +2124,7 @@ async function handleImageUploadModern(file, index) {
             progress.style.display = 'none';
             progressFill.style.width = '0%';
             
+            // Afficher l'image dans l'aperçu
             previewImage.src = compressedData;
             previewContainer.style.display = 'block';
             box.classList.add('has-image');
@@ -2139,7 +2169,7 @@ function getUploadedImages() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT AVEC TYPES DE BILLETS =====
 // ============================================================
 
 function createEvent(e) {
@@ -2168,6 +2198,37 @@ function createEvent(e) {
     var durationUnit = document.getElementById('eventDurationUnit').value;
     var durationValueNum = durationValue ? parseInt(durationValue) : null;
     
+    // Récupérer les types de billets
+    var ticketTypes = {
+        standard: {
+            enabled: document.getElementById('ticketStandardEnabled').checked,
+            price: parseFloat(document.getElementById('ticketStandardPrice').value) || 0
+        },
+        vip: {
+            enabled: document.getElementById('ticketVipEnabled').checked,
+            price: parseFloat(document.getElementById('ticketVipPrice').value) || 0
+        }
+    };
+    
+    // Vérifier qu'au moins un type de billet est sélectionné
+    if (!ticketTypes.standard.enabled && !ticketTypes.vip.enabled) {
+        alert('Please select at least one ticket type (Standard or VIP)');
+        return;
+    }
+    
+    // Vérifier que les prix sont renseignés pour les types sélectionnés
+    if (ticketTypes.standard.enabled && (!ticketTypes.standard.price || ticketTypes.standard.price <= 0)) {
+        alert('Please enter a valid price for Standard tickets');
+        return;
+    }
+    if (ticketTypes.vip.enabled && (!ticketTypes.vip.price || ticketTypes.vip.price <= 0)) {
+        alert('Please enter a valid price for VIP tickets');
+        return;
+    }
+    
+    // Prix principal = prix Standard (par défaut)
+    var mainPrice = ticketTypes.standard.enabled ? ticketTypes.standard.price : (ticketTypes.vip.enabled ? ticketTypes.vip.price : 0.0003);
+    
     var newEvent = {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
@@ -2177,7 +2238,7 @@ function createEvent(e) {
         location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value,
         conditions: conditions,
-        price: parseFloat(document.getElementById('eventPrice').value) || 0.0003,
+        price: mainPrice,
         seatsTotal: parseInt(document.getElementById('eventSeats').value),
         seatsLeft: parseInt(document.getElementById('eventSeats').value),
         images: images,
@@ -2188,7 +2249,8 @@ function createEvent(e) {
         createdAt: new Date().toISOString(),
         boosts: 0,
         durationValue: durationValueNum,
-        durationUnit: durationUnit
+        durationUnit: durationUnit,
+        ticketTypes: ticketTypes
     };
     
     if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
@@ -2218,6 +2280,19 @@ function openPublishConfirm(eventData) {
     document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet;
     document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
     document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
+    
+    // Afficher les types de billets
+    var ticketTypesDisplay = document.getElementById('confirmTicketTypes');
+    if (ticketTypesDisplay && eventData.ticketTypes) {
+        var typesHtml = '';
+        if (eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled) {
+            typesHtml += '<span style="display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">Standard: ' + eventData.ticketTypes.standard.price + ' Pi</span> ';
+        }
+        if (eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled) {
+            typesHtml += '<span style="display:inline-block;background:#fff3e0;color:#e65100;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">VIP: ' + eventData.ticketTypes.vip.price + ' Pi</span> ';
+        }
+        ticketTypesDisplay.innerHTML = typesHtml || 'Not specified';
+    }
     
     var durationDisplay = document.getElementById('confirmDuration');
     if (durationDisplay) {
@@ -2385,6 +2460,21 @@ function renderMyEventCard(event) {
         durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + durDisplay + '</div>';
     }
     
+    // Afficher les types de billets
+    var ticketTypesDisplay = '';
+    if (event.ticketTypes) {
+        var types = [];
+        if (event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+            types.push('Standard (' + event.ticketTypes.standard.price + ' Pi)');
+        }
+        if (event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+            types.push('VIP (' + event.ticketTypes.vip.price + ' Pi)');
+        }
+        if (types.length > 0) {
+            ticketTypesDisplay = '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + types.join(' | ') + '</div>';
+        }
+    }
+    
     return '<div class="event-card" style="cursor:default; position:relative;">' +
         galleryHtml +
         '<div class="event-info">' +
@@ -2397,6 +2487,7 @@ function renderMyEventCard(event) {
                 '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
                 '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
                 durationDisplay +
+                ticketTypesDisplay +
             '</div>' +
             '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
                 '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
@@ -3193,8 +3284,7 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== FAQ =====
-// ============================================================
+// ===== FAQ =====// ============================================================
 
 var faqData = [
     [
@@ -3204,14 +3294,14 @@ var faqData = [
         { q: "Who can use Betix?", a: "Any Pi Network account holder can use Betix." }
     ],
     [
-        { q: "How to buy a ticket?", a: "Connect, browse events, click 'Buy Ticket' and choose the quantity." },
+        { q: "How to buy a ticket?", a: "Connect, browse events, click 'Buy Ticket' and choose the ticket type and quantity." },
         { q: "Are payments secure?", a: "Yes, via the Pi Network and Betix's escrow system." },
         { q: "Can I get a refund?", a: "Yes in case of cancellation, postponement or fraud." },
         { q: "Where are my tickets stored?", a: "In the 'My Tickets' section of your account." }
     ],
     [
         { q: "How to create an event?", a: "Connect, click 'Create Event' and fill out the form." },
-        { q: "Conditions to be an organizer?", a: "Have an active Pi Network account and comply with the terms of use." },
+        { q: "What ticket types can I offer?", a: "You can offer Standard and VIP tickets with different prices." },
         { q: "Can I modify an event?", a: "Yes, from the 'My Events' section." },
         { q: "How to boost my event?", a: "By paying a small amount in Pi to increase visibility." }
     ],
@@ -3671,22 +3761,26 @@ document.addEventListener('DOMContentLoaded', function() {
     var clearDataBtn = document.getElementById('clearDataBtn');
     var backBtn = document.getElementById('backBtn');
     
+    // Suppression des input de photo de profil
     var profilePhotoInputSidebar = document.getElementById('profilePhotoInputSidebar');
     if (profilePhotoInputSidebar) {
-        profilePhotoInputSidebar.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                handleProfilePhotoUpload(this.files[0]);
-            }
-        });
+        profilePhotoInputSidebar.style.display = 'none';
     }
     
     var profilePhotoInputPage = document.getElementById('profilePhotoInputPage');
     if (profilePhotoInputPage) {
-        profilePhotoInputPage.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                handleProfilePhotoUpload(this.files[0]);
-            }
-        });
+        profilePhotoInputPage.style.display = 'none';
+    }
+    
+    // Cacher les boutons d'upload de photo de profil
+    var editIcons = document.querySelectorAll('.profile-edit-icon');
+    for (var i = 0; i < editIcons.length; i++) {
+        editIcons[i].style.display = 'none';
+    }
+    
+    var uploadBtns = document.querySelectorAll('.profile-upload-btn');
+    for (var i = 0; i < uploadBtns.length; i++) {
+        uploadBtns[i].style.display = 'none';
     }
     
     updateConnectButtons();
@@ -3742,6 +3836,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
     if (backBtn) backBtn.addEventListener('click', goBack);
+    
+    // Gestionnaire d'événements pour les cases à cocher des types de billets
+    var ticketStandardEnabled = document.getElementById('ticketStandardEnabled');
+    var ticketStandardPrice = document.getElementById('ticketStandardPrice');
+    var ticketVipEnabled = document.getElementById('ticketVipEnabled');
+    var ticketVipPrice = document.getElementById('ticketVipPrice');
+    
+    if (ticketStandardEnabled && ticketStandardPrice) {
+        ticketStandardEnabled.addEventListener('change', function() {
+            ticketStandardPrice.disabled = !this.checked;
+            if (!this.checked) ticketStandardPrice.value = '';
+        });
+    }
+    if (ticketVipEnabled && ticketVipPrice) {
+        ticketVipEnabled.addEventListener('change', function() {
+            ticketVipPrice.disabled = !this.checked;
+            if (!this.checked) ticketVipPrice.value = '';
+        });
+    }
     
     var imageInputsModern = document.querySelectorAll('.image-input-modern');
     for (var i = 0; i < imageInputsModern.length; i++) {
