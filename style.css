@@ -1096,7 +1096,6 @@ body {
     color: #1a1a2e;
 }
 
-/* ===== TICKET PREMIUM ===== */
 .ticket-container {
     display: flex;
     flex-direction: column;
@@ -1562,7 +1561,6 @@ body.dark-mode .ticket-premium .ticket-header {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
 }
 
-/* ===== PUBLISH LOADING ===== */
 .publish-loading-overlay {
     display: none;
     position: absolute;
@@ -1611,7 +1609,6 @@ body.dark-mode .publish-loading-overlay .publish-loading-text {
     color: #f3f4f6;
 }
 
-/* ===== COUNTRY SEARCH ===== */
 .country-search-wrapper {
     position: relative;
     margin-bottom: 8px;
@@ -1657,7 +1654,6 @@ body.dark-mode .country-search-icon {
     color: #6b7280;
 }
 
-/* ===== DURATION ===== */
 .event-duration-wrapper {
     display: flex;
     align-items: center;
@@ -1721,7 +1717,6 @@ body.dark-mode .event-duration-wrapper select:focus {
     border-color: #f5a623;
 }
 
-/* ===== MODAL EDIT EVENT ===== */
 .modal-edit-event .modal-content {
     max-width: 560px;
 }
@@ -1817,7 +1812,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     border-color: #6b7280;
 }
 
-/* ===== EVENT CARD ===== */
 .event-card {
     background: white;
     border-radius: 16px;
@@ -1995,7 +1989,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     display: none !important;
 }
 
-/* ===== PROFILE ===== */
 .profile-page-content {
     max-width: 700px !important;
     padding: 0 !important;
@@ -2197,7 +2190,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     width: calc(100% - 60px);
 }
 
-/* ===== QUANTITY POPUP ===== */
 .quantity-popup {
     display: none;
     position: fixed;
@@ -2329,7 +2321,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     margin-top: 16px;
 }
 
-/* ===== SUCCESS POPUP ===== */
 .success-popup {
     display: none;
     position: fixed;
@@ -2442,7 +2433,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     transform: translateY(-2px);
 }
 
-/* ===== PUBLISH CONFIRM ===== */
 .publish-confirm {
     display: none;
     position: fixed;
@@ -2704,7 +2694,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     }
 }
 
-/* ===== IMAGE UPLOAD ===== */
 .image-upload-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2895,7 +2884,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     display: none;
 }
 
-/* ===== BUTTONS ===== */
 .btn-primary {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
@@ -2954,7 +2942,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     opacity: 0.9;
 }
 
-/* ===== CREATE FORM ===== */
 .create-form {
     background: white;
     padding: 2rem;
@@ -3000,7 +2987,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     min-height: 100px;
 }
 
-/* ===== TICKET CARD ===== */
 .ticket-card {
     background: white;
     border-radius: 16px;
@@ -3010,7 +2996,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     border-left: 4px solid #f5a623;
 }
 
-/* ===== PAGES ===== */
 .hidden-page {
     display: none;
 }
@@ -3025,7 +3010,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     overflow: hidden;
 }
 
-/* ===== CHAT ===== */
 .chat-float-btn {
     position: fixed;
     bottom: 20px;
@@ -3148,7 +3132,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     opacity: 0.9;
 }
 
-/* ===== MODAL ===== */
 .modal {
     display: none;
     position: fixed;
@@ -3190,7 +3173,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     color: var(--dark);
 }
 
-/* ===== GALLERY MODAL ===== */
 .gallery-modal {
     position: fixed;
     top: 0;
@@ -3246,7 +3228,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     background: rgba(255,255,255,0.3);
 }
 
-/* ===== ADMIN ===== */
 .admin-content {
     max-width: 1000px !important;
 }
@@ -3636,7 +3617,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     font-size: 0.9rem;
 }
 
-/* ===== FOOTER ===== */
 .betix-footer {
     background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 100%);
     color: #c8d4e6;
@@ -3802,7 +3782,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     gap: 4px;
 }
 
-/* ===== FAQ ===== */
 .faq-page-content {
     max-width: 900px !important;
     padding: 30px !important;
@@ -3974,7 +3953,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     background: #f7c35c;
 }
 
-/* ===== NOTIFICATIONS ===== */
 #notificationsList .notification-item {
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
@@ -4026,7 +4004,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     background: #fefaf0;
 }
 
-/* ===== DARK MODE ===== */
 body.dark-mode {
     background-color: #111827;
     color: #f3f4f6;
@@ -4501,7 +4478,6 @@ body.dark-mode #notificationsList .notification-item.unread {
     border-left-color: #f5a623;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
     .footer-container {
         grid-template-columns: repeat(2, 1fr);
@@ -4939,7 +4915,6 @@ body.dark-mode #notificationsList .notification-item.unread {
     }
 }
 
-/* ===== GOOGLE TRANSLATE OVERRIDES ===== */
 .goog-te-banner-frame {
     display: none !important;
     height: 0 !important;
