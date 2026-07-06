@@ -227,11 +227,15 @@ const countriesWithFlags = [
 ];
 
 // Tri alphabétique
-countriesWithFlags.sort((a, b) => a.name.localeCompare(b.name));
+countriesWithFlags.sort(function(a, b) {
+    return a.name.localeCompare(b.name);
+});
 
 // Map flag par nom de pays
-const flagMap = {};
-countriesWithFlags.forEach(c => { flagMap[c.name] = c.flag; });
+var flagMap = {};
+for (var i = 0; i < countriesWithFlags.length; i++) {
+    flagMap[countriesWithFlags[i].name] = countriesWithFlags[i].flag;
+}
 
 // ============================================================
 // ===== GLOBAL VARIABLES =====
@@ -345,10 +349,6 @@ function getDurationDisplay(event) {
 function getCountryFlag(countryName) {
     if (!countryName) return '🌍';
     return flagMap[countryName] || '🌍';
-}
-
-function getCountryFlagEmoji(countryName) {
-    return getCountryFlag(countryName);
 }
 
 // ============================================================
@@ -863,7 +863,7 @@ async function loadAllFromSupabase() {
         });
         localStorage.setItem('betix_events', JSON.stringify(events));
     } else {
-        // Ne pas créer d'événements de test, laisser vide
+        // Pas d'événements de démonstration - seulement Supabase
         events = [];
         localStorage.setItem('betix_events', JSON.stringify(events));
     }
@@ -923,430 +923,62 @@ async function loadAllFromSupabase() {
 }
 
 // ============================================================
-// ===== RENDER EVENTS =====
+// ===== LANGUAGE MANAGEMENT =====
 // ============================================================
 
-function renderEventCard(event) {
-    var avgRating = 0;
-    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
-    if (eventRatings.length > 0) { 
-        avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; 
+function changeLanguage(lang) {
+    localStorage.setItem('betix_language', lang);
+    var nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) {
+        nativeSelect.value = lang;
     }
     
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
-    
-    var countryFlag = getCountryFlag(event.country);
-    var countryDisplay = event.country || 'International';
-    
-    var durationDisplay = getDurationDisplay(event);
-    
-    var desc = event.description || '';
-    if (desc.length > 120) {
-        desc = desc.substring(0, 117) + '...';
+    var googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) {
+        googleSelect.value = lang;
+        googleSelect.dispatchEvent(new Event('change'));
     }
     
-    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 20) {
-        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
-    }
-    var organizerFormatted = organizerDisplay;
-    if (!organizerFormatted.startsWith('@')) {
-        organizerFormatted = '@' + organizerFormatted;
-    }
-    
-    var ratingDisplay = '';
-    if (eventRatings.length > 0) {
-        var stars = '';
-        var fullStars = Math.floor(avgRating);
-        for (var i = 0; i < fullStars; i++) stars += '★';
-        for (var i = fullStars; i < 5; i++) stars += '☆';
-        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
-    } else {
-        ratingDisplay = '<span class="new-badge">New</span>';
-    }
-    
-    var priceDisplay = event.price + ' Pi';
-    
-    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
-        '<div class="poster-wrapper-classic">' +
-            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
-        '</div>' +
-        '<div class="card-content-classic">' +
-            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
-            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
-            '<div class="info-grid-classic">' +
-                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic">' +
-                    (durationDisplay ? '<i class="fas fa-hourglass-half"></i> ' + durationDisplay : '<i class="fas fa-flag"></i> ' + countryFlag + ' ' + escapeHtml(countryDisplay)) +
-                '</div>' +
-            '</div>' +
-            '<div class="card-footer-classic">' +
-                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
-                '<span>' +
-                    '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                    ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
-                '</span>' +
-            '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
-            '<div class="event-organizer-classic">' +
-                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
-            '</div>' +
-        '</div>' +
-    '</div>';
-}
-
-function renderEventsByCategory() {
-    var container = document.getElementById('eventsByCategory');
-    if (!container) return;
-    
-    var filtered = events.filter(function(e) { 
-        var matchCategory = (currentFilter === 'All' || e.category === currentFilter);
-        var matchCountry = (currentCountryFilter === 'All' || e.country === currentCountryFilter);
-        var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
-        return matchCategory && matchCountry && matchSearch;
-    });
-    
-    if (filtered.length === 0) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
-        return; 
-    }
-    
-    var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
-    var html = '';
-    
-    if (currentFilter !== 'All') {
-        html = '<div class="category-section"><div class="events-grid-centered">';
-        for (var i = 0; i < filtered.length; i++) {
-            html += renderEventCard(filtered[i]);
+    setTimeout(function() {
+        var googleSelectRetry = document.querySelector('.goog-te-combo');
+        if (googleSelectRetry && googleSelectRetry.value !== lang) {
+            googleSelectRetry.value = lang;
+            googleSelectRetry.dispatchEvent(new Event('change'));
         }
-        html += '</div></div>';
-    } else {
-        for (var i = 0; i < cats.length; i++) {
-            var cat = cats[i];
-            var catEvents = filtered.filter(function(e) { return e.category === cat; });
-            if (catEvents.length) {
-                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
-                for (var j = 0; j < catEvents.length; j++) {
-                    html += renderEventCard(catEvents[j]);
-                }
-                html += '</div></div>';
-            }
+    }, 1000);
+    
+    setTimeout(function() {
+        location.reload();
+    }, 800);
+}
+
+function detectLanguage() {
+    var savedLang = localStorage.getItem('betix_language') || 'en';
+    var urlParams = new URLSearchParams(window.location.search);
+    var urlLang = urlParams.get('lang');
+    if (urlLang) {
+        localStorage.setItem('betix_language', urlLang);
+        savedLang = urlLang;
+    }
+    var nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) {
+        nativeSelect.value = savedLang;
+    }
+    
+    setTimeout(function() {
+        var googleSelect = document.querySelector('.goog-te-combo');
+        if (googleSelect && googleSelect.value !== savedLang) {
+            googleSelect.value = savedLang;
+            googleSelect.dispatchEvent(new Event('change'));
         }
-    }
-    container.innerHTML = html;
+    }, 1500);
+    
+    return savedLang;
 }
 
 // ============================================================
-// ===== INIT COUNTRY SELECTORS =====
+// ===== NOTIFICATIONS =====
 // ============================================================
-
-function initCountrySelectors() {
-    // Filtre pays (avec drapeaux)
-    var filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        var allOption = document.createElement('option');
-        allOption.value = 'All';
-        allOption.textContent = '🌍 All Countries';
-        filterSelect.appendChild(allOption);
-        
-        for (var i = 0; i < countriesWithFlags.length; i++) {
-            var c = countriesWithFlags[i];
-            var option = document.createElement('option');
-            option.value = c.name;
-            option.textContent = c.flag + ' ' + c.name;
-            if (c.name === currentCountryFilter) {
-                option.selected = true;
-            }
-            filterSelect.appendChild(option);
-        }
-    }
-}
-
-// ============================================================
-// ===== INIT FILTERS =====
-// ============================================================
-
-function initFilters() {
-    var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
-    var container = document.getElementById('filtersContainer');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    for (var i = 0; i < cats.length; i++) {
-        var chip = document.createElement('div');
-        chip.className = 'filter-chip' + (cats[i] === currentFilter ? ' active' : '');
-        chip.dataset.category = cats[i];
-        chip.textContent = cats[i];
-        container.appendChild(chip);
-    }
-    
-    var chips = document.querySelectorAll('.filter-chip');
-    for (var i = 0; i < chips.length; i++) {
-        chips[i].addEventListener('click', function() {
-            currentFilter = this.dataset.category;
-            initFilters();
-            renderEventsByCategory();
-        });
-    }
-}
-
-// ============================================================
-// ===== FILTER BY COUNTRY =====
-// ============================================================
-
-function filterByCountry(country) {
-    currentCountryFilter = country;
-    renderEventsByCategory();
-}
-
-// ============================================================
-// ===== RENDER TICKETS - DESIGN PREMIUM =====
-// ============================================================
-
-function renderTickets() {
-    var container = document.getElementById('ticketsList');
-    if (!container) return;
-    
-    var active = tickets.filter(function(t) { 
-        return new Date(t.eventDate) > new Date(); 
-    });
-    active.sort(function(a, b) { 
-        return new Date(b.purchaseDate) - new Date(a.purchaseDate); 
-    });
-    
-    if (!active.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
-        return; 
-    }
-    
-    var html = '<div class="ticket-container">';
-    for (var i = 0; i < active.length; i++) {
-        html += renderTicketPremium(active[i], 'valid');
-    }
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function renderHistory() {
-    var container = document.getElementById('historyList');
-    if (!container) return;
-    
-    var old = tickets.filter(function(t) { 
-        return new Date(t.eventDate) <= new Date(); 
-    });
-    old.sort(function(a, b) { 
-        return new Date(b.purchaseDate) - new Date(a.purchaseDate); 
-    });
-    
-    if (!old.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No history</p>'; 
-        return; 
-    }
-    
-    var html = '<div class="ticket-container">';
-    for (var i = 0; i < old.length; i++) {
-        html += renderTicketPremium(old[i], 'past');
-    }
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function renderTicketPremium(ticket, status) {
-    var event = events.find(function(e) { return e.id === ticket.eventId; });
-    
-    var dateEvent = new Date(ticket.eventDate);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-    });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    
-    var statusClass = status === 'valid' ? 'valid' : 'past';
-    var statusText = status === 'valid' ? 'Valid' : 'Past Event';
-    var categoryDisplay = ticket.category || (event ? event.category : 'Event');
-    var priceDisplay = ticket.price || (event ? event.price : 0);
-    var organizerDisplay = event ? (event.organizerName || event.organizer) : ticket.buyerName || 'Anonymous';
-    if (organizerDisplay && !organizerDisplay.startsWith('@')) {
-        organizerDisplay = '@' + organizerDisplay;
-    }
-    var durationDisplay = event ? getDurationDisplay(event) : '';
-    var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
-    var participantName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
-    if (participantName.length > 20) {
-        participantName = participantName.substring(0, 18) + '...';
-    }
-    var quantity = ticket.quantity || 1;
-    var ticketType = ticket.ticketType || 'Standard';
-    var paymentStatus = ticket.paymentStatus || 'Paid';
-    var transactionId = ticket.transactionId || '';
-    var orderNumber = ticket.id ? ticket.id.substring(0, 12).toUpperCase() : '';
-    var ticketNumber = 'BTX-' + (ticket.id ? ticket.id.substring(0, 8) : '') + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    var validationTime = ticket.validationTime || '';
-    var purchaseDate = new Date(ticket.purchaseDate || ticket.purchaseDateTime || new Date());
-    var purchaseDateFormatted = purchaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    var purchaseTimeFormatted = purchaseDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    var officialDesc = 'Official Betix digital ticket confirming your participation in this event. Present this ticket (QR Code or ticket code) at the entrance.';
-    
-    return '<div class="ticket-premium">' +
-        '<div class="ticket-inner">' +
-            '<div class="ticket-watermark">BETIX</div>' +
-            '<div class="ticket-logo-discreet">Betix</div>' +
-            '<div class="ticket-header">' +
-                '<span class="ticket-status-badge ' + statusClass + '">' + statusText + '</span>' +
-                '<span class="ticket-order-id">Order #' + orderNumber + '</span>' +
-            '</div>' +
-            '<div class="ticket-body">' +
-                '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle || 'Event') + '</div>' +
-                '<span class="ticket-category-badge">' + escapeHtml(categoryDisplay) + '</span>' +
-                '<div class="ticket-official-desc">' + officialDesc + '</div>' +
-                '<div class="ticket-info-grid">' +
-                    '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
-                    '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
-                    '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">Location</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                    (durationDisplay ? '<div class="ticket-info-item"><i class="fas fa-hourglass-half"></i> <span class="ticket-label">Duration</span> <span class="ticket-value">' + durationDisplay + '</span></div>' : '') +
-                    '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">Price</span> <span class="ticket-value">' + priceDisplay + ' Pi</span></div>' +
-                    '<div class="ticket-info-item"><i class="fas fa-user"></i> <span class="ticket-label">Organizer</span> <span class="ticket-value">' + escapeHtml(organizerDisplay) + '</span></div>' +
-                '</div>' +
-                '<div class="ticket-separator"><span class="ticket-scissors-icon"><i class="fas fa-cut"></i></span></div>' +
-                '<div class="ticket-qr-section">' +
-                    '<div class="ticket-qr-code">' +
-                        '<div class="qr-box">' + qrCode.substring(0, 12) + '</div>' +
-                        '<span class="qr-label">QR Code</span>' +
-                    '</div>' +
-                    '<div class="ticket-qr-info">' +
-                        '<div class="qr-info-row"><span class="qr-info-label">Ticket Code</span><span class="qr-info-value">' + qrCode + '</span></div>' +
-                        '<div class="qr-info-row"><span class="qr-info-label">Ticket Number</span><span class="qr-info-value">' + ticketNumber + '</span></div>' +
-                        '<div class="qr-info-row"><span class="qr-info-label">Type</span><span class="qr-info-value">' + ticketType + '</span></div>' +
-                        '<div class="qr-info-row"><span class="qr-info-label">Quantity</span><span class="qr-info-value">' + quantity + '</span></div>' +
-                        '<div class="qr-info-row"><span class="qr-info-label">Payment</span><span class="qr-info-value">' + paymentStatus + '</span></div>' +
-                        (transactionId ? '<div class="qr-info-row"><span class="qr-info-label">Transaction</span><span class="qr-info-value" style="font-size:0.6rem;">' + transactionId.substring(0, 16) + '...</span></div>' : '') +
-                        (validationTime ? '<div class="qr-info-row"><span class="qr-info-label">Validated</span><span class="qr-info-value">' + validationTime + '</span></div>' : '') +
-                        '<div class="qr-info-row"><span class="qr-info-label">Purchase Date</span><span class="qr-info-value">' + purchaseDateFormatted + ' ' + purchaseTimeFormatted + '</span></div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="ticket-footer">' +
-                '<div class="ticket-participant">Participant <span class="participant-name">' + escapeHtml(participantName) + '</span></div>' +
-                '<div class="ticket-footer-brand"><i class="fas fa-ticket-alt"></i> Powered by Betix &bull; Secure Digital Ticketing</div>' +
-            '</div>' +
-        '</div>' +
-    '</div>';
-}
-
-// ============================================================
-// ===== PROFILE, USER INFO, NOTIFICATIONS =====
-// ============================================================
-
-function updateUserInfo() {
-    var sidebarName = document.getElementById('sidebarName');
-    var sidebarWallet = document.getElementById('sidebarWallet');
-    var sidebarText = document.getElementById('sidebarAvatarText');
-    var sidebarImg = document.getElementById('sidebarAvatarImage');
-    if (sidebarName) sidebarName.innerText = currentUser.name;
-    if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Not connected';
-    if (sidebarImg && sidebarText) {
-        if (currentUser.profilePhoto) {
-            sidebarImg.src = currentUser.profilePhoto;
-            sidebarImg.style.display = 'block';
-            sidebarText.style.display = 'none';
-        } else {
-            sidebarImg.style.display = 'none';
-            sidebarText.style.display = 'flex';
-            sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
-        }
-    }
-    updateConnectButtons();
-}
-
-function updateProfilePage() {
-    var profileName = document.getElementById('profileNameDisplay');
-    var profileWallet = document.getElementById('profileWalletDisplay');
-    var ticketCount = document.getElementById('ticketCount');
-    var ratedCount = document.getElementById('ratedCount');
-    var loyaltyDisplay = document.getElementById('loyaltyPointsDisplay');
-    var myEventsCount = document.getElementById('myEventsCount');
-    var historyCount = document.getElementById('historyCount');
-    var profileRatingDisplay = document.getElementById('profileRatingDisplay');
-    var profileLoyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
-    var memberSince = document.getElementById('memberSince');
-    
-    if (profileName) profileName.innerText = currentUser.name;
-    if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Not connected';
-    if (ticketCount) ticketCount.innerText = tickets.length;
-    if (ratedCount) {
-        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
-        ratedCount.innerText = userRatings.length;
-    }
-    if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
-    if (historyCount) historyCount.innerText = tickets.length;
-    if (memberSince) memberSince.innerText = currentUser.memberSince || '2026';
-    
-    if (profileRatingDisplay) {
-        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
-        var avg = userRatings.length > 0 ? (userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length).toFixed(1) : '0';
-        profileRatingDisplay.innerText = avg;
-    }
-    if (profileLoyaltyDisplay) profileLoyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
-    
-    var myEvents = events.filter(function(e) {
-        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
-    });
-    if (myEventsCount) myEventsCount.innerText = myEvents.length;
-    
-    var profileImg = document.getElementById('profilePageAvatar');
-    var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
-    if (profileImg && profilePlaceholder) {
-        if (currentUser.profilePhoto) {
-            profileImg.src = currentUser.profilePhoto;
-            profileImg.style.display = 'block';
-            profilePlaceholder.style.display = 'none';
-        } else {
-            profileImg.style.display = 'none';
-            profilePlaceholder.style.display = 'flex';
-            profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
-        }
-    }
-    updateConnectButtons();
-}
-
-function updateConnectButtons() {
-    var sidebarBtn = document.getElementById('sidebarWalletBtn');
-    if (sidebarBtn) {
-        if (currentUser.wallet) {
-            sidebarBtn.textContent = 'Disconnect';
-            sidebarBtn.classList.add('disconnect');
-            sidebarBtn.onclick = function() { disconnectPi(); };
-        } else {
-            sidebarBtn.textContent = 'Connect Pi';
-            sidebarBtn.classList.remove('disconnect');
-            sidebarBtn.onclick = function() { connectToPi(); };
-        }
-    }
-    var profilePageBtn = document.getElementById('profileConnectBtnPage');
-    if (profilePageBtn) {
-        if (currentUser.wallet) {
-            profilePageBtn.textContent = 'Disconnect';
-            profilePageBtn.onclick = function() { disconnectPi(); };
-        } else {
-            profilePageBtn.textContent = 'Connect Pi';
-            profilePageBtn.onclick = function() { connectToPi(); };
-        }
-    }
-}
 
 function addNotification(message, type) {
     var notif = {
@@ -1585,6 +1217,112 @@ function updateAllProfileImages() {
 }
 
 // ============================================================
+// ===== USER INFO & PROFILE =====
+// ============================================================
+
+function updateUserInfo() {
+    var sidebarName = document.getElementById('sidebarName');
+    var sidebarWallet = document.getElementById('sidebarWallet');
+    var sidebarText = document.getElementById('sidebarAvatarText');
+    var sidebarImg = document.getElementById('sidebarAvatarImage');
+    if (sidebarName) sidebarName.innerText = currentUser.name;
+    if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Not connected';
+    if (sidebarImg && sidebarText) {
+        if (currentUser.profilePhoto) {
+            sidebarImg.src = currentUser.profilePhoto;
+            sidebarImg.style.display = 'block';
+            sidebarText.style.display = 'none';
+        } else {
+            sidebarImg.style.display = 'none';
+            sidebarText.style.display = 'flex';
+            sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
+        }
+    }
+    updateConnectButtons();
+}
+
+function updateProfilePage() {
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var ticketCount = document.getElementById('ticketCount');
+    var ratedCount = document.getElementById('ratedCount');
+    var loyaltyDisplay = document.getElementById('loyaltyPointsDisplay');
+    var myEventsCount = document.getElementById('myEventsCount');
+    var historyCount = document.getElementById('historyCount');
+    var profileRatingDisplay = document.getElementById('profileRatingDisplay');
+    var profileLoyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
+    var memberSince = document.getElementById('memberSince');
+    
+    if (profileName) profileName.innerText = currentUser.name;
+    if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Not connected';
+    if (ticketCount) ticketCount.innerText = tickets.length;
+    if (ratedCount) {
+        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+        ratedCount.innerText = userRatings.length;
+    }
+    if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
+    if (historyCount) historyCount.innerText = tickets.length;
+    if (memberSince) memberSince.innerText = currentUser.memberSince || '2026';
+    
+    if (profileRatingDisplay) {
+        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+        var avg = userRatings.length > 0 ? (userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length).toFixed(1) : '0';
+        profileRatingDisplay.innerText = avg;
+    }
+    if (profileLoyaltyDisplay) profileLoyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
+    
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    if (myEventsCount) myEventsCount.innerText = myEvents.length;
+    
+    var profileImg = document.getElementById('profilePageAvatar');
+    var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
+    if (profileImg && profilePlaceholder) {
+        if (currentUser.profilePhoto) {
+            profileImg.src = currentUser.profilePhoto;
+            profileImg.style.display = 'block';
+            profilePlaceholder.style.display = 'none';
+        } else {
+            profileImg.style.display = 'none';
+            profilePlaceholder.style.display = 'flex';
+            profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
+        }
+    }
+    updateConnectButtons();
+}
+
+function updateConnectButtons() {
+    var sidebarBtn = document.getElementById('sidebarWalletBtn');
+    if (sidebarBtn) {
+        if (currentUser.wallet) {
+            sidebarBtn.textContent = 'Disconnect';
+            sidebarBtn.classList.add('disconnect');
+            sidebarBtn.onclick = function() { disconnectPi(); };
+        } else {
+            sidebarBtn.textContent = 'Connect Pi';
+            sidebarBtn.classList.remove('disconnect');
+            sidebarBtn.onclick = function() { connectToPi(); };
+        }
+    }
+    var profilePageBtn = document.getElementById('profileConnectBtnPage');
+    if (profilePageBtn) {
+        if (currentUser.wallet) {
+            profilePageBtn.textContent = 'Disconnect';
+            profilePageBtn.onclick = function() { disconnectPi(); };
+        } else {
+            profilePageBtn.textContent = 'Connect Pi';
+            profilePageBtn.onclick = function() { connectToPi(); };
+        }
+    }
+}
+
+function goToMyEvents() { showPage('myevents'); }
+function goToTickets() { showPage('tickets'); }
+function goToHistory() { showPage('history'); }
+function goToRatings() { showPage('ratings'); }
+
+// ============================================================
 // ===== NAVIGATION =====
 // ============================================================
 
@@ -1667,183 +1405,421 @@ function openSidebar() {
     if (o) o.classList.add('active'); 
 }
 
-function goToMyEvents() { showPage('myevents'); }
-function goToTickets() { showPage('tickets'); }
-function goToHistory() { showPage('history'); }
-function goToRatings() { showPage('ratings'); }
-
-// ============================================================
-// ===== MY EVENTS =====
-// ============================================================
-
-function renderMyEvents() {
-    var container = document.getElementById('myEventsList');
-    if (!container) return;
-    
-    var myEvents = events.filter(function(e) {
-        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
-    });
-    
-    if (myEvents.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
-        return;
-    }
-    
-    var html = '';
-    for (var i = 0; i < myEvents.length; i++) {
-        html += renderMyEventCard(myEvents[i]);
-    }
-    container.innerHTML = html;
+function updateActivity() { 
+    lastActivity = Date.now(); 
+    localStorage.setItem('betix_last_activity', lastActivity); 
 }
 
-function renderMyEventCard(event) {
+function isSessionExpired() { 
+    var last = parseInt(localStorage.getItem('betix_last_activity') || 0); 
+    var now = Date.now(); 
+    return (now - last) > 86400000; 
+}
+
+function startSessionMonitor() { 
+    setInterval(function() { 
+        if (currentUser.wallet && isSessionExpired()) { 
+            disconnectPi(); 
+            alert('Session expired due to inactivity. Please reconnect.'); 
+        } 
+    }, 60000); 
+}
+
+function bindActivityListeners() { 
+    var events = ['click', 'scroll', 'keydown', 'touchstart']; 
+    for (var i = 0; i < events.length; i++) { 
+        document.addEventListener(events[i], updateActivity); 
+    } 
+}
+
+function clearAllData() { 
+    if (confirm('Delete all your data?')) { 
+        localStorage.clear(); 
+        location.reload(); 
+    } 
+}
+
+function handleLogoClick() {
+    logoClickCount++;
+    console.log('Logo clicks:', logoClickCount);
+    if (logoClickCount >= 5) {
+        var password = prompt('Enter administrator password:');
+        if (password === adminPassword || password === 'Betix@2026#') {
+            localStorage.setItem('betix_admin_password', password);
+            adminPassword = password;
+            var adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) {
+                adminBtn.style.display = 'block';
+                adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+                adminBtn.style.color = 'white';
+            }
+            addAdminLog('Admin authentication', 'Login via logo');
+            alert('Administrator access activated!');
+            logoClickCount = 0;
+        } else if (password !== null) {
+            alert('Incorrect password');
+            logoClickCount = 0;
+        } else {
+            logoClickCount = 0;
+        }
+    }
+}
+
+// ============================================================
+// ===== RENDER EVENTS =====
+// ============================================================
+
+function renderEventCard(event) {
+    var avgRating = 0;
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    if (eventRatings.length > 0) { 
+        avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; 
+    }
+    
     var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
-    var galleryHtml = '';
-    if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
-            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
-        }
-        galleryHtml += '</div></div>';
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    
+    var countryFlag = getCountryFlag(event.country);
+    var countryDisplay = event.country || 'International';
+    
+    var durationDisplay = getDurationDisplay(event);
+    
+    var desc = event.description || '';
+    if (desc.length > 120) {
+        desc = desc.substring(0, 117) + '...';
+    }
+    
+    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
+    if (organizerDisplay.length > 20) {
+        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    }
+    var organizerFormatted = organizerDisplay;
+    if (!organizerFormatted.startsWith('@')) {
+        organizerFormatted = '@' + organizerFormatted;
+    }
+    
+    var ratingDisplay = '';
+    if (eventRatings.length > 0) {
+        var stars = '';
+        var fullStars = Math.floor(avgRating);
+        for (var i = 0; i < fullStars; i++) stars += '★';
+        for (var i = fullStars; i < 5; i++) stars += '☆';
+        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
     } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
+        ratingDisplay = '<span class="new-badge">New</span>';
     }
     
-    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    var priceDisplay = event.price + ' Pi';
     
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        var durDisplay = getDurationDisplay(event);
-        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> ' + durDisplay + '</div>';
-    }
-    
-    return '<div class="event-card" style="cursor:default; position:relative;">' +
-        galleryHtml +
-        '<div class="event-info">' +
-            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
-            '<div class="event-details-grid">' +
-                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-flag"></i> ' + getCountryFlag(event.country) + ' ' + escapeHtml(event.country || 'Not specified') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
-                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
-                durationDisplay +
-            '</div>' +
-            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
-                '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
+    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
+        '<div class="poster-wrapper-classic">' +
+            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
+        '</div>' +
+        '<div class="card-content-classic">' +
+            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
+            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
+            '<div class="info-grid-classic">' +
+                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="info-item-classic">' +
+                    (durationDisplay ? '<i class="fas fa-hourglass-half"></i> ' + durationDisplay : '<i class="fas fa-flag"></i> ' + countryFlag + ' ' + escapeHtml(countryDisplay)) +
                 '</div>' +
+            '</div>' +
+            '<div class="card-footer-classic">' +
+                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
+                '<span>' +
+                    '<span class="event-price-classic">' + priceDisplay + '</span>' +
+                    ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
+                '</span>' +
+            '</div>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            '<div class="event-organizer-classic">' +
+                '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
         '</div>' +
     '</div>';
 }
 
-// ============================================================
-// ===== EDIT EVENT MODAL =====
-// ============================================================
-
-var editingEventId = null;
-
-function openEditEventModal(eventId) {
-    var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) {
-        alert('Event not found');
-        return;
-    }
+function renderEventsByCategory() {
+    var container = document.getElementById('eventsByCategory');
+    if (!container) return;
     
-    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) {
-        alert('You are not the organizer of this event');
-        return;
-    }
-    
-    editingEventId = eventId;
-    
-    document.getElementById('editEventDescription').value = event.description || '';
-    document.getElementById('editEventLocation').value = event.location || '';
-    document.getElementById('editEventConditions').value = event.conditions || '';
-    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
-    
-    document.getElementById('editEventDurationValue').value = event.durationValue || '';
-    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
-    
-    document.getElementById('editEventModal').classList.add('show');
-}
-
-function closeEditEventModal() {
-    document.getElementById('editEventModal').classList.remove('show');
-    editingEventId = null;
-}
-
-async function saveEventEdits() {
-    if (!editingEventId) return;
-    
-    var event = events.find(function(e) { return e.id === editingEventId; });
-    if (!event) {
-        alert('Event not found');
-        return;
-    }
-    
-    var description = document.getElementById('editEventDescription').value.trim();
-    var location = document.getElementById('editEventLocation').value.trim();
-    var conditions = document.getElementById('editEventConditions').value.trim();
-    var seatsTotal = parseInt(document.getElementById('editEventSeats').value);
-    var durationValue = document.getElementById('editEventDurationValue').value;
-    var durationUnit = document.getElementById('editEventDurationUnit').value;
-    
-    if (!seatsTotal || seatsTotal < 1) {
-        alert('Please enter a valid number of seats');
-        return;
-    }
-    
-    var ticketsSold = tickets.filter(function(t) { return t.eventId === editingEventId; }).length;
-    if (seatsTotal < ticketsSold) {
-        alert('You cannot reduce the number of seats below the number already sold (' + ticketsSold + ' seats sold)');
-        return;
-    }
-    
-    var updates = {
-        description: description,
-        location: location,
-        conditions: conditions,
-        seatsTotal: seatsTotal,
-        seatsLeft: seatsTotal - ticketsSold,
-        durationValue: durationValue ? parseInt(durationValue) : null,
-        durationUnit: durationUnit || null
-    };
-    
-    event.description = updates.description;
-    event.location = updates.location;
-    event.conditions = updates.conditions;
-    event.seatsTotal = updates.seatsTotal;
-    event.seatsLeft = updates.seatsLeft;
-    event.durationValue = updates.durationValue;
-    event.durationUnit = updates.durationUnit;
-    
-    saveEvents();
-    
-    await updateEventInSupabase(editingEventId, {
-        description: updates.description,
-        location: updates.location,
-        conditions: updates.conditions,
-        max_tickets: updates.seatsTotal,
-        duration_value: updates.durationValue,
-        duration_unit: updates.durationUnit
+    var filtered = events.filter(function(e) { 
+        var matchCategory = (currentFilter === 'All' || e.category === currentFilter);
+        var matchCountry = (currentCountryFilter === 'All' || e.country === currentCountryFilter);
+        var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
+        return matchCategory && matchCountry && matchSearch;
     });
     
-    addNotification(
-        'Event "' + event.title + '" has been updated',
-        'event'
-    );
+    if (filtered.length === 0) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
+        return; 
+    }
     
-    closeEditEventModal();
+    var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
+    var html = '';
+    
+    if (currentFilter !== 'All') {
+        html = '<div class="category-section"><div class="events-grid-centered">';
+        for (var i = 0; i < filtered.length; i++) {
+            html += renderEventCard(filtered[i]);
+        }
+        html += '</div></div>';
+    } else {
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            var catEvents = filtered.filter(function(e) { return e.category === cat; });
+            if (catEvents.length) {
+                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
+                for (var j = 0; j < catEvents.length; j++) {
+                    html += renderEventCard(catEvents[j]);
+                }
+                html += '</div></div>';
+            }
+        }
+    }
+    container.innerHTML = html;
+}
+
+// ============================================================
+// ===== INIT COUNTRY SELECTORS =====
+// ============================================================
+
+function initCountrySelectors() {
+    // Filtre pays (avec drapeaux)
+    var filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        var allOption = document.createElement('option');
+        allOption.value = 'All';
+        allOption.textContent = '🌍 All Countries';
+        filterSelect.appendChild(allOption);
+        
+        for (var i = 0; i < countriesWithFlags.length; i++) {
+            var c = countriesWithFlags[i];
+            var option = document.createElement('option');
+            option.value = c.name;
+            option.textContent = c.flag + ' ' + c.name;
+            if (c.name === currentCountryFilter) {
+                option.selected = true;
+            }
+            filterSelect.appendChild(option);
+        }
+    }
+    
+    // Selecteur pays pour la création d'événement (avec recherche)
+    var eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        function populateCountrySelect(filter) {
+            filter = filter || '';
+            eventSelect.innerHTML = '';
+            var filtered = countriesWithFlags.filter(function(c) {
+                return c.name.toLowerCase().includes(filter.toLowerCase());
+            });
+            
+            for (var i = 0; i < filtered.length; i++) {
+                var c = filtered[i];
+                var option = document.createElement('option');
+                option.value = c.name;
+                option.textContent = c.flag + ' ' + c.name;
+                if (c.name === 'France') {
+                    option.selected = true;
+                }
+                eventSelect.appendChild(option);
+            }
+        }
+        
+        populateCountrySelect('');
+        
+        var searchInput = document.getElementById('countrySearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                populateCountrySelect(this.value);
+            });
+        }
+    }
+}
+
+// ============================================================
+// ===== INIT FILTERS =====
+// ============================================================
+
+function initFilters() {
+    var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
+    var container = document.getElementById('filtersContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    for (var i = 0; i < cats.length; i++) {
+        var chip = document.createElement('div');
+        chip.className = 'filter-chip' + (cats[i] === currentFilter ? ' active' : '');
+        chip.dataset.category = cats[i];
+        chip.textContent = cats[i];
+        container.appendChild(chip);
+    }
+    
+    var chips = document.querySelectorAll('.filter-chip');
+    for (var i = 0; i < chips.length; i++) {
+        chips[i].addEventListener('click', function() {
+            currentFilter = this.dataset.category;
+            initFilters();
+            renderEventsByCategory();
+        });
+    }
+}
+
+// ============================================================
+// ===== FILTER BY COUNTRY =====
+// ============================================================
+
+function filterByCountry(country) {
+    currentCountryFilter = country;
     renderEventsByCategory();
-    renderMyEvents();
-    alert('Event updated successfully!');
+}
+
+// ============================================================
+// ===== RENDER TICKETS - DESIGN PREMIUM =====
+// ============================================================
+
+function renderTickets() {
+    var container = document.getElementById('ticketsList');
+    if (!container) return;
+    
+    var active = tickets.filter(function(t) { 
+        return new Date(t.eventDate) > new Date(); 
+    });
+    active.sort(function(a, b) { 
+        return new Date(b.purchaseDate) - new Date(a.purchaseDate); 
+    });
+    
+    if (!active.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
+        return; 
+    }
+    
+    var html = '<div class="ticket-container">';
+    for (var i = 0; i < active.length; i++) {
+        html += renderTicketPremium(active[i], 'valid');
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderHistory() {
+    var container = document.getElementById('historyList');
+    if (!container) return;
+    
+    var old = tickets.filter(function(t) { 
+        return new Date(t.eventDate) <= new Date(); 
+    });
+    old.sort(function(a, b) { 
+        return new Date(b.purchaseDate) - new Date(a.purchaseDate); 
+    });
+    
+    if (!old.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No history</p>'; 
+        return; 
+    }
+    
+    var html = '<div class="ticket-container">';
+    for (var i = 0; i < old.length; i++) {
+        html += renderTicketPremium(old[i], 'past');
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderTicketPremium(ticket, status) {
+    var event = events.find(function(e) { return e.id === ticket.eventId; });
+    
+    var dateEvent = new Date(ticket.eventDate);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    
+    var statusClass = status === 'valid' ? 'valid' : 'past';
+    var statusText = status === 'valid' ? 'Valid' : 'Past Event';
+    var categoryDisplay = ticket.category || (event ? event.category : 'Event');
+    var priceDisplay = ticket.price || (event ? event.price : 0);
+    var organizerDisplay = event ? (event.organizerName || event.organizer) : ticket.buyerName || 'Anonymous';
+    if (organizerDisplay && !organizerDisplay.startsWith('@')) {
+        organizerDisplay = '@' + organizerDisplay;
+    }
+    var durationDisplay = event ? getDurationDisplay(event) : '';
+    var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
+    var participantName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
+    if (participantName.length > 20) {
+        participantName = participantName.substring(0, 18) + '...';
+    }
+    var quantity = ticket.quantity || 1;
+    var ticketType = ticket.ticketType || 'Standard';
+    var paymentStatus = ticket.paymentStatus || 'Paid';
+    var transactionId = ticket.transactionId || '';
+    var orderNumber = ticket.id ? ticket.id.substring(0, 12).toUpperCase() : '';
+    var ticketNumber = 'BTX-' + (ticket.id ? ticket.id.substring(0, 8) : '') + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    var validationTime = ticket.validationTime || '';
+    var purchaseDate = new Date(ticket.purchaseDate || ticket.purchaseDateTime || new Date());
+    var purchaseDateFormatted = purchaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    var purchaseTimeFormatted = purchaseDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var officialDesc = 'Official Betix digital ticket confirming your participation in this event. Present this ticket (QR Code or ticket code) at the entrance.';
+    
+    return '<div class="ticket-premium">' +
+        '<div class="ticket-inner">' +
+            '<div class="ticket-watermark">BETIX</div>' +
+            '<div class="ticket-logo-discreet">Betix</div>' +
+            '<div class="ticket-header">' +
+                '<span class="ticket-status-badge ' + statusClass + '">' + statusText + '</span>' +
+                '<span class="ticket-order-id">Order #' + orderNumber + '</span>' +
+            '</div>' +
+            '<div class="ticket-body">' +
+                '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle || 'Event') + '</div>' +
+                '<span class="ticket-category-badge">' + escapeHtml(categoryDisplay) + '</span>' +
+                '<div class="ticket-official-desc">' + officialDesc + '</div>' +
+                '<div class="ticket-info-grid">' +
+                    '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
+                    '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
+                    '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">Location</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
+                    (durationDisplay ? '<div class="ticket-info-item"><i class="fas fa-hourglass-half"></i> <span class="ticket-label">Duration</span> <span class="ticket-value">' + durationDisplay + '</span></div>' : '') +
+                    '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">Price</span> <span class="ticket-value">' + priceDisplay + ' Pi</span></div>' +
+                    '<div class="ticket-info-item"><i class="fas fa-user"></i> <span class="ticket-label">Organizer</span> <span class="ticket-value">' + escapeHtml(organizerDisplay) + '</span></div>' +
+                '</div>' +
+                '<div class="ticket-separator"><span class="ticket-scissors-icon"><i class="fas fa-cut"></i></span></div>' +
+                '<div class="ticket-qr-section">' +
+                    '<div class="ticket-qr-code">' +
+                        '<div class="qr-box">' + qrCode.substring(0, 12) + '</div>' +
+                        '<span class="qr-label">QR Code</span>' +
+                    '</div>' +
+                    '<div class="ticket-qr-info">' +
+                        '<div class="qr-info-row"><span class="qr-info-label">Ticket Code</span><span class="qr-info-value">' + qrCode + '</span></div>' +
+                        '<div class="qr-info-row"><span class="qr-info-label">Ticket Number</span><span class="qr-info-value">' + ticketNumber + '</span></div>' +
+                        '<div class="qr-info-row"><span class="qr-info-label">Type</span><span class="qr-info-value">' + ticketType + '</span></div>' +
+                        '<div class="qr-info-row"><span class="qr-info-label">Quantity</span><span class="qr-info-value">' + quantity + '</span></div>' +
+                        '<div class="qr-info-row"><span class="qr-info-label">Payment</span><span class="qr-info-value">' + paymentStatus + '</span></div>' +
+                        (transactionId ? '<div class="qr-info-row"><span class="qr-info-label">Transaction</span><span class="qr-info-value" style="font-size:0.6rem;">' + transactionId.substring(0, 16) + '...</span></div>' : '') +
+                        (validationTime ? '<div class="qr-info-row"><span class="qr-info-label">Validated</span><span class="qr-info-value">' + validationTime + '</span></div>' : '') +
+                        '<div class="qr-info-row"><span class="qr-info-label">Purchase Date</span><span class="qr-info-value">' + purchaseDateFormatted + ' ' + purchaseTimeFormatted + '</span></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="ticket-footer">' +
+                '<div class="ticket-participant">Participant <span class="participant-name">' + escapeHtml(participantName) + '</span></div>' +
+                '<div class="ticket-footer-brand"><i class="fas fa-ticket-alt"></i> Powered by Betix &bull; Secure Digital Ticketing</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -2378,6 +2354,1272 @@ async function confirmPublishEvent() {
         confirmBtn.textContent = 'Publish Event';
         alert('An error occurred while publishing the event. Please try again.');
     }
+}
+
+// ============================================================
+// ===== MY EVENTS =====
+// ============================================================
+
+function renderMyEvents() {
+    var container = document.getElementById('myEventsList');
+    if (!container) return;
+    
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    
+    if (myEvents.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
+        return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < myEvents.length; i++) {
+        html += renderMyEventCard(myEvents[i]);
+    }
+    container.innerHTML = html;
+}
+
+function renderMyEventCard(event) {
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var galleryHtml = '';
+    if (event.images && event.images.length > 0) {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
+        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
+            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
+        }
+        galleryHtml += '</div></div>';
+    } else {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
+    }
+    
+    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        var durDisplay = getDurationDisplay(event);
+        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + durDisplay + '</div>';
+    }
+    
+    return '<div class="event-card" style="cursor:default; position:relative;">' +
+        galleryHtml +
+        '<div class="event-info">' +
+            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-details-grid">' +
+                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-flag"></i> ' + getCountryFlag(event.country) + ' ' + escapeHtml(event.country || 'Not specified') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
+                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
+                durationDisplay +
+            '</div>' +
+            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
+                '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+                '<div style="display:flex; gap:8px;">' +
+                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+}
+
+// ============================================================
+// ===== EDIT EVENT MODAL =====
+// ============================================================
+
+var editingEventId = null;
+
+function openEditEventModal(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) {
+        alert('You are not the organizer of this event');
+        return;
+    }
+    
+    editingEventId = eventId;
+    
+    document.getElementById('editEventDescription').value = event.description || '';
+    document.getElementById('editEventLocation').value = event.location || '';
+    document.getElementById('editEventConditions').value = event.conditions || '';
+    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
+    
+    document.getElementById('editEventDurationValue').value = event.durationValue || '';
+    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
+    
+    document.getElementById('editEventModal').classList.add('show');
+}
+
+function closeEditEventModal() {
+    document.getElementById('editEventModal').classList.remove('show');
+    editingEventId = null;
+}
+
+async function saveEventEdits() {
+    if (!editingEventId) return;
+    
+    var event = events.find(function(e) { return e.id === editingEventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    var description = document.getElementById('editEventDescription').value.trim();
+    var location = document.getElementById('editEventLocation').value.trim();
+    var conditions = document.getElementById('editEventConditions').value.trim();
+    var seatsTotal = parseInt(document.getElementById('editEventSeats').value);
+    var durationValue = document.getElementById('editEventDurationValue').value;
+    var durationUnit = document.getElementById('editEventDurationUnit').value;
+    
+    if (!seatsTotal || seatsTotal < 1) {
+        alert('Please enter a valid number of seats');
+        return;
+    }
+    
+    var ticketsSold = tickets.filter(function(t) { return t.eventId === editingEventId; }).length;
+    if (seatsTotal < ticketsSold) {
+        alert('You cannot reduce the number of seats below the number already sold (' + ticketsSold + ' seats sold)');
+        return;
+    }
+    
+    var updates = {
+        description: description,
+        location: location,
+        conditions: conditions,
+        seatsTotal: seatsTotal,
+        seatsLeft: seatsTotal - ticketsSold,
+        durationValue: durationValue ? parseInt(durationValue) : null,
+        durationUnit: durationUnit || null
+    };
+    
+    event.description = updates.description;
+    event.location = updates.location;
+    event.conditions = updates.conditions;
+    event.seatsTotal = updates.seatsTotal;
+    event.seatsLeft = updates.seatsLeft;
+    event.durationValue = updates.durationValue;
+    event.durationUnit = updates.durationUnit;
+    
+    saveEvents();
+    
+    await updateEventInSupabase(editingEventId, {
+        description: updates.description,
+        location: updates.location,
+        conditions: updates.conditions,
+        max_tickets: updates.seatsTotal,
+        duration_value: updates.durationValue,
+        duration_unit: updates.durationUnit
+    });
+    
+    addNotification(
+        'Event "' + event.title + '" has been updated',
+        'event'
+    );
+    
+    closeEditEventModal();
+    renderEventsByCategory();
+    renderMyEvents();
+    alert('Event updated successfully!');
+}
+
+// ============================================================
+// ===== EVENT DETAILS =====
+// ============================================================
+
+function openEventDetails(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    var modal = document.getElementById('eventDetailModal');
+    var closeBtn = document.getElementById('eventDetailClose');
+    
+    document.getElementById('detailTitle').textContent = event.title;
+    document.getElementById('detailCategory').textContent = event.category;
+    document.getElementById('detailCountry').textContent = getCountryFlag(event.country) + ' ' + (event.country || 'Not specified');
+    
+    var dateEvent = new Date(event.date);
+    document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('detailLocation').textContent = event.location || 'Online';
+    document.getElementById('detailPrice').textContent = event.price + ' Pi';
+    document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
+    document.getElementById('detailDescription').textContent = event.description || 'No description';
+    document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
+    document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
+    document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
+    
+    var durationDisplay = document.getElementById('detailDuration');
+    if (durationDisplay) {
+        var durDisplay = getDurationDisplay(event);
+        if (durDisplay) {
+            durationDisplay.textContent = 'Duration: ' + durDisplay;
+            durationDisplay.style.display = 'block';
+        } else {
+            durationDisplay.style.display = 'none';
+        }
+    }
+    
+    var conditionsContainer = document.getElementById('detailConditions');
+    if (conditionsContainer) {
+        if (event.conditions) {
+            var conditionsList = event.conditions.split('\n').filter(function(line) { return line.trim() !== ''; });
+            if (conditionsList.length > 0) {
+                var html = '<ul class="conditions-list">';
+                for (var i = 0; i < conditionsList.length; i++) {
+                    html += '<li>' + escapeHtml(conditionsList[i].trim()) + '</li>';
+                }
+                html += '</ul>';
+                conditionsContainer.innerHTML = html;
+            } else {
+                conditionsContainer.innerHTML = '<p>' + escapeHtml(event.conditions) + '</p>';
+            }
+        } else {
+            conditionsContainer.innerHTML = '<p style="color: var(--gray);">No conditions specified</p>';
+        }
+    }
+    
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    var avgRating = 0;
+    if (eventRatings.length > 0) {
+        avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length;
+    }
+    var ratingStars = '';
+    var fullStars = Math.floor(avgRating);
+    for (var i = 0; i < fullStars; i++) ratingStars += '★';
+    for (var i = fullStars; i < 5; i++) ratingStars += '☆';
+    document.getElementById('detailRating').textContent = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' reviews)' : 'Not yet rated';
+    
+    var gallery = document.getElementById('detailGallery');
+    gallery.innerHTML = '';
+    if (event.images && event.images.length > 0) {
+        var galleryContainer = document.createElement('div');
+        galleryContainer.className = 'gallery-scroll';
+        var maxImages = Math.min(event.images.length, 5);
+        for (var j = 0; j < maxImages; j++) {
+            var imgWrapper = document.createElement('div');
+            imgWrapper.className = 'gallery-item';
+            var img = document.createElement('img');
+            img.src = event.images[j];
+            img.alt = event.title + ' - photo ' + (j + 1);
+            img.onerror = function() {
+                this.src = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+            };
+            img.onclick = (function(index) {
+                return function() { openGallery(event.id, index); };
+            })(j);
+            imgWrapper.appendChild(img);
+            galleryContainer.appendChild(imgWrapper);
+        }
+        gallery.appendChild(galleryContainer);
+        if (event.images.length > 5) {
+            var badge = document.createElement('div');
+            badge.className = 'gallery-badge';
+            badge.textContent = '+' + (event.images.length - 5) + ' photos';
+            gallery.appendChild(badge);
+        }
+    } else {
+        var defaultImg = document.createElement('img');
+        defaultImg.src = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+        defaultImg.alt = event.title;
+        defaultImg.onclick = function() { openGallery(event.id, 0); };
+        defaultImg.style.cursor = 'pointer';
+        gallery.appendChild(defaultImg);
+    }
+    
+    var reviewsContainer = document.getElementById('detailReviews');
+    reviewsContainer.innerHTML = '';
+    if (eventRatings.length > 0) {
+        for (var k = 0; k < eventRatings.length; k++) {
+            var r = eventRatings[k];
+            var div = document.createElement('div');
+            div.className = 'review-item';
+            var stars = '';
+            for (var s = 0; s < r.rating; s++) stars += '★';
+            for (var s = r.rating; s < 5; s++) stars += '☆';
+            div.innerHTML = '<div class="review-header"><span class="review-user">' + escapeHtml(r.userName || r.userWallet) + '</span><span class="review-stars">' + stars + '</span></div>' +
+                           (r.comment ? '<div class="review-text">"' + escapeHtml(r.comment) + '"</div>' : '') +
+                           '<div class="review-date">' + new Date(r.date).toLocaleDateString('en-US') + '</div>';
+            reviewsContainer.appendChild(div);
+        }
+    } else {
+        reviewsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet</p>';
+    }
+    
+    document.getElementById('detailBuyBtn').onclick = function() {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        openQuantityPopup(event.id);
+    };
+    
+    closeBtn.onclick = function() { 
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    };
+    window.onclick = function(e) { 
+        if (e.target === modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    };
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// ============================================================
+// ===== GALLERY =====
+// ============================================================
+
+function openGallery(eventId, startIndex) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) return;
+    var images = event.images && event.images.length ? event.images : [eventImagesList[event.category]];
+    var currentIndex = startIndex || 0;
+    var modal = document.getElementById('fullGalleryModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'fullGalleryModal';
+        modal.className = 'gallery-modal';
+        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">Previous</button><button id="galleryNext">Next</button></div>';
+        document.body.appendChild(modal);
+        document.querySelector('#fullGalleryModal .gallery-close').onclick = function() { document.getElementById('fullGalleryModal').classList.remove('show'); };
+    }
+    var imgElement = document.getElementById('galleryCurrentImage');
+    var prevBtn = document.getElementById('galleryPrev');
+    var nextBtn = document.getElementById('galleryNext');
+    function updateImage(index) { if (index < 0) index = images.length - 1; if (index >= images.length) index = 0; currentIndex = index; imgElement.src = images[currentIndex]; }
+    updateImage(currentIndex);
+    prevBtn.onclick = function() { updateImage(currentIndex - 1); };
+    nextBtn.onclick = function() { updateImage(currentIndex + 1); };
+    modal.classList.add('show');
+}
+
+// ============================================================
+// ===== MY RATINGS =====
+// ============================================================
+
+function renderMyRatings() {
+    var container = document.getElementById('myRatingsList');
+    if (!container) return;
+    var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+    if (!myRatings.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; 
+        return; 
+    }
+    var html = '';
+    for (var i = 0; i < myRatings.length; i++) {
+        var r = myRatings[i];
+        var stars = '';
+        for (var s = 0; s < r.rating; s++) stars += '★';
+        for (var s = r.rating; s < 5; s++) stars += '☆';
+        html += '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>';
+    }
+    container.innerHTML = html;
+}
+
+// ============================================================
+// ===== ADMIN FUNCTIONS =====
+// ============================================================
+
+function initAdmin() {
+    var adminItem = document.getElementById('adminMenuItem');
+    if (!adminItem) return;
+    
+    var logo = document.querySelector('.logo');
+    var clicks = 0;
+    if (logo) {
+        logo.addEventListener('click', function() { 
+            clicks++; 
+            if (clicks === 5) { 
+                var pwd = prompt('Admin code:'); 
+                if (pwd === adminPassword || pwd === 'Betix@2026#') { 
+                    localStorage.setItem('betix_admin_password', pwd);
+                    adminPassword = pwd;
+                    adminItem.style.display = 'block'; 
+                    adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+                    adminItem.style.color = 'white';
+                    addAdminLog('Admin authentication', 'Login via logo');
+                    alert('Admin activated'); 
+                } 
+                clicks = 0; 
+            } 
+            setTimeout(function() { clicks = 0; }, 2000); 
+        });
+    }
+    
+    if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
+        adminItem.style.display = 'block';
+        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0D47A1)';
+        adminItem.style.color = 'white';
+    }
+}
+
+function addAdminLog(action, details) {
+    var log = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleString('en-US'),
+        user: currentUser.wallet || 'Local Admin',
+        action: action,
+        details: details || ''
+    };
+    adminLogs.unshift(log);
+    if (adminLogs.length > 500) {
+        adminLogs = adminLogs.slice(0, 500);
+    }
+    localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+    renderAdminLogs();
+}
+
+function renderAdminLogs() {
+    var container = document.getElementById('adminLogsList');
+    if (!container) return;
+    if (adminLogs.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">No logs available</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < adminLogs.length; i++) {
+        var log = adminLogs[i];
+        html += '<div class="admin-log-item">' +
+            '<div>' +
+                '<span class="log-user">' + escapeHtml(log.user) + '</span>' +
+                ' <span class="log-action">' + escapeHtml(log.action) + '</span>' +
+                (log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : '') +
+            '</div>' +
+            '<span class="log-time">' + escapeHtml(log.date) + '</span>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function adminClearLogs() {
+    if (confirm('Clear all connection logs?')) {
+        adminLogs = [];
+        localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+        renderAdminLogs();
+        addAdminLog('Logs cleared', 'All logs were deleted');
+        alert('Logs cleared');
+    }
+}
+
+function startAdminSession() {
+    addAdminLog('Admin login', 'Access to administration interface');
+    var lastLogin = localStorage.getItem('betix_admin_last_login');
+    var loginCount = parseInt(localStorage.getItem('betix_admin_login_count') || 0) + 1;
+    localStorage.setItem('betix_admin_login_count', loginCount);
+    localStorage.setItem('betix_admin_last_login', new Date().toLocaleString('en-US'));
+    adminSessionTimer = 1800;
+    updateAdminTimerDisplay();
+    if (adminTimerInterval) {
+        clearInterval(adminTimerInterval);
+    }
+    adminTimerInterval = setInterval(function() {
+        adminSessionTimer--;
+        updateAdminTimerDisplay();
+        if (adminSessionTimer <= 0) {
+            clearInterval(adminTimerInterval);
+            adminTimerInterval = null;
+            adminLogout();
+        }
+    }, 1000);
+    document.addEventListener('click', resetAdminTimer);
+    document.addEventListener('keydown', resetAdminTimer);
+    document.addEventListener('scroll', resetAdminTimer);
+}
+
+function resetAdminTimer() {
+    if (adminTimerInterval) {
+        adminSessionTimer = 1800;
+        updateAdminTimerDisplay();
+    }
+}
+
+function updateAdminTimerDisplay() {
+    var display = document.getElementById('adminSessionTimer');
+    if (display) {
+        var minutes = Math.floor(adminSessionTimer / 60);
+        var seconds = adminSessionTimer % 60;
+        display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        if (adminSessionTimer < 300) {
+            display.style.color = '#ef4444';
+        } else if (adminSessionTimer < 600) {
+            display.style.color = '#f59e0b';
+        } else {
+            display.style.color = '#f5a623';
+        }
+    }
+}
+
+function adminLogout() {
+    if (adminTimerInterval) {
+        clearInterval(adminTimerInterval);
+        adminTimerInterval = null;
+    }
+    document.removeEventListener('click', resetAdminTimer);
+    document.removeEventListener('keydown', resetAdminTimer);
+    document.removeEventListener('scroll', resetAdminTimer);
+    addAdminLog('Admin logout', 'Session ended');
+    localStorage.removeItem('betix_admin_password');
+    var adminBtn = document.getElementById('adminMenuItem');
+    if (adminBtn) {
+        adminBtn.style.display = 'none';
+    }
+    alert('Admin session ended');
+    showPage('home');
+}
+
+function adminChangePassword() {
+    var newPassword = document.getElementById('adminNewPassword').value;
+    var confirmPassword = document.getElementById('adminConfirmPassword').value;
+    var message = document.getElementById('adminPasswordMessage');
+    if (!newPassword || newPassword.length < 6) {
+        message.textContent = 'Password must be at least 6 characters';
+        message.style.color = '#ef4444';
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        message.textContent = 'Passwords do not match';
+        message.style.color = '#ef4444';
+        return;
+    }
+    adminPassword = newPassword;
+    localStorage.setItem('betix_admin_password', newPassword);
+    message.textContent = 'Password changed successfully!';
+    message.style.color = '#10b981';
+    document.getElementById('adminNewPassword').value = '';
+    document.getElementById('adminConfirmPassword').value = '';
+    addAdminLog('Password changed', 'Admin password was updated');
+    setTimeout(function() {
+        message.textContent = '';
+    }, 3000);
+}
+
+function loadAdminPage() {
+    var storedPassword = localStorage.getItem('betix_admin_password');
+    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
+        alert('Access denied. Please authenticate via 5 clicks on the logo.');
+        showPage('home');
+        return;
+    }
+    if (storedPassword && storedPassword !== adminPassword) {
+        adminPassword = storedPassword;
+    }
+    
+    document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
+    document.getElementById('adminTicketCount').innerText = tickets.length;
+    document.getElementById('adminEventCount').innerText = events.length;
+    
+    var lastLogin = localStorage.getItem('betix_admin_last_login') || 'Never';
+    var loginCount = localStorage.getItem('betix_admin_login_count') || 0;
+    document.getElementById('adminLastLogin').textContent = lastLogin;
+    document.getElementById('adminLoginCount').textContent = loginCount;
+    document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
+    
+    renderAdminEvents();
+    renderAdminSlides();
+    renderAdminUsers();
+    renderAdminLogs();
+    initAdminTabs();
+    
+    if (!adminTimerInterval) {
+        startAdminSession();
+    }
+    
+    var userSearch = document.getElementById('adminUserSearch');
+    if (userSearch) {
+        userSearch.addEventListener('input', function() {
+            filterAdminUsers(this.value);
+        });
+    }
+}
+
+function filterAdminUsers(query) {
+    var container = document.getElementById('adminUsersList');
+    if (!container) return;
+    var rows = container.querySelectorAll('tr');
+    var search = query.toLowerCase().trim();
+    rows.forEach(function(row, index) {
+        if (index === 0) return;
+        var text = row.textContent.toLowerCase();
+        if (search === '' || text.includes(search)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function renderAdminUsers() {
+    var container = document.getElementById('adminUsersList');
+    if (!container) return;
+    var html = '<table>';
+    html += '<tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
+    
+    var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+    var avgRating = 0;
+    if (userRatings.length > 0) {
+        avgRating = userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length;
+    }
+    html += '<tr><td>' + escapeHtml(currentUser.name) + ' <span style="color:#f5a623;font-size:0.7rem;">(you)</span></td>' +
+            '<td>' + (currentUser.wallet || 'Not connected') + '</td>' +
+            '<td>' + tickets.length + '</td>' +
+            '<td>' + (avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-') + '</td>' +
+            '<td>Active</td></tr>';
+    
+    for (var i = 0; i < connectedUsers.length; i++) {
+        var u = connectedUsers[i];
+        if (u.wallet !== currentUser.wallet) {
+            var uRatings = ratings.filter(function(r) { return r.userWallet === u.wallet; });
+            var uAvg = 0;
+            if (uRatings.length > 0) {
+                uAvg = uRatings.reduce(function(a, r) { return a + r.rating; }, 0) / uRatings.length;
+            }
+            html += '<tr><td>' + escapeHtml(u.name) + '</td>' +
+                    '<td>' + (u.wallet || 'Not connected') + '</td>' +
+                    '<td>' + (u.ticketCount || 0) + '</td>' +
+                    '<td>' + (uAvg > 0 ? uAvg.toFixed(1) + '/5' : '-') + '</td>' +
+                    '<td>' + (u.lastSeen || 'Unknown') + '</td></tr>';
+        }
+    }
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+function renderAdminEvents() {
+    var container = document.getElementById('adminEventsList');
+    if (!container) return;
+    if (events.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No events created</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < events.length; i++) {
+        var e = events[i];
+        html += '<div class="admin-event-item">' +
+            '<div class="event-info">' +
+                '<strong>' + escapeHtml(e.title) + '</strong>' +
+                '<small>' + e.category + ' | ' + e.country + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
+                '<small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
+            '</div>' +
+            '<div class="event-actions">' +
+                '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Delete</button>' +
+            '</div>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function adminDeleteEvent(id) {
+    if (confirm('Delete this event?')) {
+        events = events.filter(function(e) { return e.id !== id; });
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents();
+        renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = events.length;
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert('Event deleted');
+    }
+}
+
+function adminDeleteAllEvents() {
+    if (confirm('Delete ALL events? This action is irreversible.')) {
+        events = [];
+        saveEvents();
+        renderAdminEvents();
+        renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = 0;
+        addAdminLog('All events deleted', 'Mass deletion');
+        alert('All events have been deleted');
+    }
+}
+
+function renderAdminSlides() {
+    var container = document.getElementById('adminSlidesList');
+    if (!container) return;
+    if (heroSlides.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < heroSlides.length; i++) {
+        var slide = heroSlides[i];
+        html += '<div class="admin-slide-item">' +
+            '<img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'">' +
+            '<div class="slide-info">' +
+                '<h4>' + escapeHtml(slide.title) + '</h4>' +
+                '<p>' + (slide.badge || 'Uncategorized') + ' • ' + (slide.description || '') + '</p>' +
+            '</div>' +
+            '<div class="slide-actions">' +
+                '<button class="edit-btn" onclick="adminEditSlide(' + i + ')">Edit</button>' +
+                '<button class="delete-btn" onclick="adminDeleteSlide(' + i + ')">Delete</button>' +
+            '</div>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function adminShowSlideForm(index) {
+    var container = document.getElementById('adminSlideFormContainer');
+    var title = document.getElementById('adminSlideFormTitle');
+    var imageInput = document.getElementById('adminSlideImageInput');
+    var preview = document.getElementById('adminSlidePreview');
+    var uploadBox = document.getElementById('adminUploadBox');
+    preview.style.display = 'none';
+    preview.src = '';
+    uploadBox.classList.remove('has-image');
+    imageInput.value = '';
+    container.style.display = 'block';
+    
+    if (index >= 0 && index < heroSlides.length) {
+        title.textContent = 'Edit carousel image';
+        document.getElementById('adminSlideBadge').value = heroSlides[index].badge || '';
+        document.getElementById('adminSlideTitle').value = heroSlides[index].title || '';
+        document.getElementById('adminSlideDesc').value = heroSlides[index].description || '';
+        document.getElementById('adminEditSlideIndex').value = index;
+        if (heroSlides[index].image) {
+            preview.src = heroSlides[index].image;
+            preview.style.display = 'block';
+            uploadBox.classList.add('has-image');
+        }
+    } else {
+        title.textContent = 'Add carousel image';
+        document.getElementById('adminSlideBadge').value = '';
+        document.getElementById('adminSlideTitle').value = '';
+        document.getElementById('adminSlideDesc').value = '';
+        document.getElementById('adminEditSlideIndex').value = '-1';
+    }
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+function adminSaveSlide() {
+    var imageInput = document.getElementById('adminSlideImageInput');
+    var badgeInput = document.getElementById('adminSlideBadge');
+    var titleInput = document.getElementById('adminSlideTitle');
+    var descInput = document.getElementById('adminSlideDesc');
+    var editIndex = document.getElementById('adminEditSlideIndex');
+    var preview = document.getElementById('adminSlidePreview');
+    var badge = badgeInput.value.trim();
+    var title = titleInput.value.trim();
+    var description = descInput.value.trim();
+    
+    if (!title) {
+        alert('Please enter a title');
+        return;
+    }
+    
+    var imageData = null;
+    if (imageInput.files && imageInput.files[0]) {
+        var file = imageInput.files[0];
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image is too large (max 5MB)');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            imageData = e.target.result;
+            saveSlideData(imageData, badge, title, description, parseInt(editIndex.value));
+        };
+        reader.readAsDataURL(file);
+    } else {
+        var index = parseInt(editIndex.value);
+        if (index >= 0 && index < heroSlides.length) {
+            imageData = heroSlides[index].image;
+            saveSlideData(imageData, badge, title, description, index);
+        } else {
+            alert('Please select an image');
+            return;
+        }
+    }
+}
+
+function saveSlideData(image, badge, title, description, index) {
+    var slideData = { image: image, badge: badge, title: title, description: description };
+    if (index >= 0 && index < heroSlides.length) {
+        heroSlides[index] = slideData;
+    } else {
+        heroSlides.push(slideData);
+    }
+    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+    adminCancelSlideForm();
+    renderAdminSlides();
+    initHeroSlider();
+    addAdminLog('Slide modified', 'Title: ' + title);
+    alert('Image saved successfully!');
+}
+
+function adminDeleteSlide(index) {
+    if (!confirm('Delete this carousel image?')) return;
+    var title = heroSlides[index]?.title || 'Untitled';
+    heroSlides.splice(index, 1);
+    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+    renderAdminSlides();
+    initHeroSlider();
+    addAdminLog('Slide deleted', 'Title: ' + title);
+}
+
+function adminEditSlide(index) {
+    adminShowSlideForm(index);
+}
+
+function adminCancelSlideForm() {
+    document.getElementById('adminSlideFormContainer').style.display = 'none';
+    document.getElementById('adminEditSlideIndex').value = '-1';
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+}
+
+function initAdminTabs() {
+    var tabs = document.querySelectorAll('.admin-tab');
+    var contents = {
+        events: document.getElementById('adminTabEvents'),
+        slides: document.getElementById('adminTabSlides'),
+        users: document.getElementById('adminTabUsers'),
+        logs: document.getElementById('adminTabLogs'),
+        settings: document.getElementById('adminTabSettings')
+    };
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            for (var key in contents) {
+                if (contents[key]) {
+                    contents[key].classList.remove('active');
+                }
+            }
+            var tabName = this.dataset.tab;
+            if (contents[tabName]) {
+                contents[tabName].classList.add('active');
+            }
+        });
+    });
+}
+
+// ============================================================
+// ===== FAQ =====
+// ============================================================
+
+var faqData = [
+    [
+        { q: "What is Betix?", a: "Betix is the first decentralized event ticketing platform built on the Pi Network blockchain." },
+        { q: "How does Betix work?", a: "Betix uses the Pi Network blockchain to ensure secure and transparent transactions." },
+        { q: "Is Betix free?", a: "Yes! Betix is completely free for users. No commission on sales." },
+        { q: "Who can use Betix?", a: "Any Pi Network account holder can use Betix." }
+    ],
+    [
+        { q: "How to buy a ticket?", a: "Connect, browse events, click 'Buy Ticket' and choose the quantity." },
+        { q: "Are payments secure?", a: "Yes, via the Pi Network and Betix's escrow system." },
+        { q: "Can I get a refund?", a: "Yes in case of cancellation, postponement or fraud." },
+        { q: "Where are my tickets stored?", a: "In the 'My Tickets' section of your account." }
+    ],
+    [
+        { q: "How to create an event?", a: "Connect, click 'Create Event' and fill out the form." },
+        { q: "Conditions to be an organizer?", a: "Have an active Pi Network account and comply with the terms of use." },
+        { q: "Can I modify an event?", a: "Yes, from the 'My Events' section." },
+        { q: "How to boost my event?", a: "By paying a small amount in Pi to increase visibility." }
+    ],
+    [
+        { q: "How to connect my Pi account?", a: "Click 'Connect Pi' in the menu and authorize access." },
+        { q: "What is the escrow system?", a: "A mechanism that blocks funds until event validation." },
+        { q: "Are transactions anonymous?", a: "Transactions are traceable on the blockchain, but your information remains private." },
+        { q: "Other cryptocurrencies?", a: "Currently only Pi Network." }
+    ],
+    [
+        { q: "Buyer protection?", a: "Via escrow, organizer verification and a refund policy." },
+        { q: "Report a problem?", a: "Via chat, email or social networks." },
+        { q: "Contact support?", a: "Online chat, email or Telegram." },
+        { q: "Available languages?", a: "English, French, Portuguese, Chinese, Indonesian." }
+    ],
+    [
+        { q: "Join the community?", a: "Follow us on Telegram, Twitter, Discord, Instagram and WhatsApp." },
+        { q: "Become an ambassador?", a: "Contact us to apply for the ambassador program." },
+        { q: "Become a partner?", a: "Contact us to discuss partnership opportunities." },
+        { q: "Future projects?", a: "Mobile app, new cryptocurrencies, social features." }
+    ]
+];
+
+var currentFaqPage = 0;
+
+function renderFaqPage(pageIndex) {
+    var container = document.getElementById('faqContainer');
+    var pageNumber = document.getElementById('faqPageNumber');
+    var totalPages = document.getElementById('faqTotalPages');
+    var prevBtn = document.getElementById('faqPrevBtn');
+    var nextBtn = document.getElementById('faqNextBtn');
+    var dotsContainer = document.getElementById('faqPageDots');
+    if (!container) return;
+    
+    var pageData = faqData[pageIndex] || faqData[0];
+    var total = faqData.length;
+    if (pageNumber) pageNumber.textContent = pageIndex + 1;
+    if (totalPages) totalPages.textContent = total;
+    
+    var html = '';
+    for (var i = 0; i < pageData.length; i++) {
+        var item = pageData[i];
+        html += '<div class="faq-item" style="animation-delay: ' + (i * 0.04) + 's">' +
+            '<div class="faq-q"><span class="q-icon">Q</span>' + item.q + '</div>' +
+            '<div class="faq-a">' + item.a + '</div>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+    
+    if (prevBtn) prevBtn.disabled = pageIndex === 0;
+    if (nextBtn) nextBtn.disabled = pageIndex >= total - 1;
+    
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        for (var i = 0; i < total; i++) {
+            var dot = document.createElement('button');
+            dot.className = 'faq-page-dot' + (i === pageIndex ? ' active' : '');
+            dot.setAttribute('data-page', i);
+            dot.addEventListener('click', function() {
+                currentFaqPage = parseInt(this.getAttribute('data-page'));
+                renderFaqPage(currentFaqPage);
+                var faqContent = document.querySelector('.faq-page-content');
+                if (faqContent) {
+                    setTimeout(function() {
+                        faqContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            });
+            dotsContainer.appendChild(dot);
+        }
+    }
+    
+    var faqContent = document.querySelector('.faq-page-content');
+    if (faqContent) {
+        setTimeout(function() {
+            faqContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+}
+
+function initFaqPagination() {
+    var prevBtn = document.getElementById('faqPrevBtn');
+    var nextBtn = document.getElementById('faqNextBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentFaqPage > 0) {
+                currentFaqPage--;
+                renderFaqPage(currentFaqPage);
+            }
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (currentFaqPage < faqData.length - 1) {
+                currentFaqPage++;
+                renderFaqPage(currentFaqPage);
+            }
+        });
+    }
+}
+
+function initFaq() {
+    console.log('Initializing FAQ...');
+    renderFaqPage(0);
+    initFaqPagination();
+}
+
+// ============================================================
+// ===== CHAT =====
+// ============================================================
+
+function initChat() {
+    var widget = document.getElementById('chatWidget');
+    var btn = document.getElementById('chatFloatBtn');
+    var close = document.getElementById('chatCloseBtn');
+    var send = document.getElementById('chatSendBtn');
+    var input = document.getElementById('chatInput');
+    var msgs = document.getElementById('chatMessages');
+    if (!widget) return;
+    
+    function load() {
+        if (!msgs) return;
+        msgs.innerHTML = '';
+        if (!chatMessages || chatMessages.length === 0) {
+            var emptyMsg = document.createElement('div');
+            emptyMsg.className = 'chat-message support';
+            emptyMsg.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
+            msgs.appendChild(emptyMsg);
+            return;
+        }
+        for (var i = 0; i < chatMessages.length; i++) {
+            addMessage(chatMessages[i]);
+        }
+    }
+    
+    function addMessage(m) {
+        if (!msgs) return;
+        var d = document.createElement('div');
+        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
+        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+    
+    if (btn) btn.addEventListener('click', function() { widget.classList.toggle('open'); });
+    if (close) close.addEventListener('click', function() { widget.classList.remove('open'); });
+    
+    function sendMsg() {
+        var msg = input.value.trim();
+        if (!msg) return;
+        var newMsg = {
+            id: Date.now(),
+            text: msg,
+            sender: currentUser.wallet || currentUser.name,
+            isUser: true,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: new Date().toISOString()
+        };
+        chatMessages.push(newMsg);
+        saveChatMessages();
+        addMessage(newMsg);
+        input.value = '';
+        setTimeout(function() {
+            var resp = "Thank you! Quick response by email: betixservices@gmail.com";
+            if (msg.toLowerCase().includes('ticket')) {
+                resp = "Your tickets are in the 'My Tickets' section.";
+            } else if (msg.toLowerCase().includes('payment')) {
+                resp = "Payments are secured via Pi Network.";
+            }
+            var auto = {
+                id: Date.now() + 1,
+                text: resp,
+                sender: 'Betix Support',
+                isUser: false,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timestamp: new Date().toISOString()
+            };
+            chatMessages.push(auto);
+            saveChatMessages();
+            addMessage(auto);
+        }, 1000);
+    }
+    
+    if (send) send.addEventListener('click', sendMsg);
+    if (input) input.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMsg(); });
+    load();
+}
+
+// ============================================================
+// ===== LEGAL MODALS =====
+// ============================================================
+
+function showLegal(type) {
+    var modal = document.getElementById('legalModal');
+    var content = document.getElementById('modalContent');
+    var closeBtn = document.getElementById('legalModalClose');
+    var texts = {
+        terms: '<h2>Terms of Service</h2><p><strong>Last updated:</strong> June 2026</p><p>Welcome to Betix. By using our platform, you agree to these terms.</p><h3>1. Acceptance of Terms</h3><p>By accessing and using Betix, you accept and agree to be bound by these Terms of Service.</p><h3>2. User Accounts</h3><p>You must connect a valid Pi Network wallet to use certain features. You are responsible for maintaining the security of your wallet.</p><h3>3. Events and Tickets</h3><p>Organizers are responsible for the accuracy of event information. Tickets are digital and non-transferable.</p><h3>4. Payments</h3><p>All payments are made in Pi cryptocurrency. Transactions are final and irreversible.</p><h3>5. Cancellations</h3><p>Organizers may cancel events. In such cases, tickets will be refunded in Pi.</p><h3>6. Prohibited Activities</h3><p>You may not use Betix for illegal activities, fraud, or to distribute harmful content.</p><h3>7. Limitation of Liability</h3><p>Betix is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the platform.</p><h3>8. Changes to Terms</h3><p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of changes.</p><h3>9. Contact</h3><p>For questions about these terms, contact us at betixservices@gmail.com</p>',
+        privacy: '<h2>Privacy Policy</h2><p><strong>Last updated:</strong> June 2026</p><p>Betix is committed to protecting your privacy. This policy explains how we collect, use, and protect your personal information.</p><h3>1. Information We Collect</h3><p>We collect information you provide directly, such as your Pi wallet address, name, and profile photo. We also collect usage data and device information.</p><h3>2. How We Use Information</h3><p>We use your information to provide and improve our services, process transactions, communicate with you, and ensure platform security.</p><h3>3. Data Storage</h3><p>Your data is stored securely on our servers. We use encryption to protect your personal information.</p><h3>4. Data Sharing</h3><p>We do not sell your personal information. We may share data with service providers who assist us in operating the platform.</p><h3>5. Your Rights</h3><p>You have the right to access, correct, or delete your personal data. Contact us to exercise these rights.</p><h3>6. Cookies</h3><p>We use cookies to improve your experience. You can control cookie preferences in your browser settings.</p><h3>7. Security</h3><p>We implement security measures to protect your data from unauthorized access, alteration, or disclosure.</p><h3>8. Children\'s Privacy</h3><p>Our platform is not directed at children under 13. We do not knowingly collect data from children.</p><h3>9. Changes to Policy</h3><p>We may update this policy from time to time. We will notify you of significant changes.</p><h3>10. Contact</h3><p>For privacy concerns, contact us at betixservices@gmail.com</p>',
+        cookies: '<h2>Cookie Policy</h2><p><strong>Last updated:</strong> June 2026</p><p>This policy explains how Betix uses cookies and similar technologies.</p><h3>1. What are Cookies</h3><p>Cookies are small text files stored on your device that help us provide and improve our services.</p><h3>2. Types of Cookies We Use</h3><p><strong>Essential Cookies:</strong> Required for basic platform functionality.</p><p><strong>Preference Cookies:</strong> Remember your language and settings preferences.</p><p><strong>Analytics Cookies:</strong> Help us understand how users interact with our platform.</p><h3>3. Managing Cookies</h3><p>You can control cookies through your browser settings. Disabling cookies may affect platform functionality.</p><h3>4. Third-Party Cookies</h3><p>We may use third-party services that set their own cookies. We do not control these cookies.</p><h3>5. Updates</h3><p>We may update this policy periodically. Please check back regularly for changes.</p><h3>6. Contact</h3><p>For questions about our cookie policy, contact us at betixservices@gmail.com</p>',
+        legal: '<h2>Legal Notices</h2><p><strong>Last updated:</strong> June 2026</p><h3>1. Publisher</h3><p>Betix is a decentralized event platform built on Pi Network.</p><h3>2. Contact Information</h3><p>Email: betixservices@gmail.com</p><p>Website: betixapp.vercel.app</p><h3>3. Intellectual Property</h3><p>All content on this platform, including text, images, and logos, is the property of Betix and protected by copyright laws.</p><h3>4. Disclaimer</h3><p>Information provided on this platform is for general informational purposes only. We do not guarantee the accuracy or completeness of information.</p><h3>5. Governing Law</h3><p>These legal notices are governed by the laws of the jurisdiction where Betix operates.</p><h3>6. Dispute Resolution</h3><p>Any disputes arising from your use of the platform shall be resolved through arbitration in accordance with applicable laws.</p>'
+    };
+    if (content) {
+        content.innerHTML = texts[type] || '<p>Information in progress</p>';
+    }
+    if (modal) {
+        modal.classList.add('show');
+    }
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.classList.remove('show');
+        };
+    }
+    window.onclick = function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    };
+}
+
+// ============================================================
+// ===== HERO SLIDER =====
+// ============================================================
+
+function initHeroSlider() {
+    var slidesContainer = document.getElementById('heroSlides');
+    if (!slidesContainer) return;
+    
+    slidesContainer.innerHTML = '';
+    for (var i = 0; i < heroSlides.length; i++) {
+        var slide = heroSlides[i];
+        var div = document.createElement('div');
+        div.className = 'hero-slide' + (i === 0 ? ' active' : '');
+        div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div><div class="hero-slide-content"><div class="hero-badge">' + (slide.badge || 'Event') + '</div><h2>' + slide.title + '</h2><p>' + (slide.description || '') + '</p></div>';
+        slidesContainer.appendChild(div);
+    }
+    
+    var dotsContainer = document.getElementById('heroDots');
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        for (var i = 0; i < heroSlides.length; i++) {
+            var dot = document.createElement('button');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', function() {
+                var index = parseInt(this.getAttribute('data-index'));
+                stopAutoPlay();
+                goToSlide(index);
+                setTimeout(startAutoPlay, 3000);
+            });
+            dotsContainer.appendChild(dot);
+        }
+    }
+    
+    var slides = document.querySelectorAll('.hero-slide');
+    var dots = document.querySelectorAll('.hero-dots .dot');
+    var prevBtn = document.getElementById('heroPrev');
+    var nextBtn = document.getElementById('heroNext');
+    var currentIndex = 0;
+    var totalSlides = heroSlides.length;
+    var autoPlayInterval = null;
+    var isTransitioning = false;
+
+    function goToSlide(index) {
+        if (isTransitioning || totalSlides === 0) return;
+        isTransitioning = true;
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        currentIndex = index;
+        var offset = -currentIndex * 100;
+        slidesContainer.style.transform = 'translateX(' + offset + '%)';
+        
+        for (var i = 0; i < slides.length; i++) {
+            slides[i].classList.remove('active');
+            if (i === currentIndex) {
+                slides[i].classList.add('active');
+                var bg = slides[i].querySelector('.hero-slide-bg');
+                if (bg) {
+                    bg.style.transition = 'none';
+                    bg.style.transform = 'scale(1.05)';
+                    setTimeout(function() {
+                        bg.style.transition = 'transform 8s ease';
+                        bg.style.transform = 'scale(1)';
+                    }, 50);
+                }
+            }
+        }
+        for (var i = 0; i < dots.length; i++) {
+            dots[i].classList.remove('active');
+            if (i === currentIndex) dots[i].classList.add('active');
+        }
+        setTimeout(function() {
+            isTransitioning = false;
+        }, 800);
+    }
+
+    function nextSlide() {
+        if (totalSlides > 0) goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+        if (totalSlides > 0) goToSlide(currentIndex - 1);
+    }
+
+    function startAutoPlay() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        if (totalSlides > 1) {
+            autoPlayInterval = setInterval(nextSlide, 4000);
+        }
+    }
+
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+
+    if (prevBtn) {
+        prevBtn.onclick = function() {
+            stopAutoPlay();
+            prevSlide();
+            setTimeout(startAutoPlay, 3000);
+        };
+    }
+    if (nextBtn) {
+        nextBtn.onclick = function() {
+            stopAutoPlay();
+            nextSlide();
+            setTimeout(startAutoPlay, 3000);
+        };
+    }
+    
+    var hero = document.querySelector('.hero');
+    if (hero) {
+        hero.onmouseenter = stopAutoPlay;
+        hero.onmouseleave = startAutoPlay;
+    }
+    startAutoPlay();
+}
+
+// ============================================================
+// ===== TRACK USER CONNECTION =====
+// ============================================================
+
+function trackUserConnection() {
+    if (currentUser.wallet) {
+        var existing = null;
+        for (var i = 0; i < connectedUsers.length; i++) { 
+            if (connectedUsers[i].wallet === currentUser.wallet) { 
+                existing = connectedUsers[i]; 
+                break; 
+            } 
+        }
+        var userData = {
+            name: currentUser.name,
+            wallet: currentUser.wallet,
+            ticketCount: tickets.length,
+            lastSeen: new Date().toLocaleString(),
+            profilePhoto: currentUser.profilePhoto || null,
+            loyaltyPoints: currentUser.loyaltyPoints || 0,
+            memberSince: currentUser.memberSince || '2026'
+        };
+        if (!existing) {
+            connectedUsers.push(userData);
+        } else {
+            existing.name = currentUser.name;
+            existing.ticketCount = tickets.length;
+            existing.lastSeen = new Date().toLocaleString();
+            existing.profilePhoto = currentUser.profilePhoto || null;
+            existing.loyaltyPoints = currentUser.loyaltyPoints || 0;
+        }
+        localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+        syncUserToSupabase();
+    }
+}
+
+// ============================================================
+// ===== DARK MODE =====
+// ============================================================
+
+function toggleDarkMode(e) { 
+    if (e.target.checked) { 
+        document.body.classList.add('dark-mode'); 
+        localStorage.setItem('darkMode', 'true'); 
+    } else { 
+        document.body.classList.remove('dark-mode'); 
+        localStorage.setItem('darkMode', 'false'); 
+    } 
 }
 
 // ============================================================
