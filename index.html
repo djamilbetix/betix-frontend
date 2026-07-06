@@ -11,7 +11,6 @@
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -29,7 +28,6 @@
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
     
-    <!-- Google Translate Script -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -150,12 +148,16 @@
     </div>
 </div>
 
-<button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
+<button class="chat-float-btn" id="chatFloatBtn" onclick="document.getElementById('chatWidget').classList.toggle('open')">
+    <i class="fas fa-comment-dots"></i>
+</button>
 
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header">
         <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
-        <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
+        <button class="chat-close" id="chatCloseBtn" onclick="document.getElementById('chatWidget').classList.remove('open')">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
@@ -215,7 +217,7 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE ===== -->
+<!-- ===== CREATE EVENT PAGE AVEC BARRE DE RECHERCHE PAYS ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -237,12 +239,11 @@
                 </select>
             </div>
             <div class="form-group"><label>Country</label>
-                <!-- Country select avec recherche intégrée -->
                 <div class="country-search-wrapper">
                     <i class="fas fa-search country-search-icon"></i>
                     <input type="text" class="country-search-input" id="countrySearchInput" placeholder="Search country..." autocomplete="off">
                 </div>
-                <select id="eventCountry" style="margin-top:8px;">
+                <select id="eventCountry" style="margin-top:8px; width:100%; padding:0.75rem 1rem; border:2px solid #e5e7eb; border-radius:12px; font-size:0.95rem; background:white;">
                 </select>
             </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
@@ -320,7 +321,7 @@
     </div>
 </div>
 
-<!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
+<!-- ===== PUBLISH CONFIRMATION POPUP AVEC LOADING ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-loading-overlay" id="publishLoadingOverlay">
@@ -482,7 +483,7 @@
         </div>
         
         <div class="profile-actions">
-            <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
+            <button class="btn-primary" id="profileConnectBtnPage" onclick="connectToPi()">Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
         </div>
     </div>
@@ -528,7 +529,7 @@
         </div>
         <div class="settings-group">
             <p><strong>Data</strong></p>
-            <button id="clearDataBtn" class="btn-danger">Clear my data</button>
+            <button id="clearDataBtn" class="btn-danger" onclick="clearAllData()">Clear my data</button>
         </div>
     </div>
 </div>
@@ -568,7 +569,7 @@
         
         <div id="adminTabSlides" class="admin-tab-content">
             <div class="admin-actions">
-                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Add image</button>
+                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;" onclick="adminShowSlideForm(-1)">Add image</button>
             </div>
             <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
                 <h3 id="adminSlideFormTitle">Add carousel image</h3>
@@ -594,8 +595,8 @@
                     <input type="text" id="adminSlideDesc" placeholder="Ex: 3 days of music and fun">
                 </div>
                 <div style="display:flex; gap:12px; margin-top:12px;">
-                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Save</button>
-                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Cancel</button>
+                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;" onclick="adminSaveSlide()">Save</button>
+                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;" onclick="adminCancelSlideForm()">Cancel</button>
                 </div>
                 <input type="hidden" id="adminEditSlideIndex" value="-1">
             </div>
@@ -822,7 +823,7 @@
             Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
         <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
-        <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
+        <button class="btn-primary" id="confirmBuyBtn" onclick="confirmPurchaseFromPopup()">Confirm purchase</button>
     </div>
 </div>
 
