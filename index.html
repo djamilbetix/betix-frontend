@@ -32,6 +32,12 @@
 </head>
 <body>
 
+<!-- ===== LOADING SPINNER POUR CONNEXION ===== -->
+<div id="authLoadingOverlay" class="auth-loading-overlay">
+    <div class="auth-spinner"></div>
+    <span class="auth-loading-text">Connecting to Pi Network...</span>
+</div>
+
 <div id="loader" class="loader-container">
     <div class="loader-spinner"></div>
     <p class="loader-text">Loading...</p>
@@ -41,7 +47,7 @@
 
 <header class="header">
     <div class="header-left">
-        <button class="back-btn" id="backBtn" style="display: none;">
+        <button class="back-btn" id="backBtn" style="display: none;" onclick="goBack()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -109,16 +115,16 @@
     </div>
     
     <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home">Home</button>
-        <button class="sidebar-item" data-page="myevents">My Events</button>
-        <button class="sidebar-item" data-page="profile">Profile</button>
-        <button class="sidebar-item" data-page="settings">Settings</button>
-        <button class="sidebar-item" data-page="tickets">My Tickets</button>
-        <button class="sidebar-item" data-page="history">Ticket History</button>
-        <button class="sidebar-item" data-page="whitepaper">Whitepaper</button>
-        <button class="sidebar-item" data-page="faq">FAQ</button>
+        <button class="sidebar-item" data-page="home" onclick="showPage('home')">Home</button>
+        <button class="sidebar-item" data-page="myevents" onclick="showPage('myevents')">My Events</button>
+        <button class="sidebar-item" data-page="profile" onclick="showPage('profile')">Profile</button>
+        <button class="sidebar-item" data-page="settings" onclick="showPage('settings')">Settings</button>
+        <button class="sidebar-item" data-page="tickets" onclick="showPage('tickets')">My Tickets</button>
+        <button class="sidebar-item" data-page="history" onclick="showPage('history')">Ticket History</button>
+        <button class="sidebar-item" data-page="whitepaper" onclick="showPage('whitepaper')">Whitepaper</button>
+        <button class="sidebar-item" data-page="faq" onclick="showPage('faq')">FAQ</button>
         
-        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;">Administration</button>
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;" onclick="showPage('admin')">Administration</button>
         
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -217,7 +223,7 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE AVEC BARRE DE RECHERCHE PAYS ===== -->
+<!-- ===== CREATE EVENT PAGE (SANS CHAMP COUNTRY) ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -236,14 +242,6 @@
                     <option>Exhibition</option>
                     <option>Gala</option>
                     <option>Seminar</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Country</label>
-                <div class="country-search-wrapper">
-                    <i class="fas fa-search country-search-icon"></i>
-                    <input type="text" class="country-search-input" id="countrySearchInput" placeholder="Search country..." autocomplete="off">
-                </div>
-                <select id="eventCountry" style="margin-top:8px; width:100%; padding:0.75rem 1rem; border:2px solid #e5e7eb; border-radius:12px; font-size:0.95rem; background:white;">
                 </select>
             </div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
@@ -321,7 +319,7 @@
     </div>
 </div>
 
-<!-- ===== PUBLISH CONFIRMATION POPUP AVEC LOADING ===== -->
+<!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-loading-overlay" id="publishLoadingOverlay">
@@ -702,7 +700,7 @@
 <!-- ===== MODALS ===== -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
-        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
+        <span class="modal-close" id="legalModalClose" onclick="document.getElementById('legalModal').classList.remove('show')"><i class="fas fa-times"></i></span>
         <div id="modalContent"></div>
     </div>
 </div>
@@ -710,7 +708,7 @@
 <!-- ===== EVENT DETAIL MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
-        <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
+        <span class="modal-close" id="eventDetailClose" onclick="document.getElementById('eventDetailModal').classList.remove('show'); document.body.style.overflow = '';"><i class="fas fa-times"></i></span>
         <div id="eventDetailContent">
             <div class="event-detail-header">
                 <div class="event-detail-gallery" id="detailGallery"></div>
