@@ -74,7 +74,6 @@ body {
     font-weight: 500;
 }
 
-/* ===== LOADING SPINNER POUR CONNEXION ===== */
 .auth-loading-overlay {
     display: none;
     position: fixed;
@@ -349,29 +348,6 @@ body {
     justify-content: center;
     width: 100%;
     height: 100%;
-}
-
-.profile-edit-icon {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    background: #f5a623;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 0.65rem;
-    cursor: pointer;
-    color: #1a1a2e;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
-
-.profile-edit-icon:hover {
-    transform: scale(1.1);
 }
 
 .sidebar-header h3 {
@@ -2070,29 +2046,6 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     border: 3px solid #f5a623;
 }
 
-.profile-upload-btn {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: #f5a623;
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    color: #1a1a2e;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-}
-
-.profile-upload-btn:hover {
-    transform: scale(1.1);
-}
-
 .profile-header-info h2 {
     font-size: 1.4rem;
     font-weight: 700;
@@ -2356,6 +2309,202 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
 
 #confirmBuyBtn {
     margin-top: 16px;
+}
+
+/* ===== TICKET TYPES SELECTOR ===== */
+.ticket-types-container {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.ticket-type-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ticket-type-row:last-child {
+    border-bottom: none;
+}
+
+.ticket-type-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #f5a623;
+    flex-shrink: 0;
+}
+
+.ticket-type-row label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 80px;
+    cursor: pointer;
+    color: var(--dark);
+}
+
+.ticket-type-row .ticket-type-price {
+    flex: 1;
+    min-width: 120px;
+    padding: 6px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: border 0.2s;
+}
+
+.ticket-type-row .ticket-type-price:focus {
+    outline: none;
+    border-color: #f5a623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.1);
+}
+
+.ticket-type-row .ticket-type-price:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.ticket-type-row .ticket-type-status {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+body.dark-mode .ticket-types-container {
+    background: #2d3748;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-row {
+    border-bottom-color: #374151;
+}
+
+body.dark-mode .ticket-type-row .ticket-type-price {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-row .ticket-type-price:focus {
+    border-color: #f5a623;
+}
+
+/* ===== TICKET TYPE BADGE ON CARD ===== */
+.ticket-type-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-left: 6px;
+}
+
+.ticket-type-badge.standard {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.ticket-type-badge.vip {
+    background: rgba(245, 166, 35, 0.2);
+    color: #d4911e;
+}
+
+body.dark-mode .ticket-type-badge.standard {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+body.dark-mode .ticket-type-badge.vip {
+    background: rgba(245, 166, 35, 0.25);
+    color: #f5a623;
+}
+
+/* ===== QUANTITY POPUP TICKET TYPE SELECTOR ===== */
+.ticket-type-selector {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ticket-type-option {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+}
+
+.ticket-type-option:hover {
+    border-color: #f5a623;
+    transform: translateY(-2px);
+}
+
+.ticket-type-option.selected {
+    border-color: #f5a623;
+    background: #fefaf0;
+    box-shadow: 0 4px 15px rgba(245, 166, 35, 0.15);
+}
+
+.ticket-type-option .type-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--dark);
+    display: block;
+}
+
+.ticket-type-option .type-price {
+    font-size: 0.8rem;
+    color: #f5a623;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+}
+
+.ticket-type-option .type-check {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f5a623;
+    color: white;
+    font-size: 0.6rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-type-option.selected .type-check {
+    display: flex;
+}
+
+body.dark-mode .ticket-type-option {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-option .type-name {
+    color: #f3f4f6;
+}
+
+body.dark-mode .ticket-type-option.selected {
+    background: #1a2332;
+    border-color: #f5a623;
 }
 
 .success-popup {
@@ -4493,15 +4642,6 @@ body.dark-mode .sidebar-avatar {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
 }
 
-body.dark-mode .profile-edit-icon {
-    background: #f5a623;
-    color: #1a1a2e;
-}
-
-body.dark-mode .profile-edit-icon:hover {
-    background: #f7c35c;
-}
-
 body.dark-mode #notificationsList .notification-item {
     background: #2d3748;
 }
@@ -4721,6 +4861,10 @@ body.dark-mode #notificationsList .notification-item.unread {
     }
     .ticket-premium .ticket-info-grid {
         grid-template-columns: 1fr 1fr;
+    }
+    .ticket-type-option {
+        min-width: 70px;
+        padding: 8px 12px;
     }
 }
 
@@ -4949,6 +5093,16 @@ body.dark-mode #notificationsList .notification-item.unread {
     .ticket-premium .ticket-watermark {
         font-size: 2.5rem;
         letter-spacing: 4px;
+    }
+    .ticket-type-option {
+        min-width: 60px;
+        padding: 6px 10px;
+    }
+    .ticket-type-option .type-name {
+        font-size: 0.75rem;
+    }
+    .ticket-type-option .type-price {
+        font-size: 0.7rem;
     }
 }
 
