@@ -78,9 +78,7 @@
             <div class="sidebar-avatar" id="sidebarAvatar">
                 <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 <span id="sidebarAvatarText">U</span>
-                <button class="profile-edit-icon" onclick="document.getElementById('profilePhotoInputSidebar').click()">
-                    <i class="fas fa-pen"></i>
-                </button>
+                <!-- Bouton photo de profil supprimé -->
             </div>
         </div>
         <div id="profilePhotoLoading" class="profile-upload-loading" style="display:none;">
@@ -223,7 +221,7 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE (SANS CHAMP COUNTRY) ===== -->
+<!-- ===== CREATE EVENT PAGE AVEC TYPES DE BILLETS ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -266,8 +264,27 @@
                 <label>Conditions</label>
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
             </div>
-            <div class="form-group"><label>Price (Pi)</label><input type="number" id="eventPrice" step="0.000001" value="0.0003"></div>
             <div class="form-group"><label>Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
+            
+            <!-- Types de billets -->
+            <div class="form-group">
+                <label>Ticket Types</label>
+                <div class="ticket-types-container">
+                    <div class="ticket-type-row">
+                        <input type="checkbox" id="ticketStandardEnabled" checked>
+                        <label for="ticketStandardEnabled">Standard</label>
+                        <input type="number" class="ticket-type-price" id="ticketStandardPrice" placeholder="Price in Pi" step="0.000001" min="0" value="0.0003">
+                        <span class="ticket-type-status">Required</span>
+                    </div>
+                    <div class="ticket-type-row">
+                        <input type="checkbox" id="ticketVipEnabled">
+                        <label for="ticketVipEnabled">VIP</label>
+                        <input type="number" class="ticket-type-price" id="ticketVipPrice" placeholder="Price in Pi" step="0.000001" min="0" value="0.001" disabled>
+                        <span class="ticket-type-status">Optional</span>
+                    </div>
+                </div>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Select at least one ticket type and enter its price</p>
+            </div>
             
             <div class="form-group">
                 <label>Photos (2 images required)</label>
@@ -364,16 +381,16 @@
                         <span class="publish-value" id="confirmLocation">-</span>
                     </div>
                     <div class="publish-summary-item">
-                        <span class="publish-label">Price</span>
-                        <span class="publish-value" id="confirmPrice">-</span>
-                    </div>
-                    <div class="publish-summary-item">
                         <span class="publish-label">Seats</span>
                         <span class="publish-value" id="confirmSeats">-</span>
                     </div>
                     <div class="publish-summary-item">
                         <span class="publish-label">Organizer</span>
                         <span class="publish-value" id="confirmOrganizer">-</span>
+                    </div>
+                    <div class="publish-summary-item full">
+                        <span class="publish-label">Ticket Types</span>
+                        <span class="publish-value" id="confirmTicketTypes">-</span>
                     </div>
                 </div>
                 
@@ -441,9 +458,7 @@
                 <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
                     <i class="fas fa-user"></i>
                 </div>
-                <button class="profile-upload-btn" onclick="document.getElementById('profilePhotoInputPage').click()">
-                    <i class="fas fa-camera"></i>
-                </button>
+                <!-- Bouton photo de profil supprimé -->
                 <input type="file" id="profilePhotoInputPage" accept="image/*" style="display:none;">
             </div>
             <div class="profile-header-info">
@@ -805,13 +820,17 @@
     </div>
 </div>
 
-<!-- ===== TICKET QUANTITY POPUP ===== -->
+<!-- ===== TICKET QUANTITY POPUP AVEC TYPES DE BILLETS ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
         <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
         <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
+        
+        <!-- Sélecteur de type de billet -->
+        <div class="ticket-type-selector" id="ticketTypeSelector"></div>
+        
         <div class="quantity-selector">
             <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
             <input type="number" id="ticketQuantity" value="1" min="1" max="10">
