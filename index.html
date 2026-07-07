@@ -11,6 +11,7 @@
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -28,15 +29,10 @@
         setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
     
+    <!-- Google Translate Script -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
-
-<!-- ===== LOADING SPINNER POUR CONNEXION ===== -->
-<div id="authLoadingOverlay" class="auth-loading-overlay">
-    <div class="auth-spinner"></div>
-    <span class="auth-loading-text">Connecting to Pi Network...</span>
-</div>
 
 <div id="loader" class="loader-container">
     <div class="loader-spinner"></div>
@@ -47,7 +43,7 @@
 
 <header class="header">
     <div class="header-left">
-        <button class="back-btn" id="backBtn" style="display: none;" onclick="goBack()">
+        <button class="back-btn" id="backBtn" style="display: none;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -58,7 +54,7 @@
         </div>
     </div>
     <div class="header-right">
-        <button class="menu-btn" id="menuBtn" onclick="openSidebar()">
+        <button class="menu-btn" id="menuBtn">
             <i class="fas fa-bars"></i>
         </button>
     </div>
@@ -67,7 +63,7 @@
 <!-- ===== SIDEBAR ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <button class="close-sidebar" id="closeSidebarBtn" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
+        <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
         
         <button class="sidebar-notif-icon-top" onclick="showPage('notifications')" title="Notifications">
             <i class="fas fa-bell"></i>
@@ -76,13 +72,12 @@
         
         <div class="sidebar-avatar-wrapper">
             <div class="sidebar-avatar" id="sidebarAvatar">
-                <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 <span id="sidebarAvatarText">U</span>
             </div>
         </div>
         <h3 id="sidebarName">Guest</h3>
         <p id="sidebarWallet">Not connected</p>
-        <button class="wallet-sidebar-btn" id="sidebarWalletBtn" onclick="connectToPi()">Connect Pi</button>
+        <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
         
         <div class="sidebar-language-selector">
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
@@ -108,16 +103,16 @@
     </div>
     
     <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home" onclick="showPage('home')">Home</button>
-        <button class="sidebar-item" data-page="myevents" onclick="showPage('myevents')">My Events</button>
-        <button class="sidebar-item" data-page="profile" onclick="showPage('profile')">Profile</button>
-        <button class="sidebar-item" data-page="settings" onclick="showPage('settings')">Settings</button>
-        <button class="sidebar-item" data-page="tickets" onclick="showPage('tickets')">My Tickets</button>
-        <button class="sidebar-item" data-page="history" onclick="showPage('history')">Ticket History</button>
-        <button class="sidebar-item" data-page="whitepaper" onclick="showPage('whitepaper')">Whitepaper</button>
-        <button class="sidebar-item" data-page="faq" onclick="showPage('faq')">FAQ</button>
+        <button class="sidebar-item" data-page="home">Home</button>
+        <button class="sidebar-item" data-page="myevents">My Events</button>
+        <button class="sidebar-item" data-page="profile">Profile</button>
+        <button class="sidebar-item" data-page="settings">Settings</button>
+        <button class="sidebar-item" data-page="tickets">My Tickets</button>
+        <button class="sidebar-item" data-page="history">Ticket History</button>
+        <button class="sidebar-item" data-page="whitepaper">Whitepaper</button>
+        <button class="sidebar-item" data-page="faq">FAQ</button>
         
-        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;" onclick="showPage('admin')">Administration</button>
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;">Administration</button>
         
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -132,7 +127,7 @@
         </div>
     </div>
 </div>
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="overlay" id="overlay"></div>
 
 <!-- ===== NOTIFICATIONS PAGE ===== -->
 <div id="notificationsPage" class="hidden-page">
@@ -147,16 +142,12 @@
     </div>
 </div>
 
-<button class="chat-float-btn" id="chatFloatBtn" onclick="document.getElementById('chatWidget').classList.toggle('open')">
-    <i class="fas fa-comment-dots"></i>
-</button>
+<button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header">
         <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
-        <button class="chat-close" id="chatCloseBtn" onclick="document.getElementById('chatWidget').classList.remove('open')">
-            <i class="fas fa-times"></i>
-        </button>
+        <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
@@ -216,12 +207,13 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE ===== -->
+<!-- ===== CREATE EVENT PAGE (avec types de billets) ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
             <div class="form-group"><label>Title</label><input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required></div>
+            
             <div class="form-group"><label>Category</label>
                 <select id="eventCategory">
                     <option>Concert</option>
@@ -237,8 +229,14 @@
                     <option>Seminar</option>
                 </select>
             </div>
+            
+            <div class="form-group"><label>Country</label>
+                <select id="eventCountry"></select>
+            </div>
+            
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
+            <!-- Durée de l'événement -->
             <div class="form-group">
                 <label>Duration</label>
                 <div class="event-duration-wrapper">
@@ -254,33 +252,48 @@
             </div>
             
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
+            
             <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
+            
             <div class="form-group">
                 <label>Conditions</label>
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
             </div>
-            <div class="form-group"><label>Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
             
-            <!-- Types de billets -->
-            <div class="form-group">
-                <label>Ticket Types</label>
-                <div class="ticket-types-container">
-                    <div class="ticket-type-row">
+            <div class="form-group"><label>Total Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
+            
+            <!-- ===== TYPES DE BILLETS ===== -->
+            <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 16px; margin-top: 8px;">
+                <label style="font-size: 1rem; font-weight: 700; color: var(--dark);">Ticket Types</label>
+                <p style="font-size: 0.8rem; color: var(--gray); margin-bottom: 12px;">Enable at least one ticket type and set its price</p>
+                
+                <!-- Standard -->
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; border: 1px solid #e5e7eb;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin: 0;">
                         <input type="checkbox" id="ticketStandardEnabled" checked>
-                        <label for="ticketStandardEnabled">Standard</label>
-                        <input type="number" class="ticket-type-price" id="ticketStandardPrice" placeholder="Price in Pi" step="0.000001" min="0" value="0.0003">
-                        <span class="ticket-type-status">Required</span>
-                    </div>
-                    <div class="ticket-type-row">
-                        <input type="checkbox" id="ticketVipEnabled">
-                        <label for="ticketVipEnabled">VIP</label>
-                        <input type="number" class="ticket-type-price" id="ticketVipPrice" placeholder="Price in Pi" step="0.000001" min="0" value="0.001" disabled>
-                        <span class="ticket-type-status">Optional</span>
+                        Standard
+                    </label>
+                    <div id="standardPriceGroup" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <span style="font-size: 0.8rem; color: var(--gray);">Price (Pi):</span>
+                        <input type="number" id="ticketStandardPrice" step="0.000001" value="0.0003" style="width: 120px; padding: 6px 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem;">
                     </div>
                 </div>
-                <p class="upload-help"><i class="fas fa-info-circle"></i> Select at least one ticket type and enter its price</p>
+                
+                <!-- VIP -->
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fefaf0; border-radius: 10px; border: 1px solid #f5a62333;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin: 0; color: #d4911e;">
+                        <input type="checkbox" id="ticketVipEnabled">
+                        VIP
+                    </label>
+                    <div id="vipPriceGroup" style="display: none; align-items: center; gap: 8px; flex: 1;">
+                        <span style="font-size: 0.8rem; color: var(--gray);">Price (Pi):</span>
+                        <input type="number" id="ticketVipPrice" step="0.000001" value="0.0005" style="width: 120px; padding: 6px 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem;">
+                    </div>
+                </div>
+                <p id="ticketTypesError" style="color: #ef4444; font-size: 0.8rem; margin-top: 6px; display: none;">Please enable at least one ticket type and set its price.</p>
             </div>
             
+            <!-- Images -->
             <div class="form-group">
                 <label>Photos (2 images required)</label>
                 <div id="imageUploadContainer" class="image-upload-container">
@@ -334,11 +347,6 @@
 <!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
-        <div class="publish-loading-overlay" id="publishLoadingOverlay">
-            <div class="publish-spinner"></div>
-            <span class="publish-loading-text">Publishing your event...</span>
-        </div>
-        
         <div class="publish-confirm-header">
             <div class="publish-confirm-icon">
                 <i class="fas fa-check-circle"></i>
@@ -376,16 +384,16 @@
                         <span class="publish-value" id="confirmLocation">-</span>
                     </div>
                     <div class="publish-summary-item">
+                        <span class="publish-label">Ticket Types</span>
+                        <span class="publish-value" id="confirmTicketTypes">-</span>
+                    </div>
+                    <div class="publish-summary-item">
                         <span class="publish-label">Seats</span>
                         <span class="publish-value" id="confirmSeats">-</span>
                     </div>
                     <div class="publish-summary-item">
                         <span class="publish-label">Organizer</span>
                         <span class="publish-value" id="confirmOrganizer">-</span>
-                    </div>
-                    <div class="publish-summary-item full">
-                        <span class="publish-label">Ticket Types</span>
-                        <span class="publish-value" id="confirmTicketTypes">-</span>
                     </div>
                 </div>
                 
@@ -444,12 +452,11 @@
     <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== PROFILE PAGE ===== -->
+<!-- ===== PROFILE PAGE (sans photo) ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
             <div class="profile-header-avatar">
-                <img id="profilePageAvatar" src="" alt="Avatar" style="display:none; width:100px; height:100px; border-radius:50%; object-fit:cover;">
                 <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
                     <i class="fas fa-user"></i>
                 </div>
@@ -489,7 +496,7 @@
         </div>
         
         <div class="profile-actions">
-            <button class="btn-primary" id="profileConnectBtnPage" onclick="connectToPi()">Connect Pi</button>
+            <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
         </div>
     </div>
@@ -535,7 +542,7 @@
         </div>
         <div class="settings-group">
             <p><strong>Data</strong></p>
-            <button id="clearDataBtn" class="btn-danger" onclick="clearAllData()">Clear my data</button>
+            <button id="clearDataBtn" class="btn-danger">Clear my data</button>
         </div>
     </div>
 </div>
@@ -575,7 +582,7 @@
         
         <div id="adminTabSlides" class="admin-tab-content">
             <div class="admin-actions">
-                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;" onclick="adminShowSlideForm(-1)">Add image</button>
+                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Add image</button>
             </div>
             <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
                 <h3 id="adminSlideFormTitle">Add carousel image</h3>
@@ -598,11 +605,11 @@
                 </div>
                 <div class="form-group">
                     <label>Description</label>
-                    <input type="text" id="adminSlideDesc" placeholder="Ex: 3 days of music and fun">
+                    <input type="text" id="adminSlideDesc" placeholder="Short description...">
                 </div>
                 <div style="display:flex; gap:12px; margin-top:12px;">
-                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;" onclick="adminSaveSlide()">Save</button>
-                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;" onclick="adminCancelSlideForm()">Cancel</button>
+                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Save</button>
+                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Cancel</button>
                 </div>
                 <input type="hidden" id="adminEditSlideIndex" value="-1">
             </div>
@@ -708,7 +715,7 @@
 <!-- ===== MODALS ===== -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
-        <span class="modal-close" id="legalModalClose" onclick="document.getElementById('legalModal').classList.remove('show')"><i class="fas fa-times"></i></span>
+        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
         <div id="modalContent"></div>
     </div>
 </div>
@@ -716,7 +723,7 @@
 <!-- ===== EVENT DETAIL MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
-        <span class="modal-close" id="eventDetailClose" onclick="document.getElementById('eventDetailModal').classList.remove('show'); document.body.style.overflow = '';"><i class="fas fa-times"></i></span>
+        <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
         <div id="eventDetailContent">
             <div class="event-detail-header">
                 <div class="event-detail-gallery" id="detailGallery"></div>
@@ -813,22 +820,30 @@
     </div>
 </div>
 
-<!-- ===== TICKET QUANTITY POPUP AVEC DEUX TYPES DE BILLETS ===== -->
+<!-- ===== TICKET QUANTITY POPUP (avec sélection de type) ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
-        <h3><i class="fas fa-ticket-alt"></i> Choose tickets</h3>
+        <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
-        <p id="quantityEventInfo" style="font-size:0.8rem;color:var(--gray);margin-bottom:12px;"></p>
+        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
         
-        <!-- Sélecteur de types de billets avec quantités -->
-        <div class="ticket-type-selector" id="ticketTypeSelector"></div>
-        
-        <div class="total-display">
-            Total : <span id="totalPriceDisplay">0 Pi</span>
+        <div style="margin: 12px 0;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--dark); display: block; margin-bottom: 4px;">Ticket Type:</label>
+            <select id="ticketTypeSelect" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; background: white;">
+            </select>
         </div>
-        <p style="font-size:0.7rem;color:var(--gray);margin-top:2px;" id="maxQuantityInfo"></p>
-        <button class="btn-primary" id="confirmBuyBtn" disabled>Select at least 1 ticket</button>
+        
+        <div class="quantity-selector">
+            <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
+            <input type="number" id="ticketQuantity" value="1" min="1" max="10">
+            <button class="qty-btn" onclick="updateQuantity(1)">+</button>
+        </div>
+        <p style="font-size:0.85rem;color:var(--gray);">
+            Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
+        </p>
+        <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
+        <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
     </div>
 </div>
 
