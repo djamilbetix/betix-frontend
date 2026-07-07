@@ -813,27 +813,22 @@
     </div>
 </div>
 
-<!-- ===== TICKET QUANTITY POPUP AVEC TYPES DE BILLETS ===== -->
+<!-- ===== TICKET QUANTITY POPUP AVEC DEUX TYPES DE BILLETS ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
-        <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
+        <h3><i class="fas fa-ticket-alt"></i> Choose tickets</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
-        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
+        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);margin-bottom:12px;"></p>
         
-        <!-- Sélecteur de type de billet -->
+        <!-- Sélecteur de types de billets avec quantités -->
         <div class="ticket-type-selector" id="ticketTypeSelector"></div>
         
-        <div class="quantity-selector">
-            <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
-            <input type="number" id="ticketQuantity" value="1" min="1" max="10">
-            <button class="qty-btn" onclick="updateQuantity(1)">+</button>
-        </div>
-        <p style="font-size:0.85rem;color:var(--gray);">
+        <p style="font-size:0.85rem;color:var(--gray);margin-top:8px;">
             Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
         <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
-        <button class="btn-primary" id="confirmBuyBtn" onclick="confirmPurchaseFromPopup()">Confirm purchase</button>
+        <button class="btn-primary" id="confirmBuyBtn" disabled>Select at least 1 ticket</button>
     </div>
 </div>
 
