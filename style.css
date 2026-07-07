@@ -358,11 +358,6 @@ body {
     padding: 0 4px;
 }
 
-.sidebar-language-selector .lang-widget {
-    display: block;
-    width: 100%;
-}
-
 .lang-select-native-sidebar {
     width: 100% !important;
     padding: 8px 12px !important;
@@ -868,6 +863,241 @@ body {
 }
 
 /* ============================================================
+   ===== TICKET TYPES - COMPOSANT MODERNE =====
+   ============================================================ */
+
+.ticket-types-container {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 16px 18px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 16px;
+}
+
+.ticket-types-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ticket-types-title i {
+    color: #f5a623;
+}
+
+.ticket-types-subtitle {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-bottom: 14px;
+}
+
+.ticket-type-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.ticket-type-row:last-child {
+    margin-bottom: 0;
+}
+
+.ticket-type-row.standard {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+}
+
+.ticket-type-row.standard:hover {
+    border-color: #0D47A1;
+    box-shadow: 0 2px 8px rgba(13, 71, 161, 0.06);
+}
+
+.ticket-type-row.vip {
+    background: #fefaf0;
+    border: 1px solid #f5a62344;
+}
+
+.ticket-type-row.vip:hover {
+    border-color: #f5a623;
+    box-shadow: 0 2px 8px rgba(245, 166, 35, 0.08);
+}
+
+.ticket-type-row .type-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.ticket-type-row .type-toggle .type-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dark);
+    white-space: nowrap;
+}
+
+.ticket-type-row .type-toggle .type-icon {
+    font-size: 1.1rem;
+}
+
+.ticket-type-row.vip .type-toggle .type-name {
+    color: #d4911e;
+}
+
+.ticket-type-row .type-price-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 140px;
+    transition: all 0.3s ease;
+}
+
+.ticket-type-row .type-price-group.hidden {
+    display: none !important;
+}
+
+.ticket-type-row .type-price-group .price-label {
+    font-size: 0.75rem;
+    color: var(--gray);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ticket-type-row .type-price-group input[type="number"] {
+    width: 110px;
+    padding: 6px 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    color: var(--dark);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ticket-type-row .type-price-group input[type="number"]:focus {
+    outline: none;
+    border-color: #f5a623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+.ticket-type-row .type-price-group .price-suffix {
+    font-size: 0.75rem;
+    color: var(--gray);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Toggle Switch personnalisé */
+.switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #d1d5db;
+    transition: 0.3s;
+    border-radius: 34px;
+}
+
+.switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.switch input:checked + .slider {
+    background: #0D47A1;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.switch.vip-switch input:checked + .slider {
+    background: #d4911e;
+}
+
+/* Status badge du type de billet */
+.type-status-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.type-status-badge.active {
+    background: #10b98122;
+    color: #10b981;
+}
+
+.type-status-badge.inactive {
+    background: #ef444422;
+    color: #ef4444;
+}
+
+/* Responsive ticket types */
+@media (max-width: 600px) {
+    .ticket-type-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px;
+    }
+    
+    .ticket-type-row .type-toggle {
+        min-width: unset;
+        justify-content: space-between;
+    }
+    
+    .ticket-type-row .type-price-group {
+        min-width: unset;
+        flex-wrap: wrap;
+    }
+    
+    .ticket-type-row .type-price-group input[type="number"] {
+        width: 100%;
+        flex: 1;
+    }
+    
+    .ticket-types-container {
+        padding: 14px;
+    }
+}
+
+/* ============================================================
    ===== EVENT CARD - STYLE CLASSIQUE =====
    ============================================================ */
 
@@ -1226,7 +1456,6 @@ body {
 }
 
 .ticket-card-premium .ticket-footer .ticket-qr .qr-code {
-    font-size: 2rem;
     color: #0D47A1;
     background: #f0f4ff;
     width: 48px;
@@ -1239,6 +1468,10 @@ body {
     font-family: monospace;
     font-size: 0.6rem;
     letter-spacing: 0.5px;
+    text-align: center;
+    padding: 4px;
+    word-break: break-all;
+    line-height: 1.2;
 }
 
 .ticket-card-premium .ticket-footer .ticket-qr .qr-label {
@@ -3343,6 +3576,41 @@ body.dark-mode .event-card-classic .event-organizer-classic {
 
 body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
     color: #d1d5db;
+}
+
+body.dark-mode .ticket-types-container {
+    background: #2d3748;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-row.standard {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-row.vip {
+    background: #1a2332;
+    border-color: #f5a62344;
+}
+
+body.dark-mode .ticket-type-row .type-price-group input[type="number"] {
+    background: #4b5563;
+    color: #f3f4f6;
+    border-color: #6b7280;
+}
+
+body.dark-mode .switch .slider {
+    background: #4b5563;
+}
+
+body.dark-mode .type-status-badge.active {
+    background: #10b98133;
+    color: #6ee7b7;
+}
+
+body.dark-mode .type-status-badge.inactive {
+    background: #ef444433;
+    color: #fca5a5;
 }
 
 body.dark-mode .sidebar-notif-icon-top {
