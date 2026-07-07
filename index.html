@@ -78,16 +78,11 @@
             <div class="sidebar-avatar" id="sidebarAvatar">
                 <img id="sidebarAvatarImage" src="" alt="Avatar" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 <span id="sidebarAvatarText">U</span>
-                <!-- Bouton photo de profil supprimé -->
             </div>
-        </div>
-        <div id="profilePhotoLoading" class="profile-upload-loading" style="display:none;">
-            <i class="fas fa-spinner fa-spin"></i> Compressing...
         </div>
         <h3 id="sidebarName">Guest</h3>
         <p id="sidebarWallet">Not connected</p>
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn" onclick="connectToPi()">Connect Pi</button>
-        <input type="file" id="profilePhotoInputSidebar" accept="image/*" style="display:none;">
         
         <div class="sidebar-language-selector">
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
@@ -458,8 +453,6 @@
                 <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
                     <i class="fas fa-user"></i>
                 </div>
-                <!-- Bouton photo de profil supprimé -->
-                <input type="file" id="profilePhotoInputPage" accept="image/*" style="display:none;">
             </div>
             <div class="profile-header-info">
                 <h2 id="profileNameDisplay">Guest</h2>
