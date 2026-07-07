@@ -543,7 +543,6 @@ async function syncNotificationsToSupabase() {
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
-    // Load events
     const supabaseEvents = await loadEventsFromSupabase();
     if (supabaseEvents.length > 0) {
         events = supabaseEvents.map(e => ({
@@ -578,7 +577,6 @@ async function loadAllFromSupabase() {
         await syncEventsToSupabase();
     }
     
-    // Load tickets for current user
     if (currentUser.piUid || currentUser.wallet) {
         const piUid = currentUser.piUid || currentUser.wallet;
         const supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -603,7 +601,6 @@ async function loadAllFromSupabase() {
         }
     }
     
-    // Load notifications for current user
     if (currentUser.piUid || currentUser.wallet) {
         const piUid = currentUser.piUid || currentUser.wallet;
         const supabaseNotifs = await loadNotificationsFromSupabase(piUid);
@@ -1347,11 +1344,17 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT - AVEC SPINNER =====
 // ============================================================
 
 async function createEvent(e) {
     e.preventDefault();
+    
+    var publishBtn = document.getElementById('publishEventBtn');
+    
+    if (publishBtn.classList.contains('loading')) {
+        return;
+    }
     
     if (!currentUser.wallet) { 
         alert('Connect your Pi account first'); 
@@ -1417,34 +1420,45 @@ async function createEvent(e) {
         return; 
     }
     
-    var newEvent = {
-        id: Date.now().toString(),
-        title: title,
-        category: category,
-        country: country,
-        date: date,
-        location: location,
-        description: description || '',
-        conditions: conditions,
-        price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
-        seatsTotal: seatsTotal,
-        seatsLeft: seatsTotal,
-        images: images,
-        coverImage: images[0],
-        organizer: currentUser.wallet,
-        organizerPiUid: currentUser.piUid || currentUser.wallet,
-        organizerName: currentUser.name,
-        createdAt: new Date().toISOString(),
-        boosts: 0,
-        durationValue: durationValueNum,
-        durationUnit: durationUnit,
-        ticketTypes: {
-            standard: { enabled: standardEnabled, price: standardPrice || 0 },
-            vip: { enabled: vipEnabled, price: vipPrice || 0 }
-        }
-    };
+    publishBtn.classList.add('loading');
+    publishBtn.disabled = true;
     
-    openPublishConfirm(newEvent);
+    try {
+        var newEvent = {
+            id: Date.now().toString(),
+            title: title,
+            category: category,
+            country: country,
+            date: date,
+            location: location,
+            description: description || '',
+            conditions: conditions,
+            price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
+            seatsTotal: seatsTotal,
+            seatsLeft: seatsTotal,
+            images: images,
+            coverImage: images[0],
+            organizer: currentUser.wallet,
+            organizerPiUid: currentUser.piUid || currentUser.wallet,
+            organizerName: currentUser.name,
+            createdAt: new Date().toISOString(),
+            boosts: 0,
+            durationValue: durationValueNum,
+            durationUnit: durationUnit,
+            ticketTypes: {
+                standard: { enabled: standardEnabled, price: standardPrice || 0 },
+                vip: { enabled: vipEnabled, price: vipPrice || 0 }
+            }
+        };
+        
+        openPublishConfirm(newEvent);
+        
+    } catch (error) {
+        console.error('Error creating event:', error);
+        alert('An error occurred while creating the event: ' + error.message);
+        publishBtn.classList.remove('loading');
+        publishBtn.disabled = false;
+    }
 }
 
 // ============================================================
@@ -1504,6 +1518,11 @@ function openPublishConfirm(eventData) {
 
 function closePublishConfirmPopup() {
     document.getElementById('publishConfirmPopup').classList.remove('show');
+    var publishBtn = document.getElementById('publishEventBtn');
+    if (publishBtn) {
+        publishBtn.classList.remove('loading');
+        publishBtn.disabled = false;
+    }
     pendingEventData = null;
 }
 
@@ -1511,6 +1530,15 @@ async function confirmPublishEvent() {
     if (!pendingEventData) {
         alert('No event data to publish');
         return;
+    }
+    
+    var publishBtn = document.getElementById('publishEventBtn');
+    var confirmBtn = document.getElementById('confirmPublishBtn');
+    
+    if (confirmBtn) {
+        confirmBtn.classList.add('loading');
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Publishing...';
     }
     
     try {
@@ -1556,8 +1584,15 @@ async function confirmPublishEvent() {
         );
         
         closePublishConfirmPopup();
+        document.getElementById('publishConfirmPopup').classList.remove('show');
+        
         renderEventsByCategory();
         updateProfilePage();
+        
+        if (publishBtn) {
+            publishBtn.classList.remove('loading');
+            publishBtn.disabled = false;
+        }
         
         alert('Event "' + newEvent.title + '" has been successfully published!');
         showPage('home');
@@ -1565,6 +1600,16 @@ async function confirmPublishEvent() {
     } catch (error) {
         console.error('Error publishing event:', error);
         alert('An error occurred while publishing the event: ' + error.message);
+        
+        if (confirmBtn) {
+            confirmBtn.classList.remove('loading');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Publish Event';
+        }
+        if (publishBtn) {
+            publishBtn.classList.remove('loading');
+            publishBtn.disabled = false;
+        }
     }
 }
 
