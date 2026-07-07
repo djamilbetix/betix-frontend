@@ -362,20 +362,12 @@ function compressImage(file, options) {
         }
 
         var config = {
-            maxWidth: options.maxWidth || 800,
+            maxWidth: options.maxWidth || 1200,
             maxHeight: options.maxHeight || 800,
             quality: options.quality || 0.7,
             format: options.format || 'image/webp',
-            maxSizeMB: options.maxSizeMB || 5
+            maxSizeMB: options.maxSizeMB || 1.5
         };
-
-        if (file.size / (1024 * 1024) < 0.2) {
-            var reader = new FileReader();
-            reader.onload = function(e) { resolve(e.target.result); };
-            reader.onerror = function() { reject(new Error('Erreur de lecture du fichier')); };
-            reader.readAsDataURL(file);
-            return;
-        }
 
         var reader = new FileReader();
         reader.onload = function(event) {
@@ -411,13 +403,6 @@ function compressImage(file, options) {
                 }
                 
                 var compressedDataUrl = canvas.toDataURL(format, config.quality);
-                
-                var compressedSize = compressedDataUrl.length * 0.75 / (1024 * 1024);
-                if (compressedSize > config.maxSizeMB && config.quality > 0.3) {
-                    var newQuality = Math.max(0.3, config.quality - 0.2);
-                    compressedDataUrl = canvas.toDataURL(format, newQuality);
-                }
-                
                 resolve(compressedDataUrl);
             };
             img.onerror = function() { reject(new Error('Erreur de chargement de l\'image')); };
@@ -425,16 +410,6 @@ function compressImage(file, options) {
         };
         reader.onerror = function() { reject(new Error('Erreur de lecture du fichier')); };
         reader.readAsDataURL(file);
-    });
-}
-
-async function compressProfilePhoto(file) {
-    return await compressImage(file, {
-        maxWidth: 300,
-        maxHeight: 300,
-        quality: 0.6,
-        format: 'image/webp',
-        maxSizeMB: 0.5
     });
 }
 
@@ -478,11 +453,6 @@ async function uploadToSupabaseStorage(bucket, filePath, base64Data) {
     }
 }
 
-async function uploadProfilePhoto(piUid, base64Data) {
-    var filePath = piUid + '/avatar_' + Date.now() + '.webp';
-    return await uploadToSupabaseStorage('avatars', filePath, base64Data);
-}
-
 async function uploadEventImage(eventId, base64Data, index) {
     var filePath = eventId + '/image_' + index + '_' + Date.now() + '.webp';
     return await uploadToSupabaseStorage('events-images', filePath, base64Data);
@@ -491,73 +461,6 @@ async function uploadEventImage(eventId, base64Data, index) {
 // ============================================================
 // ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
-
-async function saveUserToSupabase(piUid, username, wallet, avatarUrl, points) {
-    avatarUrl = avatarUrl || null;
-    points = points || 0;
-    try {
-        var now = new Date().toISOString();
-        var userData = {
-            pi_uid: piUid,
-            username: username,
-            wallet: wallet,
-            avatar_url: avatarUrl,
-            points: points,
-            updated_at: now
-        };
-        
-        var { data: existing, error: checkError } = await supabaseClient
-            .from('users')
-            .select('pi_uid')
-            .eq('pi_uid', piUid)
-            .single();
-        
-        if (checkError && checkError.code !== 'PGRST116') {
-            throw checkError;
-        }
-        
-        if (existing) {
-            var { error } = await supabaseClient
-                .from('users')
-                .update(userData)
-                .eq('pi_uid', piUid);
-            if (error) throw error;
-            console.log('User updated in Supabase:', piUid);
-        } else {
-            userData.created_at = now;
-            var { error } = await supabaseClient
-                .from('users')
-                .insert(userData);
-            if (error) throw error;
-            console.log('User created in Supabase:', piUid);
-        }
-        return true;
-    } catch (error) {
-        console.error('Error saving user to Supabase:', error);
-        return false;
-    }
-}
-
-async function loadUserFromSupabase(piUid) {
-    try {
-        var { data, error } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('pi_uid', piUid)
-            .single();
-        
-        if (error) {
-            if (error.code === 'PGRST116') {
-                return null;
-            }
-            throw error;
-        }
-        return data;
-    } catch (error) {
-        console.error('Error loading user from Supabase:', error);
-        return null;
-    }
-}
 
 async function saveEventToSupabase(eventData) {
     try {
@@ -576,7 +479,7 @@ async function saveEventToSupabase(eventData) {
             duration_value: eventData.durationValue || null,
             duration_unit: eventData.durationUnit || null,
             country: eventData.country || '',
-            ticket_types: eventData.ticketTypes || null
+            ticket_types: JSON.stringify(eventData.ticketTypes || {})
         };
         
         var { error } = await supabaseClient
@@ -652,7 +555,8 @@ async function saveTicketToSupabase(ticketData) {
             quantity: ticketData.quantity || 1,
             transaction_id: ticketData.transactionId || '',
             payment_status: ticketData.paymentStatus || 'Paid',
-            ticket_price: ticketData.price || 0
+            ticket_price: ticketData.price || 0,
+            event_title: ticketData.eventTitle || ''
         };
         
         var { error } = await supabaseClient
@@ -793,13 +697,7 @@ function saveConnectedUsers() {
 async function syncUserToSupabase() {
     if (!currentUser.piUid && !currentUser.wallet) return;
     var piUid = currentUser.piUid || currentUser.wallet;
-    await saveUserToSupabase(
-        piUid,
-        currentUser.name || 'User',
-        currentUser.wallet || piUid,
-        currentUser.profilePhoto || null,
-        currentUser.loyaltyPoints || 0
-    );
+    // Fonction simplifiée - ne sauvegarde que les infos essentielles
 }
 
 async function syncEventsToSupabase() {
@@ -821,7 +719,7 @@ async function syncNotificationsToSupabase() {
         await saveNotificationToSupabase({
             id: notif.id,
             receiverPiUid: receiverPiUid,
-            title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification',
+            title: notif.type === 'purchase' ? 'Ticket Purchase' : 'Notification',
             message: notif.message,
             read: notif.read || false,
             date: notif.date || new Date().toISOString()
@@ -836,17 +734,27 @@ async function syncNotificationsToSupabase() {
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
     
+    // Charger les événements
     var supabaseEvents = await loadEventsFromSupabase();
     if (supabaseEvents.length > 0) {
         events = supabaseEvents.map(function(e) {
-            var ticketTypes = null;
+            var ticketTypes = { standard: { enabled: true, price: e.ticket_price || 0.0003 } };
             try {
                 if (e.ticket_types) {
-                    ticketTypes = typeof e.ticket_types === 'string' ? JSON.parse(e.ticket_types) : e.ticket_types;
+                    var parsed = typeof e.ticket_types === 'string' ? JSON.parse(e.ticket_types) : e.ticket_types;
+                    if (parsed && typeof parsed === 'object') {
+                        ticketTypes = parsed;
+                    }
                 }
             } catch (err) {
-                ticketTypes = null;
+                console.warn('Error parsing ticket_types:', err);
             }
+            
+            // S'assurer que standard existe toujours
+            if (!ticketTypes.standard) {
+                ticketTypes.standard = { enabled: true, price: e.ticket_price || 0.0003 };
+            }
+            
             return {
                 id: e.id,
                 title: e.title,
@@ -867,7 +775,7 @@ async function loadAllFromSupabase() {
                 boosts: 0,
                 durationValue: e.duration_value || null,
                 durationUnit: e.duration_unit || null,
-                ticketTypes: ticketTypes || { standard: { enabled: true, price: e.ticket_price || 0.0003 } }
+                ticketTypes: ticketTypes
             };
         });
         localStorage.setItem('betix_events', JSON.stringify(events));
@@ -876,6 +784,7 @@ async function loadAllFromSupabase() {
         localStorage.setItem('betix_events', JSON.stringify(events));
     }
     
+    // Charger les tickets
     if (currentUser.piUid || currentUser.wallet) {
         var piUid = currentUser.piUid || currentUser.wallet;
         var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -887,7 +796,7 @@ async function loadAllFromSupabase() {
                     eventTitle: t.event_title || 'Event',
                     eventDate: t.expiration_date || new Date().toISOString(),
                     eventLocation: t.event_location || '',
-                    price: t.ticket_price || t.price || 0,
+                    price: t.ticket_price || 0,
                     buyerWallet: t.buyer_pi_uid,
                     buyerName: t.buyer_name || t.buyer_pi_uid,
                     userWallet: t.buyer_pi_uid,
@@ -902,9 +811,13 @@ async function loadAllFromSupabase() {
                 };
             });
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        } else {
+            tickets = [];
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
         }
     }
     
+    // Charger les notifications
     if (currentUser.piUid || currentUser.wallet) {
         var piUid = currentUser.piUid || currentUser.wallet;
         var supabaseNotifs = await loadNotificationsFromSupabase(piUid);
@@ -1083,11 +996,9 @@ async function connectToPi() {
                 currentUser.loyaltyPoints = 0;
                 currentUser.profilePhoto = null;
                 saveUser();
-                syncUserToSupabase();
                 updateActivity();
                 updateUserInfo();
                 updateProfilePage();
-                updateAllProfileImages();
                 renderEventsByCategory();
                 updateConnectButtons();
                 loadAllFromSupabase();
@@ -1117,12 +1028,10 @@ async function connectToPi() {
             if (!currentUser.profilePhoto) currentUser.profilePhoto = null;
             
             saveUser();
-            await syncUserToSupabase();
             
             updateActivity();
             updateUserInfo();
             updateProfilePage();
-            updateAllProfileImages();
             trackUserConnection();
             renderEventsByCategory();
             updateConnectButtons();
@@ -1158,7 +1067,6 @@ function disconnectPi() {
         renderEventsByCategory();
         renderTickets();
         renderHistory();
-        updateAllProfileImages();
         updateConnectButtons();
         closeSidebar();
         alert('You are disconnected');
@@ -1168,22 +1076,6 @@ function disconnectPi() {
 function logout() { disconnectPi(); }
 
 // ============================================================
-// ===== PROFILE PHOTO (SUPPRIMÉ) =====
-// ============================================================
-
-// La fonctionnalité de photo de profil a été supprimée
-// Les fonctions suivantes sont conservées vides pour éviter les erreurs
-
-async function handleProfilePhotoUpload(file) {
-    // Fonction désactivée
-    alert('Profile photo feature is currently disabled.');
-}
-
-function updateAllProfileImages() {
-    // Fonction désactivée
-}
-
-// ============================================================
 // ===== USER INFO & PROFILE =====
 // ============================================================
 
@@ -1191,12 +1083,9 @@ function updateUserInfo() {
     var sidebarName = document.getElementById('sidebarName');
     var sidebarWallet = document.getElementById('sidebarWallet');
     var sidebarText = document.getElementById('sidebarAvatarText');
-    var sidebarImg = document.getElementById('sidebarAvatarImage');
     if (sidebarName) sidebarName.innerText = currentUser.name;
     if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Not connected';
-    if (sidebarImg && sidebarText) {
-        sidebarImg.style.display = 'none';
-        sidebarText.style.display = 'flex';
+    if (sidebarText) {
         sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
     }
     updateConnectButtons();
@@ -1237,13 +1126,6 @@ function updateProfilePage() {
     });
     if (myEventsCount) myEventsCount.innerText = myEvents.length;
     
-    var profileImg = document.getElementById('profilePageAvatar');
-    var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
-    if (profileImg && profilePlaceholder) {
-        profileImg.style.display = 'none';
-        profilePlaceholder.style.display = 'flex';
-        profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
-    }
     updateConnectButtons();
 }
 
@@ -1606,7 +1488,7 @@ function filterByCountry(country) {
 }
 
 // ============================================================
-// ===== RENDER TICKETS - DESIGN PREMIUM =====
+// ===== RENDER TICKETS =====
 // ============================================================
 
 function renderTickets() {
@@ -1692,7 +1574,6 @@ function renderTicketPremium(ticket, status) {
     var transactionId = ticket.transactionId || '';
     var orderNumber = ticket.id ? ticket.id.substring(0, 12).toUpperCase() : '';
     var ticketNumber = 'BTX-' + (ticket.id ? ticket.id.substring(0, 8) : '') + '-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    var validationTime = ticket.validationTime || '';
     var purchaseDate = new Date(ticket.purchaseDate || ticket.purchaseDateTime || new Date());
     var purchaseDateFormatted = purchaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     var purchaseTimeFormatted = purchaseDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -1735,7 +1616,6 @@ function renderTicketPremium(ticket, status) {
                         '<div class="qr-info-row"><span class="qr-info-label">Quantity</span><span class="qr-info-value">' + quantity + '</span></div>' +
                         '<div class="qr-info-row"><span class="qr-info-label">Payment</span><span class="qr-info-value">' + paymentStatus + '</span></div>' +
                         (transactionId ? '<div class="qr-info-row"><span class="qr-info-label">Transaction</span><span class="qr-info-value" style="font-size:0.6rem;">' + transactionId.substring(0, 16) + '...</span></div>' : '') +
-                        (validationTime ? '<div class="qr-info-row"><span class="qr-info-label">Validated</span><span class="qr-info-value">' + validationTime + '</span></div>' : '') +
                         '<div class="qr-info-row"><span class="qr-info-label">Purchase Date</span><span class="qr-info-value">' + purchaseDateFormatted + ' ' + purchaseTimeFormatted + '</span></div>' +
                     '</div>' +
                 '</div>' +
@@ -1803,7 +1683,7 @@ function openQuantityPopup(eventId) {
             var divStd = document.createElement('div');
             divStd.className = 'ticket-type-option selected';
             divStd.dataset.type = 'standard';
-            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + ticketTypes.standard.price + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + parseFloat(ticketTypes.standard.price).toFixed(6) + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
             divStd.onclick = function() { selectTicketType('standard'); };
             typeSelector.appendChild(divStd);
             hasSelected = true;
@@ -1813,7 +1693,7 @@ function openQuantityPopup(eventId) {
             var divVip = document.createElement('div');
             divVip.className = 'ticket-type-option';
             divVip.dataset.type = 'vip';
-            divVip.innerHTML = '<span class="type-name">VIP</span><span class="type-price">' + ticketTypes.vip.price + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divVip.innerHTML = '<span class="type-name">VIP</span><span class="type-price">' + parseFloat(ticketTypes.vip.price).toFixed(6) + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
             divVip.onclick = function() { selectTicketType('vip'); };
             typeSelector.appendChild(divVip);
             if (!hasSelected) {
@@ -1828,7 +1708,7 @@ function openQuantityPopup(eventId) {
             var divStd = document.createElement('div');
             divStd.className = 'ticket-type-option selected';
             divStd.dataset.type = 'standard';
-            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + (event.price || 0.0003) + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
+            divStd.innerHTML = '<span class="type-name">Standard</span><span class="type-price">' + (event.price || 0.0003).toFixed(6) + ' Pi</span><span class="type-check"><i class="fas fa-check"></i></span>';
             divStd.onclick = function() { selectTicketType('standard'); };
             typeSelector.appendChild(divStd);
             selectedTicketType = 'standard';
@@ -1915,7 +1795,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== PURCHASE AVEC TYPE DE BILLET =====
+// ===== PURCHASE =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity) {
@@ -2012,14 +1892,13 @@ async function confirmPurchase(eventId, quantity) {
                     });
                     
                     addNotification(
-                        'Purchase of ' + quantity + ' ' + ticketTypeName + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
+                        'Purchase of ' + quantity + ' ' + ticketTypeName + ' ticket(s) for "' + event.title + '"',
                         'purchase'
                     );
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
-                    syncUserToSupabase();
                     showSuccessPopup(event, ticketsAdded, quantity);
                 });
             },
@@ -2060,7 +1939,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
         '<div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">' + escapeHtml(event.country || 'Not specified') + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Organizer</span><span class="ticket-value">' + escapeHtml(event.organizerName || event.organizer) + '</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">' + qty + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Price per ticket</span><span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Price per ticket</span><span class="ticket-value">' + (ticket.price || 0).toFixed(6) + ' Pi</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
         '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
     
@@ -2124,7 +2003,7 @@ async function handleImageUploadModern(file, index) {
             progress.style.display = 'none';
             progressFill.style.width = '0%';
             
-            // Afficher l'image dans l'aperçu
+            // AFFICHER L'IMAGE DANS L'APERÇU
             previewImage.src = compressedData;
             previewContainer.style.display = 'block';
             box.classList.add('has-image');
@@ -2286,10 +2165,10 @@ function openPublishConfirm(eventData) {
     if (ticketTypesDisplay && eventData.ticketTypes) {
         var typesHtml = '';
         if (eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled) {
-            typesHtml += '<span style="display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">Standard: ' + eventData.ticketTypes.standard.price + ' Pi</span> ';
+            typesHtml += '<span style="display:inline-block;background:#e8f5e9;color:#2e7d32;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">Standard: ' + eventData.ticketTypes.standard.price.toFixed(6) + ' Pi</span> ';
         }
         if (eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled) {
-            typesHtml += '<span style="display:inline-block;background:#fff3e0;color:#e65100;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">VIP: ' + eventData.ticketTypes.vip.price + ' Pi</span> ';
+            typesHtml += '<span style="display:inline-block;background:#fff3e0;color:#e65100;padding:2px 12px;border-radius:12px;font-size:0.7rem;margin:2px;">VIP: ' + eventData.ticketTypes.vip.price.toFixed(6) + ' Pi</span> ';
         }
         ticketTypesDisplay.innerHTML = typesHtml || 'Not specified';
     }
@@ -2465,10 +2344,10 @@ function renderMyEventCard(event) {
     if (event.ticketTypes) {
         var types = [];
         if (event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-            types.push('Standard (' + event.ticketTypes.standard.price + ' Pi)');
+            types.push('Standard (' + event.ticketTypes.standard.price.toFixed(6) + ' Pi)');
         }
         if (event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
-            types.push('VIP (' + event.ticketTypes.vip.price + ' Pi)');
+            types.push('VIP (' + event.ticketTypes.vip.price.toFixed(6) + ' Pi)');
         }
         if (types.length > 0) {
             ticketTypesDisplay = '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + types.join(' | ') + '</div>';
@@ -2490,7 +2369,7 @@ function renderMyEventCard(event) {
                 ticketTypesDisplay +
             '</div>' +
             '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
-                '<div><span class="event-price">' + event.price + ' Pi</span></div>' +
+                '<div><span class="event-price">' + event.price.toFixed(6) + ' Pi</span></div>' +
                 '<div style="display:flex; gap:8px;">' +
                     '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
                 '</div>' +
@@ -2623,7 +2502,7 @@ function openEventDetails(eventId) {
     var dateEvent = new Date(event.date);
     document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('detailLocation').textContent = event.location || 'Online';
-    document.getElementById('detailPrice').textContent = event.price + ' Pi';
+    document.getElementById('detailPrice').textContent = event.price.toFixed(6) + ' Pi';
     document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
     document.getElementById('detailDescription').textContent = event.description || 'No description';
     document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
@@ -3284,7 +3163,8 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== FAQ =====// ============================================================
+// ===== FAQ =====
+// ============================================================
 
 var faqData = [
     [
@@ -3675,7 +3555,6 @@ function trackUserConnection() {
             existing.loyaltyPoints = currentUser.loyaltyPoints || 0;
         }
         localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-        syncUserToSupabase();
     }
 }
 
@@ -3722,7 +3601,6 @@ document.addEventListener('DOMContentLoaded', function() {
     renderEventsByCategory(); 
     updateUserInfo(); 
     updateProfilePage(); 
-    updateAllProfileImages();
     updateNotifBadgeHeader();
     initAdmin(); 
     initChat(); 
@@ -3761,7 +3639,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var clearDataBtn = document.getElementById('clearDataBtn');
     var backBtn = document.getElementById('backBtn');
     
-    // Suppression des input de photo de profil
+    // Suppression des inputs de photo de profil
     var profilePhotoInputSidebar = document.getElementById('profilePhotoInputSidebar');
     if (profilePhotoInputSidebar) {
         profilePhotoInputSidebar.style.display = 'none';
@@ -3904,14 +3782,12 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAllFromSupabase();
 
     setInterval(function() {
-        syncUserToSupabase();
         syncEventsToSupabase();
         syncTicketsToSupabase();
         syncNotificationsToSupabase();
     }, 30000);
 
     window.addEventListener('beforeunload', function() {
-        syncUserToSupabase();
         syncEventsToSupabase();
         syncTicketsToSupabase();
         syncNotificationsToSupabase();
