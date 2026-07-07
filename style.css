@@ -397,11 +397,6 @@ body {
     padding: 0 4px;
 }
 
-.sidebar-language-selector .lang-widget {
-    display: block;
-    width: 100%;
-}
-
 .lang-select-native-sidebar {
     width: 100% !important;
     padding: 8px 12px !important;
@@ -2247,7 +2242,7 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
 #quantityEventInfo {
     font-size: 0.85rem;
     color: var(--gray);
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .quantity-selector {
@@ -2311,7 +2306,166 @@ body.dark-mode .modal-edit-event .modal-actions .btn-secondary-modal:hover {
     margin-top: 16px;
 }
 
-/* ===== TICKET TYPES SELECTOR ===== */
+/* ===== TICKET TYPE SELECTOR AVEC QUANTITÉS ===== */
+.ticket-type-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0;
+    width: 100%;
+}
+
+.ticket-type-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ticket-type-option:hover {
+    border-color: #f5a623;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.ticket-type-option.selected {
+    border-color: #f5a623;
+    background: #fefaf0;
+    box-shadow: 0 4px 15px rgba(245, 166, 35, 0.12);
+}
+
+.ticket-type-option .type-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 80px;
+}
+
+.ticket-type-option .type-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--dark);
+}
+
+.ticket-type-option .type-price {
+    font-size: 0.8rem;
+    color: #f5a623;
+    font-weight: 600;
+}
+
+.ticket-type-option .type-quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ticket-type-option .qty-mini {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid #e5e7eb;
+    background: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--dark);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-type-option .qty-mini:hover {
+    border-color: #f5a623;
+    background: #f5a623;
+    color: white;
+}
+
+.ticket-type-option .qty-mini:active {
+    transform: scale(0.9);
+}
+
+.ticket-type-option .qty-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-width: 24px;
+    text-align: center;
+    color: var(--dark);
+}
+
+.ticket-type-option .type-check {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f5a623;
+    color: white;
+    font-size: 0.6rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-type-option.selected .type-check {
+    display: flex;
+}
+
+body.dark-mode .ticket-type-option {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+body.dark-mode .ticket-type-option .type-name {
+    color: #f3f4f6;
+}
+
+body.dark-mode .ticket-type-option .qty-value {
+    color: #f3f4f6;
+}
+
+body.dark-mode .ticket-type-option.selected {
+    background: #1a2332;
+    border-color: #f5a623;
+}
+
+body.dark-mode .ticket-type-option .qty-mini {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+body.dark-mode .ticket-type-option .qty-mini:hover {
+    border-color: #f5a623;
+    background: #f5a623;
+    color: #1a1a2e;
+}
+
+@media (max-width: 480px) {
+    .ticket-type-option {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 10px 14px;
+    }
+    .ticket-type-option .type-info {
+        align-items: center;
+    }
+    .ticket-type-option .type-quantity {
+        justify-content: center;
+    }
+}
+
+/* ===== TICKET TYPES CONTAINER ===== */
 .ticket-types-container {
     background: #f8fafc;
     border-radius: 12px;
@@ -2394,7 +2548,7 @@ body.dark-mode .ticket-type-row .ticket-type-price:focus {
     border-color: #f5a623;
 }
 
-/* ===== TICKET TYPE BADGE ON CARD ===== */
+/* ===== TICKET TYPE BADGE ===== */
 .ticket-type-badge {
     display: inline-block;
     font-size: 0.55rem;
@@ -2424,87 +2578,6 @@ body.dark-mode .ticket-type-badge.standard {
 body.dark-mode .ticket-type-badge.vip {
     background: rgba(245, 166, 35, 0.25);
     color: #f5a623;
-}
-
-/* ===== QUANTITY POPUP TICKET TYPE SELECTOR ===== */
-.ticket-type-selector {
-    display: flex;
-    gap: 10px;
-    margin: 12px 0;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.ticket-type-option {
-    flex: 1;
-    min-width: 100px;
-    padding: 10px 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s ease;
-    background: white;
-    position: relative;
-}
-
-.ticket-type-option:hover {
-    border-color: #f5a623;
-    transform: translateY(-2px);
-}
-
-.ticket-type-option.selected {
-    border-color: #f5a623;
-    background: #fefaf0;
-    box-shadow: 0 4px 15px rgba(245, 166, 35, 0.15);
-}
-
-.ticket-type-option .type-name {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--dark);
-    display: block;
-}
-
-.ticket-type-option .type-price {
-    font-size: 0.8rem;
-    color: #f5a623;
-    font-weight: 600;
-    display: block;
-    margin-top: 2px;
-}
-
-.ticket-type-option .type-check {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #f5a623;
-    color: white;
-    font-size: 0.6rem;
-    display: none;
-    align-items: center;
-    justify-content: center;
-}
-
-.ticket-type-option.selected .type-check {
-    display: flex;
-}
-
-body.dark-mode .ticket-type-option {
-    background: #374151;
-    border-color: #4b5563;
-}
-
-body.dark-mode .ticket-type-option .type-name {
-    color: #f3f4f6;
-}
-
-body.dark-mode .ticket-type-option.selected {
-    background: #1a2332;
-    border-color: #f5a623;
 }
 
 .success-popup {
@@ -4863,8 +4936,16 @@ body.dark-mode #notificationsList .notification-item.unread {
         grid-template-columns: 1fr 1fr;
     }
     .ticket-type-option {
-        min-width: 70px;
-        padding: 8px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 10px 14px;
+    }
+    .ticket-type-option .type-info {
+        align-items: center;
+    }
+    .ticket-type-option .type-quantity {
+        justify-content: center;
     }
 }
 
@@ -5095,14 +5176,31 @@ body.dark-mode #notificationsList .notification-item.unread {
         letter-spacing: 4px;
     }
     .ticket-type-option {
-        min-width: 60px;
-        padding: 6px 10px;
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 8px 12px;
+    }
+    .ticket-type-option .type-info {
+        align-items: center;
+    }
+    .ticket-type-option .type-quantity {
+        justify-content: center;
     }
     .ticket-type-option .type-name {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
     }
     .ticket-type-option .type-price {
         font-size: 0.7rem;
+    }
+    .ticket-type-option .qty-mini {
+        width: 26px;
+        height: 26px;
+        font-size: 0.85rem;
+    }
+    .ticket-type-option .qty-value {
+        font-size: 0.95rem;
+        min-width: 20px;
     }
 }
 
