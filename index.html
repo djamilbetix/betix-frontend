@@ -14,19 +14,27 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- Pi SDK Initialization -->
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
-                Pi.init({ version: "2.0", sandbox: true });
-                console.log("Pi SDK initialized");
-                window.piSDKReady = true;
+                try {
+                    Pi.init({ version: "2.0", sandbox: true });
+                    console.log("Pi SDK initialized");
+                    window.piSDKReady = true;
+                } catch (e) {
+                    console.log("Pi SDK init error:", e);
+                    window.piSDKReady = false;
+                }
             } else {
                 console.log("Waiting for Pi SDK...");
                 setTimeout(initPiSDK, 200);
+                setTimeout(initPiSDK, 500);
+                setTimeout(initPiSDK, 1000);
+                setTimeout(initPiSDK, 2000);
+                setTimeout(initPiSDK, 3000);
             }
         })();
-        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 1000);
-        setTimeout(function() { if (typeof Pi !== 'undefined') Pi.init({ version: "2.0", sandbox: true }); }, 3000);
     </script>
     
     <!-- Google Translate Script -->
@@ -207,7 +215,7 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE (avec types de billets modernes) ===== -->
+<!-- ===== CREATE EVENT PAGE ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -236,7 +244,6 @@
             
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
-            <!-- Durée de l'événement -->
             <div class="form-group">
                 <label>Duration</label>
                 <div class="event-duration-wrapper">
@@ -262,7 +269,7 @@
             
             <div class="form-group"><label>Total Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
             
-            <!-- ===== TYPES DE BILLETS - NOUVEAU COMPOSANT ===== -->
+            <!-- ===== TYPES DE BILLETS ===== -->
             <div class="form-group">
                 <div class="ticket-types-container">
                     <div class="ticket-types-title">
@@ -270,7 +277,6 @@
                     </div>
                     <p class="ticket-types-subtitle">Enable at least one ticket type and set its price</p>
                     
-                    <!-- STANDARD -->
                     <div class="ticket-type-row standard">
                         <div class="type-toggle">
                             <span class="type-icon">🎫</span>
@@ -288,7 +294,6 @@
                         <span class="type-status-badge active" id="standardStatusBadge">Active</span>
                     </div>
                     
-                    <!-- VIP -->
                     <div class="ticket-type-row vip">
                         <div class="type-toggle">
                             <span class="type-icon">⭐</span>
@@ -354,7 +359,6 @@
                 <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
-            <!-- ===== BOUTON PUBLISH AVEC SPINNER ===== -->
             <div class="btn-publish-wrapper">
                 <button type="submit" class="btn-primary" id="publishEventBtn">
                     <span class="btn-icon"><i class="fas fa-rocket"></i></span>
@@ -474,7 +478,7 @@
     <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== PROFILE PAGE (sans photo) ===== -->
+<!-- ===== PROFILE PAGE ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -842,7 +846,7 @@
     </div>
 </div>
 
-<!-- ===== TICKET QUANTITY POPUP (avec sélection de type) ===== -->
+<!-- ===== TICKET QUANTITY POPUP ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
