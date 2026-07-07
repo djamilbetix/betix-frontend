@@ -354,7 +354,13 @@
                 <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
-            <button type="submit" class="btn-primary" id="publishEventBtn">Publish Event</button>
+            <!-- ===== BOUTON PUBLISH AVEC SPINNER ===== -->
+            <div class="btn-publish-wrapper">
+                <button type="submit" class="btn-primary" id="publishEventBtn">
+                    <span class="btn-icon"><i class="fas fa-rocket"></i></span>
+                    <span class="btn-text">Publish Event</span>
+                </button>
+            </div>
         </form>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
