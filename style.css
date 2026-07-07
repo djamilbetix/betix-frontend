@@ -1098,6 +1098,104 @@ body {
 }
 
 /* ============================================================
+   ===== BOUTON PUBLISH AVEC SPINNER =====
+   ============================================================ */
+
+.btn-publish-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.btn-publish-wrapper .btn-primary {
+    width: 100%;
+    padding: 0.9rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+}
+
+.btn-publish-wrapper .btn-primary:hover:not(.loading):not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 71, 161, 0.3);
+}
+
+.btn-publish-wrapper .btn-primary:active:not(.loading):not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-publish-wrapper .btn-primary:disabled {
+    cursor: not-allowed;
+}
+
+.btn-publish-wrapper .btn-primary.loading {
+    color: transparent !important;
+    pointer-events: none;
+    cursor: wait;
+    opacity: 0.75;
+}
+
+.btn-publish-wrapper .btn-primary.loading .btn-text {
+    visibility: hidden;
+}
+
+.btn-publish-wrapper .btn-primary.loading .btn-icon {
+    visibility: hidden;
+}
+
+.btn-publish-wrapper .btn-primary.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    margin-left: -14px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-publish-wrapper .btn-primary .btn-icon {
+    font-size: 1.1rem;
+}
+
+.btn-publish-wrapper .btn-primary .btn-text {
+    display: inline-block;
+}
+
+/* Dark mode support for button */
+body.dark-mode .btn-publish-wrapper .btn-primary {
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+}
+
+body.dark-mode .btn-publish-wrapper .btn-primary.loading {
+    opacity: 0.6;
+}
+
+body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
+    border-color: rgba(255, 255, 255, 0.15);
+    border-top-color: #ffffff;
+}
+
+/* ============================================================
    ===== EVENT CARD - STYLE CLASSIQUE =====
    ============================================================ */
 
@@ -2306,6 +2404,28 @@ body {
     transform: scale(0.97);
 }
 
+.publish-btn.confirm.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+    color: transparent !important;
+}
+
+.publish-btn.confirm.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    margin-left: -12px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: btn-spin 0.8s linear infinite;
+}
+
 @media (max-width: 600px) {
     .publish-confirm-professional {
         max-width: 98%;
@@ -2364,9 +2484,14 @@ body {
     margin-top: 0.5rem;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .btn-secondary {
