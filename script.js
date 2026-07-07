@@ -625,7 +625,9 @@ async function loadAllFromSupabase() {
     renderHistory();
     updateProfilePage();
     console.log('All data loaded from Supabase');
-}// ============================================================
+}
+
+// ============================================================
 // ===== RENDER CHAT MESSAGES =====
 // ============================================================
 
@@ -704,63 +706,9 @@ function detectLanguage() {
     return savedLang;
 }
 
-function forceTranslation(lang) {
-    var googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) {
-        googleSelect.value = lang || 'en';
-        googleSelect.dispatchEvent(new Event('change'));
-        localStorage.setItem('betix_language', lang || 'en');
-    }
-}
-
 // ============================================================
 // ===== NOTIFICATIONS =====
 // ============================================================
-
-function openNotificationPanel() {
-    var panel = document.getElementById('notificationPanel');
-    if (panel) {
-        panel.classList.toggle('open');
-        if (panel.classList.contains('open')) {
-            renderNotificationPanel();
-        }
-    }
-}
-
-function closeNotificationPanel() {
-    var panel = document.getElementById('notificationPanel');
-    if (panel) {
-        panel.classList.remove('open');
-    }
-}
-
-function renderNotificationPanel() {
-    var container = document.getElementById('notificationPanelBody');
-    if (!container) return;
-    if (!notifications || notifications.length === 0) {
-        container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
-        return;
-    }
-    var html = '';
-    for (var i = 0; i < Math.min(notifications.length, 20); i++) {
-        var notif = notifications[i];
-        var time = new Date(notif.date);
-        var timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        var unreadClass = notif.read ? '' : 'unread';
-        var icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
-        html += '<div class="notification-item ' + unreadClass + '">' +
-            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-content">' +
-                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
-                '<div class="notif-time">' + timeStr + '</div>' +
-            '</div>' +
-        '</div>';
-        notifications[i].read = true;
-    }
-    container.innerHTML = html;
-    saveNotifications();
-    updateNotifBadgeHeader();
-}
 
 function renderNotificationsPage() {
     var container = document.getElementById('notificationsList');
@@ -788,10 +736,6 @@ function renderNotificationsPage() {
     container.innerHTML = html;
     saveNotifications();
     updateNotifBadgeHeader();
-}
-
-function toggleNotifications() {
-    openNotificationPanel();
 }
 
 function updateNotifBadgeHeader() {
@@ -995,7 +939,6 @@ function updateConnectButtons() {
 // ============================================================
 
 async function connectToPi() {
-    // Afficher le spinner
     showConnectSpinner();
     
     try {
@@ -1085,45 +1028,70 @@ function setupTicketTypesUI() {
     const vipCheckbox = document.getElementById('ticketVipEnabled');
     const standardPriceGroup = document.getElementById('standardPriceGroup');
     const vipPriceGroup = document.getElementById('vipPriceGroup');
+    const standardStatusBadge = document.getElementById('standardStatusBadge');
+    const vipStatusBadge = document.getElementById('vipStatusBadge');
+    
+    function updateStatusBadge(checkbox, badge, activeText = 'Active', inactiveText = 'Inactive') {
+        if (!checkbox || !badge) return;
+        if (checkbox.checked) {
+            badge.textContent = activeText;
+            badge.className = 'type-status-badge active';
+        } else {
+            badge.textContent = inactiveText;
+            badge.className = 'type-status-badge inactive';
+        }
+    }
     
     if (standardCheckbox && standardPriceGroup) {
         standardCheckbox.addEventListener('change', function() {
-            standardPriceGroup.style.display = this.checked ? 'flex' : 'none';
             if (this.checked) {
+                standardPriceGroup.classList.remove('hidden');
+                standardPriceGroup.style.display = 'flex';
                 document.getElementById('ticketStandardPrice').required = true;
             } else {
+                standardPriceGroup.classList.add('hidden');
+                standardPriceGroup.style.display = 'none';
                 document.getElementById('ticketStandardPrice').required = false;
                 document.getElementById('ticketStandardPrice').value = '';
             }
+            updateStatusBadge(standardCheckbox, standardStatusBadge);
         });
-        // Initial state
         if (standardCheckbox.checked) {
+            standardPriceGroup.classList.remove('hidden');
             standardPriceGroup.style.display = 'flex';
             document.getElementById('ticketStandardPrice').required = true;
         } else {
+            standardPriceGroup.classList.add('hidden');
             standardPriceGroup.style.display = 'none';
             document.getElementById('ticketStandardPrice').required = false;
         }
+        updateStatusBadge(standardCheckbox, standardStatusBadge);
     }
     
     if (vipCheckbox && vipPriceGroup) {
         vipCheckbox.addEventListener('change', function() {
-            vipPriceGroup.style.display = this.checked ? 'flex' : 'none';
             if (this.checked) {
+                vipPriceGroup.classList.remove('hidden');
+                vipPriceGroup.style.display = 'flex';
                 document.getElementById('ticketVipPrice').required = true;
             } else {
+                vipPriceGroup.classList.add('hidden');
+                vipPriceGroup.style.display = 'none';
                 document.getElementById('ticketVipPrice').required = false;
                 document.getElementById('ticketVipPrice').value = '';
             }
+            updateStatusBadge(vipCheckbox, vipStatusBadge);
         });
-        // Initial state
         if (vipCheckbox.checked) {
+            vipPriceGroup.classList.remove('hidden');
             vipPriceGroup.style.display = 'flex';
             document.getElementById('ticketVipPrice').required = true;
         } else {
+            vipPriceGroup.classList.add('hidden');
             vipPriceGroup.style.display = 'none';
             document.getElementById('ticketVipPrice').required = false;
         }
+        updateStatusBadge(vipCheckbox, vipStatusBadge);
     }
 }
 
@@ -1165,7 +1133,6 @@ function openQuantityPopup(eventId) {
         quantityInput.min = 1;
     }
     
-    // Remplir les options de types de billets
     if (ticketTypeSelect) {
         ticketTypeSelect.innerHTML = '';
         var options = [];
@@ -1176,7 +1143,6 @@ function openQuantityPopup(eventId) {
             options.push({ value: 'vip', label: 'VIP - ' + event.ticketTypes.vip.price + ' Pi' });
         }
         if (options.length === 0) {
-            // Fallback: utiliser le prix par défaut
             options.push({ value: 'standard', label: 'Standard - ' + event.price + ' Pi' });
         }
         for (var i = 0; i < options.length; i++) {
@@ -1381,17 +1347,50 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT (AVEC TYPES DE BILLETS ET DURÉE) =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 async function createEvent(e) {
     e.preventDefault();
+    
     if (!currentUser.wallet) { 
         alert('Connect your Pi account first'); 
         return; 
     }
     
-    // Vérifier les types de billets
+    var title = document.getElementById('eventTitle').value.trim();
+    var category = document.getElementById('eventCategory').value;
+    var country = document.getElementById('eventCountry').value;
+    var date = document.getElementById('eventDate').value;
+    var location = document.getElementById('eventLocation').value.trim();
+    var description = document.getElementById('eventDescription').value.trim();
+    var conditions = document.getElementById('eventConditions').value.trim();
+    var seatsTotal = parseInt(document.getElementById('eventSeats').value);
+    var durationValue = document.getElementById('eventDurationValue').value;
+    var durationUnit = document.getElementById('eventDurationUnit').value;
+    var durationValueNum = durationValue ? parseInt(durationValue) : null;
+    
+    if (!title) {
+        alert('Please enter a title');
+        return;
+    }
+    if (!date) {
+        alert('Please select a date and time');
+        return;
+    }
+    if (!location) {
+        alert('Please enter a location');
+        return;
+    }
+    if (!seatsTotal || seatsTotal < 1) {
+        alert('Please enter a valid number of seats');
+        return;
+    }
+    if (!conditions) {
+        alert('Please add participation conditions');
+        return;
+    }
+    
     var standardEnabled = document.getElementById('ticketStandardEnabled').checked;
     var vipEnabled = document.getElementById('ticketVipEnabled').checked;
     var standardPrice = parseFloat(document.getElementById('ticketStandardPrice').value);
@@ -1412,20 +1411,6 @@ async function createEvent(e) {
         return;
     }
     
-    var conditions = document.getElementById('eventConditions').value.trim();
-    if (!conditions) {
-        alert('Please add participation conditions');
-        return;
-    }
-    
-    var category = document.getElementById('eventCategory').value;
-    var country = document.getElementById('eventCountry').value;
-    
-    var durationValue = document.getElementById('eventDurationValue').value;
-    var durationUnit = document.getElementById('eventDurationUnit').value;
-    var durationValueNum = durationValue ? parseInt(durationValue) : null;
-    
-    // Récupérer les images (base64)
     var images = getUploadedImages();
     if (images.length < 2) { 
         alert('Please add 2 photos for your event'); 
@@ -1434,16 +1419,16 @@ async function createEvent(e) {
     
     var newEvent = {
         id: Date.now().toString(),
-        title: document.getElementById('eventTitle').value,
+        title: title,
         category: category,
         country: country,
-        date: document.getElementById('eventDate').value,
-        location: document.getElementById('eventLocation').value,
-        description: document.getElementById('eventDescription').value,
+        date: date,
+        location: location,
+        description: description || '',
         conditions: conditions,
         price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
-        seatsTotal: parseInt(document.getElementById('eventSeats').value),
-        seatsLeft: parseInt(document.getElementById('eventSeats').value),
+        seatsTotal: seatsTotal,
+        seatsLeft: seatsTotal,
         images: images,
         coverImage: images[0],
         organizer: currentUser.wallet,
@@ -1458,11 +1443,6 @@ async function createEvent(e) {
             vip: { enabled: vipEnabled, price: vipPrice || 0 }
         }
     };
-    
-    if (!newEvent.title || !newEvent.date || !newEvent.location || !newEvent.seatsTotal) { 
-        alert('Please fill in all required fields'); 
-        return; 
-    }
     
     openPublishConfirm(newEvent);
 }
@@ -1486,7 +1466,6 @@ function openPublishConfirm(eventData) {
     document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
     document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
     
-    // Afficher les types de billets
     var ticketTypesDisplay = document.getElementById('confirmTicketTypes');
     if (ticketTypesDisplay) {
         var types = [];
@@ -1529,50 +1508,68 @@ function closePublishConfirmPopup() {
 }
 
 async function confirmPublishEvent() {
-    if (!pendingEventData) return;
+    if (!pendingEventData) {
+        alert('No event data to publish');
+        return;
+    }
     
-    var newEvent = pendingEventData;
-    
-    var uploadedUrls = [];
-    if (newEvent.images && newEvent.images.length > 0) {
-        for (var i = 0; i < newEvent.images.length; i++) {
-            var imageData = newEvent.images[i];
-            var url = await uploadEventImage(newEvent.id, imageData, i);
-            if (url) {
-                uploadedUrls.push(url);
-            } else {
-                uploadedUrls.push(imageData);
+    try {
+        var newEvent = pendingEventData;
+        
+        var uploadedUrls = [];
+        if (newEvent.images && newEvent.images.length > 0) {
+            for (var i = 0; i < newEvent.images.length; i++) {
+                var imageData = newEvent.images[i];
+                var url = await uploadEventImage(newEvent.id, imageData, i);
+                if (url) {
+                    uploadedUrls.push(url);
+                } else {
+                    uploadedUrls.push(imageData);
+                }
             }
         }
+        
+        newEvent.images = uploadedUrls;
+        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
+        newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+        
+        events.push(newEvent);
+        saveEvents();
+        
+        var form = document.getElementById('eventForm');
+        if (form) form.reset();
+        
+        for (var i = 0; i < 2; i++) {
+            removeImageModern(i);
+        }
+        uploadedImages = {};
+        
+        var standardCheckbox = document.getElementById('ticketStandardEnabled');
+        var vipCheckbox = document.getElementById('ticketVipEnabled');
+        if (standardCheckbox) standardCheckbox.checked = true;
+        if (vipCheckbox) vipCheckbox.checked = false;
+        setupTicketTypesUI();
+        
+        addNotification(
+            'New event "' + newEvent.title + '" has been published!',
+            'event'
+        );
+        
+        closePublishConfirmPopup();
+        renderEventsByCategory();
+        updateProfilePage();
+        
+        alert('Event "' + newEvent.title + '" has been successfully published!');
+        showPage('home');
+        
+    } catch (error) {
+        console.error('Error publishing event:', error);
+        alert('An error occurred while publishing the event: ' + error.message);
     }
-    
-    newEvent.images = uploadedUrls;
-    newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
-    newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
-    
-    events.push(newEvent);
-    saveEvents();
-    
-    document.getElementById('eventForm').reset();
-    for (var i = 0; i < 2; i++) {
-        removeImageModern(i);
-    }
-    uploadedImages = {};
-    
-    addNotification(
-        'New event "' + newEvent.title + '" has been published!',
-        'event'
-    );
-    
-    closePublishConfirmPopup();
-    renderEventsByCategory();
-    updateProfilePage();
-    alert('Event "' + newEvent.title + '" has been successfully published!');
-    showPage('home');
 }
 
 // ============================================================
-// ===== IMAGE UPLOAD (simplifié) =====
+// ===== IMAGE UPLOAD =====
 // ============================================================
 
 function compressImage(file) {
@@ -1698,8 +1695,6 @@ function removeImageModern(index) {
     box.classList.remove('compress');
     input.value = '';
     delete uploadedImages[index];
-    
-    console.log('Image ' + (index + 1) + ' removed');
 }
 
 function getUploadedImages() {
@@ -1734,7 +1729,6 @@ function openEditEventModal(eventId) {
     document.getElementById('editEventLocation').value = event.location || '';
     document.getElementById('editEventConditions').value = event.conditions || '';
     document.getElementById('editEventSeats').value = event.seatsTotal || 0;
-    
     document.getElementById('editEventDurationValue').value = event.durationValue || '';
     document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
     
@@ -1814,7 +1808,7 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== PROFILE (sans photo) =====
+// ===== PROFILE =====
 // ============================================================
 
 function updateUserInfo() {
@@ -1860,7 +1854,6 @@ function updateProfilePage() {
     });
     if (myEventsCount) myEventsCount.innerText = myEvents.length;
     
-    // Avatar placeholder (sans photo)
     var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
     if (profilePlaceholder) {
         profilePlaceholder.style.display = 'flex';
@@ -2602,7 +2595,6 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="new-badge">New</span>';
     }
     
-    // Afficher le prix selon les types de billets
     var priceDisplay = '';
     if (event.ticketTypes?.standard?.enabled) {
         priceDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
@@ -2621,43 +2613,30 @@ function renderEventCard(event) {
     }
     
     return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
-        
         '<div class="poster-wrapper-classic">' +
             '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
         '</div>' +
-        
         '<div class="card-content-classic">' +
-            
-            '<div class="event-title-classic">' +
-                escapeHtml(event.title) +
-            '</div>' +
-            
+            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
             (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
-            
             '<div class="info-grid-classic">' +
                 '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
-            
             durationDisplay +
-            
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
                 '<span class="event-price-classic">' + priceDisplay + '</span>' +
                 ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
             '</div>' +
-            
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
-            
             '<div class="event-organizer-classic">' +
                 '<span class="org-icon">👤</span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
-            
         '</div>' +
-        
     '</div>';
 }
 
@@ -3372,7 +3351,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initFaq();
     renderAdminLogs();
     
-    // Setup ticket types UI
     setupTicketTypesUI();
     
     var storedPassword = localStorage.getItem('betix_admin_password');
@@ -3391,7 +3369,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var menuBtn = document.getElementById('menuBtn');
     var closeSidebarBtn = document.getElementById('closeSidebarBtn');
     var overlay = document.getElementById('overlay');
-    var sidebarWalletBtn = document.getElementById('sidebarWalletBtn');
     var eventForm = document.getElementById('eventForm');
     var searchInput = document.getElementById('searchInput');
     var clearDataBtn = document.getElementById('clearDataBtn');
@@ -3409,7 +3386,6 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmBuyBtn.addEventListener('click', confirmPurchaseFromPopup);
     }
     
-    // Ticket type select change listener
     var ticketTypeSelect = document.getElementById('ticketTypeSelect');
     if (ticketTypeSelect) {
         ticketTypeSelect.addEventListener('change', updateTicketTotal);
