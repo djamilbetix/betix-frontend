@@ -750,7 +750,6 @@ async function loadAllFromSupabase() {
                 console.warn('Error parsing ticket_types:', err);
             }
             
-            // S'assurer que standard existe toujours
             if (!ticketTypes.standard) {
                 ticketTypes.standard = { enabled: true, price: e.ticket_price || 0.0003 };
             }
@@ -1958,7 +1957,10 @@ function closeSuccessPopup() {
 // ============================================================
 
 async function handleImageUploadModern(file, index) {
-    if (!file) return;
+    if (!file) {
+        console.warn('No file selected for index', index);
+        return;
+    }
     
     if (!file.type.startsWith('image/')) {
         alert('Please select an image');
@@ -2053,6 +2055,7 @@ function getUploadedImages() {
 
 function createEvent(e) {
     e.preventDefault();
+    
     if (!currentUser.wallet) { 
         alert('Connect your Pi account first'); 
         return; 
@@ -2078,14 +2081,19 @@ function createEvent(e) {
     var durationValueNum = durationValue ? parseInt(durationValue) : null;
     
     // Récupérer les types de billets
+    var standardEnabled = document.getElementById('ticketStandardEnabled').checked;
+    var standardPrice = parseFloat(document.getElementById('ticketStandardPrice').value);
+    var vipEnabled = document.getElementById('ticketVipEnabled').checked;
+    var vipPrice = parseFloat(document.getElementById('ticketVipPrice').value);
+    
     var ticketTypes = {
         standard: {
-            enabled: document.getElementById('ticketStandardEnabled').checked,
-            price: parseFloat(document.getElementById('ticketStandardPrice').value) || 0
+            enabled: standardEnabled,
+            price: standardEnabled ? standardPrice : 0
         },
         vip: {
-            enabled: document.getElementById('ticketVipEnabled').checked,
-            price: parseFloat(document.getElementById('ticketVipPrice').value) || 0
+            enabled: vipEnabled,
+            price: vipEnabled ? vipPrice : 0
         }
     };
     
@@ -2096,12 +2104,14 @@ function createEvent(e) {
     }
     
     // Vérifier que les prix sont renseignés pour les types sélectionnés
-    if (ticketTypes.standard.enabled && (!ticketTypes.standard.price || ticketTypes.standard.price <= 0)) {
+    if (ticketTypes.standard.enabled && (!ticketTypes.standard.price || ticketTypes.standard.price <= 0 || isNaN(ticketTypes.standard.price))) {
         alert('Please enter a valid price for Standard tickets');
+        document.getElementById('ticketStandardPrice').focus();
         return;
     }
-    if (ticketTypes.vip.enabled && (!ticketTypes.vip.price || ticketTypes.vip.price <= 0)) {
+    if (ticketTypes.vip.enabled && (!ticketTypes.vip.price || ticketTypes.vip.price <= 0 || isNaN(ticketTypes.vip.price))) {
         alert('Please enter a valid price for VIP tickets');
+        document.getElementById('ticketVipPrice').focus();
         return;
     }
     
@@ -2112,7 +2122,7 @@ function createEvent(e) {
         id: Date.now().toString(),
         title: document.getElementById('eventTitle').value,
         category: category,
-        country: country,
+        country: country || 'France',
         date: document.getElementById('eventDate').value,
         location: document.getElementById('eventLocation').value,
         description: document.getElementById('eventDescription').value,
@@ -3639,28 +3649,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var clearDataBtn = document.getElementById('clearDataBtn');
     var backBtn = document.getElementById('backBtn');
     
-    // Suppression des inputs de photo de profil
-    var profilePhotoInputSidebar = document.getElementById('profilePhotoInputSidebar');
-    if (profilePhotoInputSidebar) {
-        profilePhotoInputSidebar.style.display = 'none';
-    }
-    
-    var profilePhotoInputPage = document.getElementById('profilePhotoInputPage');
-    if (profilePhotoInputPage) {
-        profilePhotoInputPage.style.display = 'none';
-    }
-    
-    // Cacher les boutons d'upload de photo de profil
-    var editIcons = document.querySelectorAll('.profile-edit-icon');
-    for (var i = 0; i < editIcons.length; i++) {
-        editIcons[i].style.display = 'none';
-    }
-    
-    var uploadBtns = document.querySelectorAll('.profile-upload-btn');
-    for (var i = 0; i < uploadBtns.length; i++) {
-        uploadBtns[i].style.display = 'none';
-    }
-    
     updateConnectButtons();
     
     var confirmPublishBtn = document.getElementById('confirmPublishBtn');
@@ -3726,12 +3714,16 @@ document.addEventListener('DOMContentLoaded', function() {
             ticketStandardPrice.disabled = !this.checked;
             if (!this.checked) ticketStandardPrice.value = '';
         });
+        // Initialiser l'état
+        ticketStandardPrice.disabled = !ticketStandardEnabled.checked;
     }
     if (ticketVipEnabled && ticketVipPrice) {
         ticketVipEnabled.addEventListener('change', function() {
             ticketVipPrice.disabled = !this.checked;
             if (!this.checked) ticketVipPrice.value = '';
         });
+        // Initialiser l'état
+        ticketVipPrice.disabled = !ticketVipEnabled.checked;
     }
     
     var imageInputsModern = document.querySelectorAll('.image-input-modern');
