@@ -959,8 +959,33 @@ function showPage(pageName) {
     window.scrollTo(0, 0);
 }
 
-function closeSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.remove('open'); var o = document.getElementById('overlay'); if (o) o.classList.remove('active'); }
-function openSidebar() { var s = document.getElementById('sidebar'); if (s) s.classList.add('open'); var o = document.getElementById('overlay'); if (o) o.classList.add('active'); }
+// ============================================================
+// ===== SIDEBAR - CORRIGÉ =====
+// ============================================================
+
+function closeSidebar() {
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    if (o) {
+        o.classList.remove('active');
+    }
+}
+
+function openSidebar() {
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    if (o) {
+        o.classList.add('active');
+    }
+}
 
 // ============================================================
 // ===== UPDATE CONNECT BUTTONS =====
@@ -972,15 +997,15 @@ function updateConnectButtons() {
         if (currentUser.wallet) {
             sidebarBtn.textContent = 'Disconnect';
             sidebarBtn.classList.add('disconnect');
+            sidebarBtn.classList.remove('loading');
             sidebarBtn.onclick = function() { disconnectPi(); };
             sidebarBtn.disabled = false;
-            sidebarBtn.classList.remove('loading');
         } else {
             sidebarBtn.textContent = 'Connect Pi';
             sidebarBtn.classList.remove('disconnect');
+            sidebarBtn.classList.remove('loading');
             sidebarBtn.onclick = function() { connectToPi(); };
             sidebarBtn.disabled = false;
-            sidebarBtn.classList.remove('loading');
         }
     }
     var profilePageBtn = document.getElementById('profileConnectBtnPage');
@@ -996,7 +1021,7 @@ function updateConnectButtons() {
 }
 
 // ============================================================
-// ===== CONNEXION PI =====
+// ===== CONNEXION PI - AVEC SPINNER =====
 // ============================================================
 
 async function connectToPi() {
@@ -3480,7 +3505,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         detectLanguage();
-        
         loadUsedTickets();
         
         if (!events || events.length === 0) { 
@@ -3525,8 +3549,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         var menuBtn = document.getElementById('menuBtn');
+        if (menuBtn) {
+            console.log('Menu button found, adding click listener');
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Menu button clicked');
+                openSidebar();
+            });
+            menuBtn.style.cursor = 'pointer';
+        } else {
+            console.error('Menu button not found in DOM');
+        }
+        
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Close sidebar clicked');
+                closeSidebar();
+            });
+        }
+        
         var overlay = document.getElementById('overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                console.log('Overlay clicked, closing sidebar');
+                closeSidebar();
+            });
+        }
+        
         var eventForm = document.getElementById('eventForm');
         var searchInput = document.getElementById('searchInput');
         var clearDataBtn = document.getElementById('clearDataBtn');
@@ -3580,9 +3633,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        if (menuBtn) menuBtn.addEventListener('click', openSidebar);
-        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
-        if (overlay) overlay.addEventListener('click', closeSidebar);
         if (eventForm) eventForm.addEventListener('submit', createEvent);
         if (searchInput) searchInput.addEventListener('input', function(e) { 
             searchQuery = e.target.value.toLowerCase(); 
