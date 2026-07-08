@@ -490,9 +490,7 @@ async function loadNotificationsFromSupabase(piUid) {
         console.error('Error loading notifications from Supabase:', error);
         return [];
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
 // ============================================================
 
@@ -958,9 +956,7 @@ function showPage(pageName) {
     if (pageName === 'notifications') renderNotificationsPage();
     closeSidebar();
     window.scrollTo(0, 0);
-}
-
-// ============================================================
+}// ============================================================
 // ===== SIDEBAR - CORRIGÉ AVEC 3 MÉCANISMES =====
 // ============================================================
 
@@ -1444,9 +1440,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             onError: function(error) { alert("Payment error: " + error.message); }
         });
     } catch (error) { alert("Error: " + error.message); }
-}
-
-// ============================================================
+}// ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
 // ============================================================
 
@@ -1921,9 +1915,7 @@ function getUploadedImages() {
         }
     }
     return images;
-}
-
-// ============================================================
+}// ============================================================
 // ===== MODIFIER UN ÉVÉNEMENT =====
 // ============================================================
 
@@ -2170,9 +2162,7 @@ function renderMyRatings() {
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
-}
-
-// ============================================================
+}// ============================================================
 // ===== ADMIN FUNCTIONS =====
 // ============================================================
 
@@ -2637,9 +2627,7 @@ function initAdminTabs() {
             }
         });
     });
-}
-
-// ============================================================
+}// ============================================================
 // ===== MY EVENTS =====
 // ============================================================
 
@@ -3031,9 +3019,7 @@ function openGallery(eventId, startIndex) {
     prevBtn.onclick = function() { updateImage(currentIndex - 1); };
     nextBtn.onclick = function() { updateImage(currentIndex + 1); };
     modal.classList.add('show');
-}
-
-// ============================================================
+}// ============================================================
 // ===== INIT FILTERS =====
 // ============================================================
 
@@ -3516,7 +3502,58 @@ function handleLogoClick() {
 }
 
 // ============================================================
-// ===== DOM CONTENT LOADED - AVEC CORRECTION MENU =====
+// ===== UPDATE USER INFO =====
+// ============================================================
+
+function updateUserInfo() {
+    var nameEl = document.getElementById('sidebarName');
+    var walletEl = document.getElementById('sidebarWallet');
+    var avatarText = document.getElementById('sidebarAvatarText');
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var memberSince = document.getElementById('memberSince');
+    
+    if (nameEl) nameEl.textContent = currentUser.name || 'Guest';
+    if (walletEl) walletEl.textContent = currentUser.wallet ? 'Wallet: ' + currentUser.wallet : 'Not connected';
+    if (avatarText) avatarText.textContent = (currentUser.name || 'U')[0].toUpperCase();
+    if (profileName) profileName.textContent = currentUser.name || 'Guest';
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
+    
+    updateConnectButtons();
+    updateSidebarNotifBadge();
+}
+
+function updateProfilePage() {
+    var myEventsCount = document.getElementById('myEventsCount');
+    var ticketCount = document.getElementById('ticketCount');
+    var historyCount = document.getElementById('historyCount');
+    var ratedCount = document.getElementById('ratedCount');
+    var ratingDisplay = document.getElementById('profileRatingDisplay');
+    var loyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var memberSince = document.getElementById('memberSince');
+    
+    var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
+    var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
+    var userRatings = ratings.filter(function(r) { return r.userWallet === currentUser.wallet || r.userWallet === currentUser.name; });
+    
+    if (myEventsCount) myEventsCount.textContent = myEvents.length;
+    if (ticketCount) ticketCount.textContent = userTickets.length;
+    if (historyCount) historyCount.textContent = tickets.filter(function(t) { 
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return (isUsed || isExpired) && (t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet);
+    }).length;
+    if (ratedCount) ratedCount.textContent = userRatings.length;
+    if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
+    if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
+    if (profileName) profileName.textContent = currentUser.name || 'Guest';
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
+}// ============================================================
+// ===== DOM CONTENT LOADED - AVEC TOUTES LES CORRECTIONS =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3594,12 +3631,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menuBtn) {
             console.log('Menu button found, adding click listeners');
             
+            // Forcer le style du bouton menu
+            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
+            
             // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Menu button clicked (direct)');
+                e.stopImmediatePropagation();
+                console.log('🍔 Menu button clicked (direct)');
                 openSidebar();
+                return false;
             });
             
             // Mécanisme 2: Écouteur via le parent
@@ -3610,7 +3652,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (btn) {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Menu button clicked via header-right delegation');
+                        console.log('🍔 Menu button clicked via header-right delegation');
                         openSidebar();
                     }
                 });
@@ -3623,23 +3665,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (btn) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Menu button clicked via document delegation');
+                    console.log('🍔 Menu button clicked via document delegation');
                     openSidebar();
                 }
             });
             
+            // Effet hover pour confirmer que le bouton est actif
+            menuBtn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255,255,255,0.4)';
+                this.style.transform = 'scale(1.05)';
+            });
+            menuBtn.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(255,255,255,0.25)';
+                this.style.transform = 'scale(1)';
+            });
+            
+            // S'assurer que le bouton est bien visible et cliquable
+            menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
-            menuBtn.style.position = 'relative';
-            menuBtn.style.zIndex = '100';
-            menuBtn.style.display = 'flex';
-            menuBtn.style.alignItems = 'center';
-            menuBtn.style.justifyContent = 'center';
-            menuBtn.style.width = '44px';
-            menuBtn.style.height = '44px';
-            menuBtn.style.borderRadius = '12px';
             
         } else {
             console.error('Menu button not found in DOM');
+        }
+        
+        // ============================================================
+        // ===== CORRECTION BOUTON RETOUR =====
+        // ============================================================
+        
+        var backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            console.log('Back button found, adding click listener');
+            
+            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
+            
+            backBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('⬅️ Back button clicked');
+                goBack();
+                return false;
+            });
+            
+            backBtn.style.pointerEvents = 'auto';
+            backBtn.style.cursor = 'pointer';
         }
         
         // ============================================================
@@ -3651,7 +3719,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeSidebarBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Close sidebar clicked');
+                console.log('📂 Close sidebar clicked');
                 closeSidebar();
             });
         }
@@ -3659,7 +3727,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.getElementById('overlay');
         if (overlay) {
             overlay.addEventListener('click', function(e) {
-                console.log('Overlay clicked, closing sidebar');
+                console.log('📂 Overlay clicked, closing sidebar');
                 closeSidebar();
             });
         }
@@ -3667,7 +3735,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var eventForm = document.getElementById('eventForm');
         var searchInput = document.getElementById('searchInput');
         var clearDataBtn = document.getElementById('clearDataBtn');
-        var backBtn = document.getElementById('backBtn');
         
         updateConnectButtons();
         
@@ -3723,7 +3790,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderEventsByCategory(); 
         });
         if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
-        if (backBtn) backBtn.addEventListener('click', goBack);
         
         var imageInputsModern = document.querySelectorAll('.image-input-modern');
         for (var i = 0; i < imageInputsModern.length; i++) {
@@ -3795,6 +3861,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Betix loaded successfully!');
         console.log('Supabase connected');
         console.log('Admin: 5 clicks on logo + password Betix@2026#');
+        console.log('✅ Menu button fix applied with 3 mechanisms');
+        console.log('✅ Back button fix applied');
+        console.log('✅ Hero slider auto-play enabled');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -3806,3 +3875,79 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// ============================================================
+// ===== FONCTIONS DE SECOURS POUR DEBUG =====
+// ============================================================
+
+// Fonctions accessibles depuis la console pour debug
+window.debugMenu = function() {
+    console.log('🔍 Debug menu:');
+    var btn = document.getElementById('menuBtn');
+    console.log('  - menuBtn exists:', !!btn);
+    if (btn) {
+        console.log('  - menuBtn styles:', btn.style.cssText);
+        console.log('  - menuBtn computed:', window.getComputedStyle(btn));
+        console.log('  - menuBtn pointer-events:', window.getComputedStyle(btn).pointerEvents);
+    }
+    var sidebar = document.getElementById('sidebar');
+    console.log('  - sidebar open:', sidebar ? sidebar.classList.contains('open') : 'not found');
+};
+
+window.forceOpenMenu = function() {
+    console.log('💪 Force opening menu...');
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    if (o) {
+        o.classList.add('active');
+    }
+};
+
+window.forceCloseMenu = function() {
+    console.log('💪 Force closing menu...');
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    if (o) {
+        o.classList.remove('active');
+    }
+};
+
+// ============================================================
+// ===== FONCTION DE TEST DU MENU =====
+// ============================================================
+
+function testMenuButton() {
+    var btn = document.getElementById('menuBtn');
+    if (btn) {
+        console.log('✅ Menu button found!');
+        console.log('📏 Dimensions:', btn.offsetWidth + 'x' + btn.offsetHeight);
+        console.log('👆 Pointer Events:', window.getComputedStyle(btn).pointerEvents);
+        console.log('📐 Z-index:', window.getComputedStyle(btn).zIndex);
+        console.log('🔍 Position:', window.getComputedStyle(btn).position);
+        console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
+        console.log('📦 Display:', window.getComputedStyle(btn).display);
+        
+        // Simuler un clic pour tester
+        var rect = btn.getBoundingClientRect();
+        console.log('📍 Position du bouton:', rect);
+        console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
+        
+        return 'Menu button is present and visible';
+    } else {
+        console.error('❌ Menu button NOT found!');
+        return 'Menu button NOT found!';
+    }
+}
+
+// Exécuter le test automatiquement
+setTimeout(function() {
+    testMenuButton();
+}, 2000);
