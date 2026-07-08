@@ -389,7 +389,7 @@ async function saveTicketToSupabase(ticketData) {
             ticket_type: ticketData.ticketType || 'standard',
             price: ticketData.price || 0,
             qr_code: ticketData.qrCode || '',
-            status: 'Valid',
+            status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
             expiration_date: ticketData.eventDate || null,
             event_title: ticketData.eventTitle || '',
@@ -646,6 +646,7 @@ async function loadAllFromSupabase() {
                         buyerName: t.buyer_name || t.buyer_pi_uid,
                         userWallet: t.buyer_pi_uid,
                         ticketType: t.ticket_type || 'standard',
+                        status: t.status || 'Valid',
                         purchaseDate: t.purchase_date || new Date().toISOString(),
                         purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
                         transactionId: t.transaction_id || '',
@@ -960,7 +961,7 @@ function showPage(pageName) {
 }
 
 // ============================================================
-// ===== SIDEBAR - CORRIGÉ =====
+// ===== SIDEBAR - CORRIGÉ AVEC 3 MÉCANISMES =====
 // ============================================================
 
 function closeSidebar() {
@@ -1398,11 +1399,11 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: piUser ? piUser.username : currentUser.name,
                             userWallet: currentUser.wallet,
+                            status: 'Valid',
                             purchaseDate: new Date().toISOString(),
                             purchaseDateTime: new Date().toLocaleString('en-US'),
                             transactionId: txid,
-                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i,
-                            status: 'Valid'
+                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -2023,7 +2024,7 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY - CORRIGÉ =====
+// ===== TICKETS AND HISTORY - AVEC COULEURS VIP =====
 // ============================================================
 
 function renderTickets() {
@@ -2033,7 +2034,7 @@ function renderTickets() {
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired;
+        return !isUsed && !isExpired && t.status !== 'Used';
     });
     
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
@@ -2052,7 +2053,7 @@ function renderHistory() {
     var history = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
-        return isUsed || isExpired;
+        return isUsed || isExpired || t.status === 'Used';
     });
     
     history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
@@ -2069,9 +2070,15 @@ function renderTicketCard(ticket, status) {
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
+    var isVip = ticket.ticketType === 'vip';
     var statusClass = status === 'valid' ? 'valid' : 'past';
     var statusText = status === 'valid' ? 'Valid' : 'Past Event';
-    var typeLabel = ticket.ticketType === 'vip' ? 'VIP' : 'Standard';
+    var typeLabel = isVip ? 'VIP' : 'Standard';
+    
+    // Couleurs différentes pour VIP
+    var vipClass = isVip ? 'ticket-vip' : '';
+    var vipBadgeStyle = isVip ? 'vip-badge' : '';
+    var vipHeaderStyle = isVip ? 'vip-header' : '';
     
     var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
     var shortQr = qrCode.length > 12 ? qrCode.substring(0, 10) + '...' : qrCode;
@@ -2088,14 +2095,14 @@ function renderTicketCard(ticket, status) {
         useButton = '<button class="btn-use-ticket" onclick="markTicketAsUsed(\'' + ticket.id + '\')">Use Ticket</button>';
     }
     
-    return '<div class="ticket-card-premium">' +
-        '<div class="ticket-header">' +
-            '<span class="ticket-status ' + statusClass + '">' + statusText + ' - ' + typeLabel + '</span>' +
+    return '<div class="ticket-card-premium ' + vipClass + '">' +
+        '<div class="ticket-header ' + vipHeaderStyle + '">' +
+            '<span class="ticket-status ' + statusClass + ' ' + vipBadgeStyle + '">' + statusText + ' - ' + typeLabel + '</span>' +
             '<span class="ticket-number">#' + ticket.id.substring(0, 8).toUpperCase() + '</span>' +
         '</div>' +
         '<div class="ticket-body">' +
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
-            '<span class="ticket-category">' + escapeHtml(categoryDisplay) + ' | ' + typeLabel + '</span>' +
+            '<span class="ticket-category ' + (isVip ? 'vip-category' : '') + '">' + escapeHtml(categoryDisplay) + ' | ' + typeLabel + '</span>' +
             '<div class="ticket-info-grid">' +
                 '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
@@ -2104,7 +2111,7 @@ function renderTicketCard(ticket, status) {
             '</div>' +
             '<div class="ticket-footer">' +
                 '<div class="ticket-qr">' +
-                    '<div class="qr-code">' + shortQr + '</div>' +
+                    '<div class="qr-code ' + (isVip ? 'vip-qr' : '') + '">' + shortQr + '</div>' +
                     '<div><span class="qr-label">Ticket Code</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
                 '</div>' +
                 '<div class="ticket-participant">' +
@@ -2128,7 +2135,17 @@ function markTicketAsUsed(ticketId) {
     
     if (usedTickets.indexOf(ticketId) === -1) {
         usedTickets.push(ticketId);
+        
+        // Mettre à jour le statut du ticket dans le tableau tickets
+        for (var i = 0; i < tickets.length; i++) {
+            if (tickets[i].id === ticketId) {
+                tickets[i].status = 'Used';
+                break;
+            }
+        }
+        
         saveUsedTickets();
+        saveTickets();
         
         addNotification(
             'Ticket has been marked as used',
@@ -3326,7 +3343,7 @@ function initLegalModals() {
 }
 
 // ============================================================
-// ===== HERO SLIDER - CORRIGÉ =====
+// ===== HERO SLIDER - CORRIGÉ AVEC AUTO-PLAY =====
 // ============================================================
 
 function initHeroSlider() {
@@ -3568,23 +3585,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // ============================================================
-        // ===== CORRECTION MENU - AJOUT D'UN ÉCOUTEUR ROBUSTE =====
+        // ===== CORRECTION MENU - 3 MÉCANISMES ROBUSTES =====
         // ============================================================
         
         var menuBtn = document.getElementById('menuBtn');
+        var headerRight = document.getElementById('headerRight');
+        
         if (menuBtn) {
-            console.log('Menu button found, adding click listener');
+            console.log('Menu button found, adding click listeners');
             
-            // Écouteur principal
+            // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Menu button clicked');
+                console.log('Menu button clicked (direct)');
                 openSidebar();
             });
             
-            // Écouteur de secours via le parent du header
-            var headerRight = document.querySelector('.header-right');
+            // Mécanisme 2: Écouteur via le parent
             if (headerRight) {
                 headerRight.addEventListener('click', function(e) {
                     var target = e.target;
@@ -3598,14 +3616,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Mécanisme 3: Écouteur sur le document (ultime secours)
+            document.addEventListener('click', function(e) {
+                var target = e.target;
+                var btn = target.closest('#menuBtn');
+                if (btn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Menu button clicked via document delegation');
+                    openSidebar();
+                }
+            });
+            
             menuBtn.style.cursor = 'pointer';
             menuBtn.style.position = 'relative';
-            menuBtn.style.zIndex = '10';
-            
-            // S'assurer que le bouton n'est pas caché
+            menuBtn.style.zIndex = '100';
             menuBtn.style.display = 'flex';
             menuBtn.style.alignItems = 'center';
             menuBtn.style.justifyContent = 'center';
+            menuBtn.style.width = '44px';
+            menuBtn.style.height = '44px';
+            menuBtn.style.borderRadius = '12px';
             
         } else {
             console.error('Menu button not found in DOM');
