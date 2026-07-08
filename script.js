@@ -19,6 +19,23 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log("Supabase initialized");
 
 // ============================================================
+// ===== TIMEOUT ET GESTION D'ERREURS =====
+// ============================================================
+
+const SUPABASE_TIMEOUT = 10000; // 10 secondes
+
+async function fetchWithTimeout(promise, timeoutMs) {
+    return Promise.race([
+        promise,
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Request timed out'));
+            }, timeoutMs || SUPABASE_TIMEOUT);
+        })
+    ]);
+}
+
+// ============================================================
 // ===== COUNTRY LIST =====
 // ============================================================
 
@@ -44,7 +61,7 @@ const countriesList = [
 ];
 
 // ============================================================
-// ===== COUNTRY FLAGS (émojis conservés) =====
+// ===== COUNTRY FLAGS =====
 // ============================================================
 
 const countryFlags = {
@@ -148,6 +165,8 @@ let uploadedImages = {};
 let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = [];
+let syncRetryCount = 0;
+const MAX_SYNC_RETRIES = 3;
 
 // ============================================================
 // ===== HERO SLIDES =====
@@ -253,7 +272,7 @@ async function uploadEventImage(eventId, base64Data, index) {
 }
 
 // ============================================================
-// ===== SUPABASE TABLE FUNCTIONS =====
+// ===== SUPABASE TABLE FUNCTIONS AVEC TIMEOUT =====
 // ============================================================
 
 async function saveUserToSupabase(piUid, username, wallet, points) {
@@ -339,15 +358,25 @@ async function saveEventToSupabase(eventData) {
 
 async function loadEventsFromSupabase() {
     try {
-        const { data, error } = await supabaseClient
+        const promise = supabaseClient
             .from('events')
             .select('*')
             .order('event_date', { ascending: true });
         
+        const { data, error } = await fetchWithTimeout(promise);
+        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('Error loading events from Supabase:', error);
+        console.warn('Error loading events from Supabase:', error.message);
+        var localEvents = localStorage.getItem('betix_events');
+        if (localEvents) {
+            try {
+                return JSON.parse(localEvents);
+            } catch (e) {
+                return [];
+            }
+        }
         return [];
     }
 }
@@ -416,16 +445,26 @@ async function saveTicketToSupabase(ticketData) {
 
 async function loadTicketsFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        const promise = supabaseClient
             .from('tickets')
             .select('*')
             .eq('buyer_pi_uid', piUid)
             .order('purchase_date', { ascending: false });
         
+        const { data, error } = await fetchWithTimeout(promise);
+        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('Error loading tickets from Supabase:', error);
+        console.warn('Error loading tickets from Supabase:', error.message);
+        var localTickets = localStorage.getItem('betix_tickets');
+        if (localTickets) {
+            try {
+                return JSON.parse(localTickets);
+            } catch (e) {
+                return [];
+            }
+        }
         return [];
     }
 }
@@ -482,16 +521,18 @@ async function saveNotificationToSupabase(notificationData) {
 
 async function loadNotificationsFromSupabase(piUid) {
     try {
-        const { data, error } = await supabaseClient
+        const promise = supabaseClient
             .from('notifications')
             .select('*')
             .eq('receiver_pi_uid', piUid)
             .order('created_at', { ascending: false });
         
+        const { data, error } = await fetchWithTimeout(promise);
+        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('Error loading notifications from Supabase:', error);
+        console.warn('Error loading notifications from Supabase:', error.message);
         return [];
     }
 }
@@ -502,13 +543,13 @@ async function loadNotificationsFromSupabase(piUid) {
 
 function saveEvents() { 
     localStorage.setItem('betix_events', JSON.stringify(events));
-    syncAllDataToSupabase();
+    syncWithRetry();
 }
 
 function saveTickets() { 
     localStorage.setItem('betix_tickets', JSON.stringify(tickets));
     saveUsedTickets();
-    syncAllDataToSupabase();
+    syncWithRetry();
 }
 
 function saveUsedTickets() { 
@@ -530,12 +571,12 @@ function loadUsedTickets() {
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncAllDataToSupabase();
+    syncWithRetry();
 }
 
 function saveNotifications() { 
     localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncAllDataToSupabase();
+    syncWithRetry();
 }
 
 function saveChatMessages() {
@@ -551,7 +592,46 @@ function saveConnectedUsers() {
 }
 
 // ============================================================
-// ===== SYNC ALL DATA - PERSISTANCE =====
+// ===== SYNC FUNCTIONS =====
+// ============================================================
+
+async function syncUserToSupabase() {
+    if (!currentUser.piUid && !currentUser.wallet) return;
+    var piUid = currentUser.piUid || currentUser.wallet;
+    await saveUserToSupabase(
+        piUid,
+        currentUser.name || 'User',
+        currentUser.wallet || piUid,
+        currentUser.loyaltyPoints || 0
+    );
+}
+
+async function syncEventsToSupabase() {
+    for (var i = 0; i < events.length; i++) {
+        await saveEventToSupabase(events[i]);
+    }
+}
+
+async function syncTicketsToSupabase() {
+    for (var i = 0; i < tickets.length; i++) {
+        await saveTicketToSupabase(tickets[i]);
+    }
+}
+
+async function syncNotificationsToSupabase() {
+    for (var i = 0; i < notifications.length; i++) {
+        var notif = notifications[i];
+        var receiverPiUid = notif.userWallet || currentUser.wallet;
+        await saveNotificationToSupabase({
+            ...notif,
+            receiverPiUid: receiverPiUid,
+            title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification'
+        });
+    }
+}
+
+// ============================================================
+// ===== SYNC WITH RETRY =====
 // ============================================================
 
 async function syncAllDataToSupabase() {
@@ -564,20 +644,39 @@ async function syncAllDataToSupabase() {
         await syncTicketsToSupabase();
         await syncNotificationsToSupabase();
         console.log('All data synced successfully');
+        syncRetryCount = 0;
     } catch (error) {
-        console.error('Sync error:', error);
+        console.warn('Sync error - data saved locally:', error.message);
+        throw error;
+    }
+}
+
+async function syncWithRetry() {
+    try {
+        await syncAllDataToSupabase();
+        syncRetryCount = 0;
+    } catch (error) {
+        syncRetryCount++;
+        console.warn('Sync failed, retry ' + syncRetryCount + '/' + MAX_SYNC_RETRIES);
+        if (syncRetryCount < MAX_SYNC_RETRIES) {
+            setTimeout(syncWithRetry, 5000);
+        } else {
+            console.error('Max sync retries reached, data saved locally');
+            syncRetryCount = 0;
+        }
     }
 }
 
 // ============================================================
-// ===== LOAD ALL FROM SUPABASE =====
+// ===== LOAD ALL FROM SUPABASE AVEC FALLBACK =====
 // ============================================================
 
 async function loadAllFromSupabase() {
-    console.log('Loading all data from Supabase...');
+    console.log('Loading all data from Supabase with fallback...');
     loadUsedTickets();
     
     try {
+        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -611,10 +710,16 @@ async function loadAllFromSupabase() {
         } else {
             var localEvents = localStorage.getItem('betix_events');
             if (localEvents) {
-                try { events = JSON.parse(localEvents); } catch(e) { events = []; }
+                try { 
+                    events = JSON.parse(localEvents); 
+                    console.log('Events loaded from localStorage (fallback)');
+                } catch(e) { 
+                    events = []; 
+                }
             }
         }
         
+        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -642,11 +747,17 @@ async function loadAllFromSupabase() {
             } else {
                 var localTickets = localStorage.getItem('betix_tickets');
                 if (localTickets) {
-                    try { tickets = JSON.parse(localTickets); } catch(e) { tickets = []; }
+                    try { 
+                        tickets = JSON.parse(localTickets); 
+                        console.log('Tickets loaded from localStorage (fallback)');
+                    } catch(e) { 
+                        tickets = []; 
+                    }
                 }
             }
         }
         
+        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -669,27 +780,49 @@ async function loadAllFromSupabase() {
         renderTickets();
         renderHistory();
         updateProfilePage();
-        console.log('All data loaded from Supabase');
+        console.log('All data loaded successfully');
     } catch (error) {
         console.error('Error loading data:', error);
         var localEvents = localStorage.getItem('betix_events');
         var localTickets = localStorage.getItem('betix_tickets');
-        if (localEvents) { try { events = JSON.parse(localEvents); } catch(e) {} }
-        if (localTickets) { try { tickets = JSON.parse(localTickets); } catch(e) {} }
+        if (localEvents) { 
+            try { 
+                events = JSON.parse(localEvents); 
+                console.log('Full fallback: Events loaded from localStorage');
+            } catch(e) { 
+                events = []; 
+            }
+        }
+        if (localTickets) { 
+            try { 
+                tickets = JSON.parse(localTickets); 
+                console.log('Full fallback: Tickets loaded from localStorage');
+            } catch(e) { 
+                tickets = []; 
+            }
+        }
         renderEventsByCategory();
         renderTickets();
         renderHistory();
     }
 }
 
-// Sauvegarde automatique toutes les 15 secondes
-setInterval(function() {
-    syncAllDataToSupabase();
-}, 15000);
+// ============================================================
+// ===== TEST DE CONNEXION SUPABASE =====
+// ============================================================
 
-window.addEventListener('beforeunload', function() {
-    syncAllDataToSupabase();
-});
+async function testSupabaseConnection() {
+    try {
+        console.log('Testing Supabase connection...');
+        const promise = supabaseClient.from('events').select('count').limit(1);
+        await fetchWithTimeout(promise, 5000);
+        console.log('✅ Supabase connection successful');
+        return true;
+    } catch (error) {
+        console.warn('⚠️ Supabase connection failed:', error.message);
+        return false;
+    }
+}
 
 // ============================================================
 // ===== RENDER CHAT MESSAGES =====
@@ -1026,7 +1159,7 @@ function updateConnectButtons() {
 }
 
 // ============================================================
-// ===== CONNEXION PI =====
+// ===== CONNEXION PI AVEC GESTION D'ERREURS =====
 // ============================================================
 
 async function connectToPi() {
@@ -1051,13 +1184,19 @@ async function connectToPi() {
                 currentUser.memberSince = '2026';
                 currentUser.loyaltyPoints = 0;
                 saveUser();
-                syncUserToSupabase();
                 updateActivity();
                 updateUserInfo();
                 updateProfilePage();
                 renderEventsByCategory();
                 updateConnectButtons();
-                loadAllFromSupabase();
+                // Charger les données existantes du localStorage
+                var localEvents = localStorage.getItem('betix_events');
+                var localTickets = localStorage.getItem('betix_tickets');
+                if (localEvents) { try { events = JSON.parse(localEvents); } catch(e) {} }
+                if (localTickets) { try { tickets = JSON.parse(localTickets); } catch(e) {} }
+                renderEventsByCategory();
+                renderTickets();
+                renderHistory();
                 alert('Pi account connected (demo mode)! Welcome Demo User');
                 closeSidebar();
                 return;
@@ -1079,7 +1218,6 @@ async function connectToPi() {
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             
             saveUser();
-            await syncUserToSupabase();
             
             updateActivity();
             updateUserInfo();
@@ -1088,6 +1226,7 @@ async function connectToPi() {
             renderEventsByCategory();
             updateConnectButtons();
             
+            // Charger les données avec fallback
             await loadAllFromSupabase();
             
             alert('Pi account connected! Welcome ' + piUser.username);
@@ -3909,7 +4048,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                console.log('Menu button clicked (direct)');
+                console.log('🍔 Menu button clicked (direct)');
                 openSidebar();
                 return false;
             });
@@ -3922,7 +4061,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (btn) {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Menu button clicked via header-right delegation');
+                        console.log('🍔 Menu button clicked via header-right delegation');
                         openSidebar();
                     }
                 });
@@ -3935,7 +4074,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (btn) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Menu button clicked via document delegation');
+                    console.log('🍔 Menu button clicked via document delegation');
                     openSidebar();
                 }
             });
@@ -3953,7 +4092,7 @@ document.addEventListener('DOMContentLoaded', function() {
             menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
             
-            console.log('Menu button fixed!');
+            console.log('✅ Menu button fixed!');
         } else {
             console.error('Menu button not found in DOM');
         }
@@ -3970,7 +4109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             backBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Back button clicked');
+                console.log('⬅️ Back button clicked');
                 goBack();
                 return false;
             });
@@ -4104,11 +4243,19 @@ document.addEventListener('DOMContentLoaded', function() {
         bindActivityListeners(); 
         startSessionMonitor();
 
+        // ============================================================
+        // ===== CHARGEMENT DES DONNÉES AVEC TIMEOUT =====
+        // ============================================================
+        
+        // Charger les données avec fallback
         loadAllFromSupabase();
 
-        // Sauvegarde automatique toutes les 30 secondes
+        // ============================================================
+        // ===== SAUVEGARDE AUTOMATIQUE AVEC RETRY =====
+        // ============================================================
+        
         setInterval(function() {
-            syncAllDataToSupabase();
+            syncWithRetry();
         }, 30000);
 
         window.addEventListener('beforeunload', function() {
@@ -4117,14 +4264,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
         
-        console.log('Betix loaded successfully!');
-        console.log('Supabase connected');
-        console.log('Admin: 5 clicks on logo + password Betix@2026#');
-        console.log('Ticket download feature enabled');
-        console.log('VIP tickets now appear in My Tickets');
-        console.log('Flags preserved for countries');
-        console.log('Menu button fixed with 3 mechanisms');
-        console.log('My Events and Profile interfaces improved');
+        // ============================================================
+        // ===== TEST DE CONNEXION SUPABASE =====
+        // ============================================================
+        
+        setTimeout(function() {
+            testSupabaseConnection();
+        }, 3000);
+        
+        console.log('✅ Betix loaded successfully!');
+        console.log('✅ Supabase connected (with timeout)');
+        console.log('✅ Admin: 5 clicks on logo + password Betix@2026#');
+        console.log('✅ Ticket download feature enabled');
+        console.log('✅ VIP tickets now appear in My Tickets');
+        console.log('✅ Flags preserved for countries');
+        console.log('✅ Menu button fixed with 3 mechanisms');
+        console.log('✅ My Events and Profile interfaces improved');
+        console.log('✅ Network timeout errors handled with fallback');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -4142,32 +4298,57 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 
 window.debugMenu = function() {
-    console.log('Menu button:', document.getElementById('menuBtn'));
-    console.log('Sidebar:', document.getElementById('sidebar'));
+    console.log('🔍 Debug menu:');
     var btn = document.getElementById('menuBtn');
+    console.log('  - menuBtn exists:', !!btn);
     if (btn) {
-        console.log('Menu computed style:', window.getComputedStyle(btn));
+        console.log('  - menuBtn styles:', btn.style.cssText);
+        console.log('  - menuBtn computed:', window.getComputedStyle(btn));
+        console.log('  - menuBtn pointer-events:', window.getComputedStyle(btn).pointerEvents);
     }
+    var sidebar = document.getElementById('sidebar');
+    console.log('  - sidebar open:', sidebar ? sidebar.classList.contains('open') : 'not found');
 };
 
 window.forceOpenMenu = function() {
-    console.log('Force opening menu...');
-    openSidebar();
+    console.log('💪 Force opening menu...');
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    if (o) {
+        o.classList.add('active');
+    }
 };
 
 window.forceCloseMenu = function() {
-    console.log('Force closing menu...');
-    closeSidebar();
+    console.log('💪 Force closing menu...');
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('overlay');
+    if (s) {
+        s.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    if (o) {
+        o.classList.remove('active');
+    }
 };
 
 window.testMenuClick = function() {
     var btn = document.getElementById('menuBtn');
     if (btn) {
         btn.click();
-        console.log('Menu click simulated');
+        console.log('🍔 Menu click simulated');
     } else {
         console.error('Menu button not found');
     }
 };
 
-console.log('Betix loaded - Use forceOpenMenu() if menu doesn\'t work');
+window.testSupabase = function() {
+    return testSupabaseConnection();
+};
+
+console.log('✅ Betix loaded - Use forceOpenMenu() if menu doesn\'t work');
+console.log('✅ Use testSupabase() to check connection status');
