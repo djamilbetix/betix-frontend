@@ -490,7 +490,9 @@ async function loadNotificationsFromSupabase(piUid) {
         console.error('Error loading notifications from Supabase:', error);
         return [];
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
 // ============================================================
 
@@ -956,7 +958,9 @@ function showPage(pageName) {
     if (pageName === 'notifications') renderNotificationsPage();
     closeSidebar();
     window.scrollTo(0, 0);
-}// ============================================================
+}
+
+// ============================================================
 // ===== SIDEBAR - CORRIGÉ AVEC 3 MÉCANISMES =====
 // ============================================================
 
@@ -1440,7 +1444,9 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             onError: function(error) { alert("Payment error: " + error.message); }
         });
     } catch (error) { alert("Error: " + error.message); }
-}// ============================================================
+}
+
+// ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
 // ============================================================
 
@@ -1915,7 +1921,9 @@ function getUploadedImages() {
         }
     }
     return images;
-}// ============================================================
+}
+
+// ============================================================
 // ===== MODIFIER UN ÉVÉNEMENT =====
 // ============================================================
 
@@ -2023,6 +2031,7 @@ function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
+    // ✅ CORRECTION: Les VIP apparaissent maintenant dans My Tickets avant utilisation
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2067,7 +2076,6 @@ function renderTicketCard(ticket, status) {
     var statusText = status === 'valid' ? 'Valid' : 'Past Event';
     var typeLabel = isVip ? 'VIP' : 'Standard';
     
-    // Couleurs différentes pour VIP
     var vipClass = isVip ? 'ticket-vip' : '';
     var vipBadgeStyle = isVip ? 'vip-badge' : '';
     var vipHeaderStyle = isVip ? 'vip-header' : '';
@@ -2082,9 +2090,12 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     
-    var useButton = '';
+    // ✅ REMPLACEMENT: "Use Ticket" supprimé, remplacé par "Télécharger le ticket"
+    var downloadButton = '';
     if (status === 'valid') {
-        useButton = '<button class="btn-use-ticket" onclick="markTicketAsUsed(\'' + ticket.id + '\')">Use Ticket</button>';
+        downloadButton = '<button class="btn-download-ticket" onclick="downloadTicket(\'' + ticket.id + '\')">' +
+            '<i class="fas fa-download"></i> Télécharger le ticket' +
+        '</button>';
     }
     
     return '<div class="ticket-card-premium ' + vipClass + '">' +
@@ -2110,10 +2121,205 @@ function renderTicketCard(ticket, status) {
                     'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
                 '</div>' +
             '</div>' +
-            useButton +
+            downloadButton +
         '</div>' +
         '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
+}
+
+// ============================================================
+// ===== TÉLÉCHARGER LE TICKET EN PDF =====
+// ============================================================
+
+async function downloadTicket(ticketId) {
+    var ticket = tickets.find(function(t) { return t.id === ticketId; });
+    if (!ticket) {
+        alert('Ticket not found');
+        return;
+    }
+    
+    try {
+        var { jsPDF } = window.jspdf;
+        var doc = new jsPDF('p', 'mm', 'a4');
+        var pageWidth = 210;
+        var pageHeight = 297;
+        var margin = 15;
+        var y = margin;
+        
+        // ===== EN-TÊTE =====
+        doc.setFillColor(13, 71, 161);
+        doc.rect(0, 0, pageWidth, 45, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(28);
+        doc.setFont('helvetica', 'bold');
+        doc.text('BETIX', pageWidth / 2, 22, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Event Ticket', pageWidth / 2, 34, { align: 'center' });
+        
+        y = 55;
+        
+        // ===== TYPE DE BILLET =====
+        var isVip = ticket.ticketType === 'vip';
+        var typeLabel = isVip ? 'VIP' : 'Standard';
+        
+        if (isVip) {
+            doc.setFillColor(212, 145, 30);
+            doc.rect(margin, y, 40, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('VIP', margin + 20, y + 7, { align: 'center' });
+        } else {
+            doc.setFillColor(13, 71, 161);
+            doc.rect(margin, y, 40, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Standard', margin + 20, y + 7, { align: 'center' });
+        }
+        
+        y += 20;
+        
+        // ===== TITRE =====
+        doc.setTextColor(26, 26, 46);
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        var titleLines = doc.splitTextToSize(ticket.eventTitle, pageWidth - margin * 2);
+        doc.text(titleLines, margin, y);
+        y += titleLines.length * 8 + 8;
+        
+        // ===== CADRE D'INFORMATIONS =====
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(margin, y, pageWidth - margin * 2, 80, 4, 4, 'FD');
+        
+        var infoY = y + 10;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        // Date
+        var dateEvent = new Date(ticket.eventDate);
+        var dateFormatted = dateEvent.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        doc.setTextColor(107, 114, 128);
+        doc.text('📅 Date:', margin + 10, infoY);
+        doc.setTextColor(26, 26, 46);
+        doc.setFont('helvetica', 'bold');
+        doc.text(dateFormatted, margin + 55, infoY);
+        
+        infoY += 10;
+        doc.setTextColor(107, 114, 128);
+        doc.setFont('helvetica', 'normal');
+        doc.text('🕐 Time:', margin + 10, infoY);
+        doc.setTextColor(26, 26, 46);
+        doc.setFont('helvetica', 'bold');
+        doc.text(timeFormatted, margin + 55, infoY);
+        
+        infoY += 10;
+        doc.setTextColor(107, 114, 128);
+        doc.setFont('helvetica', 'normal');
+        doc.text('📍 Location:', margin + 10, infoY);
+        doc.setTextColor(26, 26, 46);
+        doc.setFont('helvetica', 'bold');
+        doc.text(ticket.eventLocation || 'Online', margin + 55, infoY);
+        
+        infoY += 10;
+        doc.setTextColor(107, 114, 128);
+        doc.setFont('helvetica', 'normal');
+        doc.text('💰 Price:', margin + 10, infoY);
+        doc.setTextColor(26, 26, 46);
+        doc.setFont('helvetica', 'bold');
+        doc.text((ticket.price || 0) + ' Pi', margin + 55, infoY);
+        
+        y += 90;
+        
+        // ===== NUMÉRO DE BILLET =====
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(margin, y, pageWidth - margin * 2, 30, 4, 4, 'FD');
+        
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Ticket Number', margin + 10, y + 8);
+        
+        doc.setTextColor(26, 26, 46);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        var codeDisplay = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
+        doc.text(codeDisplay, margin + 10, y + 22);
+        
+        y += 40;
+        
+        // ===== QR CODE (représentation textuelle) =====
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(245, 247, 250);
+        doc.roundedRect(margin, y, pageWidth - margin * 2, 45, 4, 4, 'FD');
+        
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('QR Code', margin + 10, y + 8);
+        
+        doc.setTextColor(26, 26, 46);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        var qrText = codeDisplay;
+        if (qrText.length > 30) qrText = qrText.substring(0, 28) + '...';
+        doc.text(qrText, margin + 10, y + 22);
+        
+        // Mini QR code stylisé
+        var qrSize = 20;
+        var qrX = pageWidth - margin - qrSize - 10;
+        var qrY = y + 12;
+        doc.setFillColor(13, 71, 161);
+        // Dessiner un petit motif de QR Code stylisé
+        for (var qi = 0; qi < 5; qi++) {
+            for (var qj = 0; qj < 5; qj++) {
+                if ((qi + qj) % 2 === 0 || qi === 0 || qi === 4 || qj === 0 || qj === 4) {
+                    doc.rect(qrX + qi * 4, qrY + qj * 4, 3, 3, 'F');
+                }
+            }
+        }
+        
+        y += 55;
+        
+        // ===== PIED DE PAGE =====
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 8;
+        
+        doc.setTextColor(107, 114, 128);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('This ticket is valid for one entry. Please present this ticket at the entrance.', pageWidth / 2, y, { align: 'center' });
+        y += 6;
+        doc.text('BETIX - The first ticketing platform on Pi Network', pageWidth / 2, y, { align: 'center' });
+        
+        // ===== BORDURE VIP =====
+        if (isVip) {
+            doc.setDrawColor(212, 145, 30);
+            doc.setLineWidth(2);
+            doc.rect(margin - 2, margin - 2, pageWidth - margin * 2 + 4, pageHeight - margin * 2 + 4);
+        }
+        
+        // ===== SAUVEGARDE =====
+        var fileName = 'ticket_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf';
+        doc.save(fileName);
+        
+        addNotification(
+            'Ticket downloaded: ' + ticket.eventTitle,
+            'info'
+        );
+        
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('An error occurred while generating the PDF: ' + error.message);
+    }
 }
 
 // ============================================================
@@ -2128,7 +2334,6 @@ function markTicketAsUsed(ticketId) {
     if (usedTickets.indexOf(ticketId) === -1) {
         usedTickets.push(ticketId);
         
-        // Mettre à jour le statut du ticket dans le tableau tickets
         for (var i = 0; i < tickets.length; i++) {
             if (tickets[i].id === ticketId) {
                 tickets[i].status = 'Used';
@@ -2162,7 +2367,9 @@ function renderMyRatings() {
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
-}// ============================================================
+}
+
+// ============================================================
 // ===== ADMIN FUNCTIONS =====
 // ============================================================
 
@@ -2627,7 +2834,9 @@ function initAdminTabs() {
             }
         });
     });
-}// ============================================================
+}
+
+// ============================================================
 // ===== MY EVENTS =====
 // ============================================================
 
@@ -3019,7 +3228,9 @@ function openGallery(eventId, startIndex) {
     prevBtn.onclick = function() { updateImage(currentIndex - 1); };
     nextBtn.onclick = function() { updateImage(currentIndex + 1); };
     modal.classList.add('show');
-}// ============================================================
+}
+
+// ============================================================
 // ===== INIT FILTERS =====
 // ============================================================
 
@@ -3552,7 +3763,9 @@ function updateProfilePage() {
     if (profileName) profileName.textContent = currentUser.name || 'Guest';
     if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
-}// ============================================================
+}
+
+// ============================================================
 // ===== DOM CONTENT LOADED - AVEC TOUTES LES CORRECTIONS =====
 // ============================================================
 
@@ -3631,10 +3844,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menuBtn) {
             console.log('Menu button found, adding click listeners');
             
-            // Forcer le style du bouton menu
             menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
             
-            // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3644,7 +3855,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             });
             
-            // Mécanisme 2: Écouteur via le parent
             if (headerRight) {
                 headerRight.addEventListener('click', function(e) {
                     var target = e.target;
@@ -3658,7 +3868,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // Mécanisme 3: Écouteur sur le document (ultime secours)
             document.addEventListener('click', function(e) {
                 var target = e.target;
                 var btn = target.closest('#menuBtn');
@@ -3670,7 +3879,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Effet hover pour confirmer que le bouton est actif
             menuBtn.addEventListener('mouseenter', function() {
                 this.style.background = 'rgba(255,255,255,0.4)';
                 this.style.transform = 'scale(1.05)';
@@ -3680,7 +3888,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.transform = 'scale(1)';
             });
             
-            // S'assurer que le bouton est bien visible et cliquable
             menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
             
@@ -3842,6 +4049,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         loadAllFromSupabase();
 
+        // ✅ SYNCHRONISATION RENFORCÉE - toutes les 30 secondes
         setInterval(function() {
             syncUserToSupabase();
             syncEventsToSupabase();
@@ -3849,6 +4057,7 @@ document.addEventListener('DOMContentLoaded', function() {
             syncNotificationsToSupabase();
         }, 30000);
 
+        // ✅ SAUVEGARDE AVANT FERMETURE
         window.addEventListener('beforeunload', function() {
             syncUserToSupabase();
             syncEventsToSupabase();
@@ -3864,6 +4073,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Menu button fix applied with 3 mechanisms');
         console.log('✅ Back button fix applied');
         console.log('✅ Hero slider auto-play enabled');
+        console.log('✅ VIP tickets now appear in My Tickets');
+        console.log('✅ Download ticket feature added');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -3880,7 +4091,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== FONCTIONS DE SECOURS POUR DEBUG =====
 // ============================================================
 
-// Fonctions accessibles depuis la console pour debug
 window.debugMenu = function() {
     console.log('🔍 Debug menu:');
     var btn = document.getElementById('menuBtn');
@@ -3920,10 +4130,6 @@ window.forceCloseMenu = function() {
     }
 };
 
-// ============================================================
-// ===== FONCTION DE TEST DU MENU =====
-// ============================================================
-
 function testMenuButton() {
     var btn = document.getElementById('menuBtn');
     if (btn) {
@@ -3934,12 +4140,8 @@ function testMenuButton() {
         console.log('🔍 Position:', window.getComputedStyle(btn).position);
         console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
         console.log('📦 Display:', window.getComputedStyle(btn).display);
-        
-        // Simuler un clic pour tester
         var rect = btn.getBoundingClientRect();
         console.log('📍 Position du bouton:', rect);
-        console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
-        
         return 'Menu button is present and visible';
     } else {
         console.error('❌ Menu button NOT found!');
@@ -3947,7 +4149,6 @@ function testMenuButton() {
     }
 }
 
-// Exécuter le test automatiquement
 setTimeout(function() {
     testMenuButton();
 }, 2000);
