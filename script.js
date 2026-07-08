@@ -19,23 +19,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 console.log("Supabase initialized");
 
 // ============================================================
-// ===== TIMEOUT ET GESTION D'ERREURS =====
-// ============================================================
-
-const SUPABASE_TIMEOUT = 10000; // 10 secondes
-
-async function fetchWithTimeout(promise, timeoutMs) {
-    return Promise.race([
-        promise,
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error('Request timed out'));
-            }, timeoutMs || SUPABASE_TIMEOUT);
-        })
-    ]);
-}
-
-// ============================================================
 // ===== COUNTRY LIST =====
 // ============================================================
 
@@ -85,10 +68,6 @@ const countryFlags = {
     'Uganda': '🇺🇬', 'Ukraine': '🇺🇦', 'United Kingdom': '🇬🇧',
     'United States': '🇺🇸', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼'
 };
-
-function getCountryFlag(country) {
-    return countryFlags[country] || '🌍';
-}
 
 // ============================================================
 // ===== PI SDK INITIALIZATION =====
@@ -165,8 +144,6 @@ let uploadedImages = {};
 let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = [];
-let syncRetryCount = 0;
-const MAX_SYNC_RETRIES = 3;
 
 // ============================================================
 // ===== HERO SLIDES =====
@@ -272,7 +249,7 @@ async function uploadEventImage(eventId, base64Data, index) {
 }
 
 // ============================================================
-// ===== SUPABASE TABLE FUNCTIONS AVEC TIMEOUT =====
+// ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
 
 async function saveUserToSupabase(piUid, username, wallet, points) {
@@ -358,25 +335,15 @@ async function saveEventToSupabase(eventData) {
 
 async function loadEventsFromSupabase() {
     try {
-        const promise = supabaseClient
+        const { data, error } = await supabaseClient
             .from('events')
             .select('*')
             .order('event_date', { ascending: true });
         
-        const { data, error } = await fetchWithTimeout(promise);
-        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.warn('Error loading events from Supabase:', error.message);
-        var localEvents = localStorage.getItem('betix_events');
-        if (localEvents) {
-            try {
-                return JSON.parse(localEvents);
-            } catch (e) {
-                return [];
-            }
-        }
+        console.error('Error loading events from Supabase:', error);
         return [];
     }
 }
@@ -445,26 +412,16 @@ async function saveTicketToSupabase(ticketData) {
 
 async function loadTicketsFromSupabase(piUid) {
     try {
-        const promise = supabaseClient
+        const { data, error } = await supabaseClient
             .from('tickets')
             .select('*')
             .eq('buyer_pi_uid', piUid)
             .order('purchase_date', { ascending: false });
         
-        const { data, error } = await fetchWithTimeout(promise);
-        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.warn('Error loading tickets from Supabase:', error.message);
-        var localTickets = localStorage.getItem('betix_tickets');
-        if (localTickets) {
-            try {
-                return JSON.parse(localTickets);
-            } catch (e) {
-                return [];
-            }
-        }
+        console.error('Error loading tickets from Supabase:', error);
         return [];
     }
 }
@@ -521,35 +478,31 @@ async function saveNotificationToSupabase(notificationData) {
 
 async function loadNotificationsFromSupabase(piUid) {
     try {
-        const promise = supabaseClient
+        const { data, error } = await supabaseClient
             .from('notifications')
             .select('*')
             .eq('receiver_pi_uid', piUid)
             .order('created_at', { ascending: false });
         
-        const { data, error } = await fetchWithTimeout(promise);
-        
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.warn('Error loading notifications from Supabase:', error.message);
+        console.error('Error loading notifications from Supabase:', error);
         return [];
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
 // ============================================================
 
 function saveEvents() { 
     localStorage.setItem('betix_events', JSON.stringify(events));
-    syncWithRetry();
+    syncEventsToSupabase();
 }
 
 function saveTickets() { 
     localStorage.setItem('betix_tickets', JSON.stringify(tickets));
     saveUsedTickets();
-    syncWithRetry();
+    syncTicketsToSupabase();
 }
 
 function saveUsedTickets() { 
@@ -571,12 +524,12 @@ function loadUsedTickets() {
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncWithRetry();
+    syncUserToSupabase();
 }
 
 function saveNotifications() { 
     localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncWithRetry();
+    syncNotificationsToSupabase();
 }
 
 function saveChatMessages() {
@@ -592,7 +545,7 @@ function saveConnectedUsers() {
 }
 
 // ============================================================
-// ===== SYNC FUNCTIONS =====
+// ===== SYNC FUNCTIONS (Supabase) =====
 // ============================================================
 
 async function syncUserToSupabase() {
@@ -631,52 +584,15 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== SYNC WITH RETRY =====
-// ============================================================
-
-async function syncAllDataToSupabase() {
-    console.log('Syncing all data to Supabase...');
-    try {
-        if (currentUser.piUid || currentUser.wallet) {
-            await syncUserToSupabase();
-        }
-        await syncEventsToSupabase();
-        await syncTicketsToSupabase();
-        await syncNotificationsToSupabase();
-        console.log('All data synced successfully');
-        syncRetryCount = 0;
-    } catch (error) {
-        console.warn('Sync error - data saved locally:', error.message);
-        throw error;
-    }
-}
-
-async function syncWithRetry() {
-    try {
-        await syncAllDataToSupabase();
-        syncRetryCount = 0;
-    } catch (error) {
-        syncRetryCount++;
-        console.warn('Sync failed, retry ' + syncRetryCount + '/' + MAX_SYNC_RETRIES);
-        if (syncRetryCount < MAX_SYNC_RETRIES) {
-            setTimeout(syncWithRetry, 5000);
-        } else {
-            console.error('Max sync retries reached, data saved locally');
-            syncRetryCount = 0;
-        }
-    }
-}
-
-// ============================================================
-// ===== LOAD ALL FROM SUPABASE AVEC FALLBACK =====
+// ===== LOAD FUNCTIONS (Supabase) =====
 // ============================================================
 
 async function loadAllFromSupabase() {
-    console.log('Loading all data from Supabase with fallback...');
+    console.log('Loading data from Supabase...');
+    
     loadUsedTickets();
     
     try {
-        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -708,18 +624,10 @@ async function loadAllFromSupabase() {
             });
             localStorage.setItem('betix_events', JSON.stringify(events));
         } else {
-            var localEvents = localStorage.getItem('betix_events');
-            if (localEvents) {
-                try { 
-                    events = JSON.parse(localEvents); 
-                    console.log('Events loaded from localStorage (fallback)');
-                } catch(e) { 
-                    events = []; 
-                }
-            }
+            events = [];
+            localStorage.setItem('betix_events', JSON.stringify(events));
         }
         
-        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -744,20 +652,9 @@ async function loadAllFromSupabase() {
                     };
                 });
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-            } else {
-                var localTickets = localStorage.getItem('betix_tickets');
-                if (localTickets) {
-                    try { 
-                        tickets = JSON.parse(localTickets); 
-                        console.log('Tickets loaded from localStorage (fallback)');
-                    } catch(e) { 
-                        tickets = []; 
-                    }
-                }
             }
         }
         
-        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -780,47 +677,9 @@ async function loadAllFromSupabase() {
         renderTickets();
         renderHistory();
         updateProfilePage();
-        console.log('All data loaded successfully');
+        console.log('All data loaded from Supabase');
     } catch (error) {
-        console.error('Error loading data:', error);
-        var localEvents = localStorage.getItem('betix_events');
-        var localTickets = localStorage.getItem('betix_tickets');
-        if (localEvents) { 
-            try { 
-                events = JSON.parse(localEvents); 
-                console.log('Full fallback: Events loaded from localStorage');
-            } catch(e) { 
-                events = []; 
-            }
-        }
-        if (localTickets) { 
-            try { 
-                tickets = JSON.parse(localTickets); 
-                console.log('Full fallback: Tickets loaded from localStorage');
-            } catch(e) { 
-                tickets = []; 
-            }
-        }
-        renderEventsByCategory();
-        renderTickets();
-        renderHistory();
-    }
-}
-
-// ============================================================
-// ===== TEST DE CONNEXION SUPABASE =====
-// ============================================================
-
-async function testSupabaseConnection() {
-    try {
-        console.log('Testing Supabase connection...');
-        const promise = supabaseClient.from('events').select('count').limit(1);
-        await fetchWithTimeout(promise, 5000);
-        console.log('✅ Supabase connection successful');
-        return true;
-    } catch (error) {
-        console.warn('⚠️ Supabase connection failed:', error.message);
-        return false;
+        console.error('Error loading data from Supabase:', error);
     }
 }
 
@@ -983,7 +842,7 @@ function addNotification(message, type) {
 }
 
 // ============================================================
-// ===== NAVIGATION =====
+// ===== NAVIGATION PROFIL =====
 // ============================================================
 
 function goToMyEvents() { showPage('myevents'); }
@@ -1098,7 +957,7 @@ function showPage(pageName) {
     closeSidebar();
     window.scrollTo(0, 0);
 }// ============================================================
-// ===== SIDEBAR =====
+// ===== SIDEBAR - CORRIGÉ AVEC 3 MÉCANISMES =====
 // ============================================================
 
 function closeSidebar() {
@@ -1159,7 +1018,7 @@ function updateConnectButtons() {
 }
 
 // ============================================================
-// ===== CONNEXION PI AVEC GESTION D'ERREURS =====
+// ===== CONNEXION PI - AVEC SPINNER =====
 // ============================================================
 
 async function connectToPi() {
@@ -1184,19 +1043,13 @@ async function connectToPi() {
                 currentUser.memberSince = '2026';
                 currentUser.loyaltyPoints = 0;
                 saveUser();
+                syncUserToSupabase();
                 updateActivity();
                 updateUserInfo();
                 updateProfilePage();
                 renderEventsByCategory();
                 updateConnectButtons();
-                // Charger les données existantes du localStorage
-                var localEvents = localStorage.getItem('betix_events');
-                var localTickets = localStorage.getItem('betix_tickets');
-                if (localEvents) { try { events = JSON.parse(localEvents); } catch(e) {} }
-                if (localTickets) { try { tickets = JSON.parse(localTickets); } catch(e) {} }
-                renderEventsByCategory();
-                renderTickets();
-                renderHistory();
+                loadAllFromSupabase();
                 alert('Pi account connected (demo mode)! Welcome Demo User');
                 closeSidebar();
                 return;
@@ -1218,6 +1071,7 @@ async function connectToPi() {
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             
             saveUser();
+            await syncUserToSupabase();
             
             updateActivity();
             updateUserInfo();
@@ -1226,7 +1080,6 @@ async function connectToPi() {
             renderEventsByCategory();
             updateConnectButtons();
             
-            // Charger les données avec fallback
             await loadAllFromSupabase();
             
             alert('Pi account connected! Welcome ' + piUser.username);
@@ -1343,7 +1196,7 @@ function setupTicketTypesUI() {
 }
 
 // ============================================================
-// ===== INIT COUNTRY SELECTORS =====
+// ===== INIT COUNTRY SELECTORS - AVEC DRAPEAUX =====
 // ============================================================
 
 function initCountrySelectors() {
@@ -1587,9 +1440,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             onError: function(error) { alert("Payment error: " + error.message); }
         });
     } catch (error) { alert("Error: " + error.message); }
-}
-
-// ============================================================
+}// ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
 // ============================================================
 
@@ -1630,7 +1481,9 @@ function closeSuccessPopup() {
     if (popup) {
         popup.classList.remove('show');
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== CREATE EVENT =====
 // ============================================================
 
@@ -2062,9 +1915,7 @@ function getUploadedImages() {
         }
     }
     return images;
-}
-
-// ============================================================
+}// ============================================================
 // ===== MODIFIER UN ÉVÉNEMENT =====
 // ============================================================
 
@@ -2165,14 +2016,13 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS RENDER - CORRECTION VIP + DOWNLOAD =====
+// ===== TICKETS AND HISTORY - AVEC COULEURS VIP =====
 // ============================================================
 
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
-    // CORRECTION: TOUS les tickets non utilisés (Standard + VIP)
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2192,7 +2042,6 @@ function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
     
-    // CORRECTION: Seuls les tickets utilisés ou expirés vont dans l'historique
     var history = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2218,6 +2067,7 @@ function renderTicketCard(ticket, status) {
     var statusText = status === 'valid' ? 'Valid' : 'Past Event';
     var typeLabel = isVip ? 'VIP' : 'Standard';
     
+    // Couleurs différentes pour VIP
     var vipClass = isVip ? 'ticket-vip' : '';
     var vipBadgeStyle = isVip ? 'vip-badge' : '';
     var vipHeaderStyle = isVip ? 'vip-header' : '';
@@ -2232,10 +2082,9 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     
-    // REMPLACEMENT: "Use Ticket" par "Download Ticket"
-    var downloadButton = '';
+    var useButton = '';
     if (status === 'valid') {
-        downloadButton = '<button class="btn-download-ticket" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-download"></i> Download Ticket</button>';
+        useButton = '<button class="btn-use-ticket" onclick="markTicketAsUsed(\'' + ticket.id + '\')">Use Ticket</button>';
     }
     
     return '<div class="ticket-card-premium ' + vipClass + '">' +
@@ -2261,309 +2110,49 @@ function renderTicketCard(ticket, status) {
                     'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
                 '</div>' +
             '</div>' +
-            downloadButton +
+            useButton +
         '</div>' +
         '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
 }
 
 // ============================================================
-// ===== TÉLÉCHARGEMENT PDF DU BILLET =====
+// ===== MARQUER UN BILLET COMME UTILISÉ =====
 // ============================================================
 
-function downloadTicketPDF(ticketId) {
-    var ticket = tickets.find(function(t) { return t.id === ticketId; });
-    if (!ticket) {
-        alert('Ticket not found');
+function markTicketAsUsed(ticketId) {
+    if (!confirm('Mark this ticket as used? This action cannot be undone.')) {
         return;
     }
     
-    var event = events.find(function(e) { return e.id === ticket.eventId; });
-    if (!event) {
-        alert('Event not found');
-        return;
-    }
-    
-    var btn = document.querySelector('.btn-download-ticket[onclick*="' + ticketId + '"]');
-    if (btn) {
-        btn.textContent = 'Generating...';
-        btn.disabled = true;
-    }
-    
-    try {
-        var dateEvent = new Date(ticket.eventDate);
-        var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (usedTickets.indexOf(ticketId) === -1) {
+        usedTickets.push(ticketId);
         
-        var isVip = ticket.ticketType === 'vip';
-        var typeLabel = isVip ? 'VIP' : 'Standard';
-        var vipColor = isVip ? '#d4911e' : '#0D47A1';
-        
-        var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
-        var buyerName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
-        var totalPrice = ticket.price || 0;
-        var categoryDisplay = ticket.category || 'Event';
-        
-        var ticketHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Ticket - ${escapeHtml(ticket.eventTitle)}</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { 
-                    font-family: 'Helvetica', 'Arial', sans-serif; 
-                    background: #f5f7fa; 
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    min-height: 100vh;
-                    padding: 20px;
-                }
-                .ticket-container {
-                    max-width: 700px;
-                    width: 100%;
-                    background: white;
-                    border-radius: 20px;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-                    overflow: hidden;
-                    border: 2px solid ${vipColor};
-                }
-                .ticket-header-pdf {
-                    background: ${vipColor};
-                    color: white;
-                    padding: 24px 30px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .ticket-header-pdf h1 {
-                    font-size: 22px;
-                    font-weight: 700;
-                    letter-spacing: 0.5px;
-                }
-                .ticket-header-pdf .badge {
-                    background: rgba(255,255,255,0.2);
-                    padding: 4px 16px;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                }
-                .ticket-body-pdf {
-                    padding: 30px;
-                }
-                .ticket-event-title-pdf {
-                    font-size: 24px;
-                    font-weight: 700;
-                    color: #1a1a2e;
-                    margin-bottom: 6px;
-                }
-                .ticket-type-pdf {
-                    display: inline-block;
-                    background: ${isVip ? '#fef8f0' : '#f0f4ff'};
-                    color: ${vipColor};
-                    padding: 2px 16px;
-                    border-radius: 20px;
-                    font-size: 13px;
-                    font-weight: 600;
-                    margin-bottom: 16px;
-                }
-                .info-grid-pdf {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 12px 24px;
-                    background: #f8fafc;
-                    padding: 16px 20px;
-                    border-radius: 12px;
-                    margin-bottom: 16px;
-                }
-                .info-grid-pdf .info-item {
-                    display: flex;
-                    flex-direction: column;
-                }
-                .info-grid-pdf .info-item .label {
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    color: #6b7280;
-                    font-weight: 600;
-                }
-                .info-grid-pdf .info-item .value {
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #1a1a2e;
-                }
-                .qr-section-pdf {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px 20px;
-                    background: #f8fafc;
-                    border-radius: 12px;
-                    margin-top: 12px;
-                }
-                .qr-code-pdf {
-                    background: white;
-                    padding: 12px;
-                    border-radius: 10px;
-                    border: 1px solid #e5e7eb;
-                    font-family: monospace;
-                    font-size: 12px;
-                    letter-spacing: 0.5px;
-                    text-align: center;
-                    min-width: 120px;
-                    max-width: 200px;
-                    word-break: break-all;
-                    line-height: 1.4;
-                }
-                .qr-label-pdf {
-                    font-size: 12px;
-                    color: #6b7280;
-                }
-                .ticket-footer-pdf {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 16px 30px;
-                    border-top: 1px solid #f0f0f0;
-                    font-size: 12px;
-                    color: #6b7280;
-                }
-                .ticket-footer-pdf span {
-                    font-weight: 600;
-                    color: #1a1a2e;
-                }
-                .watermark {
-                    position: absolute;
-                    right: 30px;
-                    bottom: 80px;
-                    font-size: 60px;
-                    font-weight: 900;
-                    color: rgba(13, 71, 161, 0.04);
-                    letter-spacing: 4px;
-                    transform: rotate(-15deg);
-                    pointer-events: none;
-                }
-                @media print {
-                    body { background: white; padding: 0; }
-                    .ticket-container { box-shadow: none; border: 2px solid ${vipColor}; }
-                    .no-print { display: none; }
-                }
-                .ticket-container { position: relative; }
-                .vip-badge-pdf {
-                    background: #ffd700;
-                    color: #8B7500;
-                    padding: 2px 12px;
-                    border-radius: 12px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    margin-left: 8px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="ticket-container">
-                <div class="ticket-header-pdf">
-                    <h1>BETIX</h1>
-                    <div>
-                        <span class="badge">${typeLabel}</span>
-                        ${isVip ? '<span class="vip-badge-pdf">VIP</span>' : ''}
-                    </div>
-                </div>
-                <div class="ticket-body-pdf">
-                    <div class="ticket-event-title-pdf">${escapeHtml(ticket.eventTitle)}</div>
-                    <div class="ticket-type-pdf">${escapeHtml(categoryDisplay)}</div>
-                    
-                    <div class="info-grid-pdf">
-                        <div class="info-item">
-                            <span class="label">Date</span>
-                            <span class="value">${dateFormatted}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Time</span>
-                            <span class="value">${timeFormatted}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Location</span>
-                            <span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Price</span>
-                            <span class="value">${totalPrice} Pi</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Ticket Type</span>
-                            <span class="value">${typeLabel}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Participant</span>
-                            <span class="value">${escapeHtml(buyerName)}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="qr-section-pdf">
-                        <div>
-                            <div class="qr-label-pdf">Ticket Code</div>
-                            <div class="qr-code-pdf">${qrCode}</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div class="qr-label-pdf">Ticket ID</div>
-                            <div style="font-weight:600;color:#1a1a2e;font-size:14px;font-family:monospace;">#${ticket.id.substring(0, 8).toUpperCase()}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ticket-footer-pdf">
-                    <span>Powered by Pi Network</span>
-                    <span>BETIX</span>
-                    <span>${new Date().toLocaleDateString('en-US')}</span>
-                </div>
-                <div class="watermark">BETIX</div>
-            </div>
-        </body>
-        </html>
-        `;
-        
-        var printWindow = window.open('', '_blank', 'width=800,height=600');
-        if (!printWindow) {
-            alert('Please allow popups to download your ticket');
-            if (btn) {
-                btn.textContent = 'Download Ticket';
-                btn.disabled = false;
+        // Mettre à jour le statut du ticket dans le tableau tickets
+        for (var i = 0; i < tickets.length; i++) {
+            if (tickets[i].id === ticketId) {
+                tickets[i].status = 'Used';
+                break;
             }
-            return;
         }
         
-        printWindow.document.write(ticketHtml);
-        printWindow.document.close();
+        saveUsedTickets();
+        saveTickets();
         
-        printWindow.onload = function() {
-            setTimeout(function() {
-                printWindow.print();
-                if (btn) {
-                    btn.textContent = 'Download Ticket';
-                    btn.disabled = false;
-                }
-            }, 500);
-        };
+        addNotification(
+            'Ticket has been marked as used',
+            'info'
+        );
         
-        setTimeout(function() {
-            if (btn) {
-                btn.textContent = 'Download Ticket';
-                btn.disabled = false;
-            }
-        }, 3000);
+        renderTickets();
+        renderHistory();
+        updateProfilePage();
         
-    } catch (error) {
-        console.error('Error generating ticket PDF:', error);
-        alert('Error generating PDF. Please try again.');
-        if (btn) {
-            btn.textContent = 'Download Ticket';
-            btn.disabled = false;
-        }
+        alert('Ticket marked as used successfully!');
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== MY RATINGS =====
 // ============================================================
 
@@ -2573,123 +2162,7 @@ function renderMyRatings() {
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
-}
-
-// ============================================================
-// ===== AMÉLIORATION INTERFACE - MY EVENTS =====
-// ============================================================
-
-function renderMyEvents() {
-    var container = document.getElementById('myEventsList');
-    if (!container) return;
-    var myEvents = events.filter(function(e) {
-        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
-    });
-    if (myEvents.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center;padding:3rem 1rem;background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-                <i class="fas fa-calendar-plus" style="font-size:3rem;color:#d1d5db;margin-bottom:1rem;display:block;"></i>
-                <h3 style="color:var(--dark);margin-bottom:0.5rem;">No events created yet</h3>
-                <p style="color:var(--gray);margin-bottom:1rem;">Start by creating your first event!</p>
-                <button class="btn-primary" onclick="showPage('create')" style="width:auto;padding:0.6rem 2rem;">Create Event</button>
-            </div>
-        `;
-        return;
-    }
-    container.innerHTML = myEvents.map(function(e) {
-        return renderMyEventCard(e);
-    }).join('');
-}
-
-function renderMyEventCard(event) {
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US');
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var galleryHtml = '';
-    if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
-            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
-        }
-        galleryHtml += '</div></div>';
-    } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
-    }
-    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
-    
-    var typesDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi | ';
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) typesDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
-    if (!typesDisplay) typesDisplay = 'No ticket types';
-    
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<div class="my-event-detail"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
-    }
-    
-    return '<div class="my-event-card">' +
-        '<div class="my-event-image">' + galleryHtml + '</div>' +
-        '<div class="my-event-info">' +
-            '<div class="my-event-title">' + escapeHtml(event.title) + '</div>' +
-            '<div class="my-event-meta">' +
-                '<span class="my-event-category"><i class="fas fa-tag"></i> ' + escapeHtml(event.category) + '</span>' +
-                '<span class="my-event-country">' + getCountryFlag(event.country) + ' ' + escapeHtml(event.country || 'Not specified') + '</span>' +
-            '</div>' +
-            '<div class="my-event-details">' +
-                '<div class="my-event-detail"><i class="fas fa-calendar-day"></i> ' + dateFormatted + ' at ' + timeFormatted + '</div>' +
-                '<div class="my-event-detail"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="my-event-detail"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
-                '<div class="my-event-detail"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
-                durationDisplay +
-            '</div>' +
-            '<div class="my-event-footer">' +
-                '<div class="my-event-ticket-types">' + typesDisplay + '</div>' +
-                '<button class="my-event-edit-btn" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')"><i class="fas fa-edit"></i> Edit</button>' +
-            '</div>' +
-        '</div>' +
-    '</div>';
-}
-
-// ============================================================
-// ===== AMÉLIORATION INTERFACE - PROFILE =====
-// ============================================================
-
-function updateProfilePage() {
-    var myEventsCount = document.getElementById('myEventsCount');
-    var ticketCount = document.getElementById('ticketCount');
-    var historyCount = document.getElementById('historyCount');
-    var ratedCount = document.getElementById('ratedCount');
-    var ratingDisplay = document.getElementById('profileRatingDisplay');
-    var loyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
-    var profileName = document.getElementById('profileNameDisplay');
-    var profileWallet = document.getElementById('profileWalletDisplay');
-    var memberSince = document.getElementById('memberSince');
-    
-    var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
-    var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
-    var userRatings = ratings.filter(function(r) { return r.userWallet === currentUser.wallet || r.userWallet === currentUser.name; });
-    
-    if (myEventsCount) myEventsCount.textContent = myEvents.length;
-    if (ticketCount) ticketCount.textContent = userTickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired && t.status !== 'Used';
-    }).length;
-    if (historyCount) historyCount.textContent = userTickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return (isUsed || isExpired || t.status === 'Used');
-    }).length;
-    if (ratedCount) ratedCount.textContent = userRatings.length;
-    if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
-    if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
-    if (profileName) profileName.textContent = currentUser.name || 'Guest';
-    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
-    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
-}
-
-// ============================================================
+}// ============================================================
 // ===== ADMIN FUNCTIONS =====
 // ============================================================
 
@@ -3154,6 +2627,72 @@ function initAdminTabs() {
             }
         });
     });
+}// ============================================================
+// ===== MY EVENTS =====
+// ============================================================
+
+function renderMyEvents() {
+    var container = document.getElementById('myEventsList');
+    if (!container) return;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    if (myEvents.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
+        return;
+    }
+    container.innerHTML = myEvents.map(function(e) {
+        return renderMyEventCard(e);
+    }).join('');
+}
+
+function renderMyEventCard(event) {
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var galleryHtml = '';
+    if (event.images && event.images.length > 0) {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
+        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
+            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
+        }
+        galleryHtml += '</div></div>';
+    } else {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
+    }
+    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    
+    var typesDisplay = '';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi | ';
+    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) typesDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
+    if (!typesDisplay) typesDisplay = 'No ticket types';
+    
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
+    }
+    
+    return '<div class="event-card" style="cursor:default; position:relative;">' +
+        galleryHtml +
+        '<div class="event-info">' +
+            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-details-grid">' +
+                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
+                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
+                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
+                durationDisplay +
+                '<div class="detail-item" style="grid-column: 1 / -1; font-size:0.7rem; color:var(--gray);">' + typesDisplay + '</div>' +
+            '</div>' +
+            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
+                '<div style="display:flex; gap:8px;">' +
+                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -3213,7 +2752,31 @@ function renderEventCard(event) {
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    var countryFlag = getCountryFlag(event.country);
+    var flagEmojis = {
+        'France': 'FR', 'RDC': 'CD', 'Congo': 'CG', 'Belgium': 'BE',
+        'Switzerland': 'CH', 'Canada': 'CA', 'Senegal': 'SN', 'Cameroon': 'CM',
+        'Cote d\'Ivoire': 'CI', 'Ivory Coast': 'CI', 'Mali': 'ML', 'Niger': 'NE',
+        'Nigeria': 'NG', 'South Africa': 'ZA', 'Angola': 'AO', 'Mozambique': 'MZ',
+        'Kenya': 'KE', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Rwanda': 'RW',
+        'Burundi': 'BI', 'Ethiopia': 'ET', 'Somalia': 'SO', 'Djibouti': 'DJ',
+        'Eritrea': 'ER', 'Sudan': 'SD', 'South Sudan': 'SS', 'Egypt': 'EG',
+        'Libya': 'LY', 'Tunisia': 'TN', 'Algeria': 'DZ', 'Morocco': 'MA',
+        'Mauritania': 'MR', 'Ghana': 'GH', 'Guinea': 'GN', 'Burkina Faso': 'BF',
+        'Benin': 'BJ', 'Togo': 'TG', 'Liberia': 'LR', 'Sierra Leone': 'SL',
+        'Gambia': 'GM', 'Guinea-Bissau': 'GW', 'Cape Verde': 'CV', 'Sao Tome': 'ST',
+        'Gabon': 'GA', 'Equatorial Guinea': 'GQ', 'Central African Republic': 'CF',
+        'Chad': 'TD', 'Madagascar': 'MG', 'Comoros': 'KM', 'Mauritius': 'MU',
+        'Seychelles': 'SC', 'Zambia': 'ZM', 'Zimbabwe': 'ZW', 'Botswana': 'BW',
+        'Namibia': 'NA', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Malawi': 'MW',
+        'Spain': 'ES', 'Portugal': 'PT', 'Germany': 'DE', 'Italy': 'IT',
+        'United Kingdom': 'GB', 'United States': 'US', 'Russia': 'RU',
+        'Ukraine': 'UA', 'Turkey': 'TR', 'Iran': 'IR', 'China': 'CN',
+        'Japan': 'JP', 'India': 'IN', 'Indonesia': 'ID', 'Australia': 'AU',
+        'Mexico': 'MX', 'Argentina': 'AR', 'Brazil': 'BR', 'Denmark': 'DK',
+        'Sweden': 'SE', 'Austria': 'AT'
+    };
+    
+    var countryFlag = flagEmojis[event.country] || '🌍';
     var countryDisplay = event.country || 'International';
     
     var desc = event.description || '';
@@ -3270,7 +2833,7 @@ function renderEventCard(event) {
                 '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="country-flag">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
+                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
             durationDisplay +
             '<div class="card-footer-classic">' +
@@ -3456,9 +3019,7 @@ function openGallery(eventId, startIndex) {
     prevBtn.onclick = function() { updateImage(currentIndex - 1); };
     nextBtn.onclick = function() { updateImage(currentIndex + 1); };
     modal.classList.add('show');
-}
-
-// ============================================================
+}// ============================================================
 // ===== INIT FILTERS =====
 // ============================================================
 
@@ -3768,7 +3329,7 @@ function initLegalModals() {
 }
 
 // ============================================================
-// ===== HERO SLIDER =====
+// ===== HERO SLIDER - CORRIGÉ AVEC AUTO-PLAY =====
 // ============================================================
 
 function initHeroSlider() {
@@ -3961,8 +3522,38 @@ function updateUserInfo() {
     
     updateConnectButtons();
     updateSidebarNotifBadge();
+}
+
+function updateProfilePage() {
+    var myEventsCount = document.getElementById('myEventsCount');
+    var ticketCount = document.getElementById('ticketCount');
+    var historyCount = document.getElementById('historyCount');
+    var ratedCount = document.getElementById('ratedCount');
+    var ratingDisplay = document.getElementById('profileRatingDisplay');
+    var loyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var memberSince = document.getElementById('memberSince');
+    
+    var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
+    var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
+    var userRatings = ratings.filter(function(r) { return r.userWallet === currentUser.wallet || r.userWallet === currentUser.name; });
+    
+    if (myEventsCount) myEventsCount.textContent = myEvents.length;
+    if (ticketCount) ticketCount.textContent = userTickets.length;
+    if (historyCount) historyCount.textContent = tickets.filter(function(t) { 
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return (isUsed || isExpired) && (t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet);
+    }).length;
+    if (ratedCount) ratedCount.textContent = userRatings.length;
+    if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
+    if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
+    if (profileName) profileName.textContent = currentUser.name || 'Guest';
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
 }// ============================================================
-// ===== DOM CONTENT LOADED =====
+// ===== DOM CONTENT LOADED - AVEC TOUTES LES CORRECTIONS =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -4031,17 +3622,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // ============================================================
-        // ===== CORRECTION ULTRA ROBUSTE - MENU 3 BARRES =====
+        // ===== CORRECTION MENU - 3 MÉCANISMES ROBUSTES =====
         // ============================================================
         
         var menuBtn = document.getElementById('menuBtn');
         var headerRight = document.getElementById('headerRight');
         
         if (menuBtn) {
-            console.log('Menu button found, applying ULTRA ROBUSTE fixes...');
+            console.log('Menu button found, adding click listeners');
             
             // Forcer le style du bouton menu
-            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 999999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
+            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
             
             // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
@@ -4079,7 +3670,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Effets hover pour confirmer que le bouton est actif
+            // Effet hover pour confirmer que le bouton est actif
             menuBtn.addEventListener('mouseenter', function() {
                 this.style.background = 'rgba(255,255,255,0.4)';
                 this.style.transform = 'scale(1.05)';
@@ -4089,21 +3680,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.transform = 'scale(1)';
             });
             
+            // S'assurer que le bouton est bien visible et cliquable
             menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
             
-            console.log('✅ Menu button fixed!');
         } else {
             console.error('Menu button not found in DOM');
         }
         
         // ============================================================
-        // ===== BOUTON RETOUR =====
+        // ===== CORRECTION BOUTON RETOUR =====
         // ============================================================
         
         var backBtn = document.getElementById('backBtn');
         if (backBtn) {
-            console.log('Back button found');
+            console.log('Back button found, adding click listener');
+            
             backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
             
             backBtn.addEventListener('click', function(e) {
@@ -4113,10 +3705,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 goBack();
                 return false;
             });
+            
+            backBtn.style.pointerEvents = 'auto';
+            backBtn.style.cursor = 'pointer';
         }
         
         // ============================================================
-        // ===== SIDEBAR TOGGLE =====
+        // ===== FERMETURE SIDEBAR =====
         // ============================================================
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
@@ -4124,6 +3719,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeSidebarBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('📂 Close sidebar clicked');
                 closeSidebar();
             });
         }
@@ -4131,6 +3727,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.getElementById('overlay');
         if (overlay) {
             overlay.addEventListener('click', function(e) {
+                console.log('📂 Overlay clicked, closing sidebar');
                 closeSidebar();
             });
         }
@@ -4243,44 +3840,30 @@ document.addEventListener('DOMContentLoaded', function() {
         bindActivityListeners(); 
         startSessionMonitor();
 
-        // ============================================================
-        // ===== CHARGEMENT DES DONNÉES AVEC TIMEOUT =====
-        // ============================================================
-        
-        // Charger les données avec fallback
         loadAllFromSupabase();
 
-        // ============================================================
-        // ===== SAUVEGARDE AUTOMATIQUE AVEC RETRY =====
-        // ============================================================
-        
         setInterval(function() {
-            syncWithRetry();
+            syncUserToSupabase();
+            syncEventsToSupabase();
+            syncTicketsToSupabase();
+            syncNotificationsToSupabase();
         }, 30000);
 
         window.addEventListener('beforeunload', function() {
-            syncAllDataToSupabase();
+            syncUserToSupabase();
+            syncEventsToSupabase();
+            syncTicketsToSupabase();
+            syncNotificationsToSupabase();
         });
         
         if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
         
-        // ============================================================
-        // ===== TEST DE CONNEXION SUPABASE =====
-        // ============================================================
-        
-        setTimeout(function() {
-            testSupabaseConnection();
-        }, 3000);
-        
-        console.log('✅ Betix loaded successfully!');
-        console.log('✅ Supabase connected (with timeout)');
-        console.log('✅ Admin: 5 clicks on logo + password Betix@2026#');
-        console.log('✅ Ticket download feature enabled');
-        console.log('✅ VIP tickets now appear in My Tickets');
-        console.log('✅ Flags preserved for countries');
-        console.log('✅ Menu button fixed with 3 mechanisms');
-        console.log('✅ My Events and Profile interfaces improved');
-        console.log('✅ Network timeout errors handled with fallback');
+        console.log('Betix loaded successfully!');
+        console.log('Supabase connected');
+        console.log('Admin: 5 clicks on logo + password Betix@2026#');
+        console.log('✅ Menu button fix applied with 3 mechanisms');
+        console.log('✅ Back button fix applied');
+        console.log('✅ Hero slider auto-play enabled');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -4297,6 +3880,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== FONCTIONS DE SECOURS POUR DEBUG =====
 // ============================================================
 
+// Fonctions accessibles depuis la console pour debug
 window.debugMenu = function() {
     console.log('🔍 Debug menu:');
     var btn = document.getElementById('menuBtn');
@@ -4336,19 +3920,34 @@ window.forceCloseMenu = function() {
     }
 };
 
-window.testMenuClick = function() {
+// ============================================================
+// ===== FONCTION DE TEST DU MENU =====
+// ============================================================
+
+function testMenuButton() {
     var btn = document.getElementById('menuBtn');
     if (btn) {
-        btn.click();
-        console.log('🍔 Menu click simulated');
+        console.log('✅ Menu button found!');
+        console.log('📏 Dimensions:', btn.offsetWidth + 'x' + btn.offsetHeight);
+        console.log('👆 Pointer Events:', window.getComputedStyle(btn).pointerEvents);
+        console.log('📐 Z-index:', window.getComputedStyle(btn).zIndex);
+        console.log('🔍 Position:', window.getComputedStyle(btn).position);
+        console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
+        console.log('📦 Display:', window.getComputedStyle(btn).display);
+        
+        // Simuler un clic pour tester
+        var rect = btn.getBoundingClientRect();
+        console.log('📍 Position du bouton:', rect);
+        console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
+        
+        return 'Menu button is present and visible';
     } else {
-        console.error('Menu button not found');
+        console.error('❌ Menu button NOT found!');
+        return 'Menu button NOT found!';
     }
-};
+}
 
-window.testSupabase = function() {
-    return testSupabaseConnection();
-};
-
-console.log('✅ Betix loaded - Use forceOpenMenu() if menu doesn\'t work');
-console.log('✅ Use testSupabase() to check connection status');
+// Exécuter le test automatiquement
+setTimeout(function() {
+    testMenuButton();
+}, 2000);
