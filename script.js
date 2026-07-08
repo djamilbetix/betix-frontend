@@ -44,30 +44,34 @@ const countriesList = [
 ];
 
 // ============================================================
-// ===== COUNTRY FLAGS (sans émojis) =====
+// ===== COUNTRY FLAGS (émojis conservés) =====
 // ============================================================
 
-const countryCodes = {
-    'All': 'XX',
-    'Afghanistan': 'AF', 'Algeria': 'DZ', 'Angola': 'AO', 'Argentina': 'AR', 'Australia': 'AU',
-    'Austria': 'AT', 'Belgium': 'BE', 'Benin': 'BJ', 'Botswana': 'BW', 'Brazil': 'BR',
-    'Burkina Faso': 'BF', 'Burundi': 'BI', 'Cameroon': 'CM', 'Canada': 'CA', 'Cape Verde': 'CV',
-    'Central African Republic': 'CF', 'Chad': 'TD', 'China': 'CN', 'Comoros': 'KM',
-    'Congo': 'CG', 'Cote d\'Ivoire': 'CI', 'Denmark': 'DK', 'Djibouti': 'DJ', 'Egypt': 'EG',
-    'Equatorial Guinea': 'GQ', 'Eritrea': 'ER', 'Eswatini': 'SZ', 'Ethiopia': 'ET',
-    'France': 'FR', 'Gabon': 'GA', 'Gambia': 'GM', 'Germany': 'DE', 'Ghana': 'GH',
-    'Guinea': 'GN', 'Guinea-Bissau': 'GW', 'India': 'IN', 'Indonesia': 'ID', 'Iran': 'IR',
-    'Italy': 'IT', 'Japan': 'JP', 'Kenya': 'KE', 'Lesotho': 'LS', 'Liberia': 'LR',
-    'Libya': 'LY', 'Madagascar': 'MG', 'Malawi': 'MW', 'Mali': 'ML', 'Mauritania': 'MR',
-    'Mauritius': 'MU', 'Mexico': 'MX', 'Morocco': 'MA', 'Mozambique': 'MZ', 'Namibia': 'NA',
-    'Niger': 'NE', 'Nigeria': 'NG', 'Portugal': 'PT', 'RDC': 'CD', 'Russia': 'RU',
-    'Rwanda': 'RW', 'Sao Tome': 'ST', 'Senegal': 'SN', 'Seychelles': 'SC',
-    'Sierra Leone': 'SL', 'Somalia': 'SO', 'South Africa': 'ZA', 'South Sudan': 'SS',
-    'Spain': 'ES', 'Sudan': 'SD', 'Sweden': 'SE', 'Switzerland': 'CH',
-    'Tanzania': 'TZ', 'Togo': 'TG', 'Tunisia': 'TN', 'Turkey': 'TR',
-    'Uganda': 'UG', 'Ukraine': 'UA', 'United Kingdom': 'GB',
-    'United States': 'US', 'Zambia': 'ZM', 'Zimbabwe': 'ZW'
+const countryFlags = {
+    'All': '🌍',
+    'Afghanistan': '🇦🇫', 'Algeria': '🇩🇿', 'Angola': '🇦🇴', 'Argentina': '🇦🇷', 'Australia': '🇦🇺',
+    'Austria': '🇦🇹', 'Belgium': '🇧🇪', 'Benin': '🇧🇯', 'Botswana': '🇧🇼', 'Brazil': '🇧🇷',
+    'Burkina Faso': '🇧🇫', 'Burundi': '🇧🇮', 'Cameroon': '🇨🇲', 'Canada': '🇨🇦', 'Cape Verde': '🇨🇻',
+    'Central African Republic': '🇨🇫', 'Chad': '🇹🇩', 'China': '🇨🇳', 'Comoros': '🇰🇲',
+    'Congo': '🇨🇬', 'Cote d\'Ivoire': '🇨🇮', 'Denmark': '🇩🇰', 'Djibouti': '🇩🇯', 'Egypt': '🇪🇬',
+    'Equatorial Guinea': '🇬🇶', 'Eritrea': '🇪🇷', 'Eswatini': '🇸🇿', 'Ethiopia': '🇪🇹',
+    'France': '🇫🇷', 'Gabon': '🇬🇦', 'Gambia': '🇬🇲', 'Germany': '🇩🇪', 'Ghana': '🇬🇭',
+    'Guinea': '🇬🇳', 'Guinea-Bissau': '🇬🇼', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Iran': '🇮🇷',
+    'Italy': '🇮🇹', 'Japan': '🇯🇵', 'Kenya': '🇰🇪', 'Lesotho': '🇱🇸', 'Liberia': '🇱🇷',
+    'Libya': '🇱🇾', 'Madagascar': '🇲🇬', 'Malawi': '🇲🇼', 'Mali': '🇲🇱', 'Mauritania': '🇲🇷',
+    'Mauritius': '🇲🇺', 'Mexico': '🇲🇽', 'Morocco': '🇲🇦', 'Mozambique': '🇲🇿', 'Namibia': '🇳🇦',
+    'Niger': '🇳🇪', 'Nigeria': '🇳🇬', 'Portugal': '🇵🇹', 'RDC': '🇨🇩', 'Russia': '🇷🇺',
+    'Rwanda': '🇷🇼', 'Sao Tome': '🇸🇹', 'Senegal': '🇸🇳', 'Seychelles': '🇸🇨',
+    'Sierra Leone': '🇸🇱', 'Somalia': '🇸🇴', 'South Africa': '🇿🇦', 'South Sudan': '🇸🇸',
+    'Spain': '🇪🇸', 'Sudan': '🇸🇩', 'Sweden': '🇸🇪', 'Switzerland': '🇨🇭',
+    'Tanzania': '🇹🇿', 'Togo': '🇹🇬', 'Tunisia': '🇹🇳', 'Turkey': '🇹🇷',
+    'Uganda': '🇺🇬', 'Ukraine': '🇺🇦', 'United Kingdom': '🇬🇧',
+    'United States': '🇺🇸', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼'
 };
+
+function getCountryFlag(country) {
+    return countryFlags[country] || '🌍';
+}
 
 // ============================================================
 // ===== PI SDK INITIALIZATION =====
@@ -547,46 +551,7 @@ function saveConnectedUsers() {
 }
 
 // ============================================================
-// ===== SYNC FUNCTIONS (Supabase) =====
-// ============================================================
-
-async function syncUserToSupabase() {
-    if (!currentUser.piUid && !currentUser.wallet) return;
-    var piUid = currentUser.piUid || currentUser.wallet;
-    await saveUserToSupabase(
-        piUid,
-        currentUser.name || 'User',
-        currentUser.wallet || piUid,
-        currentUser.loyaltyPoints || 0
-    );
-}
-
-async function syncEventsToSupabase() {
-    for (var i = 0; i < events.length; i++) {
-        await saveEventToSupabase(events[i]);
-    }
-}
-
-async function syncTicketsToSupabase() {
-    for (var i = 0; i < tickets.length; i++) {
-        await saveTicketToSupabase(tickets[i]);
-    }
-}
-
-async function syncNotificationsToSupabase() {
-    for (var i = 0; i < notifications.length; i++) {
-        var notif = notifications[i];
-        var receiverPiUid = notif.userWallet || currentUser.wallet;
-        await saveNotificationToSupabase({
-            ...notif,
-            receiverPiUid: receiverPiUid,
-            title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification'
-        });
-    }
-}
-
-// ============================================================
-// ===== SYNC ALL DATA - CORRECTION PERSISTANCE =====
+// ===== SYNC ALL DATA - PERSISTANCE =====
 // ============================================================
 
 async function syncAllDataToSupabase() {
@@ -613,7 +578,6 @@ async function loadAllFromSupabase() {
     loadUsedTickets();
     
     try {
-        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -651,7 +615,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -684,7 +647,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -888,7 +850,7 @@ function addNotification(message, type) {
 }
 
 // ============================================================
-// ===== NAVIGATION PROFIL =====
+// ===== NAVIGATION =====
 // ============================================================
 
 function goToMyEvents() { showPage('myevents'); }
@@ -1251,10 +1213,10 @@ function initCountrySelectors() {
         filterSelect.innerHTML = '';
         for (var i = 0; i < countriesList.length; i++) {
             var country = countriesList[i];
-            var code = countryCodes[country] || 'XX';
+            var flag = countryFlags[country] || '🌍';
             var option = document.createElement('option');
             option.value = country;
-            option.textContent = '[' + code + '] ' + country;
+            option.textContent = flag + ' ' + country;
             if (country === currentCountryFilter) {
                 option.selected = true;
             }
@@ -1268,10 +1230,10 @@ function initCountrySelectors() {
         for (var i = 0; i < countriesList.length; i++) {
             var country = countriesList[i];
             if (country === 'All') continue;
-            var code = countryCodes[country] || 'XX';
+            var flag = countryFlags[country] || '🌍';
             var option = document.createElement('option');
             option.value = country;
-            option.textContent = '[' + code + '] ' + country;
+            option.textContent = flag + ' ' + country;
             if (country === 'France') {
                 option.selected = true;
             }
@@ -2091,6 +2053,7 @@ function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
     
+    // CORRECTION: Seuls les tickets utilisés ou expirés vont dans l'historique
     var history = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2471,6 +2434,120 @@ function renderMyRatings() {
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
+}
+
+// ============================================================
+// ===== AMÉLIORATION INTERFACE - MY EVENTS =====
+// ============================================================
+
+function renderMyEvents() {
+    var container = document.getElementById('myEventsList');
+    if (!container) return;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    if (myEvents.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center;padding:3rem 1rem;background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                <i class="fas fa-calendar-plus" style="font-size:3rem;color:#d1d5db;margin-bottom:1rem;display:block;"></i>
+                <h3 style="color:var(--dark);margin-bottom:0.5rem;">No events created yet</h3>
+                <p style="color:var(--gray);margin-bottom:1rem;">Start by creating your first event!</p>
+                <button class="btn-primary" onclick="showPage('create')" style="width:auto;padding:0.6rem 2rem;">Create Event</button>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = myEvents.map(function(e) {
+        return renderMyEventCard(e);
+    }).join('');
+}
+
+function renderMyEventCard(event) {
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var galleryHtml = '';
+    if (event.images && event.images.length > 0) {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
+        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
+            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
+        }
+        galleryHtml += '</div></div>';
+    } else {
+        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
+    }
+    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    
+    var typesDisplay = '';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi | ';
+    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) typesDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
+    if (!typesDisplay) typesDisplay = 'No ticket types';
+    
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        durationDisplay = '<div class="my-event-detail"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
+    }
+    
+    return '<div class="my-event-card">' +
+        '<div class="my-event-image">' + galleryHtml + '</div>' +
+        '<div class="my-event-info">' +
+            '<div class="my-event-title">' + escapeHtml(event.title) + '</div>' +
+            '<div class="my-event-meta">' +
+                '<span class="my-event-category"><i class="fas fa-tag"></i> ' + escapeHtml(event.category) + '</span>' +
+                '<span class="my-event-country">' + getCountryFlag(event.country) + ' ' + escapeHtml(event.country || 'Not specified') + '</span>' +
+            '</div>' +
+            '<div class="my-event-details">' +
+                '<div class="my-event-detail"><i class="fas fa-calendar-day"></i> ' + dateFormatted + ' at ' + timeFormatted + '</div>' +
+                '<div class="my-event-detail"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="my-event-detail"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
+                '<div class="my-event-detail"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
+                durationDisplay +
+            '</div>' +
+            '<div class="my-event-footer">' +
+                '<div class="my-event-ticket-types">' + typesDisplay + '</div>' +
+                '<button class="my-event-edit-btn" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+}
+
+// ============================================================
+// ===== AMÉLIORATION INTERFACE - PROFILE =====
+// ============================================================
+
+function updateProfilePage() {
+    var myEventsCount = document.getElementById('myEventsCount');
+    var ticketCount = document.getElementById('ticketCount');
+    var historyCount = document.getElementById('historyCount');
+    var ratedCount = document.getElementById('ratedCount');
+    var ratingDisplay = document.getElementById('profileRatingDisplay');
+    var loyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var memberSince = document.getElementById('memberSince');
+    
+    var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
+    var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
+    var userRatings = ratings.filter(function(r) { return r.userWallet === currentUser.wallet || r.userWallet === currentUser.name; });
+    
+    if (myEventsCount) myEventsCount.textContent = myEvents.length;
+    if (ticketCount) ticketCount.textContent = userTickets.filter(function(t) {
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return !isUsed && !isExpired && t.status !== 'Used';
+    }).length;
+    if (historyCount) historyCount.textContent = userTickets.filter(function(t) {
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return (isUsed || isExpired || t.status === 'Used');
+    }).length;
+    if (ratedCount) ratedCount.textContent = userRatings.length;
+    if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
+    if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
+    if (profileName) profileName.textContent = currentUser.name || 'Guest';
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
 }
 
 // ============================================================
@@ -2941,74 +3018,6 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== MY EVENTS =====
-// ============================================================
-
-function renderMyEvents() {
-    var container = document.getElementById('myEventsList');
-    if (!container) return;
-    var myEvents = events.filter(function(e) {
-        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
-    });
-    if (myEvents.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
-        return;
-    }
-    container.innerHTML = myEvents.map(function(e) {
-        return renderMyEventCard(e);
-    }).join('');
-}
-
-function renderMyEventCard(event) {
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US');
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    var galleryHtml = '';
-    if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
-            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
-        }
-        galleryHtml += '</div></div>';
-    } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
-    }
-    var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
-    
-    var typesDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi | ';
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) typesDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
-    if (!typesDisplay) typesDisplay = 'No ticket types';
-    
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
-    }
-    
-    return '<div class="event-card" style="cursor:default; position:relative;">' +
-        galleryHtml +
-        '<div class="event-info">' +
-            '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
-            '<div class="event-details-grid">' +
-                '<div class="detail-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
-                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
-                durationDisplay +
-                '<div class="detail-item" style="grid-column: 1 / -1; font-size:0.7rem; color:var(--gray);">' + typesDisplay + '</div>' +
-            '</div>' +
-            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>' +
-    '</div>';
-}
-
-// ============================================================
 // ===== RENDER EVENTS =====
 // ============================================================
 
@@ -3050,7 +3059,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD (sans émojis) =====
+// ===== RENDER EVENT CARD =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -3065,7 +3074,7 @@ function renderEventCard(event) {
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    var countryCode = countryCodes[event.country] || 'XX';
+    var countryFlag = getCountryFlag(event.country);
     var countryDisplay = event.country || 'International';
     
     var desc = event.description || '';
@@ -3122,7 +3131,7 @@ function renderEventCard(event) {
                 '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="country-code">[' + countryCode + ']</span> ' + escapeHtml(countryDisplay) + '</div>' +
+                '<div class="info-item-classic"><span class="country-flag">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
             durationDisplay +
             '<div class="card-footer-classic">' +
@@ -3408,7 +3417,9 @@ function showLegal(type) {
             modal.classList.remove('show');
         }
     };
-}// ============================================================
+}
+
+// ============================================================
 // ===== FAQ =====
 // ============================================================
 
@@ -3811,39 +3822,7 @@ function updateUserInfo() {
     
     updateConnectButtons();
     updateSidebarNotifBadge();
-}
-
-function updateProfilePage() {
-    var myEventsCount = document.getElementById('myEventsCount');
-    var ticketCount = document.getElementById('ticketCount');
-    var historyCount = document.getElementById('historyCount');
-    var ratedCount = document.getElementById('ratedCount');
-    var ratingDisplay = document.getElementById('profileRatingDisplay');
-    var loyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
-    var profileName = document.getElementById('profileNameDisplay');
-    var profileWallet = document.getElementById('profileWalletDisplay');
-    var memberSince = document.getElementById('memberSince');
-    
-    var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
-    var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
-    var userRatings = ratings.filter(function(r) { return r.userWallet === currentUser.wallet || r.userWallet === currentUser.name; });
-    
-    if (myEventsCount) myEventsCount.textContent = myEvents.length;
-    if (ticketCount) ticketCount.textContent = userTickets.length;
-    if (historyCount) historyCount.textContent = tickets.filter(function(t) { 
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return (isUsed || isExpired) && (t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet);
-    }).length;
-    if (ratedCount) ratedCount.textContent = userRatings.length;
-    if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
-    if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
-    if (profileName) profileName.textContent = currentUser.name || 'Guest';
-    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
-    if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
-}
-
-// ============================================================
+}// ============================================================
 // ===== DOM CONTENT LOADED =====
 // ============================================================
 
@@ -3912,21 +3891,95 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ===== MENU BUTTON - NE PAS MODIFIER =====
+        // ============================================================
+        // ===== CORRECTION ULTRA ROBUSTE - MENU 3 BARRES =====
+        // ============================================================
+        
         var menuBtn = document.getElementById('menuBtn');
+        var headerRight = document.getElementById('headerRight');
+        
         if (menuBtn) {
-            console.log('Menu button found');
-            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important;';
+            console.log('Menu button found, applying ULTRA ROBUSTE fixes...');
+            
+            // Forcer le style du bouton menu
+            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 999999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
+            
+            // Mécanisme 1: Écouteur direct
+            menuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('Menu button clicked (direct)');
+                openSidebar();
+                return false;
+            });
+            
+            // Mécanisme 2: Écouteur via le parent
+            if (headerRight) {
+                headerRight.addEventListener('click', function(e) {
+                    var target = e.target;
+                    var btn = target.closest('#menuBtn');
+                    if (btn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Menu button clicked via header-right delegation');
+                        openSidebar();
+                    }
+                });
+            }
+            
+            // Mécanisme 3: Écouteur sur le document (ultime secours)
+            document.addEventListener('click', function(e) {
+                var target = e.target;
+                var btn = target.closest('#menuBtn');
+                if (btn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Menu button clicked via document delegation');
+                    openSidebar();
+                }
+            });
+            
+            // Effets hover pour confirmer que le bouton est actif
+            menuBtn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255,255,255,0.4)';
+                this.style.transform = 'scale(1.05)';
+            });
+            menuBtn.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(255,255,255,0.25)';
+                this.style.transform = 'scale(1)';
+            });
+            
+            menuBtn.style.pointerEvents = 'auto';
+            menuBtn.style.cursor = 'pointer';
+            
+            console.log('Menu button fixed!');
+        } else {
+            console.error('Menu button not found in DOM');
         }
         
-        // ===== BACK BUTTON =====
+        // ============================================================
+        // ===== BOUTON RETOUR =====
+        // ============================================================
+        
         var backBtn = document.getElementById('backBtn');
         if (backBtn) {
             console.log('Back button found');
-            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important;';
+            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
+            
+            backBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Back button clicked');
+                goBack();
+                return false;
+            });
         }
         
+        // ============================================================
         // ===== SIDEBAR TOGGLE =====
+        // ============================================================
+        
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
             closeSidebarBtn.addEventListener('click', function(e) {
@@ -4069,7 +4122,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Admin: 5 clicks on logo + password Betix@2026#');
         console.log('Ticket download feature enabled');
         console.log('VIP tickets now appear in My Tickets');
-        console.log('All emojis removed');
+        console.log('Flags preserved for countries');
+        console.log('Menu button fixed with 3 mechanisms');
+        console.log('My Events and Profile interfaces improved');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -4082,16 +4137,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Fonctions de debug
+// ============================================================
+// ===== FONCTIONS DE SECOURS POUR DEBUG =====
+// ============================================================
+
 window.debugMenu = function() {
     console.log('Menu button:', document.getElementById('menuBtn'));
     console.log('Sidebar:', document.getElementById('sidebar'));
+    var btn = document.getElementById('menuBtn');
+    if (btn) {
+        console.log('Menu computed style:', window.getComputedStyle(btn));
+    }
 };
 
 window.forceOpenMenu = function() {
+    console.log('Force opening menu...');
     openSidebar();
 };
 
 window.forceCloseMenu = function() {
+    console.log('Force closing menu...');
     closeSidebar();
 };
+
+window.testMenuClick = function() {
+    var btn = document.getElementById('menuBtn');
+    if (btn) {
+        btn.click();
+        console.log('Menu click simulated');
+    } else {
+        console.error('Menu button not found');
+    }
+};
+
+console.log('Betix loaded - Use forceOpenMenu() if menu doesn\'t work');
