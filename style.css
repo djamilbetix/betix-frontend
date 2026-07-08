@@ -81,7 +81,7 @@ body {
 }
 
 /* ============================================================
-   ===== HEADER ET BOUTONS - CORRIGÉ =====
+   ===== HEADER ET BOUTONS =====
    ============================================================ */
 
 .header {
@@ -167,7 +167,6 @@ body {
     filter: brightness(0) invert(1);
 }
 
-/* ===== BOUTON MENU - ULTRA ROBUSTE ===== */
 #menuBtn {
     font-size: 1.5rem;
     background: rgba(255,255,255,0.25) !important;
@@ -243,10 +242,6 @@ body {
 .overlay.active {
     display: block;
 }
-
-/* ============================================================
-   ===== SIDEBAR HEADER =====
-   ============================================================ */
 
 .sidebar-header {
     padding: 1.5rem;
@@ -1026,9 +1021,14 @@ body {
 
 .ticket-type-row .type-toggle .type-icon {
     font-size: 1.1rem;
+    color: var(--gray);
 }
 
 .ticket-type-row.vip .type-toggle .type-name {
+    color: #d4911e;
+}
+
+.ticket-type-row.vip .type-toggle .type-icon {
     color: #d4911e;
 }
 
@@ -1366,8 +1366,14 @@ body {
     text-align: center;
 }
 
-.event-card-classic .info-grid-classic .info-item-classic .flag-icon {
-    font-size: 0.9rem;
+.country-code {
+    display: inline-block;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.7rem;
+    background: #f3f4f6;
+    padding: 1px 6px;
+    border-radius: 4px;
     margin-right: 2px;
 }
 
@@ -1693,6 +1699,53 @@ body {
 
 .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     color: rgba(212, 145, 30, 0.15);
+}
+
+/* ============================================================
+   ===== BOUTON TÉLÉCHARGEMENT TICKET =====
+   ============================================================ */
+
+.btn-download-ticket {
+    background: #0D47A1;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-download-ticket:hover {
+    background: #1a1a2e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(13, 71, 161, 0.3);
+}
+
+.btn-download-ticket:active {
+    transform: scale(0.97);
+}
+
+.btn-download-ticket:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none !important;
+}
+
+.ticket-card-premium.ticket-vip .btn-download-ticket {
+    background: #d4911e;
+}
+
+.ticket-card-premium.ticket-vip .btn-download-ticket:hover {
+    background: #b8860b;
+    box-shadow: 0 4px 15px rgba(212, 145, 30, 0.3);
 }
 
 /* ============================================================
@@ -3465,31 +3518,47 @@ body {
 }
 
 /* ============================================================
-   ===== USE TICKET BUTTON =====
+   ===== STYLES D'IMPRESSION POUR LES TICKETS PDF =====
    ============================================================ */
 
-.btn-use-ticket {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    width: 100%;
-    margin-top: 6px;
-}
-
-.btn-use-ticket:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-use-ticket:active {
-    transform: scale(0.97);
+@media print {
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .ticket-container {
+        box-shadow: none !important;
+        border: 2px solid #0D47A1 !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .ticket-header-pdf {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .ticket-body-pdf {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .info-grid-pdf {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .qr-section-pdf {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }
 
 /* ============================================================
@@ -3517,11 +3586,11 @@ body.dark-mode .header .back-btn:hover {
     background: rgba(255,255,255,0.3);
 }
 
-body.dark-mode .header .menu-btn {
+body.dark-mode .header #menuBtn {
     background: rgba(255,255,255,0.15);
 }
 
-body.dark-mode .header .menu-btn:hover {
+body.dark-mode .header #menuBtn:hover {
     background: rgba(255,255,255,0.3);
 }
 
@@ -4060,7 +4129,6 @@ body.dark-mode .ticket-card-premium .ticket-body .ticket-category {
     color: #60a5fa;
 }
 
-/* ===== DARK MODE - VIP ===== */
 body.dark-mode .ticket-card-premium.ticket-vip {
     border-color: #d4911e;
 }
@@ -4086,6 +4154,22 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-info-grid .ticket-info-it
 
 body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     color: rgba(212, 145, 30, 0.15);
+}
+
+body.dark-mode .btn-download-ticket {
+    background: #0D47A1;
+}
+
+body.dark-mode .btn-download-ticket:hover {
+    background: #1a1a2e;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .btn-download-ticket {
+    background: #d4911e;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .btn-download-ticket:hover {
+    background: #b8860b;
 }
 
 /* ============================================================
