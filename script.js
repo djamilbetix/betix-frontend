@@ -44,29 +44,29 @@ const countriesList = [
 ];
 
 // ============================================================
-// ===== COUNTRY FLAGS =====
+// ===== COUNTRY FLAGS (sans émojis) =====
 // ============================================================
 
-const countryFlags = {
-    'All': '🌍',
-    'Afghanistan': '🇦🇫', 'Algeria': '🇩🇿', 'Angola': '🇦🇴', 'Argentina': '🇦🇷', 'Australia': '🇦🇺',
-    'Austria': '🇦🇹', 'Belgium': '🇧🇪', 'Benin': '🇧🇯', 'Botswana': '🇧🇼', 'Brazil': '🇧🇷',
-    'Burkina Faso': '🇧🇫', 'Burundi': '🇧🇮', 'Cameroon': '🇨🇲', 'Canada': '🇨🇦', 'Cape Verde': '🇨🇻',
-    'Central African Republic': '🇨🇫', 'Chad': '🇹🇩', 'China': '🇨🇳', 'Comoros': '🇰🇲',
-    'Congo': '🇨🇬', 'Cote d\'Ivoire': '🇨🇮', 'Denmark': '🇩🇰', 'Djibouti': '🇩🇯', 'Egypt': '🇪🇬',
-    'Equatorial Guinea': '🇬🇶', 'Eritrea': '🇪🇷', 'Eswatini': '🇸🇿', 'Ethiopia': '🇪🇹',
-    'France': '🇫🇷', 'Gabon': '🇬🇦', 'Gambia': '🇬🇲', 'Germany': '🇩🇪', 'Ghana': '🇬🇭',
-    'Guinea': '🇬🇳', 'Guinea-Bissau': '🇬🇼', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Iran': '🇮🇷',
-    'Italy': '🇮🇹', 'Japan': '🇯🇵', 'Kenya': '🇰🇪', 'Lesotho': '🇱🇸', 'Liberia': '🇱🇷',
-    'Libya': '🇱🇾', 'Madagascar': '🇲🇬', 'Malawi': '🇲🇼', 'Mali': '🇲🇱', 'Mauritania': '🇲🇷',
-    'Mauritius': '🇲🇺', 'Mexico': '🇲🇽', 'Morocco': '🇲🇦', 'Mozambique': '🇲🇿', 'Namibia': '🇳🇦',
-    'Niger': '🇳🇪', 'Nigeria': '🇳🇬', 'Portugal': '🇵🇹', 'RDC': '🇨🇩', 'Russia': '🇷🇺',
-    'Rwanda': '🇷🇼', 'Sao Tome': '🇸🇹', 'Senegal': '🇸🇳', 'Seychelles': '🇸🇨',
-    'Sierra Leone': '🇸🇱', 'Somalia': '🇸🇴', 'South Africa': '🇿🇦', 'South Sudan': '🇸🇸',
-    'Spain': '🇪🇸', 'Sudan': '🇸🇩', 'Sweden': '🇸🇪', 'Switzerland': '🇨🇭',
-    'Tanzania': '🇹🇿', 'Togo': '🇹🇬', 'Tunisia': '🇹🇳', 'Turkey': '🇹🇷',
-    'Uganda': '🇺🇬', 'Ukraine': '🇺🇦', 'United Kingdom': '🇬🇧',
-    'United States': '🇺🇸', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼'
+const countryCodes = {
+    'All': 'XX',
+    'Afghanistan': 'AF', 'Algeria': 'DZ', 'Angola': 'AO', 'Argentina': 'AR', 'Australia': 'AU',
+    'Austria': 'AT', 'Belgium': 'BE', 'Benin': 'BJ', 'Botswana': 'BW', 'Brazil': 'BR',
+    'Burkina Faso': 'BF', 'Burundi': 'BI', 'Cameroon': 'CM', 'Canada': 'CA', 'Cape Verde': 'CV',
+    'Central African Republic': 'CF', 'Chad': 'TD', 'China': 'CN', 'Comoros': 'KM',
+    'Congo': 'CG', 'Cote d\'Ivoire': 'CI', 'Denmark': 'DK', 'Djibouti': 'DJ', 'Egypt': 'EG',
+    'Equatorial Guinea': 'GQ', 'Eritrea': 'ER', 'Eswatini': 'SZ', 'Ethiopia': 'ET',
+    'France': 'FR', 'Gabon': 'GA', 'Gambia': 'GM', 'Germany': 'DE', 'Ghana': 'GH',
+    'Guinea': 'GN', 'Guinea-Bissau': 'GW', 'India': 'IN', 'Indonesia': 'ID', 'Iran': 'IR',
+    'Italy': 'IT', 'Japan': 'JP', 'Kenya': 'KE', 'Lesotho': 'LS', 'Liberia': 'LR',
+    'Libya': 'LY', 'Madagascar': 'MG', 'Malawi': 'MW', 'Mali': 'ML', 'Mauritania': 'MR',
+    'Mauritius': 'MU', 'Mexico': 'MX', 'Morocco': 'MA', 'Mozambique': 'MZ', 'Namibia': 'NA',
+    'Niger': 'NE', 'Nigeria': 'NG', 'Portugal': 'PT', 'RDC': 'CD', 'Russia': 'RU',
+    'Rwanda': 'RW', 'Sao Tome': 'ST', 'Senegal': 'SN', 'Seychelles': 'SC',
+    'Sierra Leone': 'SL', 'Somalia': 'SO', 'South Africa': 'ZA', 'South Sudan': 'SS',
+    'Spain': 'ES', 'Sudan': 'SD', 'Sweden': 'SE', 'Switzerland': 'CH',
+    'Tanzania': 'TZ', 'Togo': 'TG', 'Tunisia': 'TN', 'Turkey': 'TR',
+    'Uganda': 'UG', 'Ukraine': 'UA', 'United Kingdom': 'GB',
+    'United States': 'US', 'Zambia': 'ZM', 'Zimbabwe': 'ZW'
 };
 
 // ============================================================
@@ -490,19 +490,21 @@ async function loadNotificationsFromSupabase(piUid) {
         console.error('Error loading notifications from Supabase:', error);
         return [];
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== FONCTIONS DE SAUVEGARDE =====
 // ============================================================
 
 function saveEvents() { 
     localStorage.setItem('betix_events', JSON.stringify(events));
-    syncEventsToSupabase();
+    syncAllDataToSupabase();
 }
 
 function saveTickets() { 
     localStorage.setItem('betix_tickets', JSON.stringify(tickets));
     saveUsedTickets();
-    syncTicketsToSupabase();
+    syncAllDataToSupabase();
 }
 
 function saveUsedTickets() { 
@@ -524,12 +526,12 @@ function loadUsedTickets() {
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    syncUserToSupabase();
+    syncAllDataToSupabase();
 }
 
 function saveNotifications() { 
     localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-    syncNotificationsToSupabase();
+    syncAllDataToSupabase();
 }
 
 function saveChatMessages() {
@@ -584,15 +586,34 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD FUNCTIONS (Supabase) =====
+// ===== SYNC ALL DATA - CORRECTION PERSISTANCE =====
+// ============================================================
+
+async function syncAllDataToSupabase() {
+    console.log('Syncing all data to Supabase...');
+    try {
+        if (currentUser.piUid || currentUser.wallet) {
+            await syncUserToSupabase();
+        }
+        await syncEventsToSupabase();
+        await syncTicketsToSupabase();
+        await syncNotificationsToSupabase();
+        console.log('All data synced successfully');
+    } catch (error) {
+        console.error('Sync error:', error);
+    }
+}
+
+// ============================================================
+// ===== LOAD ALL FROM SUPABASE =====
 // ============================================================
 
 async function loadAllFromSupabase() {
-    console.log('Loading data from Supabase...');
-    
+    console.log('Loading all data from Supabase...');
     loadUsedTickets();
     
     try {
+        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -624,10 +645,13 @@ async function loadAllFromSupabase() {
             });
             localStorage.setItem('betix_events', JSON.stringify(events));
         } else {
-            events = [];
-            localStorage.setItem('betix_events', JSON.stringify(events));
+            var localEvents = localStorage.getItem('betix_events');
+            if (localEvents) {
+                try { events = JSON.parse(localEvents); } catch(e) { events = []; }
+            }
         }
         
+        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -652,9 +676,15 @@ async function loadAllFromSupabase() {
                     };
                 });
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            } else {
+                var localTickets = localStorage.getItem('betix_tickets');
+                if (localTickets) {
+                    try { tickets = JSON.parse(localTickets); } catch(e) { tickets = []; }
+                }
             }
         }
         
+        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -679,9 +709,25 @@ async function loadAllFromSupabase() {
         updateProfilePage();
         console.log('All data loaded from Supabase');
     } catch (error) {
-        console.error('Error loading data from Supabase:', error);
+        console.error('Error loading data:', error);
+        var localEvents = localStorage.getItem('betix_events');
+        var localTickets = localStorage.getItem('betix_tickets');
+        if (localEvents) { try { events = JSON.parse(localEvents); } catch(e) {} }
+        if (localTickets) { try { tickets = JSON.parse(localTickets); } catch(e) {} }
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
     }
 }
+
+// Sauvegarde automatique toutes les 15 secondes
+setInterval(function() {
+    syncAllDataToSupabase();
+}, 15000);
+
+window.addEventListener('beforeunload', function() {
+    syncAllDataToSupabase();
+});
 
 // ============================================================
 // ===== RENDER CHAT MESSAGES =====
@@ -957,7 +1003,7 @@ function showPage(pageName) {
     closeSidebar();
     window.scrollTo(0, 0);
 }// ============================================================
-// ===== SIDEBAR - CORRIGÉ AVEC 3 MÉCANISMES =====
+// ===== SIDEBAR =====
 // ============================================================
 
 function closeSidebar() {
@@ -1018,7 +1064,7 @@ function updateConnectButtons() {
 }
 
 // ============================================================
-// ===== CONNEXION PI - AVEC SPINNER =====
+// ===== CONNEXION PI =====
 // ============================================================
 
 async function connectToPi() {
@@ -1196,7 +1242,7 @@ function setupTicketTypesUI() {
 }
 
 // ============================================================
-// ===== INIT COUNTRY SELECTORS - AVEC DRAPEAUX =====
+// ===== INIT COUNTRY SELECTORS =====
 // ============================================================
 
 function initCountrySelectors() {
@@ -1205,10 +1251,10 @@ function initCountrySelectors() {
         filterSelect.innerHTML = '';
         for (var i = 0; i < countriesList.length; i++) {
             var country = countriesList[i];
-            var flag = countryFlags[country] || '🌍';
+            var code = countryCodes[country] || 'XX';
             var option = document.createElement('option');
             option.value = country;
-            option.textContent = flag + ' ' + country;
+            option.textContent = '[' + code + '] ' + country;
             if (country === currentCountryFilter) {
                 option.selected = true;
             }
@@ -1222,10 +1268,10 @@ function initCountrySelectors() {
         for (var i = 0; i < countriesList.length; i++) {
             var country = countriesList[i];
             if (country === 'All') continue;
-            var flag = countryFlags[country] || '🌍';
+            var code = countryCodes[country] || 'XX';
             var option = document.createElement('option');
             option.value = country;
-            option.textContent = flag + ' ' + country;
+            option.textContent = '[' + code + '] ' + country;
             if (country === 'France') {
                 option.selected = true;
             }
@@ -1440,7 +1486,9 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             onError: function(error) { alert("Payment error: " + error.message); }
         });
     } catch (error) { alert("Error: " + error.message); }
-}// ============================================================
+}
+
+// ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
 // ============================================================
 
@@ -1481,9 +1529,7 @@ function closeSuccessPopup() {
     if (popup) {
         popup.classList.remove('show');
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== CREATE EVENT =====
 // ============================================================
 
@@ -1915,7 +1961,9 @@ function getUploadedImages() {
         }
     }
     return images;
-}// ============================================================
+}
+
+// ============================================================
 // ===== MODIFIER UN ÉVÉNEMENT =====
 // ============================================================
 
@@ -2016,13 +2064,14 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY - AVEC COULEURS VIP =====
+// ===== TICKETS RENDER - CORRECTION VIP + DOWNLOAD =====
 // ============================================================
 
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
+    // CORRECTION: TOUS les tickets non utilisés (Standard + VIP)
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2067,7 +2116,6 @@ function renderTicketCard(ticket, status) {
     var statusText = status === 'valid' ? 'Valid' : 'Past Event';
     var typeLabel = isVip ? 'VIP' : 'Standard';
     
-    // Couleurs différentes pour VIP
     var vipClass = isVip ? 'ticket-vip' : '';
     var vipBadgeStyle = isVip ? 'vip-badge' : '';
     var vipHeaderStyle = isVip ? 'vip-header' : '';
@@ -2082,9 +2130,10 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     
-    var useButton = '';
+    // REMPLACEMENT: "Use Ticket" par "Download Ticket"
+    var downloadButton = '';
     if (status === 'valid') {
-        useButton = '<button class="btn-use-ticket" onclick="markTicketAsUsed(\'' + ticket.id + '\')">Use Ticket</button>';
+        downloadButton = '<button class="btn-download-ticket" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-download"></i> Download Ticket</button>';
     }
     
     return '<div class="ticket-card-premium ' + vipClass + '">' +
@@ -2110,49 +2159,309 @@ function renderTicketCard(ticket, status) {
                     'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
                 '</div>' +
             '</div>' +
-            useButton +
+            downloadButton +
         '</div>' +
         '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
 }
 
 // ============================================================
-// ===== MARQUER UN BILLET COMME UTILISÉ =====
+// ===== TÉLÉCHARGEMENT PDF DU BILLET =====
 // ============================================================
 
-function markTicketAsUsed(ticketId) {
-    if (!confirm('Mark this ticket as used? This action cannot be undone.')) {
+function downloadTicketPDF(ticketId) {
+    var ticket = tickets.find(function(t) { return t.id === ticketId; });
+    if (!ticket) {
+        alert('Ticket not found');
         return;
     }
     
-    if (usedTickets.indexOf(ticketId) === -1) {
-        usedTickets.push(ticketId);
+    var event = events.find(function(e) { return e.id === ticket.eventId; });
+    if (!event) {
+        alert('Event not found');
+        return;
+    }
+    
+    var btn = document.querySelector('.btn-download-ticket[onclick*="' + ticketId + '"]');
+    if (btn) {
+        btn.textContent = 'Generating...';
+        btn.disabled = true;
+    }
+    
+    try {
+        var dateEvent = new Date(ticket.eventDate);
+        var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         
-        // Mettre à jour le statut du ticket dans le tableau tickets
-        for (var i = 0; i < tickets.length; i++) {
-            if (tickets[i].id === ticketId) {
-                tickets[i].status = 'Used';
-                break;
+        var isVip = ticket.ticketType === 'vip';
+        var typeLabel = isVip ? 'VIP' : 'Standard';
+        var vipColor = isVip ? '#d4911e' : '#0D47A1';
+        
+        var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
+        var buyerName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
+        var totalPrice = ticket.price || 0;
+        var categoryDisplay = ticket.category || 'Event';
+        
+        var ticketHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Ticket - ${escapeHtml(ticket.eventTitle)}</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    font-family: 'Helvetica', 'Arial', sans-serif; 
+                    background: #f5f7fa; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    min-height: 100vh;
+                    padding: 20px;
+                }
+                .ticket-container {
+                    max-width: 700px;
+                    width: 100%;
+                    background: white;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+                    overflow: hidden;
+                    border: 2px solid ${vipColor};
+                }
+                .ticket-header-pdf {
+                    background: ${vipColor};
+                    color: white;
+                    padding: 24px 30px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .ticket-header-pdf h1 {
+                    font-size: 22px;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                }
+                .ticket-header-pdf .badge {
+                    background: rgba(255,255,255,0.2);
+                    padding: 4px 16px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+                .ticket-body-pdf {
+                    padding: 30px;
+                }
+                .ticket-event-title-pdf {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                    margin-bottom: 6px;
+                }
+                .ticket-type-pdf {
+                    display: inline-block;
+                    background: ${isVip ? '#fef8f0' : '#f0f4ff'};
+                    color: ${vipColor};
+                    padding: 2px 16px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    margin-bottom: 16px;
+                }
+                .info-grid-pdf {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px 24px;
+                    background: #f8fafc;
+                    padding: 16px 20px;
+                    border-radius: 12px;
+                    margin-bottom: 16px;
+                }
+                .info-grid-pdf .info-item {
+                    display: flex;
+                    flex-direction: column;
+                }
+                .info-grid-pdf .info-item .label {
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #6b7280;
+                    font-weight: 600;
+                }
+                .info-grid-pdf .info-item .value {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #1a1a2e;
+                }
+                .qr-section-pdf {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 20px;
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    margin-top: 12px;
+                }
+                .qr-code-pdf {
+                    background: white;
+                    padding: 12px;
+                    border-radius: 10px;
+                    border: 1px solid #e5e7eb;
+                    font-family: monospace;
+                    font-size: 12px;
+                    letter-spacing: 0.5px;
+                    text-align: center;
+                    min-width: 120px;
+                    max-width: 200px;
+                    word-break: break-all;
+                    line-height: 1.4;
+                }
+                .qr-label-pdf {
+                    font-size: 12px;
+                    color: #6b7280;
+                }
+                .ticket-footer-pdf {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 16px 30px;
+                    border-top: 1px solid #f0f0f0;
+                    font-size: 12px;
+                    color: #6b7280;
+                }
+                .ticket-footer-pdf span {
+                    font-weight: 600;
+                    color: #1a1a2e;
+                }
+                .watermark {
+                    position: absolute;
+                    right: 30px;
+                    bottom: 80px;
+                    font-size: 60px;
+                    font-weight: 900;
+                    color: rgba(13, 71, 161, 0.04);
+                    letter-spacing: 4px;
+                    transform: rotate(-15deg);
+                    pointer-events: none;
+                }
+                @media print {
+                    body { background: white; padding: 0; }
+                    .ticket-container { box-shadow: none; border: 2px solid ${vipColor}; }
+                    .no-print { display: none; }
+                }
+                .ticket-container { position: relative; }
+                .vip-badge-pdf {
+                    background: #ffd700;
+                    color: #8B7500;
+                    padding: 2px 12px;
+                    border-radius: 12px;
+                    font-size: 10px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    margin-left: 8px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="ticket-container">
+                <div class="ticket-header-pdf">
+                    <h1>BETIX</h1>
+                    <div>
+                        <span class="badge">${typeLabel}</span>
+                        ${isVip ? '<span class="vip-badge-pdf">VIP</span>' : ''}
+                    </div>
+                </div>
+                <div class="ticket-body-pdf">
+                    <div class="ticket-event-title-pdf">${escapeHtml(ticket.eventTitle)}</div>
+                    <div class="ticket-type-pdf">${escapeHtml(categoryDisplay)}</div>
+                    
+                    <div class="info-grid-pdf">
+                        <div class="info-item">
+                            <span class="label">Date</span>
+                            <span class="value">${dateFormatted}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Time</span>
+                            <span class="value">${timeFormatted}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Location</span>
+                            <span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Price</span>
+                            <span class="value">${totalPrice} Pi</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Ticket Type</span>
+                            <span class="value">${typeLabel}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Participant</span>
+                            <span class="value">${escapeHtml(buyerName)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="qr-section-pdf">
+                        <div>
+                            <div class="qr-label-pdf">Ticket Code</div>
+                            <div class="qr-code-pdf">${qrCode}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="qr-label-pdf">Ticket ID</div>
+                            <div style="font-weight:600;color:#1a1a2e;font-size:14px;font-family:monospace;">#${ticket.id.substring(0, 8).toUpperCase()}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-footer-pdf">
+                    <span>Powered by Pi Network</span>
+                    <span>BETIX</span>
+                    <span>${new Date().toLocaleDateString('en-US')}</span>
+                </div>
+                <div class="watermark">BETIX</div>
+            </div>
+        </body>
+        </html>
+        `;
+        
+        var printWindow = window.open('', '_blank', 'width=800,height=600');
+        if (!printWindow) {
+            alert('Please allow popups to download your ticket');
+            if (btn) {
+                btn.textContent = 'Download Ticket';
+                btn.disabled = false;
             }
+            return;
         }
         
-        saveUsedTickets();
-        saveTickets();
+        printWindow.document.write(ticketHtml);
+        printWindow.document.close();
         
-        addNotification(
-            'Ticket has been marked as used',
-            'info'
-        );
+        printWindow.onload = function() {
+            setTimeout(function() {
+                printWindow.print();
+                if (btn) {
+                    btn.textContent = 'Download Ticket';
+                    btn.disabled = false;
+                }
+            }, 500);
+        };
         
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
+        setTimeout(function() {
+            if (btn) {
+                btn.textContent = 'Download Ticket';
+                btn.disabled = false;
+            }
+        }, 3000);
         
-        alert('Ticket marked as used successfully!');
+    } catch (error) {
+        console.error('Error generating ticket PDF:', error);
+        alert('Error generating PDF. Please try again.');
+        if (btn) {
+            btn.textContent = 'Download Ticket';
+            btn.disabled = false;
+        }
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== MY RATINGS =====
 // ============================================================
 
@@ -2162,7 +2471,9 @@ function renderMyRatings() {
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
     container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
-}// ============================================================
+}
+
+// ============================================================
 // ===== ADMIN FUNCTIONS =====
 // ============================================================
 
@@ -2627,7 +2938,9 @@ function initAdminTabs() {
             }
         });
     });
-}// ============================================================
+}
+
+// ============================================================
 // ===== MY EVENTS =====
 // ============================================================
 
@@ -2737,7 +3050,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD =====
+// ===== RENDER EVENT CARD (sans émojis) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -2752,31 +3065,7 @@ function renderEventCard(event) {
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     
-    var flagEmojis = {
-        'France': 'FR', 'RDC': 'CD', 'Congo': 'CG', 'Belgium': 'BE',
-        'Switzerland': 'CH', 'Canada': 'CA', 'Senegal': 'SN', 'Cameroon': 'CM',
-        'Cote d\'Ivoire': 'CI', 'Ivory Coast': 'CI', 'Mali': 'ML', 'Niger': 'NE',
-        'Nigeria': 'NG', 'South Africa': 'ZA', 'Angola': 'AO', 'Mozambique': 'MZ',
-        'Kenya': 'KE', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Rwanda': 'RW',
-        'Burundi': 'BI', 'Ethiopia': 'ET', 'Somalia': 'SO', 'Djibouti': 'DJ',
-        'Eritrea': 'ER', 'Sudan': 'SD', 'South Sudan': 'SS', 'Egypt': 'EG',
-        'Libya': 'LY', 'Tunisia': 'TN', 'Algeria': 'DZ', 'Morocco': 'MA',
-        'Mauritania': 'MR', 'Ghana': 'GH', 'Guinea': 'GN', 'Burkina Faso': 'BF',
-        'Benin': 'BJ', 'Togo': 'TG', 'Liberia': 'LR', 'Sierra Leone': 'SL',
-        'Gambia': 'GM', 'Guinea-Bissau': 'GW', 'Cape Verde': 'CV', 'Sao Tome': 'ST',
-        'Gabon': 'GA', 'Equatorial Guinea': 'GQ', 'Central African Republic': 'CF',
-        'Chad': 'TD', 'Madagascar': 'MG', 'Comoros': 'KM', 'Mauritius': 'MU',
-        'Seychelles': 'SC', 'Zambia': 'ZM', 'Zimbabwe': 'ZW', 'Botswana': 'BW',
-        'Namibia': 'NA', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Malawi': 'MW',
-        'Spain': 'ES', 'Portugal': 'PT', 'Germany': 'DE', 'Italy': 'IT',
-        'United Kingdom': 'GB', 'United States': 'US', 'Russia': 'RU',
-        'Ukraine': 'UA', 'Turkey': 'TR', 'Iran': 'IR', 'China': 'CN',
-        'Japan': 'JP', 'India': 'IN', 'Indonesia': 'ID', 'Australia': 'AU',
-        'Mexico': 'MX', 'Argentina': 'AR', 'Brazil': 'BR', 'Denmark': 'DK',
-        'Sweden': 'SE', 'Austria': 'AT'
-    };
-    
-    var countryFlag = flagEmojis[event.country] || '🌍';
+    var countryCode = countryCodes[event.country] || 'XX';
     var countryDisplay = event.country || 'International';
     
     var desc = event.description || '';
@@ -2833,7 +3122,7 @@ function renderEventCard(event) {
                 '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
+                '<div class="info-item-classic"><span class="country-code">[' + countryCode + ']</span> ' + escapeHtml(countryDisplay) + '</div>' +
             '</div>' +
             durationDisplay +
             '<div class="card-footer-classic">' +
@@ -3019,7 +3308,9 @@ function openGallery(eventId, startIndex) {
     prevBtn.onclick = function() { updateImage(currentIndex - 1); };
     nextBtn.onclick = function() { updateImage(currentIndex + 1); };
     modal.classList.add('show');
-}// ============================================================
+}
+
+// ============================================================
 // ===== INIT FILTERS =====
 // ============================================================
 
@@ -3117,9 +3408,7 @@ function showLegal(type) {
             modal.classList.remove('show');
         }
     };
-}
-
-// ============================================================
+}// ============================================================
 // ===== FAQ =====
 // ============================================================
 
@@ -3329,7 +3618,7 @@ function initLegalModals() {
 }
 
 // ============================================================
-// ===== HERO SLIDER - CORRIGÉ AVEC AUTO-PLAY =====
+// ===== HERO SLIDER =====
 // ============================================================
 
 function initHeroSlider() {
@@ -3552,8 +3841,10 @@ function updateProfilePage() {
     if (profileName) profileName.textContent = currentUser.name || 'Guest';
     if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
-}// ============================================================
-// ===== DOM CONTENT LOADED - AVEC TOUTES LES CORRECTIONS =====
+}
+
+// ============================================================
+// ===== DOM CONTENT LOADED =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3621,105 +3912,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ============================================================
-        // ===== CORRECTION MENU - 3 MÉCANISMES ROBUSTES =====
-        // ============================================================
-        
+        // ===== MENU BUTTON - NE PAS MODIFIER =====
         var menuBtn = document.getElementById('menuBtn');
-        var headerRight = document.getElementById('headerRight');
-        
         if (menuBtn) {
-            console.log('Menu button found, adding click listeners');
-            
-            // Forcer le style du bouton menu
-            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
-            
-            // Mécanisme 1: Écouteur direct
-            menuBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                console.log('🍔 Menu button clicked (direct)');
-                openSidebar();
-                return false;
-            });
-            
-            // Mécanisme 2: Écouteur via le parent
-            if (headerRight) {
-                headerRight.addEventListener('click', function(e) {
-                    var target = e.target;
-                    var btn = target.closest('#menuBtn');
-                    if (btn) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('🍔 Menu button clicked via header-right delegation');
-                        openSidebar();
-                    }
-                });
-            }
-            
-            // Mécanisme 3: Écouteur sur le document (ultime secours)
-            document.addEventListener('click', function(e) {
-                var target = e.target;
-                var btn = target.closest('#menuBtn');
-                if (btn) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🍔 Menu button clicked via document delegation');
-                    openSidebar();
-                }
-            });
-            
-            // Effet hover pour confirmer que le bouton est actif
-            menuBtn.addEventListener('mouseenter', function() {
-                this.style.background = 'rgba(255,255,255,0.4)';
-                this.style.transform = 'scale(1.05)';
-            });
-            menuBtn.addEventListener('mouseleave', function() {
-                this.style.background = 'rgba(255,255,255,0.25)';
-                this.style.transform = 'scale(1)';
-            });
-            
-            // S'assurer que le bouton est bien visible et cliquable
-            menuBtn.style.pointerEvents = 'auto';
-            menuBtn.style.cursor = 'pointer';
-            
-        } else {
-            console.error('Menu button not found in DOM');
+            console.log('Menu button found');
+            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important;';
         }
         
-        // ============================================================
-        // ===== CORRECTION BOUTON RETOUR =====
-        // ============================================================
-        
+        // ===== BACK BUTTON =====
         var backBtn = document.getElementById('backBtn');
         if (backBtn) {
-            console.log('Back button found, adding click listener');
-            
-            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
-            
-            backBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('⬅️ Back button clicked');
-                goBack();
-                return false;
-            });
-            
-            backBtn.style.pointerEvents = 'auto';
-            backBtn.style.cursor = 'pointer';
+            console.log('Back button found');
+            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important;';
         }
         
-        // ============================================================
-        // ===== FERMETURE SIDEBAR =====
-        // ============================================================
-        
+        // ===== SIDEBAR TOGGLE =====
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
             closeSidebarBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('📂 Close sidebar clicked');
                 closeSidebar();
             });
         }
@@ -3727,7 +3939,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.getElementById('overlay');
         if (overlay) {
             overlay.addEventListener('click', function(e) {
-                console.log('📂 Overlay clicked, closing sidebar');
                 closeSidebar();
             });
         }
@@ -3842,18 +4053,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         loadAllFromSupabase();
 
+        // Sauvegarde automatique toutes les 30 secondes
         setInterval(function() {
-            syncUserToSupabase();
-            syncEventsToSupabase();
-            syncTicketsToSupabase();
-            syncNotificationsToSupabase();
+            syncAllDataToSupabase();
         }, 30000);
 
         window.addEventListener('beforeunload', function() {
-            syncUserToSupabase();
-            syncEventsToSupabase();
-            syncTicketsToSupabase();
-            syncNotificationsToSupabase();
+            syncAllDataToSupabase();
         });
         
         if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
@@ -3861,9 +4067,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Betix loaded successfully!');
         console.log('Supabase connected');
         console.log('Admin: 5 clicks on logo + password Betix@2026#');
-        console.log('✅ Menu button fix applied with 3 mechanisms');
-        console.log('✅ Back button fix applied');
-        console.log('✅ Hero slider auto-play enabled');
+        console.log('Ticket download feature enabled');
+        console.log('VIP tickets now appear in My Tickets');
+        console.log('All emojis removed');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -3876,78 +4082,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ============================================================
-// ===== FONCTIONS DE SECOURS POUR DEBUG =====
-// ============================================================
-
-// Fonctions accessibles depuis la console pour debug
+// Fonctions de debug
 window.debugMenu = function() {
-    console.log('🔍 Debug menu:');
-    var btn = document.getElementById('menuBtn');
-    console.log('  - menuBtn exists:', !!btn);
-    if (btn) {
-        console.log('  - menuBtn styles:', btn.style.cssText);
-        console.log('  - menuBtn computed:', window.getComputedStyle(btn));
-        console.log('  - menuBtn pointer-events:', window.getComputedStyle(btn).pointerEvents);
-    }
-    var sidebar = document.getElementById('sidebar');
-    console.log('  - sidebar open:', sidebar ? sidebar.classList.contains('open') : 'not found');
+    console.log('Menu button:', document.getElementById('menuBtn'));
+    console.log('Sidebar:', document.getElementById('sidebar'));
 };
 
 window.forceOpenMenu = function() {
-    console.log('💪 Force opening menu...');
-    var s = document.getElementById('sidebar');
-    var o = document.getElementById('overlay');
-    if (s) {
-        s.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    if (o) {
-        o.classList.add('active');
-    }
+    openSidebar();
 };
 
 window.forceCloseMenu = function() {
-    console.log('💪 Force closing menu...');
-    var s = document.getElementById('sidebar');
-    var o = document.getElementById('overlay');
-    if (s) {
-        s.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-    if (o) {
-        o.classList.remove('active');
-    }
+    closeSidebar();
 };
-
-// ============================================================
-// ===== FONCTION DE TEST DU MENU =====
-// ============================================================
-
-function testMenuButton() {
-    var btn = document.getElementById('menuBtn');
-    if (btn) {
-        console.log('✅ Menu button found!');
-        console.log('📏 Dimensions:', btn.offsetWidth + 'x' + btn.offsetHeight);
-        console.log('👆 Pointer Events:', window.getComputedStyle(btn).pointerEvents);
-        console.log('📐 Z-index:', window.getComputedStyle(btn).zIndex);
-        console.log('🔍 Position:', window.getComputedStyle(btn).position);
-        console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
-        console.log('📦 Display:', window.getComputedStyle(btn).display);
-        
-        // Simuler un clic pour tester
-        var rect = btn.getBoundingClientRect();
-        console.log('📍 Position du bouton:', rect);
-        console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
-        
-        return 'Menu button is present and visible';
-    } else {
-        console.error('❌ Menu button NOT found!');
-        return 'Menu button NOT found!';
-    }
-}
-
-// Exécuter le test automatiquement
-setTimeout(function() {
-    testMenuButton();
-}, 2000);
