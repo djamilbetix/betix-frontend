@@ -1474,7 +1474,7 @@ body {
 }
 
 /* ============================================================
-   ===== TICKET CARD - AVEC COULEURS VIP =====
+   ===== TICKET CARD - AVEC COULEURS VIP ET BOUTON TÉLÉCHARGER =====
    ============================================================ */
 
 .ticket-card-premium {
@@ -1655,6 +1655,39 @@ body {
     color: rgba(13, 71, 161, 0.1);
     letter-spacing: 2px;
     text-transform: uppercase;
+}
+
+/* ===== BOUTON TÉLÉCHARGER LE TICKET ===== */
+.btn-download-ticket {
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-download-ticket:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(13, 71, 161, 0.3);
+}
+
+.btn-download-ticket:active {
+    transform: scale(0.97);
+}
+
+.btn-download-ticket i {
+    font-size: 0.85rem;
 }
 
 /* ============================================================
@@ -3465,32 +3498,10 @@ body {
 }
 
 /* ============================================================
-   ===== USE TICKET BUTTON =====
+   ===== USE TICKET BUTTON - SUPPRIMÉ =====
    ============================================================ */
 
-.btn-use-ticket {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    width: 100%;
-    margin-top: 6px;
-}
-
-.btn-use-ticket:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-use-ticket:active {
-    transform: scale(0.97);
-}
+/* Supprimé - remplacé par btn-download-ticket */
 
 /* ============================================================
    ===== DARK MODE =====
@@ -4640,6 +4651,11 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         padding: 12px 16px 10px;
         flex-wrap: wrap;
         gap: 4px;
+    }
+    
+    .btn-download-ticket {
+        font-size: 0.7rem;
+        padding: 6px 12px;
     }
 }
 
