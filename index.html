@@ -9,6 +9,10 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     
+    <!-- jsPDF pour le téléchargement des tickets -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
     <!-- Supabase SDK -->
@@ -279,7 +283,7 @@
                     
                     <div class="ticket-type-row standard">
                         <div class="type-toggle">
-                            <span class="type-icon">🎫</span>
+                            <span class="type-icon"><i class="fas fa-ticket-alt"></i></span>
                             <span class="type-name">Standard</span>
                             <label class="switch">
                                 <input type="checkbox" id="ticketStandardEnabled" checked>
@@ -296,7 +300,7 @@
                     
                     <div class="ticket-type-row vip">
                         <div class="type-toggle">
-                            <span class="type-icon">⭐</span>
+                            <span class="type-icon"><i class="fas fa-star"></i></span>
                             <span class="type-name">VIP</span>
                             <label class="switch vip-switch">
                                 <input type="checkbox" id="ticketVipEnabled">
