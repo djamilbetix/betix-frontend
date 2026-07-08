@@ -44,32 +44,6 @@ const countriesList = [
 ];
 
 // ============================================================
-// ===== COUNTRY FLAGS =====
-// ============================================================
-
-const countryFlags = {
-    'All': '🌍',
-    'Afghanistan': '🇦🇫', 'Algeria': '🇩🇿', 'Angola': '🇦🇴', 'Argentina': '🇦🇷', 'Australia': '🇦🇺',
-    'Austria': '🇦🇹', 'Belgium': '🇧🇪', 'Benin': '🇧🇯', 'Botswana': '🇧🇼', 'Brazil': '🇧🇷',
-    'Burkina Faso': '🇧🇫', 'Burundi': '🇧🇮', 'Cameroon': '🇨🇲', 'Canada': '🇨🇦', 'Cape Verde': '🇨🇻',
-    'Central African Republic': '🇨🇫', 'Chad': '🇹🇩', 'China': '🇨🇳', 'Comoros': '🇰🇲',
-    'Congo': '🇨🇬', 'Cote d\'Ivoire': '🇨🇮', 'Denmark': '🇩🇰', 'Djibouti': '🇩🇯', 'Egypt': '🇪🇬',
-    'Equatorial Guinea': '🇬🇶', 'Eritrea': '🇪🇷', 'Eswatini': '🇸🇿', 'Ethiopia': '🇪🇹',
-    'France': '🇫🇷', 'Gabon': '🇬🇦', 'Gambia': '🇬🇲', 'Germany': '🇩🇪', 'Ghana': '🇬🇭',
-    'Guinea': '🇬🇳', 'Guinea-Bissau': '🇬🇼', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Iran': '🇮🇷',
-    'Italy': '🇮🇹', 'Japan': '🇯🇵', 'Kenya': '🇰🇪', 'Lesotho': '🇱🇸', 'Liberia': '🇱🇷',
-    'Libya': '🇱🇾', 'Madagascar': '🇲🇬', 'Malawi': '🇲🇼', 'Mali': '🇲🇱', 'Mauritania': '🇲🇷',
-    'Mauritius': '🇲🇺', 'Mexico': '🇲🇽', 'Morocco': '🇲🇦', 'Mozambique': '🇲🇿', 'Namibia': '🇳🇦',
-    'Niger': '🇳🇪', 'Nigeria': '🇳🇬', 'Portugal': '🇵🇹', 'RDC': '🇨🇩', 'Russia': '🇷🇺',
-    'Rwanda': '🇷🇼', 'Sao Tome': '🇸🇹', 'Senegal': '🇸🇳', 'Seychelles': '🇸🇨',
-    'Sierra Leone': '🇸🇱', 'Somalia': '🇸🇴', 'South Africa': '🇿🇦', 'South Sudan': '🇸🇸',
-    'Spain': '🇪🇸', 'Sudan': '🇸🇩', 'Sweden': '🇸🇪', 'Switzerland': '🇨🇭',
-    'Tanzania': '🇹🇿', 'Togo': '🇹🇬', 'Tunisia': '🇹🇳', 'Turkey': '🇹🇷',
-    'Uganda': '🇺🇬', 'Ukraine': '🇺🇦', 'United Kingdom': '🇬🇧',
-    'United States': '🇺🇸', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼'
-};
-
-// ============================================================
 // ===== PI SDK INITIALIZATION =====
 // ============================================================
 
@@ -115,7 +89,6 @@ async function ensurePiSDKReady() {
 
 let events = [];
 let tickets = [];
-let usedTickets = [];
 let currentUser = { 
     name: 'Guest', 
     wallet: null, 
@@ -539,25 +512,7 @@ function saveEvents() {
 
 function saveTickets() { 
     localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    saveUsedTickets();
     syncTicketsToSupabase();
-}
-
-function saveUsedTickets() { 
-    localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets));
-}
-
-function loadUsedTickets() {
-    var stored = localStorage.getItem('betix_used_tickets');
-    if (stored) {
-        try {
-            usedTickets = JSON.parse(stored);
-        } catch (e) {
-            usedTickets = [];
-        }
-    } else {
-        usedTickets = [];
-    }
 }
 
 function saveUser() { 
@@ -627,8 +582,6 @@ async function syncNotificationsToSupabase() {
 
 async function loadAllFromSupabase() {
     console.log('Loading data from Supabase...');
-    
-    loadUsedTickets();
     
     try {
         var supabaseEvents = await loadEventsFromSupabase();
@@ -1207,45 +1160,6 @@ function setupTicketTypesUI() {
             document.getElementById('ticketVipPrice').required = false;
         }
         updateStatusBadge(vipCheckbox, vipStatusBadge);
-    }
-}
-
-// ============================================================
-// ===== INIT COUNTRY SELECTORS - AVEC DRAPEAUX =====
-// ============================================================
-
-function initCountrySelectors() {
-    var filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
-            var flag = countryFlags[country] || '🌍';
-            var option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === currentCountryFilter) {
-                option.selected = true;
-            }
-            filterSelect.appendChild(option);
-        }
-    }
-    
-    var eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        for (var i = 0; i < countriesList.length; i++) {
-            var country = countriesList[i];
-            if (country === 'All') continue;
-            var flag = countryFlags[country] || '🌍';
-            var option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === 'France') {
-                option.selected = true;
-            }
-            eventSelect.appendChild(option);
-        }
     }
 }
 
@@ -2035,21 +1949,71 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY - CORRIGÉ =====
+// ===== PROFILE =====
+// ============================================================
+
+function updateUserInfo() {
+    var sidebarName = document.getElementById('sidebarName');
+    var sidebarWallet = document.getElementById('sidebarWallet');
+    var sidebarText = document.getElementById('sidebarAvatarText');
+    
+    if (sidebarName) sidebarName.innerText = currentUser.name;
+    if (sidebarWallet) sidebarWallet.innerText = currentUser.wallet ? currentUser.wallet.substring(0, 15) + '...' : 'Not connected';
+    if (sidebarText) {
+        sidebarText.innerText = currentUser.name.substring(0, 2).toUpperCase();
+    }
+    updateConnectButtons();
+}
+
+function updateProfilePage() {
+    var profileName = document.getElementById('profileNameDisplay');
+    var profileWallet = document.getElementById('profileWalletDisplay');
+    var ticketCount = document.getElementById('ticketCount');
+    var ratedCount = document.getElementById('ratedCount');
+    var loyaltyDisplay = document.getElementById('loyaltyPointsDisplay');
+    var myEventsCount = document.getElementById('myEventsCount');
+    var historyCount = document.getElementById('historyCount');
+    var profileRatingDisplay = document.getElementById('profileRatingDisplay');
+    var profileLoyaltyDisplay = document.getElementById('profileLoyaltyDisplay');
+    
+    if (profileName) profileName.innerText = currentUser.name;
+    if (profileWallet) profileWallet.innerText = currentUser.wallet || 'Not connected';
+    if (ticketCount) ticketCount.innerText = tickets.length;
+    if (ratedCount) ratedCount.innerText = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); }).length;
+    if (loyaltyDisplay) loyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
+    if (historyCount) historyCount.innerText = tickets.length;
+    
+    if (profileRatingDisplay) {
+        var userRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
+        var avg = userRatings.length > 0 ? (userRatings.reduce(function(a, r) { return a + r.rating; }, 0) / userRatings.length).toFixed(1) : '0';
+        profileRatingDisplay.innerText = avg;
+    }
+    if (profileLoyaltyDisplay) profileLoyaltyDisplay.innerText = currentUser.loyaltyPoints || 0;
+    
+    var myEvents = events.filter(function(e) {
+        return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
+    });
+    if (myEventsCount) myEventsCount.innerText = myEvents.length;
+    
+    var profilePlaceholder = document.getElementById('profilePageAvatarPlaceholder');
+    if (profilePlaceholder) {
+        profilePlaceholder.style.display = 'flex';
+        profilePlaceholder.innerHTML = '<i class="fas fa-user"></i>';
+    }
+    
+    updateConnectButtons();
+    updateLoyaltyPointsDisplay();
+}
+
+// ============================================================
+// ===== TICKETS AND HISTORY =====
 // ============================================================
 
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
-    
-    var active = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired;
-    });
-    
+    var active = tickets.filter(function(t) { return new Date(t.eventDate) > new Date(); });
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    
     if (!active.length) { 
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
         return; 
@@ -2060,20 +2024,13 @@ function renderTickets() {
 function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
-    
-    var history = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return isUsed || isExpired;
-    });
-    
-    history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    
-    if (!history.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No ticket history</p>'; 
+    var old = tickets.filter(function(t) { return new Date(t.eventDate) <= new Date(); });
+    old.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
+    if (!old.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No history</p>'; 
         return; 
     }
-    container.innerHTML = history.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
+    container.innerHTML = old.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
 }
 
 function renderTicketCard(ticket, status) {
@@ -2094,11 +2051,6 @@ function renderTicketCard(ticket, status) {
     }
     
     var categoryDisplay = ticket.category || 'Event';
-    
-    var useButton = '';
-    if (status === 'valid') {
-        useButton = '<button class="btn-use-ticket" onclick="markTicketAsUsed(\'' + ticket.id + '\')">Use Ticket</button>';
-    }
     
     return '<div class="ticket-card-premium">' +
         '<div class="ticket-header">' +
@@ -2123,36 +2075,9 @@ function renderTicketCard(ticket, status) {
                     'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
                 '</div>' +
             '</div>' +
-            useButton +
         '</div>' +
         '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
-}
-
-// ============================================================
-// ===== MARQUER UN BILLET COMME UTILISÉ =====
-// ============================================================
-
-function markTicketAsUsed(ticketId) {
-    if (!confirm('Mark this ticket as used? This action cannot be undone.')) {
-        return;
-    }
-    
-    if (usedTickets.indexOf(ticketId) === -1) {
-        usedTickets.push(ticketId);
-        saveUsedTickets();
-        
-        addNotification(
-            'Ticket has been marked as used',
-            'info'
-        );
-        
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-        
-        alert('Ticket marked as used successfully!');
-    }
 }
 
 // ============================================================
@@ -3042,6 +2967,42 @@ function initFilters() {
 }
 
 // ============================================================
+// ===== INIT COUNTRY SELECTORS =====
+// ============================================================
+
+function initCountrySelectors() {
+    var filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === currentCountryFilter) {
+                option.selected = true;
+            }
+            filterSelect.appendChild(option);
+        }
+    }
+    var eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        for (var i = 0; i < countriesList.length; i++) {
+            var country = countriesList[i];
+            if (country === 'All') continue;
+            var option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            if (country === 'France') {
+                option.selected = true;
+            }
+            eventSelect.appendChild(option);
+        }
+    }
+}
+
+// ============================================================
 // ===== TRACK USER CONNECTION =====
 // ============================================================
 
@@ -3518,8 +3479,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         detectLanguage();
         
-        loadUsedTickets();
-        
         if (!events || events.length === 0) { 
             events = JSON.parse(JSON.stringify(demoEvents)); 
             saveEvents(); 
@@ -3701,6 +3660,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
     } catch (error) {
         console.error('Error during application startup:', error);
+        // Afficher un message d'erreur mais pas bloquer l'application
         var loader = document.getElementById('loader');
         var main = document.getElementById('main-content');
         if (loader && main) {
