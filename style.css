@@ -41,6 +41,10 @@ body {
     --card-hover-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
 }
 
+/* ============================================================
+   ===== LOADER =====
+   ============================================================ */
+
 .loader-container {
     position: fixed;
     top: 0;
@@ -76,6 +80,10 @@ body {
     font-weight: 500;
 }
 
+/* ============================================================
+   ===== HEADER ET BOUTONS - CORRIGÉ =====
+   ============================================================ */
+
 .header {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     padding: 0.6rem 5%;
@@ -85,7 +93,7 @@ body {
     box-shadow: 0 4px 20px rgba(13, 71, 161, 0.3);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 9999;
     border-bottom: none;
     gap: 10px;
     flex-wrap: wrap;
@@ -116,6 +124,9 @@ body {
     justify-content: center;
     width: 40px;
     height: 40px;
+    z-index: 99999;
+    position: relative;
+    pointer-events: auto !important;
 }
 
 .back-btn:hover {
@@ -156,26 +167,48 @@ body {
     filter: brightness(0) invert(1);
 }
 
-.menu-btn {
-    font-size: 1.3rem;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
+/* ===== BOUTON MENU - ULTRA ROBUSTE ===== */
+#menuBtn {
+    font-size: 1.5rem;
+    background: rgba(255,255,255,0.25) !important;
+    color: white !important;
+    border: 2px solid rgba(255,255,255,0.15) !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
-.menu-btn:hover {
-    background: rgba(255,255,255,0.35);
+#menuBtn:hover {
+    background: rgba(255,255,255,0.4) !important;
+    transform: scale(1.05) !important;
 }
+
+#menuBtn:active {
+    transform: scale(0.92) !important;
+}
+
+#menuBtn i {
+    font-size: 1.5rem !important;
+    pointer-events: none !important;
+}
+
+/* ============================================================
+   ===== SIDEBAR =====
+   ============================================================ */
 
 .sidebar {
     position: fixed;
@@ -185,7 +218,7 @@ body {
     height: 100%;
     background: white;
     box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    z-index: 1000;
+    z-index: 99999;
     transition: right 0.3s ease;
     overflow-y: auto;
     display: flex;
@@ -203,13 +236,17 @@ body {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
-    z-index: 999;
+    z-index: 99998;
     display: none;
 }
 
 .overlay.active {
     display: block;
 }
+
+/* ============================================================
+   ===== SIDEBAR HEADER =====
+   ============================================================ */
 
 .sidebar-header {
     padding: 1.5rem;
@@ -353,7 +390,6 @@ body {
     background: #dc2626;
 }
 
-/* ===== SPINNER SUR LE BOUTON CONNECT ===== */
 .wallet-sidebar-btn.loading {
     color: transparent !important;
     pointer-events: none;
@@ -479,6 +515,10 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
+
+/* ============================================================
+   ===== HERO =====
+   ============================================================ */
 
 .hero {
     width: 100%;
@@ -723,6 +763,10 @@ body {
     box-shadow: 0 8px 30px rgba(13, 71, 161, 0.5);
 }
 
+/* ============================================================
+   ===== SEARCH & FILTERS =====
+   ============================================================ */
+
 .search-bar {
     padding: 1.5rem 5% 0.5rem;
 }
@@ -834,6 +878,10 @@ body {
     box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
 }
 
+/* ============================================================
+   ===== EVENTS =====
+   ============================================================ */
+
 .events-container {
     padding: 0.5rem 5% 2rem;
     overflow: hidden;
@@ -895,7 +943,7 @@ body {
 }
 
 /* ============================================================
-   ===== TICKET TYPES - COMPOSANT MODERNE =====
+   ===== TICKET TYPES =====
    ============================================================ */
 
 .ticket-types-container {
@@ -1028,7 +1076,6 @@ body {
     white-space: nowrap;
 }
 
-/* Toggle Switch personnalisé */
 .switch {
     position: relative;
     width: 44px;
@@ -1079,7 +1126,6 @@ body {
     background: #d4911e;
 }
 
-/* Status badge du type de billet */
 .type-status-badge {
     font-size: 0.6rem;
     font-weight: 600;
@@ -1100,7 +1146,6 @@ body {
     color: #ef4444;
 }
 
-/* Responsive ticket types */
 @media (max-width: 600px) {
     .ticket-type-row {
         flex-direction: column;
@@ -1130,7 +1175,7 @@ body {
 }
 
 /* ============================================================
-   ===== BOUTON PUBLISH AVEC SPINNER =====
+   ===== PUBLISH BUTTON =====
    ============================================================ */
 
 .btn-publish-wrapper {
@@ -1208,22 +1253,8 @@ body {
     display: inline-block;
 }
 
-/* Dark mode support for button */
-body.dark-mode .btn-publish-wrapper .btn-primary {
-    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-}
-
-body.dark-mode .btn-publish-wrapper .btn-primary.loading {
-    opacity: 0.6;
-}
-
-body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
-    border-color: rgba(255, 255, 255, 0.15);
-    border-top-color: #ffffff;
-}
-
 /* ============================================================
-   ===== EVENT CARD - STYLE CLASSIQUE =====
+   ===== EVENT CARD =====
    ============================================================ */
 
 .event-card-classic {
@@ -1443,7 +1474,7 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
-   ===== TICKET CARD - DESIGN PREMIUM AVEC COULEURS VIP =====
+   ===== TICKET CARD - AVEC COULEURS VIP =====
    ============================================================ */
 
 .ticket-card-premium {
@@ -1627,7 +1658,7 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
-   ===== STYLES SPÉCIFIQUES POUR LES TICKETS VIP =====
+   ===== STYLES VIP =====
    ============================================================ */
 
 .ticket-card-premium.ticket-vip {
@@ -1665,8 +1696,49 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
-   ===== MODAL MODIFIER ÉVÉNEMENT =====
+   ===== MODALS =====
    ============================================================ */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 90%;
+    padding: 24px;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--gray);
+    background: none;
+    border: none;
+}
+
+.modal-close:hover {
+    color: var(--dark);
+}
 
 .modal-edit-event .modal-content {
     max-width: 560px;
@@ -1740,243 +1812,7 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
-   ===== DURÉE ÉVÉNEMENT =====
-   ============================================================ */
-
-.event-duration-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.event-duration-wrapper input[type="number"] {
-    width: 80px;
-    padding: 0.6rem 0.8rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    background: white;
-}
-
-.event-duration-wrapper input[type="number"]:focus {
-    outline: none;
-    border-color: #f5a623;
-    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
-}
-
-.event-duration-wrapper select {
-    flex: 1;
-    min-width: 100px;
-    padding: 0.6rem 0.8rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    background: white;
-}
-
-.event-duration-wrapper select:focus {
-    outline: none;
-    border-color: #f5a623;
-    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
-}
-
-/* ============================================================
-   ===== IMAGE UPLOAD =====
-   ============================================================ */
-
-.image-upload-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin: 10px 0;
-}
-
-.upload-box-modern {
-    position: relative;
-    border: 2px dashed #d1d5db;
-    border-radius: 16px;
-    background: #fafbfc;
-    min-height: 200px;
-    transition: all 0.3s ease;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.upload-box-modern:hover {
-    border-color: #f5a623;
-    background: #fefaf0;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-}
-
-.upload-box-modern.dragover {
-    border-color: #f5a623;
-    background: #fefaf0;
-    transform: scale(1.02);
-}
-
-.upload-box-modern.has-image {
-    border-style: solid;
-    border-color: #10b981;
-    background: transparent;
-    min-height: 200px;
-}
-
-.upload-box-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 20px;
-    height: 100%;
-    min-height: 200px;
-    text-align: center;
-}
-
-.upload-icon-modern {
-    font-size: 3rem;
-    color: #9ca3af;
-    margin-bottom: 12px;
-    transition: color 0.3s ease;
-}
-
-.upload-box-modern:hover .upload-icon-modern {
-    color: #f5a623;
-}
-
-.upload-text {
-    font-size: 0.9rem;
-    color: #6b7280;
-    margin: 0;
-    line-height: 1.6;
-}
-
-.upload-text span {
-    font-size: 0.8rem;
-    color: #9ca3af;
-}
-
-.upload-help {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 8px;
-}
-
-.upload-help i {
-    color: #f5a623;
-    margin-right: 6px;
-}
-
-.image-input-modern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.preview-modern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
-.preview-modern img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 14px;
-}
-
-.preview-modern .remove-image-modern {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(239, 68, 68, 0.92);
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 3;
-    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
-}
-
-.preview-modern .remove-image-modern:hover {
-    transform: scale(1.1);
-    background: #dc2626;
-}
-
-.preview-badge {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(16, 185, 129, 0.92);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    backdrop-filter: blur(4px);
-    z-index: 3;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
-}
-
-.preview-badge i {
-    font-size: 0.7rem;
-}
-
-.upload-progress {
-    width: 100%;
-    max-width: 200px;
-    margin-top: 12px;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 4px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #f5a623, #d4911e);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-    width: 0%;
-}
-
-.progress-text {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-top: 4px;
-    display: block;
-}
-
-.upload-box-modern.has-image .upload-box-inner {
-    display: none;
-}
-
-/* ============================================================
-   ===== QUANTITY POPUP =====
+   ===== QUANTITY & SUCCESS POPUPS =====
    ============================================================ */
 
 .quantity-popup {
@@ -2023,6 +1859,17 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 
 .close-popup:hover {
     color: var(--dark);
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .quantity-popup-content h3 {
@@ -2127,10 +1974,7 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
     margin-top: 16px;
 }
 
-/* ============================================================
-   ===== SUCCESS POPUP =====
-   ============================================================ */
-
+/* ===== SUCCESS POPUP ===== */
 .success-popup {
     display: none;
     position: fixed;
@@ -2159,17 +2003,6 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 25px 60px rgba(0,0,0,0.3);
     border: 1px solid rgba(245, 166, 35, 0.1);
-}
-
-@keyframes popIn {
-    0% {
-        transform: scale(0.7);
-        opacity: 0;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
 }
 
 .success-icon-blue {
@@ -2788,51 +2621,6 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 
 .chat-input-area button:hover {
     opacity: 0.9;
-}
-
-/* ============================================================
-   ===== MODALS =====
-   ============================================================ */
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 24px;
-    max-width: 500px;
-    width: 90%;
-    padding: 24px;
-    position: relative;
-}
-
-.modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    color: var(--gray);
-    background: none;
-    border: none;
-}
-
-.modal-close:hover {
-    color: var(--dark);
 }
 
 /* ============================================================
@@ -3544,16 +3332,6 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
     padding-left: 30px;
 }
 
-.faq-container .faq-item .faq-a ul {
-    margin: 6px 0 0 18px;
-    padding: 0;
-}
-
-.faq-container .faq-item .faq-a ul li {
-    margin-bottom: 3px;
-    list-style-type: disc;
-}
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -3712,15 +3490,6 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 
 .btn-use-ticket:active {
     transform: scale(0.97);
-}
-
-/* Dark mode support */
-body.dark-mode .btn-use-ticket {
-    background: #10b981;
-}
-
-body.dark-mode .btn-use-ticket:hover {
-    background: #059669;
 }
 
 /* ============================================================
@@ -4291,10 +4060,7 @@ body.dark-mode .ticket-card-premium .ticket-body .ticket-category {
     color: #60a5fa;
 }
 
-/* ============================================================
-   ===== DARK MODE - STYLES VIP =====
-   ============================================================ */
-
+/* ===== DARK MODE - VIP ===== */
 body.dark-mode .ticket-card-premium.ticket-vip {
     border-color: #d4911e;
 }
@@ -4526,12 +4292,6 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         padding: 6px 8px;
     }
 
-    .event-card-details {
-        grid-template-columns: 1fr 1fr;
-        gap: 2px 8px;
-        font-size: 0.7rem;
-    }
-
     .event-detail-header {
         flex-direction: column;
     }
@@ -4649,9 +4409,16 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         font-size: 1.2rem;
     }
     
-    .menu-btn {
-        font-size: 1.1rem;
-        padding: 6px 10px;
+    #menuBtn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    #menuBtn i {
+        font-size: 1.2rem !important;
     }
     
     .sidebar-avatar {
@@ -4712,18 +4479,6 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     
     .admin-session-timer #adminSessionTimer {
         font-size: 0.9rem;
-    }
-    
-    .event-card-details {
-        grid-template-columns: 1fr 1fr;
-        font-size: 0.65rem;
-        gap: 1px 6px;
-        padding: 4px 8px;
-    }
-    
-    .event-card-details .detail-item i {
-        font-size: 0.6rem;
-        width: 12px;
     }
     
     .quantity-popup-content h3 {
