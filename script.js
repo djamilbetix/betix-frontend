@@ -3326,12 +3326,16 @@ function initLegalModals() {
 }
 
 // ============================================================
-// ===== HERO SLIDER =====
+// ===== HERO SLIDER - CORRIGÉ =====
 // ============================================================
 
 function initHeroSlider() {
     var slidesContainer = document.getElementById('heroSlides');
-    if (!slidesContainer) return;
+    if (!slidesContainer) {
+        console.warn('Hero slides container not found');
+        return;
+    }
+    
     slidesContainer.innerHTML = '';
     heroSlides.forEach(function(slide, index) {
         var div = document.createElement('div');
@@ -3339,6 +3343,7 @@ function initHeroSlider() {
         div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div><div class="hero-slide-content"><div class="hero-badge">' + (slide.badge || 'Event') + '</div><h2>' + slide.title + '</h2><p>' + (slide.description || '') + '</p></div>';
         slidesContainer.appendChild(div);
     });
+    
     var dotsContainer = document.getElementById('heroDots');
     if (dotsContainer) {
         dotsContainer.innerHTML = '';
@@ -3355,6 +3360,7 @@ function initHeroSlider() {
             dotsContainer.appendChild(dot);
         });
     }
+    
     var slides = document.querySelectorAll('.hero-slide');
     var dots = document.querySelectorAll('.hero-dots .dot');
     var prevBtn = document.getElementById('heroPrev');
@@ -3371,7 +3377,9 @@ function initHeroSlider() {
         if (index >= totalSlides) index = 0;
         currentIndex = index;
         var offset = -currentIndex * 100;
+        slidesContainer.style.transition = 'transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         slidesContainer.style.transform = 'translateX(' + offset + '%)';
+        
         slides.forEach(function(slide, i) {
             slide.classList.remove('active');
             if (i === currentIndex) {
@@ -3387,13 +3395,15 @@ function initHeroSlider() {
                 }
             }
         });
+        
         dots.forEach(function(dot, i) {
             dot.classList.remove('active');
             if (i === currentIndex) dot.classList.add('active');
         });
+        
         setTimeout(function() {
             isTransitioning = false;
-        }, 800);
+        }, 750);
     }
 
     function nextSlide() {
@@ -3405,9 +3415,14 @@ function initHeroSlider() {
     }
 
     function startAutoPlay() {
-        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        stopAutoPlay();
         if (totalSlides > 1) {
-            autoPlayInterval = setInterval(nextSlide, 4000);
+            autoPlayInterval = setInterval(function() {
+                if (!isTransitioning) {
+                    nextSlide();
+                }
+            }, 4000);
+            console.log('Carousel auto-play started');
         }
     }
 
@@ -3415,6 +3430,7 @@ function initHeroSlider() {
         if (autoPlayInterval) {
             clearInterval(autoPlayInterval);
             autoPlayInterval = null;
+            console.log('Carousel auto-play stopped');
         }
     }
 
@@ -3432,12 +3448,15 @@ function initHeroSlider() {
             setTimeout(startAutoPlay, 3000);
         };
     }
+    
     var hero = document.querySelector('.hero');
     if (hero) {
         hero.onmouseenter = stopAutoPlay;
         hero.onmouseleave = startAutoPlay;
     }
+    
     startAutoPlay();
+    console.log('Hero slider initialized with ' + totalSlides + ' slides');
 }
 
 // ============================================================
@@ -3480,7 +3499,7 @@ function handleLogoClick() {
 }
 
 // ============================================================
-// ===== DOM CONTENT LOADED =====
+// ===== DOM CONTENT LOADED - AVEC CORRECTION MENU =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3548,19 +3567,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // ============================================================
+        // ===== CORRECTION MENU - AJOUT D'UN ÉCOUTEUR ROBUSTE =====
+        // ============================================================
+        
         var menuBtn = document.getElementById('menuBtn');
         if (menuBtn) {
             console.log('Menu button found, adding click listener');
+            
+            // Écouteur principal
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Menu button clicked');
                 openSidebar();
             });
+            
+            // Écouteur de secours via le parent du header
+            var headerRight = document.querySelector('.header-right');
+            if (headerRight) {
+                headerRight.addEventListener('click', function(e) {
+                    var target = e.target;
+                    var btn = target.closest('#menuBtn');
+                    if (btn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Menu button clicked via header-right delegation');
+                        openSidebar();
+                    }
+                });
+            }
+            
             menuBtn.style.cursor = 'pointer';
+            menuBtn.style.position = 'relative';
+            menuBtn.style.zIndex = '10';
+            
+            // S'assurer que le bouton n'est pas caché
+            menuBtn.style.display = 'flex';
+            menuBtn.style.alignItems = 'center';
+            menuBtn.style.justifyContent = 'center';
+            
         } else {
             console.error('Menu button not found in DOM');
         }
+        
+        // ============================================================
+        // ===== FERMETURE SIDEBAR =====
+        // ============================================================
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
