@@ -329,6 +329,7 @@ body {
     transition: opacity 0.2s;
     font-size: 0.85rem;
     margin-top: 4px;
+    position: relative;
 }
 
 .wallet-sidebar-btn:hover {
@@ -344,9 +345,32 @@ body {
     background: #dc2626;
 }
 
+/* ===== SPINNER SUR LE BOUTON CONNECT ===== */
 .wallet-sidebar-btn.loading {
-    opacity: 0.7;
+    color: transparent !important;
+    pointer-events: none;
     cursor: wait;
+    opacity: 0.7;
+}
+
+.wallet-sidebar-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    margin-left: -11px;
+    border: 3px solid rgba(26, 26, 46, 0.2);
+    border-top-color: #1a1a2e;
+    border-radius: 50%;
+    animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .sidebar-language-selector {
@@ -1166,11 +1190,6 @@ body {
     border-top-color: #ffffff;
     border-radius: 50%;
     animation: btn-spin 0.8s linear infinite;
-}
-
-@keyframes btn-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 .btn-publish-wrapper .btn-primary .btn-icon {
@@ -3622,6 +3641,43 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
+   ===== USE TICKET BUTTON =====
+   ============================================================ */
+
+.btn-use-ticket {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.btn-use-ticket:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-use-ticket:active {
+    transform: scale(0.97);
+}
+
+/* Dark mode support */
+body.dark-mode .btn-use-ticket {
+    background: #10b981;
+}
+
+body.dark-mode .btn-use-ticket:hover {
+    background: #059669;
+}
+
+/* ============================================================
    ===== DARK MODE =====
    ============================================================ */
 
@@ -4187,43 +4243,6 @@ body.dark-mode .ticket-card-premium .ticket-logo-placeholder {
 body.dark-mode .ticket-card-premium .ticket-body .ticket-category {
     background: rgba(13, 71, 161, 0.3);
     color: #60a5fa;
-}
-
-/* ============================================================
-   ===== USE TICKET BUTTON =====
-   ============================================================ */
-
-.btn-use-ticket {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    width: 100%;
-    margin-top: 6px;
-}
-
-.btn-use-ticket:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-use-ticket:active {
-    transform: scale(0.97);
-}
-
-/* Dark mode support */
-body.dark-mode .btn-use-ticket {
-    background: #10b981;
-}
-
-body.dark-mode .btn-use-ticket:hover {
-    background: #059669;
 }
 
 /* ============================================================
