@@ -44,6 +44,49 @@ const countriesList = [
 ];
 
 // ============================================================
+// ===== PI SDK INITIALIZATION =====
+// ============================================================
+
+let piSDKReady = false;
+
+function initPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        try {
+            Pi.init({ version: "2.0", sandbox: true });
+            piSDKReady = true;
+            console.log("Pi SDK initialized successfully");
+            return true;
+        } catch (error) {
+            console.error("Pi SDK init error:", error);
+            piSDKReady = false;
+            return false;
+        }
+    }
+    console.log("Pi SDK not available yet");
+    return false;
+}
+
+// Initialisation immédiate
+initPiSDK();
+
+// Tentatives d'initialisation différées
+setTimeout(function() { if (!piSDKReady) initPiSDK(); }, 500);
+setTimeout(function() { if (!piSDKReady) initPiSDK(); }, 1000);
+setTimeout(function() { if (!piSDKReady) initPiSDK(); }, 2000);
+setTimeout(function() { if (!piSDKReady) initPiSDK(); }, 3000);
+setTimeout(function() { if (!piSDKReady) initPiSDK(); }, 5000);
+
+async function ensurePiSDKReady() {
+    let attempts = 0;
+    while (!piSDKReady && attempts < 15) {
+        initPiSDK();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+    }
+    return piSDKReady;
+}
+
+// ============================================================
 // ===== GLOBAL VARIABLES =====
 // ============================================================
 
@@ -913,10 +956,14 @@ function updateConnectButtons() {
             sidebarBtn.textContent = 'Disconnect';
             sidebarBtn.classList.add('disconnect');
             sidebarBtn.onclick = function() { disconnectPi(); };
+            sidebarBtn.disabled = false;
+            sidebarBtn.classList.remove('loading');
         } else {
             sidebarBtn.textContent = 'Connect Pi';
             sidebarBtn.classList.remove('disconnect');
             sidebarBtn.onclick = function() { connectToPi(); };
+            sidebarBtn.disabled = false;
+            sidebarBtn.classList.remove('loading');
         }
     }
     var profilePageBtn = document.getElementById('profileConnectBtnPage');
@@ -932,14 +979,26 @@ function updateConnectButtons() {
 }
 
 // ============================================================
-// ===== CONNEXION PI AVEC SPINNER =====
+// ===== CONNEXION PI AVEC SPINNER ET VÉRIFICATION SDK =====
 // ============================================================
 
 async function connectToPi() {
+    // Afficher le spinner
     showConnectSpinner();
     
     try {
-        if (typeof Pi === 'undefined') { 
+        // S'assurer que le SDK est initialisé
+        if (!piSDKReady) {
+            const ready = await ensurePiSDKReady();
+            if (!ready) {
+                hideConnectSpinner();
+                alert("Pi Network SDK is not available. Please make sure you are using the Pi Browser.");
+                return;
+            }
+        }
+        
+        // Vérifier à nouveau que Pi est disponible
+        if (typeof Pi === 'undefined') {
             hideConnectSpinner();
             if (confirm("Pi Browser not detected. Use demo mode?")) {
                 currentUser.wallet = 'demo_user';
@@ -960,8 +1019,10 @@ async function connectToPi() {
                 return;
             }
             alert("Please open this page in Pi Browser");
-            return; 
+            return;
         }
+        
+        console.log("Pi SDK is ready, attempting authentication...");
         
         var scopes = ['username', 'payments'];
         var auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
@@ -987,9 +1048,13 @@ async function connectToPi() {
             
             alert('Pi account connected! Welcome ' + piUser.username);
             closeSidebar();
+        } else {
+            hideConnectSpinner();
+            alert('Authentication failed. Please try again.');
         }
     } catch (error) { 
         console.error("Pi connection error:", error); 
+        hideConnectSpinner();
         alert("Connection error: " + (error.message || "Please try again")); 
     } finally {
         hideConnectSpinner();
