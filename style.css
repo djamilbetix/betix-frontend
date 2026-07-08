@@ -34,6 +34,9 @@ body {
     --dark: #1a1a2e;
     --light: #f9fafb;
     --gray: #6b7280;
+    --vip-gold: #d4911e;
+    --vip-gold-light: #fef8f0;
+    --vip-gold-dark: #8B7500;
     --card-shadow: 0 4px 20px rgba(0,0,0,0.06);
     --card-hover-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
 }
@@ -163,6 +166,11 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
 }
 
 .menu-btn:hover {
@@ -1435,7 +1443,7 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
 }
 
 /* ============================================================
-   ===== TICKET CARD - DESIGN PREMIUM =====
+   ===== TICKET CARD - DESIGN PREMIUM AVEC COULEURS VIP =====
    ============================================================ */
 
 .ticket-card-premium {
@@ -1616,6 +1624,44 @@ body.dark-mode .btn-publish-wrapper .btn-primary.loading::after {
     color: rgba(13, 71, 161, 0.1);
     letter-spacing: 2px;
     text-transform: uppercase;
+}
+
+/* ============================================================
+   ===== STYLES SPÉCIFIQUES POUR LES TICKETS VIP =====
+   ============================================================ */
+
+.ticket-card-premium.ticket-vip {
+    border-color: #d4911e;
+    box-shadow: 0 4px 24px rgba(212, 145, 30, 0.15);
+}
+
+.ticket-card-premium.ticket-vip .ticket-header.vip-header {
+    background: linear-gradient(135deg, #b8860b, #d4911e);
+}
+
+.ticket-card-premium.ticket-vip .ticket-status.vip-badge {
+    background: rgba(255, 215, 0, 0.25);
+    border-color: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+}
+
+.ticket-card-premium.ticket-vip .ticket-category.vip-category {
+    background: rgba(212, 145, 30, 0.15);
+    color: #b8860b;
+}
+
+.ticket-card-premium.ticket-vip .qr-code.vip-qr {
+    background: #fef8f0;
+    border-color: #d4911e;
+    color: #b8860b;
+}
+
+.ticket-card-premium.ticket-vip .ticket-info-grid .ticket-info-item i {
+    color: #d4911e;
+}
+
+.ticket-card-premium.ticket-vip .ticket-logo-placeholder {
+    color: rgba(212, 145, 30, 0.15);
 }
 
 /* ============================================================
@@ -4243,6 +4289,37 @@ body.dark-mode .ticket-card-premium .ticket-logo-placeholder {
 body.dark-mode .ticket-card-premium .ticket-body .ticket-category {
     background: rgba(13, 71, 161, 0.3);
     color: #60a5fa;
+}
+
+/* ============================================================
+   ===== DARK MODE - STYLES VIP =====
+   ============================================================ */
+
+body.dark-mode .ticket-card-premium.ticket-vip {
+    border-color: #d4911e;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .ticket-header.vip-header {
+    background: linear-gradient(135deg, #8B7500, #b8860b);
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .ticket-category.vip-category {
+    background: rgba(212, 145, 30, 0.2);
+    color: #ffd700;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .qr-code.vip-qr {
+    background: #1a2332;
+    border-color: #d4911e;
+    color: #ffd700;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .ticket-info-grid .ticket-info-item i {
+    color: #ffd700;
+}
+
+body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
+    color: rgba(212, 145, 30, 0.15);
 }
 
 /* ============================================================
