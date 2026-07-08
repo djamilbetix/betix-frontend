@@ -4190,6 +4190,43 @@ body.dark-mode .ticket-card-premium .ticket-body .ticket-category {
 }
 
 /* ============================================================
+   ===== USE TICKET BUTTON =====
+   ============================================================ */
+
+.btn-use-ticket {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 6px;
+}
+
+.btn-use-ticket:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-use-ticket:active {
+    transform: scale(0.97);
+}
+
+/* Dark mode support */
+body.dark-mode .btn-use-ticket {
+    background: #10b981;
+}
+
+body.dark-mode .btn-use-ticket:hover {
+    background: #059669;
+}
+
+/* ============================================================
    ===== RESPONSIVE =====
    ============================================================ */
 
