@@ -607,7 +607,6 @@ async function loadAllFromSupabase() {
     loadUsedTickets();
     
     try {
-        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -639,12 +638,10 @@ async function loadAllFromSupabase() {
             });
             localStorage.setItem('betix_events', JSON.stringify(events));
         } else {
-            // Si aucun événement dans Supabase, essayer de charger depuis localStorage
             var localEvents = localStorage.getItem('betix_events');
             if (localEvents) {
                 try {
                     events = JSON.parse(localEvents);
-                    // Synchroniser les événements locaux vers Supabase
                     for (var i = 0; i < events.length; i++) {
                         await saveEventToSupabase(events[i]);
                     }
@@ -656,7 +653,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -682,12 +678,10 @@ async function loadAllFromSupabase() {
                 });
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             } else {
-                // Si aucun ticket dans Supabase, essayer de charger depuis localStorage
                 var localTickets = localStorage.getItem('betix_tickets');
                 if (localTickets) {
                     try {
                         tickets = JSON.parse(localTickets);
-                        // Synchroniser les tickets locaux vers Supabase
                         for (var j = 0; j < tickets.length; j++) {
                             await saveTicketToSupabase(tickets[j]);
                         }
@@ -700,7 +694,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -740,7 +733,6 @@ async function loadAllFromSupabase() {
         console.log('All data loaded from Supabase');
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
-        // En cas d'erreur, charger depuis localStorage
         var localEvents = localStorage.getItem('betix_events');
         if (localEvents) {
             try {
@@ -2118,8 +2110,6 @@ function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
-    // Tous les billets actifs (non utilisés et non expirés)
-    // Les billets VIP doivent apparaître ici aussi
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2139,7 +2129,6 @@ function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
     
-    // Billets utilisés ou expirés
     var history = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2179,7 +2168,6 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     
-    // Bouton de téléchargement (remplace Use Ticket)
     var downloadButton = '';
     if (status === 'valid') {
         downloadButton = '<button class="btn-download-ticket" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> Télécharger le ticket</button>';
@@ -2232,35 +2220,29 @@ function downloadTicketPDF(ticketId) {
         var pageWidth = doc.internal.pageSize.getWidth();
         var pageHeight = doc.internal.pageSize.getHeight();
         
-        // Couleurs
         var primaryColor = [13, 71, 161];
         var goldColor = [212, 145, 30];
         var darkColor = [26, 26, 46];
         var grayColor = [107, 114, 128];
         
-        // Fond blanc
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
         
-        // Bandeau supérieur
         var isVip = ticket.ticketType === 'vip';
         var bandeauColor = isVip ? goldColor : primaryColor;
         
         doc.setFillColor(bandeauColor[0], bandeauColor[1], bandeauColor[2]);
         doc.rect(0, 0, pageWidth, 50, 'F');
         
-        // Logo / Titre
         doc.setFontSize(28);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
         doc.text('BETIX', 20, 30);
         
-        // Sous-titre du bandeau
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         doc.text('Decentralized Event Ticketing Platform', 20, 40);
         
-        // Type de billet (VIP ou Standard) avec badge
         var typeLabel = isVip ? 'VIP TICKET' : 'STANDARD TICKET';
         var typeColor = isVip ? goldColor : [16, 185, 129];
         
@@ -2271,10 +2253,8 @@ function downloadTicketPDF(ticketId) {
         doc.setFont('helvetica', 'bold');
         doc.text(typeLabel, pageWidth - 40, 25, { align: 'center' });
         
-        // Contenu principal
         var yPos = 70;
         
-        // Titre de l'événement
         doc.setFontSize(22);
         doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
         doc.setFont('helvetica', 'bold');
@@ -2282,13 +2262,11 @@ function downloadTicketPDF(ticketId) {
         doc.text(titleLines, 20, yPos);
         yPos += (titleLines.length * 8) + 8;
         
-        // Séparateur
         doc.setDrawColor(isVip ? goldColor[0] : primaryColor[0], isVip ? goldColor[1] : primaryColor[1], isVip ? goldColor[2] : primaryColor[2]);
         doc.setLineWidth(0.8);
         doc.line(20, yPos, pageWidth - 20, yPos);
         yPos += 10;
         
-        // Informations du billet
         doc.setFontSize(10);
         doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
         doc.setFont('helvetica', 'normal');
@@ -2331,7 +2309,6 @@ function downloadTicketPDF(ticketId) {
         
         yPos += 10;
         
-        // QR Code (affichage textuel + petit code)
         doc.setFontSize(9);
         doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
         doc.setFont('helvetica', 'bold');
@@ -2345,7 +2322,6 @@ function downloadTicketPDF(ticketId) {
         doc.text(qrCode, 20, yPos);
         yPos += 12;
         
-        // Avertissement
         doc.setFontSize(8);
         doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
         doc.setFont('helvetica', 'italic');
@@ -2354,18 +2330,15 @@ function downloadTicketPDF(ticketId) {
         doc.text('Présentez-le à l\'entrée de l\'événement.', 20, yPos);
         yPos += 12;
         
-        // Pied de page
         doc.setFontSize(7);
         doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
         doc.setFont('helvetica', 'normal');
         doc.text('BETIX - Plateforme décentralisée d\'événements sur Pi Network', pageWidth / 2, pageHeight - 20, { align: 'center' });
         doc.text('Délivré le ' + new Date(ticket.purchaseDate).toLocaleDateString('fr-FR'), pageWidth / 2, pageHeight - 13, { align: 'center' });
         
-        // Bandeau inférieur (petit)
         doc.setFillColor(isVip ? goldColor[0] : primaryColor[0], isVip ? goldColor[1] : primaryColor[1], isVip ? goldColor[2] : primaryColor[2]);
         doc.rect(0, pageHeight - 5, pageWidth, 5, 'F');
         
-        // Télécharger le PDF
         var fileName = 'Billet_Betix_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf';
         doc.save(fileName);
         
@@ -2376,13 +2349,6 @@ function downloadTicketPDF(ticketId) {
         alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
     }
 }
-
-// ============================================================
-// ===== MARQUER UN BILLET COMME UTILISÉ (SUPPRIMÉ) =====
-// ============================================================
-
-// La fonction markTicketAsUsed a été supprimée car le bouton "Use Ticket" a été remplacé
-// par le bouton "Télécharger le ticket". Les organisateurs utilisent le scan du QR Code.
 
 // ============================================================
 // ===== MY RATINGS =====
@@ -2874,29 +2840,26 @@ function renderMyEvents() {
         return e.organizer === currentUser.wallet || e.organizerName === currentUser.name;
     });
     if (myEvents.length === 0) {
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">You haven\'t created any events yet</p>';
+        container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--gray);"><i class="fas fa-calendar-plus" style="font-size:2rem;display:block;margin-bottom:1rem;opacity:0.3;"></i><p style="font-size:1.1rem;font-weight:500;margin-bottom:0.3rem;">No events created yet</p><p style="font-size:0.85rem;">Click "Create Event" to get started</p></div>';
         return;
     }
     container.innerHTML = myEvents.map(function(e) {
-        return renderMyEventCard(e);
+        return renderMyEventCardProfessional(e);
     }).join('');
 }
 
-function renderMyEventCard(event) {
+function renderMyEventCardProfessional(event) {
     var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US');
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    var galleryHtml = '';
-    if (event.images && event.images.length > 0) {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery">';
-        for (var i = 0; i < Math.min(event.images.length, 3); i++) {
-            galleryHtml += '<img src="' + event.images[i] + '" class="event-gallery-img" onclick="event.stopPropagation(); openGallery(\'' + event.id + '\', ' + i + ')">';
-        }
-        galleryHtml += '</div></div>';
-    } else {
-        galleryHtml = '<div class="event-gallery-wrapper"><div class="event-gallery"><img src="' + eventImagesList[event.category] + '" class="event-gallery-img" style="width:100%;height:150px;object-fit:cover;"></div></div>';
-    }
+    
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    
     var ticketSold = tickets.filter(function(t) { return t.eventId === event.id; }).length;
+    var isSoldOut = event.seatsLeft <= 0;
+    var statusText = isSoldOut ? 'Sold Out' : 'Active';
+    var statusClass = isSoldOut ? 'sold-out' : '';
     
     var typesDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi | ';
@@ -2905,11 +2868,16 @@ function renderMyEventCard(event) {
     
     var durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> Duration: ' + event.durationValue + ' ' + event.durationUnit + '</div>';
+        durationDisplay = '<div class="detail-item"><i class="fas fa-clock"></i> ' + event.durationValue + ' ' + event.durationUnit + '</div>';
     }
     
-    return '<div class="event-card" style="cursor:default; position:relative;">' +
-        galleryHtml +
+    return '<div class="my-event-card">' +
+        '<div class="event-gallery-wrapper">' +
+            '<div class="event-gallery">' +
+                '<img src="' + posterImage + '" class="event-gallery-img" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '</div>' +
+            '<span class="event-status-badge ' + statusClass + '">' + statusText + '</span>' +
+        '</div>' +
         '<div class="event-info">' +
             '<div class="event-title">' + escapeHtml(event.title) + '</div>' +
             '<div class="event-details-grid">' +
@@ -2917,14 +2885,17 @@ function renderMyEventCard(event) {
                 '<div class="detail-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
                 '<div class="detail-item"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
                 '<div class="detail-item"><i class="fas fa-flag"></i> ' + escapeHtml(event.country || 'Not specified') + '</div>' +
-                '<div class="detail-item"><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</div>' +
-                '<div class="detail-item"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' seats</div>' +
                 durationDisplay +
                 '<div class="detail-item" style="grid-column: 1 / -1; font-size:0.7rem; color:var(--gray);">' + typesDisplay + '</div>' +
             '</div>' +
-            '<div class="event-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px;">' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button class="btn-secondary" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')" style="background:var(--primary); color:white; padding:4px 12px; font-size:0.7rem;">Edit</button>' +
+            '<div class="event-footer">' +
+                '<div class="event-stats">' +
+                    '<span><i class="fas fa-ticket-alt"></i> ' + ticketSold + ' sold</span>' +
+                    '<span><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + '</span>' +
+                '</div>' +
+                '<div class="event-actions">' +
+                    '<button class="btn-edit-event" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')"><i class="fas fa-edit"></i> Edit</button>' +
+                    '<button class="btn-delete-event" onclick="event.stopPropagation(); adminDeleteEvent(\'' + event.id + '\')"><i class="fas fa-trash"></i></button>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -3772,6 +3743,7 @@ function updateProfilePage() {
     var profileName = document.getElementById('profileNameDisplay');
     var profileWallet = document.getElementById('profileWalletDisplay');
     var memberSince = document.getElementById('memberSince');
+    var avatarPlaceholder = document.getElementById('profilePageAvatarPlaceholder');
     
     var myEvents = events.filter(function(e) { return e.organizer === currentUser.wallet || e.organizerName === currentUser.name; });
     var userTickets = tickets.filter(function(t) { return t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet; });
@@ -3790,10 +3762,15 @@ function updateProfilePage() {
     if (profileName) profileName.textContent = currentUser.name || 'Guest';
     if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
+    
+    if (avatarPlaceholder) {
+        var initial = (currentUser.name || 'G')[0].toUpperCase();
+        avatarPlaceholder.innerHTML = '<span style="font-size: 2.8rem; font-weight: 600;">' + initial + '</span>';
+    }
 }
 
 // ============================================================
-// ===== DOM CONTENT LOADED - AVEC TOUTES LES CORRECTIONS =====
+// ===== DOM CONTENT LOADED =====
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3861,20 +3838,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ============================================================
         // ===== CORRECTION MENU - 3 MÉCANISMES ROBUSTES =====
-        // ============================================================
-        
         var menuBtn = document.getElementById('menuBtn');
         var headerRight = document.getElementById('headerRight');
         
         if (menuBtn) {
             console.log('Menu button found, adding click listeners');
             
-            // Forcer le style du bouton menu
             menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
             
-            // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3884,7 +3856,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             });
             
-            // Mécanisme 2: Écouteur via le parent
             if (headerRight) {
                 headerRight.addEventListener('click', function(e) {
                     var target = e.target;
@@ -3898,7 +3869,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // Mécanisme 3: Écouteur sur le document (ultime secours)
             document.addEventListener('click', function(e) {
                 var target = e.target;
                 var btn = target.closest('#menuBtn');
@@ -3910,7 +3880,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Effet hover pour confirmer que le bouton est actif
             menuBtn.addEventListener('mouseenter', function() {
                 this.style.background = 'rgba(255,255,255,0.4)';
                 this.style.transform = 'scale(1.05)';
@@ -3920,18 +3889,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.transform = 'scale(1)';
             });
             
-            // S'assurer que le bouton est bien visible et cliquable
             menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
-            
         } else {
             console.error('Menu button not found in DOM');
         }
         
-        // ============================================================
         // ===== CORRECTION BOUTON RETOUR =====
-        // ============================================================
-        
         var backBtn = document.getElementById('backBtn');
         if (backBtn) {
             console.log('Back button found, adding click listener');
@@ -3950,10 +3914,7 @@ document.addEventListener('DOMContentLoaded', function() {
             backBtn.style.cursor = 'pointer';
         }
         
-        // ============================================================
         // ===== FERMETURE SIDEBAR =====
-        // ============================================================
-        
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
             closeSidebarBtn.addEventListener('click', function(e) {
@@ -4107,6 +4068,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Ticket download feature added');
         console.log('✅ VIP tickets now appear in My Tickets');
         console.log('✅ Data persistence improved with Supabase');
+        console.log('✅ Profile page improved with professional design');
+        console.log('✅ My Events page improved with professional design');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -4123,7 +4086,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== FONCTIONS DE SECOURS POUR DEBUG =====
 // ============================================================
 
-// Fonctions accessibles depuis la console pour debug
 window.debugMenu = function() {
     console.log('🔍 Debug menu:');
     var btn = document.getElementById('menuBtn');
@@ -4163,10 +4125,6 @@ window.forceCloseMenu = function() {
     }
 };
 
-// ============================================================
-// ===== FONCTION DE TEST DU MENU =====
-// ============================================================
-
 function testMenuButton() {
     var btn = document.getElementById('menuBtn');
     if (btn) {
@@ -4178,7 +4136,6 @@ function testMenuButton() {
         console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
         console.log('📦 Display:', window.getComputedStyle(btn).display);
         
-        // Simuler un clic pour tester
         var rect = btn.getBoundingClientRect();
         console.log('📍 Position du bouton:', rect);
         console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
@@ -4190,7 +4147,6 @@ function testMenuButton() {
     }
 }
 
-// Exécuter le test automatiquement
 setTimeout(function() {
     testMenuButton();
 }, 2000);
