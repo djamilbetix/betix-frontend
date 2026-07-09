@@ -981,6 +981,7 @@ function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', '
 function updateBackButton(currentPage) {
     var backBtn = document.getElementById('backBtn');
     if (!backBtn) return;
+    // Le bouton retour s'affiche uniquement sur les pages autres que 'home' et 'homePage'
     if (currentPage !== 'home' && currentPage !== 'homePage') {
         backBtn.style.display = 'flex';
         backBtn.classList.add('visible');
@@ -2103,17 +2104,18 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY - AVEC COULEURS VIP =====
+// ===== TICKETS AND HISTORY - CORRIGÉ =====
 // ============================================================
 
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
+    // Un ticket est actif s'il n'est PAS utilisé (peu importe la date)
+    // Un ticket utilisé = utiliséTickets contient son ID OU status === 'Used'
     var active = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired && t.status !== 'Used';
+        var isUsed = usedTickets.indexOf(t.id) !== -1 || t.status === 'Used';
+        return !isUsed;
     });
     
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
@@ -2129,10 +2131,10 @@ function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
     
+    // Un ticket est dans l'historique s'il est utilisé (peu importe la date)
     var history = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return isUsed || isExpired || t.status === 'Used';
+        var isUsed = usedTickets.indexOf(t.id) !== -1 || t.status === 'Used';
+        return isUsed;
     });
     
     history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
@@ -3752,9 +3754,8 @@ function updateProfilePage() {
     if (myEventsCount) myEventsCount.textContent = myEvents.length;
     if (ticketCount) ticketCount.textContent = userTickets.length;
     if (historyCount) historyCount.textContent = tickets.filter(function(t) { 
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return (isUsed || isExpired) && (t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet);
+        var isUsed = usedTickets.indexOf(t.id) !== -1 || t.status === 'Used';
+        return isUsed;
     }).length;
     if (ratedCount) ratedCount.textContent = userRatings.length;
     if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
@@ -4070,6 +4071,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Data persistence improved with Supabase');
         console.log('✅ Profile page improved with professional design');
         console.log('✅ My Events page improved with professional design');
+        console.log('✅ Tickets stay in My Tickets until manually used');
         
     } catch (error) {
         console.error('Error during application startup:', error);
