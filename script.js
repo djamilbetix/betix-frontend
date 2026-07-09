@@ -307,8 +307,8 @@ async function saveEventToSupabase(eventData) {
         console.log('Event ID:', eventData.id);
         console.log('Event Title:', eventData.title);
         
-        if (!eventData.id) {
-            console.error('❌ Event ID missing');
+        if (!eventData || !eventData.id) {
+            console.error('❌ Event data or ID missing');
             return false;
         }
         
@@ -343,18 +343,37 @@ async function saveEventToSupabase(eventData) {
         
         const { data, error } = await supabaseClient
             .from('events')
-            .upsert(dbEvent, { onConflict: 'id' });
+            .upsert(dbEvent, { 
+                onConflict: 'id',
+                ignoreDuplicates: false 
+            });
         
         if (error) {
             console.error('❌ Supabase error saving event:', error);
-            console.error('   Error details:', error.message, error.code, error.details);
+            console.error('   Error code:', error.code);
+            console.error('   Error message:', error.message);
+            
+            if (error.code === '23505') {
+                console.log('🔄 Trying update instead...');
+                const { error: updateError } = await supabaseClient
+                    .from('events')
+                    .update(dbEvent)
+                    .eq('id', eventData.id);
+                
+                if (updateError) {
+                    console.error('❌ Update also failed:', updateError);
+                    return false;
+                }
+                console.log('✅ Event updated in Supabase:', eventData.id);
+                return true;
+            }
             return false;
         }
         
         console.log('✅ Event saved to Supabase:', eventData.id);
         return true;
     } catch (error) {
-        console.error('❌ Error saving event to Supabase:', error);
+        console.error('❌ Critical error saving event:', error);
         return false;
     }
 }
@@ -750,10 +769,8 @@ async function loadAllFromSupabase() {
             });
             localStorage.setItem('betix_events', JSON.stringify(events));
             console.log('✅ Loaded', events.length, 'events from Supabase');
-            
-            // Afficher les événements chargés
             events.forEach(function(e, idx) {
-                console.log('   Event ' + (idx+1) + ':', e.title, '|', e.pays, '|', e.seatsTotal, 'seats');
+                console.log('   Event ' + (idx+1) + ':', e.title, '|', e.pays);
             });
         } else {
             console.log('ℹ️ No events in Supabase, checking localStorage...');
@@ -764,7 +781,6 @@ async function loadAllFromSupabase() {
                     console.log('✅ Loaded', events.length, 'events from localStorage (fallback)');
                 } catch (e) {
                     events = [];
-                    console.log('⚠️ No events found');
                 }
             }
         }
@@ -797,11 +813,10 @@ async function loadAllFromSupabase() {
                         qrCode: t.qr_code || 'BETIX-' + Date.now()
                     };
                 });
-                
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
                 console.log('✅ Loaded', tickets.length, 'tickets from Supabase');
             } else {
-                console.log('ℹ️ No tickets in Supabase for this user');
+                console.log('ℹ️ No tickets in Supabase');
                 var localTickets = localStorage.getItem('betix_tickets');
                 if (localTickets) {
                     try {
@@ -809,7 +824,7 @@ async function loadAllFromSupabase() {
                         tickets = tickets.filter(function(t) {
                             return t.buyerWallet === piUid || t.userWallet === piUid;
                         });
-                        console.log('✅ Loaded', tickets.length, 'tickets from localStorage (fallback)');
+                        console.log('✅ Loaded', tickets.length, 'tickets from localStorage');
                     } catch (e) {
                         tickets = [];
                     }
@@ -1862,7 +1877,11 @@ async function createEvent(e) {
 // ============================================================
 
 function openPublishConfirm(eventData) {
+    console.log('🔄 ===== OPEN PUBLISH CONFIRM =====');
+    console.log('Event title:', eventData.title);
+    
     pendingEventData = eventData;
+    console.log('✅ pendingEventData set');
     
     var confirmTitle = document.getElementById('confirmTitle');
     var confirmCategory = document.getElementById('confirmCategory');
@@ -1881,8 +1900,8 @@ function openPublishConfirm(eventData) {
     if (!confirmTitle || !confirmCategory || !confirmCountry || !confirmDate || 
         !confirmLocation || !confirmPrice || !confirmSeats || !confirmOrganizer || 
         !confirmDescription || !confirmConditions || !confirmImages) {
-        console.error('❌ Some confirmation elements are missing from the DOM');
-        alert('An error occurred: missing confirmation elements. Please try again.');
+        console.error('❌ Some confirmation elements are missing');
+        alert('An error occurred. Please try again.');
         var publishBtn = document.getElementById('publishEventBtn');
         if (publishBtn) {
             publishBtn.classList.remove('loading');
@@ -1932,6 +1951,7 @@ function openPublishConfirm(eventData) {
         }
     }
     
+    console.log('✅ Confirm popup displayed');
     document.getElementById('publishConfirmPopup').classList.add('show');
 }
 
@@ -1950,10 +1970,15 @@ function closePublishConfirmPopup() {
 // ============================================================
 
 async function confirmPublishEvent() {
+    console.log('🔄 ===== CONFIRM PUBLISH EVENT CALLED =====');
+    
     if (!pendingEventData) {
+        console.error('❌ No pending event data');
         alert('No event data to publish');
         return;
     }
+    
+    console.log('📤 Event title:', pendingEventData.title);
     
     var publishBtn = document.getElementById('publishEventBtn');
     var confirmBtn = document.getElementById('confirmPublishBtn');
@@ -1967,11 +1992,12 @@ async function confirmPublishEvent() {
     try {
         var newEvent = pendingEventData;
         
-        console.log('📤 Publishing event:', newEvent.title);
-        console.log('   Organizer:', currentUser.name);
-        console.log('   Pays:', newEvent.pays);
+        console.log('📤 ===== PUBLISHING EVENT =====');
+        console.log('Event title:', newEvent.title);
+        console.log('Organizer:', currentUser.name);
+        console.log('Pays:', newEvent.pays);
         
-        // Upload des images
+        // === 1. UPLOAD DES IMAGES ===
         var uploadedUrls = [];
         if (newEvent.images && newEvent.images.length > 0) {
             console.log('📤 Uploading images...');
@@ -1992,35 +2018,30 @@ async function confirmPublishEvent() {
         newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
         newEvent.organizerName = currentUser.name;
         
-        // Ajouter l'événement en mémoire
+        // === 2. AJOUTER EN MÉMOIRE ===
         events.push(newEvent);
+        console.log('💾 Event added to memory, total:', events.length);
         
-        // === SAUVEGARDE LOCALE ===
-        saveEvents();
-        console.log('💾 Event saved locally:', newEvent.id);
+        // === 3. SAUVEGARDE LOCALE ===
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        console.log('💾 Event saved to localStorage');
         
-        // === SAUVEGARDE SUPABASE - IMMÉDIATE ===
+        // === 4. SAUVEGARDE SUPABASE ===
         console.log('📤 Saving event to Supabase...');
         var saved = await saveEventToSupabase(newEvent);
         
         if (saved) {
-            console.log('✅ Event successfully saved to Supabase:', newEvent.id);
+            console.log('✅ Event successfully saved to Supabase!');
         } else {
             console.error('❌ Failed to save event to Supabase');
-            alert('⚠️ Event created but not saved to database. Click OK to retry.');
-            // Tentative de rattrapage
-            var retrySaved = await saveEventToSupabase(newEvent);
-            if (retrySaved) {
-                console.log('✅ Event saved on retry!');
-            } else {
-                alert('❌ Still failed. Please contact support.');
-            }
+            console.log('🔄 Attempting sync all data...');
+            await syncAllToSupabase();
         }
         
-        // Sauvegarder l'utilisateur
+        // === 5. SYNC USER ===
         await syncUserToSupabase();
         
-        // Réinitialiser le formulaire
+        // === 6. RÉINITIALISER ===
         var form = document.getElementById('eventForm');
         if (form) form.reset();
         
@@ -2056,12 +2077,17 @@ async function confirmPublishEvent() {
             confirmBtn.textContent = 'Publish Event';
         }
         
-        alert('✅ Event "' + newEvent.title + '" has been successfully published!');
+        console.log('✅ ===== PUBLISH COMPLETED =====');
+        var message = '✅ Event "' + newEvent.title + '" has been successfully published!';
+        if (!saved) {
+            message += '\n\n⚠️ Database sync pending. It will be saved automatically.';
+        }
+        alert(message);
         showPage('home');
         
     } catch (error) {
         console.error('❌ Error publishing event:', error);
-        alert('An error occurred while publishing the event: ' + error.message);
+        alert('An error occurred: ' + error.message);
         
         if (confirmBtn) {
             confirmBtn.classList.remove('loading');
@@ -4096,15 +4122,34 @@ async function forceSyncEvents() {
     }
     
     var success = 0;
+    var errors = [];
+    
     for (var i = 0; i < events.length; i++) {
-        console.log('📤 Saving event ' + (i+1) + '/' + events.length + ':', events[i].title);
-        var saved = await saveEventToSupabase(events[i]);
-        if (saved) success++;
+        console.log('📤 [' + (i+1) + '/' + events.length + '] Saving event:', events[i].title);
+        try {
+            var saved = await saveEventToSupabase(events[i]);
+            if (saved) {
+                success++;
+                console.log('   ✅ Saved');
+            } else {
+                errors.push(events[i].title);
+                console.log('   ❌ Failed');
+            }
+        } catch (e) {
+            errors.push(events[i].title);
+            console.log('   ❌ Error:', e.message);
+        }
         await new Promise(resolve => setTimeout(resolve, 200));
     }
     
-    console.log('✅ Events synced:', success + '/' + events.length);
-    alert('✅ ' + success + '/' + events.length + ' événements synchronisés !');
+    console.log('✅ ===== SYNC COMPLETED =====');
+    console.log('   Success:', success + '/' + events.length);
+    if (errors.length > 0) {
+        console.log('   Errors:', errors);
+    }
+    
+    alert('✅ ' + success + '/' + events.length + ' événements synchronisés avec Supabase !' +
+          (errors.length > 0 ? '\n⚠️ Erreurs: ' + errors.length + ' événements' : ''));
 }
 
 async function checkSupabaseData() {
@@ -4338,9 +4383,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         updateConnectButtons();
         
+        // === ÉCOUTEUR DIRECT POUR LE BOUTON DE PUBLICATION ===
         var confirmPublishBtn = document.getElementById('confirmPublishBtn');
         if (confirmPublishBtn) {
-            confirmPublishBtn.addEventListener('click', confirmPublishEvent);
+            console.log('✅ Confirm publish button found');
+            var newBtn = confirmPublishBtn.cloneNode(true);
+            confirmPublishBtn.parentNode.replaceChild(newBtn, confirmPublishBtn);
+            
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔄 Confirm Publish button clicked (direct)');
+                confirmPublishEvent();
+            });
+        } else {
+            console.error('❌ Confirm publish button NOT found');
         }
         
         var confirmBuyBtn = document.getElementById('confirmBuyBtn');
