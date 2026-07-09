@@ -11,9 +11,6 @@
     
     <!-- jsPDF pour le téléchargement des tickets -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -95,9 +92,9 @@
             <label style="font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; display: block;">Choose Language:</label>
             <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
                 <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="es">Español</option>
-                <option value="pt">Português</option>
+                <option value="fr">Francais</option>
+                <option value="es">Espanol</option>
+                <option value="pt">Portugues</option>
                 <option value="zh">中文</option>
                 <option value="id">Indonesia</option>
                 <option value="ar">العربية</option>
@@ -211,10 +208,10 @@
 
 <!-- ===== MY EVENTS PAGE ===== -->
 <div id="myeventsPage" class="hidden-page">
-    <div class="events-container">
+    <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
         <p class="events-sub">Events you have created</p>
-        <div id="myEventsList" class="events-grid-centered"></div>
+        <div id="myEventsList" class="my-events-grid"></div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
@@ -492,7 +489,7 @@
         <div class="profile-header-card">
             <div class="profile-header-avatar">
                 <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
-                    <i class="fas fa-user"></i>
+                    <span style="font-size: 2.8rem; font-weight: 600;">G</span>
                 </div>
             </div>
             <div class="profile-header-info">
@@ -500,7 +497,7 @@
                 <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
                 <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
                 <div class="profile-badges">
-                    <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> rating</span>
+                    <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
                     <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
                 </div>
             </div>
@@ -530,8 +527,12 @@
         </div>
         
         <div class="profile-actions">
-            <button class="btn-primary" id="profileConnectBtnPage">Connect Pi</button>
-            <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
+            <button class="btn-primary" id="profileConnectBtnPage">
+                <i class="fas fa-plug"></i> Connect Pi
+            </button>
+            <button class="btn-secondary" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </button>
         </div>
     </div>
 </div>
@@ -806,7 +807,7 @@
     </div>
 </div>
 
-<!-- ===== MODIFIER ÉVÉNEMENT - MODAL ===== -->
+<!-- ===== MODIFIER EVENEMENT - MODAL ===== -->
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
