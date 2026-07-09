@@ -16,7 +16,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
     }
 });
 
-console.log("Supabase initialized");
+console.log("✅ Supabase initialized");
 
 // ============================================================
 // ===== COUNTRY LIST =====
@@ -80,15 +80,15 @@ function initPiSDK() {
         try {
             Pi.init({ version: "2.0", sandbox: true });
             piSDKReady = true;
-            console.log("Pi SDK initialized successfully");
+            console.log("✅ Pi SDK initialized successfully");
             return true;
         } catch (error) {
-            console.error("Pi SDK init error:", error);
+            console.error("❌ Pi SDK init error:", error);
             piSDKReady = false;
             return false;
         }
     }
-    console.log("Pi SDK not available yet");
+    console.log("⏳ Pi SDK not available yet");
     return false;
 }
 
@@ -243,7 +243,7 @@ async function uploadEventImage(eventId, base64Data, index) {
         
         return publicUrlData.publicUrl;
     } catch (error) {
-        console.error('Error uploading to Supabase storage:', error);
+        console.error('❌ Error uploading to Supabase storage:', error);
         return null;
     }
 }
@@ -261,7 +261,9 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             username: username,
             wallet: wallet,
             points: points,
-            updated_at: now
+            updated_at: now,
+            last_seen: now,
+            LastSeen: now
         };
         
         const { data: existing, error: checkError } = await supabaseClient
@@ -280,18 +282,18 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
                 .update(userData)
                 .eq('pi_uid', piUid);
             if (error) throw error;
-            console.log('User updated in Supabase:', piUid);
+            console.log('✅ User updated in Supabase:', piUid);
         } else {
             userData.created_at = now;
             const { error } = await supabaseClient
                 .from('users')
                 .insert(userData);
             if (error) throw error;
-            console.log('User created in Supabase:', piUid);
+            console.log('✅ User created in Supabase:', piUid);
         }
         return true;
     } catch (error) {
-        console.error('Error saving user to Supabase:', error);
+        console.error('❌ Error saving user to Supabase:', error);
         return false;
     }
 }
@@ -299,7 +301,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 async function saveEventToSupabase(eventData) {
     try {
         if (!eventData.id) {
-            console.error('Event ID missing');
+            console.error('❌ Event ID missing');
             return false;
         }
         
@@ -325,109 +327,137 @@ async function saveEventToSupabase(eventData) {
             duration_unit: eventData.durationUnit || null
         };
         
-        console.log('Saving event to Supabase:', eventData.id);
-        console.log('Event pays:', dbEvent.pays);
+        console.log('📤 Saving event to Supabase:', eventData.id);
+        console.log('   Pays:', dbEvent.pays);
         
         const { data, error } = await supabaseClient
             .from('events')
             .upsert(dbEvent, { onConflict: 'id' });
         
         if (error) {
-            console.error('Supabase error saving event:', error);
+            console.error('❌ Supabase error saving event:', error);
             return false;
         }
         
-        console.log('Event saved successfully to Supabase:', eventData.id);
+        console.log('✅ Event saved to Supabase:', eventData.id);
         return true;
     } catch (error) {
-        console.error('Error saving event to Supabase:', error);
+        console.error('❌ Error saving event to Supabase:', error);
         return false;
     }
 }
 
 async function saveTicketToSupabase(ticketData) {
     try {
-        if (!ticketData.id) {
-            console.error('Ticket ID missing');
+        console.log('🔄 saveTicketToSupabase - Ticket ID:', ticketData.id);
+        
+        if (!ticketData || !ticketData.id) {
+            console.error('❌ Ticket data or ID missing');
             return false;
         }
         
-        // Récupérer le pays depuis l'événement associé
         var eventPays = 'France';
+        var eventTitle = ticketData.eventTitle || 'Event';
+        var eventLocation = ticketData.eventLocation || '';
+        var eventDate = ticketData.eventDate || new Date().toISOString();
+        
         if (ticketData.eventId) {
             var event = events.find(function(e) { return e.id === ticketData.eventId; });
             if (event) {
                 eventPays = event.pays || event.country || 'France';
+                eventTitle = event.title || eventTitle;
+                eventLocation = event.location || eventLocation;
+                eventDate = event.date || eventDate;
             }
         }
         
         const dbTicket = {
             id: ticketData.id,
-            event_id: ticketData.eventId,
+            event_id: ticketData.eventId || '',
             buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet || currentUser.wallet || 'unknown',
             buyer_name: ticketData.buyerName || ticketData.buyerWallet || currentUser.name || 'Anonymous',
             ticket_type: ticketData.ticketType || 'standard',
-            price: ticketData.price || 0,
+            price: parseFloat(ticketData.price) || 0,
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
             expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
-            event_title: ticketData.eventTitle || '',
-            event_location: ticketData.eventLocation || '',
+            event_title: eventTitle,
+            event_location: eventLocation,
             pays: ticketData.pays || eventPays || 'France',
             transaction_id: ticketData.transactionId || ''
         };
         
-        console.log('Saving ticket to Supabase:', ticketData.id);
-        console.log('Ticket type:', dbTicket.ticket_type);
-        console.log('Ticket pays:', dbTicket.pays);
+        console.log('📤 Ticket data to save:', JSON.stringify(dbTicket, null, 2));
         
         const { data, error } = await supabaseClient
             .from('tickets')
-            .upsert(dbTicket, { onConflict: 'id' });
+            .upsert(dbTicket, { 
+                onConflict: 'id',
+                ignoreDuplicates: false 
+            });
         
         if (error) {
-            console.error('Supabase error saving ticket:', error);
+            console.error('❌ Supabase error:', error);
+            console.error('   Error details:', error.message, error.code, error.details);
             return false;
         }
         
-        console.log('Ticket saved successfully to Supabase:', ticketData.id);
+        console.log('✅ Ticket saved to Supabase:', ticketData.id);
         return true;
+        
     } catch (error) {
-        console.error('Error saving ticket to Supabase:', error);
+        console.error('❌ Error saving ticket:', error);
         return false;
     }
 }
 
 async function loadEventsFromSupabase() {
     try {
+        console.log('📥 Fetching events from Supabase...');
+        
         const { data, error } = await supabaseClient
             .from('events')
             .select('*')
             .order('event_date', { ascending: true });
         
-        if (error) throw error;
-        console.log('Events loaded from Supabase:', data ? data.length : 0);
+        if (error) {
+            console.error('❌ Supabase error loading events:', error);
+            return [];
+        }
+        
+        console.log('✅ Events loaded:', data ? data.length : 0);
         return data || [];
     } catch (error) {
-        console.error('Error loading events from Supabase:', error);
+        console.error('❌ Error loading events from Supabase:', error);
         return [];
     }
 }
 
 async function loadTicketsFromSupabase(piUid) {
     try {
+        console.log('📥 Fetching tickets for user:', piUid);
+        
+        if (!piUid) {
+            console.warn('⚠️ No piUid provided');
+            return [];
+        }
+        
         const { data, error } = await supabaseClient
             .from('tickets')
             .select('*')
             .eq('buyer_pi_uid', piUid)
             .order('purchase_date', { ascending: false });
         
-        if (error) throw error;
-        console.log('Tickets loaded from Supabase:', data ? data.length : 0);
+        if (error) {
+            console.error('❌ Supabase error loading tickets:', error);
+            return [];
+        }
+        
+        console.log('✅ Tickets loaded:', data ? data.length : 0);
         return data || [];
     } catch (error) {
-        console.error('Error loading tickets from Supabase:', error);
+        console.error('❌ Error loading tickets from Supabase:', error);
         return [];
     }
 }
@@ -443,7 +473,7 @@ async function loadNotificationsFromSupabase(piUid) {
         if (error) throw error;
         return data || [];
     } catch (error) {
-        console.error('Error loading notifications from Supabase:', error);
+        console.error('❌ Error loading notifications from Supabase:', error);
         return [];
     }
 }
@@ -456,10 +486,10 @@ async function updateEventInSupabase(eventId, updates) {
             .eq('id', eventId);
         
         if (error) throw error;
-        console.log('Event updated in Supabase:', eventId);
+        console.log('✅ Event updated in Supabase:', eventId);
         return true;
     } catch (error) {
-        console.error('Error updating event in Supabase:', error);
+        console.error('❌ Error updating event in Supabase:', error);
         return false;
     }
 }
@@ -471,10 +501,10 @@ async function deleteEventFromSupabase(eventId) {
             .delete()
             .eq('id', eventId);
         if (error) throw error;
-        console.log('Event deleted from Supabase:', eventId);
+        console.log('✅ Event deleted from Supabase:', eventId);
         return true;
     } catch (error) {
-        console.error('Error deleting event from Supabase:', error);
+        console.error('❌ Error deleting event from Supabase:', error);
         return false;
     }
 }
@@ -497,10 +527,10 @@ async function saveTransactionToSupabase(transactionData) {
             .insert(dbTransaction);
         
         if (error) throw error;
-        console.log('Transaction saved to Supabase:', dbTransaction.id);
+        console.log('✅ Transaction saved to Supabase:', dbTransaction.id);
         return true;
     } catch (error) {
-        console.error('Error saving transaction to Supabase:', error);
+        console.error('❌ Error saving transaction to Supabase:', error);
         return false;
     }
 }
@@ -521,10 +551,10 @@ async function saveNotificationToSupabase(notificationData) {
             .insert(dbNotification);
         
         if (error) throw error;
-        console.log('Notification saved to Supabase');
+        console.log('✅ Notification saved to Supabase');
         return true;
     } catch (error) {
-        console.error('Error saving notification to Supabase:', error);
+        console.error('❌ Error saving notification to Supabase:', error);
         return false;
     }
 }
@@ -623,19 +653,34 @@ async function syncNotificationsToSupabase() {
 }
 
 async function syncAllToSupabase() {
-    console.log('🔄 Syncing all data to Supabase...');
+    console.log('🔄 ===== SYNC ALL TO SUPABASE =====');
+    console.log('📊 Events to sync:', events.length);
+    console.log('📊 Tickets to sync:', tickets.length);
     
     try {
         await syncUserToSupabase();
-        await syncEventsToSupabase();
-        await syncTicketsToSupabase();
+        
+        var eventSuccess = 0;
+        for (var i = 0; i < events.length; i++) {
+            var saved = await saveEventToSupabase(events[i]);
+            if (saved) eventSuccess++;
+        }
+        console.log('✅ Events synced:', eventSuccess + '/' + events.length);
+        
+        var ticketSuccess = 0;
+        for (var i = 0; i < tickets.length; i++) {
+            var saved = await saveTicketToSupabase(tickets[i]);
+            if (saved) ticketSuccess++;
+        }
+        console.log('✅ Tickets synced:', ticketSuccess + '/' + tickets.length);
+        
         await syncNotificationsToSupabase();
-        console.log('✅ All data synced to Supabase successfully!');
-        console.log('   Events:', events.length);
-        console.log('   Tickets:', tickets.length);
-        console.log('   Notifications:', notifications.length);
+        
+        console.log('✅ ===== SYNC COMPLETED =====');
+        return { events: eventSuccess, tickets: ticketSuccess };
     } catch (error) {
-        console.error('Error syncing all data:', error);
+        console.error('❌ Error syncing all data:', error);
+        return { events: 0, tickets: 0 };
     }
 }
 
@@ -644,127 +689,148 @@ async function syncAllToSupabase() {
 // ============================================================
 
 async function loadAllFromSupabase() {
-    console.log('🔄 Loading data from Supabase...');
+    console.log('🔄 ===== LOAD ALL FROM SUPABASE =====');
     
     loadUsedTickets();
     
     try {
-        // === CHARGER LES ÉVÉNEMENTS ===
-        var supabaseEvents = await loadEventsFromSupabase();
-        if (supabaseEvents && supabaseEvents.length > 0) {
-            events = supabaseEvents.map(function(e) {
-                return {
-                    id: e.id,
-                    title: e.title,
-                    category: e.category || '',
-                    pays: e.pays || 'France',
-                    country: e.pays || 'France',
-                    date: e.event_date,
-                    location: e.location || '',
-                    description: e.description || '',
-                    conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
-                    price: e.ticket_price_standard || 0.0003,
-                    seatsTotal: e.max_tickets || 100,
-                    seatsLeft: e.max_tickets || 100,
-                    images: e.image_url ? [e.image_url] : [],
-                    coverImage: e.image_url || '',
-                    organizer: e.organizer_pi_uid || '',
-                    organizerName: e.organizer_name || '',
-                    organizerPiUid: e.organizer_pi_uid || '',
-                    createdAt: e.created_at || new Date().toISOString(),
-                    boosts: 0,
-                    durationValue: e.duration_value || null,
-                    durationUnit: e.duration_unit || null,
-                    ticketTypes: {
-                        standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
-                        vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
-                    }
-                };
-            });
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            console.log('✅ Loaded', events.length, 'events from Supabase');
-        } else {
-            var localEvents = localStorage.getItem('betix_events');
-            if (localEvents) {
-                try {
-                    events = JSON.parse(localEvents);
-                    console.log('✅ Loaded', events.length, 'events from localStorage');
-                } catch (e) {
-                    events = [];
-                }
+        // === 1. CHARGER LES ÉVÉNEMENTS ===
+        console.log('📥 Loading events...');
+        try {
+            var supabaseEvents = await loadEventsFromSupabase();
+            if (supabaseEvents && supabaseEvents.length > 0) {
+                events = supabaseEvents.map(function(e) {
+                    return {
+                        id: e.id,
+                        title: e.title,
+                        category: e.category || '',
+                        pays: e.pays || 'France',
+                        country: e.pays || 'France',
+                        date: e.event_date,
+                        location: e.location || '',
+                        description: e.description || '',
+                        conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
+                        price: e.ticket_price_standard || 0.0003,
+                        seatsTotal: e.max_tickets || 100,
+                        seatsLeft: e.max_tickets || 100,
+                        images: e.image_url ? [e.image_url] : [],
+                        coverImage: e.image_url || '',
+                        organizer: e.organizer_pi_uid || '',
+                        organizerName: e.organizer_name || '',
+                        organizerPiUid: e.organizer_pi_uid || '',
+                        createdAt: e.created_at || new Date().toISOString(),
+                        boosts: 0,
+                        durationValue: e.duration_value || null,
+                        durationUnit: e.duration_unit || null,
+                        ticketTypes: {
+                            standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
+                            vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
+                        }
+                    };
+                });
+                localStorage.setItem('betix_events', JSON.stringify(events));
+                console.log('✅ Loaded', events.length, 'events from Supabase');
+            } else {
+                console.log('ℹ️ No events in Supabase');
             }
+        } catch (e) {
+            console.error('❌ Error loading events:', e);
         }
         
-        // === CHARGER LES TICKETS ===
+        // === 2. CHARGER LES TICKETS ===
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
-            var supabaseTickets = await loadTicketsFromSupabase(piUid);
+            console.log('📥 Loading tickets for user:', piUid);
             
-            if (supabaseTickets && supabaseTickets.length > 0) {
-                tickets = supabaseTickets.map(function(t) {
-                    return {
-                        id: t.id,
-                        eventId: t.event_id,
-                        eventTitle: t.event_title || 'Event',
-                        eventDate: t.expiration_date || new Date().toISOString(),
-                        eventLocation: t.event_location || '',
-                        price: t.price || 0,
-                        buyerWallet: t.buyer_pi_uid,
-                        buyerName: t.buyer_name || t.buyer_pi_uid,
-                        userWallet: t.buyer_pi_uid,
-                        ticketType: t.ticket_type || 'standard',
-                        pays: t.pays || 'France',
-                        status: t.status || 'Valid',
-                        purchaseDate: t.purchase_date || new Date().toISOString(),
-                        purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
-                        transactionId: t.transaction_id || '',
-                        qrCode: t.qr_code || 'BETIX-' + Date.now()
-                    };
-                });
-                localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-                console.log('✅ Loaded', tickets.length, 'tickets from Supabase');
-            } else {
-                var localTickets = localStorage.getItem('betix_tickets');
-                if (localTickets) {
-                    try {
-                        tickets = JSON.parse(localTickets);
-                        tickets = tickets.filter(function(t) {
-                            return t.buyerWallet === piUid || t.userWallet === piUid;
-                        });
-                        console.log('✅ Loaded', tickets.length, 'tickets from localStorage');
-                    } catch (e) {
-                        tickets = [];
+            try {
+                var supabaseTickets = await loadTicketsFromSupabase(piUid);
+                console.log('📊 Tickets from Supabase:', supabaseTickets ? supabaseTickets.length : 0);
+                
+                if (supabaseTickets && supabaseTickets.length > 0) {
+                    tickets = supabaseTickets.map(function(t) {
+                        return {
+                            id: t.id,
+                            eventId: t.event_id,
+                            eventTitle: t.event_title || 'Event',
+                            eventDate: t.expiration_date || t.event_date || new Date().toISOString(),
+                            eventLocation: t.event_location || '',
+                            price: parseFloat(t.price) || 0,
+                            buyerWallet: t.buyer_pi_uid,
+                            buyerName: t.buyer_name || t.buyer_pi_uid,
+                            userWallet: t.buyer_pi_uid,
+                            ticketType: t.ticket_type || 'standard',
+                            pays: t.pays || 'France',
+                            status: t.status || 'Valid',
+                            purchaseDate: t.purchase_date || new Date().toISOString(),
+                            purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
+                            transactionId: t.transaction_id || '',
+                            qrCode: t.qr_code || 'BETIX-' + Date.now()
+                        };
+                    });
+                    
+                    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+                    console.log('✅ Loaded', tickets.length, 'tickets from Supabase');
+                    
+                    tickets.forEach(function(t, idx) {
+                        console.log('   Ticket ' + (idx+1) + ':', t.id, '|', t.eventTitle, '|', t.ticketType, '|', t.pays);
+                    });
+                } else {
+                    console.log('ℹ️ No tickets in Supabase for this user');
+                    
+                    var localTickets = localStorage.getItem('betix_tickets');
+                    if (localTickets) {
+                        try {
+                            tickets = JSON.parse(localTickets);
+                            tickets = tickets.filter(function(t) {
+                                return t.buyerWallet === piUid || t.userWallet === piUid;
+                            });
+                            console.log('✅ Loaded', tickets.length, 'tickets from localStorage (fallback)');
+                        } catch (e) {
+                            tickets = [];
+                            console.log('⚠️ No tickets found in localStorage');
+                        }
                     }
                 }
+            } catch (e) {
+                console.error('❌ Error loading tickets:', e);
+                tickets = [];
             }
+        } else {
+            console.log('ℹ️ No user connected, skipping tickets load');
+            tickets = [];
         }
         
-        // === CHARGER LES NOTIFICATIONS ===
+        // === 3. CHARGER LES NOTIFICATIONS ===
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
-            var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
-            if (supabaseNotifs && supabaseNotifs.length > 0) {
-                notifications = supabaseNotifs.map(function(n) {
-                    return {
-                        id: n.id,
-                        message: n.message || n.title || '',
-                        type: n.type || 'info',
-                        read: n.is_read || false,
-                        date: n.created_at || new Date().toISOString()
-                    };
-                });
-                localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-                updateNotifBadgeHeader();
-                console.log('✅ Loaded', notifications.length, 'notifications from Supabase');
+            try {
+                var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
+                if (supabaseNotifs && supabaseNotifs.length > 0) {
+                    notifications = supabaseNotifs.map(function(n) {
+                        return {
+                            id: n.id,
+                            message: n.message || n.title || '',
+                            type: n.type || 'info',
+                            read: n.is_read || false,
+                            date: n.created_at || new Date().toISOString()
+                        };
+                    });
+                    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+                    updateNotifBadgeHeader();
+                    console.log('✅ Loaded', notifications.length, 'notifications from Supabase');
+                }
+            } catch (e) {
+                console.error('❌ Error loading notifications:', e);
             }
         }
         
+        // === 4. METTRE À JOUR L'AFFICHAGE ===
         renderEventsByCategory();
         renderTickets();
         renderHistory();
         updateProfilePage();
         
-        console.log('✅ All data loaded successfully!');
+        console.log('✅ ===== LOAD COMPLETED =====');
         console.log('   Total events:', events.length);
         console.log('   Total tickets:', tickets.length);
         console.log('   Total notifications:', notifications.length);
@@ -778,7 +844,7 @@ async function loadAllFromSupabase() {
             if (localTickets) tickets = JSON.parse(localTickets);
             console.log('⚠️ Loaded data from localStorage as fallback');
         } catch (e) {
-            console.error('❌ Fallback loading also failed:', e);
+            console.error('❌ Fallback loading failed:', e);
         }
     }
 }
@@ -1191,7 +1257,7 @@ async function connectToPi() {
             alert('Authentication failed. Please try again.');
         }
     } catch (error) { 
-        console.error("Pi connection error:", error); 
+        console.error("❌ Pi connection error:", error); 
         hideConnectSpinner();
         alert("Connection error: " + (error.message || "Please try again")); 
     } finally {
@@ -1464,47 +1530,74 @@ async function confirmPurchaseFromPopup() {
 
 async function confirmPurchase(eventId, quantity, ticketType) {
     var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) { alert('Event not found'); return; }
+    if (!event) { 
+        alert('Event not found'); 
+        return; 
+    }
     
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
-    if (quantity > event.seatsLeft) { alert('Only ' + event.seatsLeft + ' seats available'); return; }
+    if (quantity > event.seatsLeft) { 
+        alert('Only ' + event.seatsLeft + ' seats available'); 
+        return; 
+    }
     
     var totalPrice = quantity * price;
     var typeLabel = ticketType === 'vip' ? 'VIP' : 'Standard';
     
-    if (!confirm('Buy ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) { return; }
+    if (!confirm('Buy ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) { 
+        return; 
+    }
     
     closeQuantityPopup();
     
+    var confirmBtn = document.getElementById('confirmBuyBtn');
+    if (confirmBtn) {
+        confirmBtn.textContent = '⏳ Processing...';
+        confirmBtn.disabled = true;
+    }
+    
     try {
+        if (typeof Pi === 'undefined') {
+            alert('Pi SDK not available. Please use Pi Browser.');
+            if (confirmBtn) {
+                confirmBtn.textContent = 'Confirm purchase';
+                confirmBtn.disabled = false;
+            }
+            return;
+        }
+        
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
             memo: quantity + ' ' + typeLabel + ' ticket(s): ' + event.title,
-            metadata: { eventId: event.id, eventTitle: event.title, quantity: quantity, ticketType: ticketType }
+            metadata: { 
+                eventId: event.id, 
+                eventTitle: event.title, 
+                quantity: quantity, 
+                ticketType: ticketType 
+            }
         }, {
             onReadyForServerApproval: function(paymentId) {
+                console.log('📤 Payment approved by server:', paymentId);
                 fetch(BACKEND_URL + '/api/pi/approve', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ paymentId: paymentId }) 
+                }).catch(function(e) {
+                    console.error('❌ Error approving payment:', e);
                 });
             },
-            onReadyForServerCompletion: function(paymentId, txid) {
-                fetch(BACKEND_URL + '/api/pi/complete', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        paymentId: paymentId, 
-                        txid: txid, 
-                        amount: totalPrice, 
-                        metadata: { eventId: event.id, quantity: quantity, ticketType: ticketType } 
-                    }) 
-                }).then(async function() {
+            onReadyForServerCompletion: async function(paymentId, txid) {
+                console.log('✅ Payment completed! txid:', txid);
+                
+                try {
                     var ticketsAdded = [];
+                    var purchaseDate = new Date().toISOString();
+                    var purchaseDateTime = new Date().toLocaleString('en-US');
                     
                     for (var i = 0; i < quantity; i++) {
+                        var ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         var ticket = {
-                            id: Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6),
+                            id: ticketId,
                             eventId: event.id,
                             eventTitle: event.title,
                             eventDate: event.date,
@@ -1517,10 +1610,10 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                             buyerName: piUser ? piUser.username : currentUser.name,
                             userWallet: currentUser.wallet,
                             status: 'Valid',
-                            purchaseDate: new Date().toISOString(),
-                            purchaseDateTime: new Date().toLocaleString('en-US'),
+                            purchaseDate: purchaseDate,
+                            purchaseDateTime: purchaseDateTime,
                             transactionId: txid || 'tx-' + Date.now(),
-                            qrCode: 'BETIX-' + Date.now() + '-' + txid.substring(0, 8) + '-' + i
+                            qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -1529,12 +1622,26 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
                     
+                    // Sauvegarde locale
                     saveEvents();
                     saveTickets();
+                    console.log('💾 Local save completed');
                     
+                    // Sauvegarde Supabase - un par un
+                    console.log('📤 Saving ' + ticketsAdded.length + ' tickets to Supabase...');
+                    
+                    var allSaved = true;
                     for (var j = 0; j < ticketsAdded.length; j++) {
-                        await saveTicketToSupabase(ticketsAdded[j]);
+                        var saved = await saveTicketToSupabase(ticketsAdded[j]);
+                        if (!saved) {
+                            allSaved = false;
+                            console.error('❌ Failed to save ticket:', ticketsAdded[j].id);
+                        } else {
+                            console.log('✅ Ticket saved:', ticketsAdded[j].id);
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 200));
                     }
+                    
                     await saveEventToSupabase(event);
                     
                     await saveTransactionToSupabase({
@@ -1549,7 +1656,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     });
                     
                     addNotification(
-                        'Purchase of ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '" by ' + (currentUser.name || 'a user'),
+                        'Purchase of ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '"',
                         'purchase'
                     );
                     
@@ -1562,15 +1669,50 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     
                     showSuccessPopup(event, ticketsAdded, quantity, ticketType);
                     
-                    console.log('✅ Tickets saved successfully to Supabase:', ticketsAdded.length);
-                });
+                    if (allSaved) {
+                        console.log('✅ All ' + ticketsAdded.length + ' tickets saved to Supabase!');
+                    } else {
+                        console.warn('⚠️ Some tickets may not have been saved to Supabase');
+                        setTimeout(function() {
+                            forceSyncTickets();
+                        }, 2000);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error in payment completion:', error);
+                    alert('Payment completed but there was an error saving your tickets. Please contact support.');
+                } finally {
+                    if (confirmBtn) {
+                        confirmBtn.textContent = 'Confirm purchase';
+                        confirmBtn.disabled = false;
+                    }
+                }
             },
-            onCancel: function() { alert("Payment cancelled"); },
-            onError: function(error) { alert("Payment error: " + error.message); }
+            onCancel: function() { 
+                console.log('❌ Payment cancelled by user');
+                alert("Payment cancelled");
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Confirm purchase';
+                    confirmBtn.disabled = false;
+                }
+            },
+            onError: function(error) { 
+                console.error('❌ Payment error:', error);
+                alert("Payment error: " + (error.message || 'Unknown error'));
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Confirm purchase';
+                    confirmBtn.disabled = false;
+                }
+            }
         });
+        
     } catch (error) { 
-        console.error('Purchase error:', error);
-        alert("Error: " + error.message); 
+        console.error('❌ Purchase error:', error);
+        alert("Error: " + (error.message || 'Unknown error'));
+        if (confirmBtn) {
+            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.disabled = false;
+        }
     }
 }
 
@@ -1618,7 +1760,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT - AVEC SAUVEGARDE SUPABASE =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 async function createEvent(e) {
@@ -1712,7 +1854,7 @@ async function createEvent(e) {
         openPublishConfirm(newEvent);
         
     } catch (error) {
-        console.error('Error creating event:', error);
+        console.error('❌ Error creating event:', error);
         alert('An error occurred while creating the event: ' + error.message);
         publishBtn.classList.remove('loading');
         publishBtn.disabled = false;
@@ -1743,7 +1885,7 @@ function openPublishConfirm(eventData) {
     if (!confirmTitle || !confirmCategory || !confirmCountry || !confirmDate || 
         !confirmLocation || !confirmPrice || !confirmSeats || !confirmOrganizer || 
         !confirmDescription || !confirmConditions || !confirmImages) {
-        console.error('Some confirmation elements are missing from the DOM');
+        console.error('❌ Some confirmation elements are missing from the DOM');
         alert('An error occurred: missing confirmation elements. Please try again.');
         var publishBtn = document.getElementById('publishEventBtn');
         if (publishBtn) {
@@ -1888,7 +2030,7 @@ async function confirmPublishEvent() {
         showPage('home');
         
     } catch (error) {
-        console.error('Error publishing event:', error);
+        console.error('❌ Error publishing event:', error);
         alert('An error occurred while publishing the event: ' + error.message);
         
         if (confirmBtn) {
@@ -2007,11 +2149,11 @@ async function handleImageUploadModern(file, index) {
             box.classList.remove('compress');
             
             uploadedImages[index] = compressedData;
-            console.log('Image ' + (index + 1) + ' uploaded and compressed successfully');
+            console.log('✅ Image ' + (index + 1) + ' uploaded and compressed successfully');
         }, 300);
         
     } catch (error) {
-        console.error('Error compressing image:', error);
+        console.error('❌ Error compressing image:', error);
         alert('Error compressing image. Please try with a smaller image.');
         progress.style.display = 'none';
         box.classList.remove('compress');
@@ -2266,7 +2408,6 @@ async function downloadTicket(ticketId) {
         var margin = 15;
         var y = margin;
         
-        // ===== EN-TÊTE =====
         doc.setFillColor(13, 71, 161);
         doc.rect(0, 0, pageWidth, 45, 'F');
         
@@ -2281,7 +2422,6 @@ async function downloadTicket(ticketId) {
         
         y = 55;
         
-        // ===== TYPE DE BILLET =====
         var isVip = ticket.ticketType === 'vip';
         var typeLabel = isVip ? 'VIP' : 'Standard';
         
@@ -2303,7 +2443,6 @@ async function downloadTicket(ticketId) {
         
         y += 20;
         
-        // ===== TITRE =====
         doc.setTextColor(26, 26, 46);
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -2311,10 +2450,9 @@ async function downloadTicket(ticketId) {
         doc.text(titleLines, margin, y);
         y += titleLines.length * 8 + 8;
         
-        // ===== CADRE D'INFORMATIONS =====
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(248, 250, 252);
-        doc.roundedRect(margin, y, pageWidth - margin * 2, 100, 4, 4, 'FD');
+        doc.roundedRect(margin, y, pageWidth - margin * 2, 110, 4, 4, 'FD');
         
         var infoY = y + 10;
         doc.setFontSize(10);
@@ -2370,9 +2508,8 @@ async function downloadTicket(ticketId) {
         doc.setFont('helvetica', 'bold');
         doc.text(ticket.pays || 'France', margin + 55, infoY);
         
-        y += 110;
+        y += 120;
         
-        // ===== NUMÉRO DE BILLET =====
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(margin, y, pageWidth - margin * 2, 30, 4, 4, 'FD');
@@ -2390,7 +2527,6 @@ async function downloadTicket(ticketId) {
         
         y += 40;
         
-        // ===== QR CODE =====
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(245, 247, 250);
         doc.roundedRect(margin, y, pageWidth - margin * 2, 45, 4, 4, 'FD');
@@ -2421,7 +2557,6 @@ async function downloadTicket(ticketId) {
         
         y += 55;
         
-        // ===== PIED DE PAGE =====
         doc.setDrawColor(200, 200, 200);
         doc.line(margin, y, pageWidth - margin, y);
         y += 8;
@@ -2448,7 +2583,7 @@ async function downloadTicket(ticketId) {
         );
         
     } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.error('❌ Error generating PDF:', error);
         alert('An error occurred while generating the PDF: ' + error.message);
     }
 }
@@ -3897,6 +4032,179 @@ function updateProfilePage() {
 }
 
 // ============================================================
+// ===== FORCE SYNC - FONCTIONS DE DEBUG =====
+// ============================================================
+
+async function forceSyncTickets() {
+    console.log('🔧 ===== FORCE SYNC TICKETS =====');
+    console.log('Tickets in memory:', tickets.length);
+    
+    if (tickets.length === 0) {
+        alert('❌ Aucun ticket à synchroniser');
+        return;
+    }
+    
+    var success = 0;
+    var errors = [];
+    var errorDetails = [];
+    
+    for (var i = 0; i < tickets.length; i++) {
+        console.log('📤 [' + (i+1) + '/' + tickets.length + '] Saving ticket:', tickets[i].id);
+        
+        try {
+            var saved = await saveTicketToSupabase(tickets[i]);
+            if (saved) {
+                success++;
+                console.log('   ✅ Saved successfully');
+            } else {
+                errors.push(tickets[i].id);
+                console.log('   ❌ Failed to save');
+            }
+        } catch (e) {
+            errors.push(tickets[i].id);
+            errorDetails.push({ id: tickets[i].id, error: e.message });
+            console.log('   ❌ Error:', e.message);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    console.log('✅ ===== SYNC COMPLETED =====');
+    console.log('   Success:', success + '/' + tickets.length);
+    console.log('   Errors:', errors.length);
+    if (errorDetails.length > 0) {
+        console.log('   Error details:', errorDetails);
+    }
+    
+    alert('✅ ' + success + '/' + tickets.length + ' tickets synchronisés avec Supabase !' +
+          (errors.length > 0 ? '\n⚠️ Erreurs: ' + errors.length + ' tickets' : ''));
+}
+
+async function checkSupabaseData() {
+    console.log('🔍 ===== CHECKING SUPABASE DATA =====');
+    
+    try {
+        var supabaseEvents = await loadEventsFromSupabase();
+        console.log('📊 Events in Supabase:', supabaseEvents ? supabaseEvents.length : 0);
+        
+        if (currentUser.piUid || currentUser.wallet) {
+            var piUid = currentUser.piUid || currentUser.wallet;
+            var supabaseTickets = await loadTicketsFromSupabase(piUid);
+            console.log('📊 Tickets in Supabase for user:', supabaseTickets ? supabaseTickets.length : 0);
+            
+            if (supabaseTickets && supabaseTickets.length > 0) {
+                console.log('   First ticket:', supabaseTickets[0]);
+                console.log('   All ticket columns:', Object.keys(supabaseTickets[0]));
+            }
+        }
+        
+        console.log('📊 Tickets in memory:', tickets.length);
+        if (tickets.length > 0) {
+            console.log('   First ticket:', tickets[0]);
+        }
+        
+        var msg = '✅ Vérification terminée !\n' +
+                  '📊 Événements Supabase: ' + (supabaseEvents ? supabaseEvents.length : 0) + '\n' +
+                  '📊 Tickets Supabase: ' + (supabaseTickets ? supabaseTickets.length : 0) + '\n' +
+                  '📊 Tickets en mémoire: ' + tickets.length;
+        
+        alert(msg);
+        
+    } catch (error) {
+        console.error('❌ Error checking data:', error);
+        alert('❌ Erreur: ' + error.message);
+    }
+}
+
+function showTickets() {
+    console.log('📊 ===== TICKETS IN MEMORY =====');
+    console.log('Total:', tickets.length);
+    tickets.forEach(function(t, i) {
+        console.log('  ' + (i+1) + '.', t.id, '|', t.eventTitle, '|', t.ticketType, '|', t.pays, '|', t.status);
+    });
+}
+
+async function showSupabaseTickets() {
+    if (!currentUser.piUid && !currentUser.wallet) {
+        alert('❌ Connectez-vous d\'abord');
+        return;
+    }
+    
+    var piUid = currentUser.piUid || currentUser.wallet;
+    var supabaseTickets = await loadTicketsFromSupabase(piUid);
+    
+    console.log('📊 ===== TICKETS IN SUPABASE =====');
+    console.log('Total:', supabaseTickets ? supabaseTickets.length : 0);
+    if (supabaseTickets && supabaseTickets.length > 0) {
+        supabaseTickets.forEach(function(t, i) {
+            console.log('  ' + (i+1) + '.', t.id, '|', t.event_title, '|', t.ticket_type, '|', t.pays, '|', t.status);
+        });
+    }
+    
+    alert('📊 ' + (supabaseTickets ? supabaseTickets.length : 0) + ' tickets trouvés dans Supabase');
+}
+
+async function reloadTicketsFromSupabase() {
+    console.log('🔄 ===== RELOAD TICKETS FROM SUPABASE =====');
+    
+    if (!currentUser.piUid && !currentUser.wallet) {
+        alert('❌ Vous n\'êtes pas connecté');
+        return;
+    }
+    
+    var piUid = currentUser.piUid || currentUser.wallet;
+    console.log('User:', piUid);
+    
+    try {
+        var supabaseTickets = await loadTicketsFromSupabase(piUid);
+        console.log('Tickets from Supabase:', supabaseTickets ? supabaseTickets.length : 0);
+        
+        if (supabaseTickets && supabaseTickets.length > 0) {
+            tickets = supabaseTickets.map(function(t) {
+                return {
+                    id: t.id,
+                    eventId: t.event_id,
+                    eventTitle: t.event_title || 'Event',
+                    eventDate: t.expiration_date || t.event_date || new Date().toISOString(),
+                    eventLocation: t.event_location || '',
+                    price: parseFloat(t.price) || 0,
+                    buyerWallet: t.buyer_pi_uid,
+                    buyerName: t.buyer_name || t.buyer_pi_uid,
+                    userWallet: t.buyer_pi_uid,
+                    ticketType: t.ticket_type || 'standard',
+                    pays: t.pays || 'France',
+                    status: t.status || 'Valid',
+                    purchaseDate: t.purchase_date || new Date().toISOString(),
+                    purchaseDateTime: new Date(t.purchase_date || new Date()).toLocaleString('en-US'),
+                    transactionId: t.transaction_id || '',
+                    qrCode: t.qr_code || 'BETIX-' + Date.now()
+                };
+            });
+            
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            
+            renderTickets();
+            renderHistory();
+            updateProfilePage();
+            
+            console.log('✅ Loaded', tickets.length, 'tickets from Supabase');
+            alert('✅ ' + tickets.length + ' tickets chargés depuis Supabase');
+        } else {
+            alert('❌ Aucun ticket trouvé dans Supabase');
+        }
+    } catch (e) {
+        console.error('❌ Error:', e);
+        alert('❌ Erreur: ' + e.message);
+    }
+}
+
+window.forceSyncTickets = forceSyncTickets;
+window.checkSupabaseData = checkSupabaseData;
+window.showTickets = showTickets;
+window.showSupabaseTickets = showSupabaseTickets;
+window.reloadTicketsFromSupabase = reloadTicketsFromSupabase;
+
+// ============================================================
 // ===== DOM CONTENT LOADED =====
 // ============================================================
 
@@ -4170,9 +4478,11 @@ document.addEventListener('DOMContentLoaded', function() {
         startSessionMonitor();
 
         // ===== CHARGER LES DONNÉES DEPUIS SUPABASE =====
-        loadAllFromSupabase();
+        setTimeout(function() {
+            loadAllFromSupabase();
+        }, 1000);
 
-        // ===== SYNCHRONISATION AUTOMATIQUE TOUTES LES 30 SECONDES =====
+        // ===== SYNCHRONISATION AUTOMATIQUE =====
         setInterval(function() {
             syncAllToSupabase();
         }, 30000);
@@ -4184,18 +4494,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (currentUser.wallet && isSessionExpired()) { disconnectPi(); }
         
-        console.log('Betix loaded successfully!');
-        console.log('Supabase connected');
-        console.log('Admin: 5 clicks on logo + password Betix@2026#');
-        console.log('✅ Menu button fix applied with 3 mechanisms');
+        console.log('✅ Betix loaded successfully!');
+        console.log('✅ Supabase connected');
+        console.log('✅ Admin: 5 clicks on logo + password Betix@2026#');
+        console.log('✅ Menu button fix applied');
         console.log('✅ Back button fix applied');
         console.log('✅ Hero slider auto-play enabled');
-        console.log('✅ VIP tickets now appear in My Tickets');
+        console.log('✅ VIP tickets appear in My Tickets');
         console.log('✅ Download ticket feature added');
         console.log('✅ Auto-sync to Supabase every 30 seconds');
+        console.log('✅ Debug functions available: forceSyncTickets(), checkSupabaseData(), showTickets(), showSupabaseTickets(), reloadTicketsFromSupabase()');
         
     } catch (error) {
-        console.error('Error during application startup:', error);
+        console.error('❌ Error during application startup:', error);
         var loader = document.getElementById('loader');
         var main = document.getElementById('main-content');
         if (loader && main) {
@@ -4204,97 +4515,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-
-// ============================================================
-// ===== FONCTIONS DE SECOURS POUR DEBUG =====
-// ============================================================
-
-window.debugMenu = function() {
-    console.log('🔍 Debug menu:');
-    var btn = document.getElementById('menuBtn');
-    console.log('  - menuBtn exists:', !!btn);
-    if (btn) {
-        console.log('  - menuBtn styles:', btn.style.cssText);
-        console.log('  - menuBtn computed:', window.getComputedStyle(btn));
-        console.log('  - menuBtn pointer-events:', window.getComputedStyle(btn).pointerEvents);
-    }
-    var sidebar = document.getElementById('sidebar');
-    console.log('  - sidebar open:', sidebar ? sidebar.classList.contains('open') : 'not found');
-};
-
-window.forceOpenMenu = function() {
-    console.log('💪 Force opening menu...');
-    var s = document.getElementById('sidebar');
-    var o = document.getElementById('overlay');
-    if (s) {
-        s.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    if (o) {
-        o.classList.add('active');
-    }
-};
-
-window.forceCloseMenu = function() {
-    console.log('💪 Force closing menu...');
-    var s = document.getElementById('sidebar');
-    var o = document.getElementById('overlay');
-    if (s) {
-        s.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-    if (o) {
-        o.classList.remove('active');
-    }
-};
-
-function testMenuButton() {
-    var btn = document.getElementById('menuBtn');
-    if (btn) {
-        console.log('✅ Menu button found!');
-        console.log('📏 Dimensions:', btn.offsetWidth + 'x' + btn.offsetHeight);
-        console.log('👆 Pointer Events:', window.getComputedStyle(btn).pointerEvents);
-        console.log('📐 Z-index:', window.getComputedStyle(btn).zIndex);
-        console.log('🔍 Position:', window.getComputedStyle(btn).position);
-        console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
-        console.log('📦 Display:', window.getComputedStyle(btn).display);
-        var rect = btn.getBoundingClientRect();
-        console.log('📍 Position du bouton:', rect);
-        return 'Menu button is present and visible';
-    } else {
-        console.error('❌ Menu button NOT found!');
-        return 'Menu button NOT found!';
-    }
-}
-
-// Fonctions pour vérifier Supabase
-window.manualSync = async function() {
-    console.log('🔄 Manual sync triggered...');
-    await syncAllToSupabase();
-    console.log('✅ Manual sync completed!');
-    alert('✅ Synchronisation manuelle terminée !\nÉvénements: ' + events.length + '\nTickets: ' + tickets.length);
-};
-
-window.checkSupabaseData = async function() {
-    console.log('🔍 Checking Supabase data...');
-    try {
-        var supabaseEvents = await loadEventsFromSupabase();
-        console.log('📊 Events in Supabase:', supabaseEvents ? supabaseEvents.length : 0);
-        
-        if (currentUser.piUid || currentUser.wallet) {
-            var piUid = currentUser.piUid || currentUser.wallet;
-            var supabaseTickets = await loadTicketsFromSupabase(piUid);
-            console.log('📊 Tickets in Supabase for user:', supabaseTickets ? supabaseTickets.length : 0);
-        }
-        
-        alert('✅ Vérification terminée !\nÉvénements Supabase: ' + (supabaseEvents ? supabaseEvents.length : 0) + 
-              '\nTickets locaux: ' + tickets.length);
-    } catch (error) {
-        console.error('❌ Error checking Supabase data:', error);
-        alert('❌ Erreur lors de la vérification: ' + error.message);
-    }
-};
-
-setTimeout(function() {
-    testMenuButton();
-}, 2000);
