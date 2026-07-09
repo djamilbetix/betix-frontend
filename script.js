@@ -350,8 +350,6 @@ async function saveEventToSupabase(eventData) {
         
         if (error) {
             console.error('❌ Supabase error saving event:', error);
-            console.error('   Error code:', error.code);
-            console.error('   Error message:', error.message);
             
             if (error.code === '23505') {
                 console.log('🔄 Trying update instead...');
@@ -367,6 +365,33 @@ async function saveEventToSupabase(eventData) {
                 console.log('✅ Event updated in Supabase:', eventData.id);
                 return true;
             }
+            
+            // Fallback: essayer un insert simple
+            if (error.code === '42703') {
+                console.log('🔄 Trying simple insert...');
+                const simpleEvent = {
+                    id: dbEvent.id,
+                    title: dbEvent.title,
+                    organizer_pi_uid: dbEvent.organizer_pi_uid,
+                    organizer_name: dbEvent.organizer_name,
+                    event_date: dbEvent.event_date,
+                    max_tickets: dbEvent.max_tickets,
+                    pays: dbEvent.pays,
+                    location: dbEvent.location,
+                    category: dbEvent.category
+                };
+                const { error: simpleError } = await supabaseClient
+                    .from('events')
+                    .insert(simpleEvent);
+                
+                if (simpleError) {
+                    console.error('❌ Simple insert failed:', simpleError);
+                    return false;
+                }
+                console.log('✅ Event saved with simple insert:', eventData.id);
+                return true;
+            }
+            
             return false;
         }
         
@@ -724,7 +749,7 @@ async function syncAllToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD ALL FROM SUPABASE - CORRIGÉ =====
+// ===== LOAD ALL FROM SUPABASE =====
 // ============================================================
 
 async function loadAllFromSupabase() {
@@ -1553,7 +1578,7 @@ async function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== CONFIRM PURCHASE =====
+// ===== CONFIRM PURCHASE - CORRIGÉ (PAIEMENT) =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
@@ -1585,6 +1610,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     }
     
     try {
+        // Vérifier que Pi SDK est disponible
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
             if (confirmBtn) {
@@ -1593,6 +1619,28 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             }
             return;
         }
+        
+        // Vérifier et annuler les paiements en attente
+        try {
+            console.log('🔍 Checking for incomplete payments...');
+            var incompletePayments = await Pi.getIncompletePayments();
+            if (incompletePayments && incompletePayments.length > 0) {
+                console.log('⚠️ Found ' + incompletePayments.length + ' incomplete payments');
+                for (var p = 0; p < incompletePayments.length; p++) {
+                    try {
+                        await Pi.cancelPayment(incompletePayments[p].identifier);
+                        console.log('✅ Cancelled pending payment:', incompletePayments[p].identifier);
+                    } catch (cancelError) {
+                        console.log('⚠️ Could not cancel payment:', cancelError);
+                    }
+                }
+            }
+        } catch (checkError) {
+            console.log('⚠️ Could not check incomplete payments:', checkError);
+        }
+        
+        // Créer le paiement
+        console.log('📤 Creating payment of', totalPrice, 'Pi for', quantity, typeLabel, 'ticket(s)');
         
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
@@ -1622,6 +1670,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     var purchaseDate = new Date().toISOString();
                     var purchaseDateTime = new Date().toLocaleString('en-US');
                     
+                    // === 1. CRÉER LES TICKETS ===
                     for (var i = 0; i < quantity; i++) {
                         var ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         var ticket = {
@@ -1647,21 +1696,26 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         ticketsAdded.push(ticket);
                     }
                     
+                    // === 2. METTRE À JOUR L'ÉVÉNEMENT ===
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
                     
+                    // === 3. SAUVEGARDE LOCALE ===
                     saveEvents();
                     saveTickets();
-                    console.log('💾 Local save completed');
+                    console.log('💾 Local save completed -', ticketsAdded.length, 'tickets');
                     
+                    // === 4. SAUVEGARDE SUPABASE ===
                     console.log('📤 Saving ' + ticketsAdded.length + ' tickets to Supabase...');
                     
                     for (var j = 0; j < ticketsAdded.length; j++) {
                         await saveTicketToSupabase(ticketsAdded[j]);
                     }
                     
+                    // === 5. SAUVEGARDER L'ÉVÉNEMENT ===
                     await saveEventToSupabase(event);
                     
+                    // === 6. SAUVEGARDER LA TRANSACTION ===
                     await saveTransactionToSupabase({
                         id: 'tx-' + Date.now(),
                         buyerWallet: currentUser.wallet,
@@ -1673,25 +1727,29 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         date: new Date().toISOString()
                     });
                     
+                    // === 7. NOTIFICATION ===
                     addNotification(
                         'Purchase of ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '"',
                         'purchase'
                     );
                     
+                    // === 8. METTRE À JOUR L'AFFICHAGE ===
                     renderEventsByCategory();
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
                     
+                    // === 9. SYNCHRONISER L'UTILISATEUR ===
                     await syncUserToSupabase();
                     
+                    // === 10. POPUP DE SUCCÈS ===
                     showSuccessPopup(event, ticketsAdded, quantity, ticketType);
                     
                     console.log('✅ All tickets saved to Supabase!');
                     
                 } catch (error) {
                     console.error('❌ Error in payment completion:', error);
-                    alert('Payment completed but there was an error saving your tickets.');
+                    alert('Payment completed but there was an error saving your tickets. Please contact support.');
                 } finally {
                     if (confirmBtn) {
                         confirmBtn.textContent = 'Confirm purchase';
@@ -1873,7 +1931,7 @@ async function createEvent(e) {
 }
 
 // ============================================================
-// ===== PUBLISH CONFIRMATION - CORRIGÉ =====
+// ===== PUBLISH CONFIRMATION =====
 // ============================================================
 
 function openPublishConfirm(eventData) {
@@ -1996,6 +2054,8 @@ async function confirmPublishEvent() {
         console.log('Event title:', newEvent.title);
         console.log('Organizer:', currentUser.name);
         console.log('Pays:', newEvent.pays);
+        console.log('Date:', newEvent.date);
+        console.log('Seats:', newEvent.seatsTotal);
         
         // === 1. UPLOAD DES IMAGES ===
         var uploadedUrls = [];
@@ -2028,14 +2088,25 @@ async function confirmPublishEvent() {
         
         // === 4. SAUVEGARDE SUPABASE ===
         console.log('📤 Saving event to Supabase...');
-        var saved = await saveEventToSupabase(newEvent);
+        var saved = false;
+        var attempts = 0;
+        var maxAttempts = 3;
+        
+        while (!saved && attempts < maxAttempts) {
+            attempts++;
+            console.log('   Attempt ' + attempts + '/' + maxAttempts);
+            saved = await saveEventToSupabase(newEvent);
+            if (!saved) {
+                console.log('   Waiting 1 second before retry...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
         
         if (saved) {
-            console.log('✅ Event successfully saved to Supabase!');
+            console.log('✅ Event successfully saved to Supabase after ' + attempts + ' attempts');
         } else {
-            console.error('❌ Failed to save event to Supabase');
-            console.log('🔄 Attempting sync all data...');
-            await syncAllToSupabase();
+            console.error('❌ Failed to save event to Supabase after ' + maxAttempts + ' attempts');
+            console.log('🔄 Event will be synced later via auto-sync');
         }
         
         // === 5. SYNC USER ===
@@ -2056,14 +2127,17 @@ async function confirmPublishEvent() {
         if (vipCheckbox) vipCheckbox.checked = false;
         setupTicketTypesUI();
         
+        // === 7. NOTIFICATION ===
         addNotification(
             'New event "' + newEvent.title + '" has been published!',
             'event'
         );
         
+        // === 8. FERMER LE POPUP ===
         closePublishConfirmPopup();
         document.getElementById('publishConfirmPopup').classList.remove('show');
         
+        // === 9. METTRE À JOUR L'AFFICHAGE ===
         renderEventsByCategory();
         updateProfilePage();
         
@@ -2077,6 +2151,7 @@ async function confirmPublishEvent() {
             confirmBtn.textContent = 'Publish Event';
         }
         
+        // === 10. MESSAGE DE SUCCÈS ===
         console.log('✅ ===== PUBLISH COMPLETED =====');
         var message = '✅ Event "' + newEvent.title + '" has been successfully published!';
         if (!saved) {
@@ -4524,6 +4599,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Download ticket feature added');
         console.log('✅ Auto-sync to Supabase every 30 seconds');
         console.log('✅ Events are now saved to Supabase');
+        console.log('✅ Payment system fixed - pending payments are auto-cancelled');
         console.log('✅ Debug functions: forceSyncEvents(), showEvents(), showSupabaseEvents(), checkSupabaseData()');
         
     } catch (error) {
