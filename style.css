@@ -41,10 +41,7 @@ body {
     --card-hover-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
 }
 
-/* ============================================================
-   ===== LOADER =====
-   ============================================================ */
-
+/* ===== LOADER ===== */
 .loader-container {
     position: fixed;
     top: 0;
@@ -80,10 +77,7 @@ body {
     font-weight: 500;
 }
 
-/* ============================================================
-   ===== HEADER ET BOUTONS =====
-   ============================================================ */
-
+/* ===== HEADER ===== */
 .header {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     padding: 0.6rem 5%;
@@ -167,7 +161,6 @@ body {
     filter: brightness(0) invert(1);
 }
 
-/* ===== BOUTON MENU ===== */
 #menuBtn {
     font-size: 1.5rem;
     background: rgba(255,255,255,0.25) !important;
@@ -206,10 +199,7 @@ body {
     pointer-events: none !important;
 }
 
-/* ============================================================
-   ===== SIDEBAR =====
-   ============================================================ */
-
+/* ===== SIDEBAR ===== */
 .sidebar {
     position: fixed;
     top: 0;
@@ -244,10 +234,7 @@ body {
     display: block;
 }
 
-/* ============================================================
-   ===== SIDEBAR HEADER =====
-   ============================================================ */
-
+/* ===== SIDEBAR HEADER ===== */
 .sidebar-header {
     padding: 1.5rem;
     text-align: center;
@@ -516,10 +503,7 @@ body {
     box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   ===== HERO =====
-   ============================================================ */
-
+/* ===== HERO ===== */
 .hero {
     width: 100%;
     background: #ffffff;
@@ -763,10 +747,7 @@ body {
     box-shadow: 0 8px 30px rgba(13, 71, 161, 0.5);
 }
 
-/* ============================================================
-   ===== SEARCH & FILTERS =====
-   ============================================================ */
-
+/* ===== SEARCH & FILTERS ===== */
 .search-bar {
     padding: 1.5rem 5% 0.5rem;
 }
@@ -878,10 +859,7 @@ body {
     box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   ===== EVENTS =====
-   ============================================================ */
-
+/* ===== EVENTS ===== */
 .events-container {
     padding: 0.5rem 5% 2rem;
     overflow: hidden;
@@ -942,10 +920,7 @@ body {
     }
 }
 
-/* ============================================================
-   ===== TICKET TYPES =====
-   ============================================================ */
-
+/* ===== TICKET TYPES ===== */
 .ticket-types-container {
     background: #f8fafc;
     border-radius: 16px;
@@ -1174,10 +1149,7 @@ body {
     }
 }
 
-/* ============================================================
-   ===== PUBLISH BUTTON =====
-   ============================================================ */
-
+/* ===== PUBLISH BUTTON ===== */
 .btn-publish-wrapper {
     position: relative;
     width: 100%;
@@ -1253,10 +1225,7 @@ body {
     display: inline-block;
 }
 
-/* ============================================================
-   ===== EVENT CARD =====
-   ============================================================ */
-
+/* ===== EVENT CARD ===== */
 .event-card-classic {
     background: #ffffff;
     border-radius: 16px;
@@ -1473,10 +1442,7 @@ body {
     font-size: 0.7rem;
 }
 
-/* ============================================================
-   ===== TICKET CARD - AVEC COULEURS VIP =====
-   ============================================================ */
-
+/* ===== TICKET CARD ===== */
 .ticket-card-premium {
     background: #ffffff;
     border-radius: 20px;
@@ -1657,10 +1623,7 @@ body {
     text-transform: uppercase;
 }
 
-/* ============================================================
-   ===== STYLES VIP =====
-   ============================================================ */
-
+/* ===== VIP STYLES ===== */
 .ticket-card-premium.ticket-vip {
     border-color: #d4911e;
     box-shadow: 0 4px 24px rgba(212, 145, 30, 0.15);
@@ -1695,10 +1658,7 @@ body {
     color: rgba(212, 145, 30, 0.15);
 }
 
-/* ============================================================
-   ===== BOUTON TÉLÉCHARGER LE TICKET =====
-   ============================================================ */
-
+/* ===== DOWNLOAD TICKET BUTTON ===== */
 .btn-download-ticket {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
@@ -1739,10 +1699,7 @@ body {
     box-shadow: 0 4px 12px rgba(212, 145, 30, 0.3);
 }
 
-/* ============================================================
-   ===== IMAGE UPLOAD - STYLE JAUNE ÉLÉGANT =====
-   ============================================================ */
-
+/* ===== IMAGE UPLOAD ===== */
 .image-upload-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1936,10 +1893,7 @@ body {
     font-size: 0.6rem;
 }
 
-/* ============================================================
-   ===== MODALS =====
-   ============================================================ */
-
+/* ===== MODALS ===== */
 .modal {
     display: none;
     position: fixed;
@@ -2052,10 +2006,7 @@ body {
     border-color: #d1d5db;
 }
 
-/* ============================================================
-   ===== QUANTITY & SUCCESS POPUPS =====
-   ============================================================ */
-
+/* ===== QUANTITY & SUCCESS POPUPS ===== */
 .quantity-popup {
     display: none;
     position: fixed;
@@ -2317,10 +2268,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* ============================================================
-   ===== PUBLISH CONFIRM =====
-   ============================================================ */
-
+/* ===== PUBLISH CONFIRM ===== */
 .publish-confirm {
     display: none;
     position: fixed;
@@ -2605,10 +2553,7 @@ body {
     }
 }
 
-/* ============================================================
-   ===== BUTTONS & COMMON ELEMENTS =====
-   ============================================================ */
-
+/* ===== BUTTONS & COMMON ELEMENTS ===== */
 .btn-primary {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
@@ -2740,10 +2685,7 @@ body {
     overflow: hidden;
 }
 
-/* ============================================================
-   ===== PROFIL PAGE - DESIGN PROFESSIONNEL =====
-   ============================================================ */
-
+/* ===== PROFILE PAGE ===== */
 .profile-page-content {
     max-width: 800px !important;
     padding: 0 !important;
@@ -3019,10 +2961,7 @@ body {
     transform: scale(0.97);
 }
 
-/* ============================================================
-   ===== MY EVENTS - DESIGN PROFESSIONNEL =====
-   ============================================================ */
-
+/* ===== MY EVENTS ===== */
 .my-events-container {
     padding: 0.5rem 5% 2rem;
 }
@@ -3201,10 +3140,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* ============================================================
-   ===== CHAT =====
-   ============================================================ */
-
+/* ===== CHAT ===== */
 .chat-float-btn {
     position: fixed;
     bottom: 20px;
@@ -3325,10 +3261,7 @@ body {
     opacity: 0.9;
 }
 
-/* ============================================================
-   ===== GALLERY MODAL =====
-   ============================================================ */
-
+/* ===== GALLERY MODAL ===== */
 .gallery-modal {
     position: fixed;
     top: 0;
@@ -3384,10 +3317,7 @@ body {
     background: rgba(255,255,255,0.3);
 }
 
-/* ============================================================
-   ===== ADMIN =====
-   ============================================================ */
-
+/* ===== ADMIN ===== */
 .admin-content {
     max-width: 1000px !important;
 }
@@ -3777,10 +3707,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* ============================================================
-   ===== FOOTER =====
-   ============================================================ */
-
+/* ===== FOOTER ===== */
 .betix-footer {
     background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 100%);
     color: #c8d4e6;
@@ -3946,10 +3873,7 @@ body {
     gap: 4px;
 }
 
-/* ============================================================
-   ===== FAQ =====
-   ============================================================ */
-
+/* ===== FAQ ===== */
 .faq-page-content {
     max-width: 900px !important;
     padding: 30px !important;
@@ -4111,10 +4035,7 @@ body {
     background: #f7c35c;
 }
 
-/* ============================================================
-   ===== NOTIFICATIONS =====
-   ============================================================ */
-
+/* ===== NOTIFICATIONS ===== */
 #notificationsList .notification-item {
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
@@ -4166,10 +4087,7 @@ body {
     background: #fefaf0;
 }
 
-/* ============================================================
-   ===== DARK MODE =====
-   ============================================================ */
-
+/* ===== DARK MODE ===== */
 body.dark-mode {
     background-color: #111827;
     color: #f3f4f6;
@@ -4803,10 +4721,7 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     color: rgba(212, 145, 30, 0.15);
 }
 
-/* ============================================================
-   ===== RESPONSIVE =====
-   ============================================================ */
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
     .footer-container {
         grid-template-columns: repeat(2, 1fr);
@@ -5396,10 +5311,7 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     }
 }
 
-/* ============================================================
-   ===== GOOGLE TRANSLATE FIXES =====
-   ============================================================ */
-
+/* ===== GOOGLE TRANSLATE FIXES ===== */
 .goog-te-banner-frame {
     display: none !important;
     height: 0 !important;
