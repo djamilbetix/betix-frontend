@@ -300,8 +300,8 @@ async function saveEventToSupabase(eventData) {
     try {
         const dbEvent = {
             id: eventData.id,
-            organizer_pi_uid: eventData.organizerPiUid || eventData.organizer,
-            organizer_name: eventData.organizerName || eventData.organizer,
+            organizer_pi_uid: eventData.organizerPiUid || eventData.organizer || currentUser.piUid || currentUser.wallet,
+            organizer_name: eventData.organizerName || eventData.organizer || currentUser.name,
             title: eventData.title,
             description: eventData.description || '',
             image_url: eventData.coverImage || (eventData.images && eventData.images[0]) || '',
@@ -320,12 +320,18 @@ async function saveEventToSupabase(eventData) {
             duration_unit: eventData.durationUnit || null
         };
         
-        const { error } = await supabaseClient
+        console.log('Saving event to Supabase:', dbEvent);
+        
+        const { data, error } = await supabaseClient
             .from('events')
             .upsert(dbEvent, { onConflict: 'id' });
         
-        if (error) throw error;
-        console.log('Event saved to Supabase:', eventData.id);
+        if (error) {
+            console.error('Supabase error details:', error);
+            throw error;
+        }
+        
+        console.log('Event saved to Supabase successfully:', eventData.id);
         return true;
     } catch (error) {
         console.error('Error saving event to Supabase:', error);
@@ -384,8 +390,8 @@ async function saveTicketToSupabase(ticketData) {
         const dbTicket = {
             id: ticketData.id,
             event_id: ticketData.eventId,
-            buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet,
-            buyer_name: ticketData.buyerName || ticketData.buyerWallet,
+            buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet || currentUser.wallet,
+            buyer_name: ticketData.buyerName || ticketData.buyerWallet || currentUser.name,
             ticket_type: ticketData.ticketType || 'standard',
             price: ticketData.price || 0,
             qr_code: ticketData.qrCode || '',
@@ -397,12 +403,18 @@ async function saveTicketToSupabase(ticketData) {
             transaction_id: ticketData.transactionId || ''
         };
         
-        const { error } = await supabaseClient
+        console.log('Saving ticket to Supabase:', dbTicket);
+        
+        const { data, error } = await supabaseClient
             .from('tickets')
             .upsert(dbTicket, { onConflict: 'id' });
         
-        if (error) throw error;
-        console.log('Ticket saved to Supabase:', ticketData.id);
+        if (error) {
+            console.error('Supabase error details:', error);
+            throw error;
+        }
+        
+        console.log('Ticket saved to Supabase successfully:', ticketData.id);
         return true;
     } catch (error) {
         console.error('Error saving ticket to Supabase:', error);
@@ -595,6 +607,7 @@ async function loadAllFromSupabase() {
     loadUsedTickets();
     
     try {
+        // Charger les événements
         var supabaseEvents = await loadEventsFromSupabase();
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
@@ -626,10 +639,24 @@ async function loadAllFromSupabase() {
             });
             localStorage.setItem('betix_events', JSON.stringify(events));
         } else {
-            events = [];
-            localStorage.setItem('betix_events', JSON.stringify(events));
+            // Si aucun événement dans Supabase, essayer de charger depuis localStorage
+            var localEvents = localStorage.getItem('betix_events');
+            if (localEvents) {
+                try {
+                    events = JSON.parse(localEvents);
+                    // Synchroniser les événements locaux vers Supabase
+                    for (var i = 0; i < events.length; i++) {
+                        await saveEventToSupabase(events[i]);
+                    }
+                } catch (e) {
+                    events = [];
+                }
+            } else {
+                events = [];
+            }
         }
         
+        // Charger les tickets
         if (currentUser.piUid || currentUser.wallet) {
             var piUid = currentUser.piUid || currentUser.wallet;
             var supabaseTickets = await loadTicketsFromSupabase(piUid);
@@ -654,9 +681,26 @@ async function loadAllFromSupabase() {
                     };
                 });
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            } else {
+                // Si aucun ticket dans Supabase, essayer de charger depuis localStorage
+                var localTickets = localStorage.getItem('betix_tickets');
+                if (localTickets) {
+                    try {
+                        tickets = JSON.parse(localTickets);
+                        // Synchroniser les tickets locaux vers Supabase
+                        for (var j = 0; j < tickets.length; j++) {
+                            await saveTicketToSupabase(tickets[j]);
+                        }
+                    } catch (e) {
+                        tickets = [];
+                    }
+                } else {
+                    tickets = [];
+                }
             }
         }
         
+        // Charger les notifications
         if (currentUser.piUid || currentUser.wallet) {
             var piUid2 = currentUser.piUid || currentUser.wallet;
             var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
@@ -672,6 +716,20 @@ async function loadAllFromSupabase() {
                 });
                 localStorage.setItem('betix_notifications', JSON.stringify(notifications));
                 updateNotifBadgeHeader();
+            } else {
+                var localNotifs = localStorage.getItem('betix_notifications');
+                if (localNotifs) {
+                    try {
+                        notifications = JSON.parse(localNotifs);
+                        for (var k = 0; k < notifications.length; k++) {
+                            await saveNotificationToSupabase(notifications[k]);
+                        }
+                    } catch (e) {
+                        notifications = [];
+                    }
+                } else {
+                    notifications = [];
+                }
             }
         }
         
@@ -682,6 +740,35 @@ async function loadAllFromSupabase() {
         console.log('All data loaded from Supabase');
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
+        // En cas d'erreur, charger depuis localStorage
+        var localEvents = localStorage.getItem('betix_events');
+        if (localEvents) {
+            try {
+                events = JSON.parse(localEvents);
+            } catch (e) {
+                events = [];
+            }
+        }
+        var localTickets = localStorage.getItem('betix_tickets');
+        if (localTickets) {
+            try {
+                tickets = JSON.parse(localTickets);
+            } catch (e) {
+                tickets = [];
+            }
+        }
+        var localNotifs = localStorage.getItem('betix_notifications');
+        if (localNotifs) {
+            try {
+                notifications = JSON.parse(localNotifs);
+            } catch (e) {
+                notifications = [];
+            }
+        }
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
+        updateProfilePage();
     }
 }
 
@@ -2031,7 +2118,8 @@ function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
-    // ✅ CORRECTION: Les VIP apparaissent maintenant dans My Tickets avant utilisation
+    // Tous les billets actifs (non utilisés et non expirés)
+    // Les billets VIP doivent apparaître ici aussi
     var active = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2051,6 +2139,7 @@ function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
     
+    // Billets utilisés ou expirés
     var history = tickets.filter(function(t) {
         var isUsed = usedTickets.indexOf(t.id) !== -1;
         var isExpired = new Date(t.eventDate) <= new Date();
@@ -2090,12 +2179,10 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     
-    // ✅ REMPLACEMENT: "Use Ticket" supprimé, remplacé par "Télécharger le ticket"
+    // Bouton de téléchargement (remplace Use Ticket)
     var downloadButton = '';
     if (status === 'valid') {
-        downloadButton = '<button class="btn-download-ticket" onclick="downloadTicket(\'' + ticket.id + '\')">' +
-            '<i class="fas fa-download"></i> Télécharger le ticket' +
-        '</button>';
+        downloadButton = '<button class="btn-download-ticket" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> Télécharger le ticket</button>';
     }
     
     return '<div class="ticket-card-premium ' + vipClass + '">' +
@@ -2131,7 +2218,7 @@ function renderTicketCard(ticket, status) {
 // ===== TÉLÉCHARGER LE TICKET EN PDF =====
 // ============================================================
 
-async function downloadTicket(ticketId) {
+function downloadTicketPDF(ticketId) {
     var ticket = tickets.find(function(t) { return t.id === ticketId; });
     if (!ticket) {
         alert('Ticket not found');
@@ -2141,221 +2228,161 @@ async function downloadTicket(ticketId) {
     try {
         var { jsPDF } = window.jspdf;
         var doc = new jsPDF('p', 'mm', 'a4');
-        var pageWidth = 210;
-        var pageHeight = 297;
-        var margin = 15;
-        var y = margin;
         
-        // ===== EN-TÊTE =====
-        doc.setFillColor(13, 71, 161);
-        doc.rect(0, 0, pageWidth, 45, 'F');
+        var pageWidth = doc.internal.pageSize.getWidth();
+        var pageHeight = doc.internal.pageSize.getHeight();
         
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(28);
-        doc.setFont('helvetica', 'bold');
-        doc.text('BETIX', pageWidth / 2, 22, { align: 'center' });
+        // Couleurs
+        var primaryColor = [13, 71, 161];
+        var goldColor = [212, 145, 30];
+        var darkColor = [26, 26, 46];
+        var grayColor = [107, 114, 128];
         
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Event Ticket', pageWidth / 2, 34, { align: 'center' });
-        
-        y = 55;
-        
-        // ===== TYPE DE BILLET =====
-        var isVip = ticket.ticketType === 'vip';
-        var typeLabel = isVip ? 'VIP' : 'Standard';
-        
-        if (isVip) {
-            doc.setFillColor(212, 145, 30);
-            doc.rect(margin, y, 40, 10, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('VIP', margin + 20, y + 7, { align: 'center' });
-        } else {
-            doc.setFillColor(13, 71, 161);
-            doc.rect(margin, y, 40, 10, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Standard', margin + 20, y + 7, { align: 'center' });
-        }
-        
-        y += 20;
-        
-        // ===== TITRE =====
-        doc.setTextColor(26, 26, 46);
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        var titleLines = doc.splitTextToSize(ticket.eventTitle, pageWidth - margin * 2);
-        doc.text(titleLines, margin, y);
-        y += titleLines.length * 8 + 8;
-        
-        // ===== CADRE D'INFORMATIONS =====
-        doc.setDrawColor(200, 200, 200);
-        doc.setFillColor(248, 250, 252);
-        doc.roundedRect(margin, y, pageWidth - margin * 2, 80, 4, 4, 'FD');
-        
-        var infoY = y + 10;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        
-        // Date
-        var dateEvent = new Date(ticket.eventDate);
-        var dateFormatted = dateEvent.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-        var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        
-        doc.setTextColor(107, 114, 128);
-        doc.text('📅 Date:', margin + 10, infoY);
-        doc.setTextColor(26, 26, 46);
-        doc.setFont('helvetica', 'bold');
-        doc.text(dateFormatted, margin + 55, infoY);
-        
-        infoY += 10;
-        doc.setTextColor(107, 114, 128);
-        doc.setFont('helvetica', 'normal');
-        doc.text('🕐 Time:', margin + 10, infoY);
-        doc.setTextColor(26, 26, 46);
-        doc.setFont('helvetica', 'bold');
-        doc.text(timeFormatted, margin + 55, infoY);
-        
-        infoY += 10;
-        doc.setTextColor(107, 114, 128);
-        doc.setFont('helvetica', 'normal');
-        doc.text('📍 Location:', margin + 10, infoY);
-        doc.setTextColor(26, 26, 46);
-        doc.setFont('helvetica', 'bold');
-        doc.text(ticket.eventLocation || 'Online', margin + 55, infoY);
-        
-        infoY += 10;
-        doc.setTextColor(107, 114, 128);
-        doc.setFont('helvetica', 'normal');
-        doc.text('💰 Price:', margin + 10, infoY);
-        doc.setTextColor(26, 26, 46);
-        doc.setFont('helvetica', 'bold');
-        doc.text((ticket.price || 0) + ' Pi', margin + 55, infoY);
-        
-        y += 90;
-        
-        // ===== NUMÉRO DE BILLET =====
-        doc.setDrawColor(200, 200, 200);
+        // Fond blanc
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(margin, y, pageWidth - margin * 2, 30, 4, 4, 'FD');
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
         
-        doc.setTextColor(107, 114, 128);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Ticket Number', margin + 10, y + 8);
+        // Bandeau supérieur
+        var isVip = ticket.ticketType === 'vip';
+        var bandeauColor = isVip ? goldColor : primaryColor;
         
-        doc.setTextColor(26, 26, 46);
-        doc.setFontSize(12);
+        doc.setFillColor(bandeauColor[0], bandeauColor[1], bandeauColor[2]);
+        doc.rect(0, 0, pageWidth, 50, 'F');
+        
+        // Logo / Titre
+        doc.setFontSize(28);
+        doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        var codeDisplay = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
-        doc.text(codeDisplay, margin + 10, y + 22);
+        doc.text('BETIX', 20, 30);
         
-        y += 40;
-        
-        // ===== QR CODE (représentation textuelle) =====
-        doc.setDrawColor(200, 200, 200);
-        doc.setFillColor(245, 247, 250);
-        doc.roundedRect(margin, y, pageWidth - margin * 2, 45, 4, 4, 'FD');
-        
-        doc.setTextColor(107, 114, 128);
-        doc.setFontSize(9);
+        // Sous-titre du bandeau
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
-        doc.text('QR Code', margin + 10, y + 8);
+        doc.text('Decentralized Event Ticketing Platform', 20, 40);
         
-        doc.setTextColor(26, 26, 46);
+        // Type de billet (VIP ou Standard) avec badge
+        var typeLabel = isVip ? 'VIP TICKET' : 'STANDARD TICKET';
+        var typeColor = isVip ? goldColor : [16, 185, 129];
+        
+        doc.setFillColor(typeColor[0], typeColor[1], typeColor[2]);
+        doc.roundedRect(pageWidth - 60, 12, 40, 18, 3, 3, 'F');
+        doc.setFontSize(9);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text(typeLabel, pageWidth - 40, 25, { align: 'center' });
+        
+        // Contenu principal
+        var yPos = 70;
+        
+        // Titre de l'événement
+        doc.setFontSize(22);
+        doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+        doc.setFont('helvetica', 'bold');
+        var titleLines = doc.splitTextToSize(ticket.eventTitle || 'Event', pageWidth - 40);
+        doc.text(titleLines, 20, yPos);
+        yPos += (titleLines.length * 8) + 8;
+        
+        // Séparateur
+        doc.setDrawColor(isVip ? goldColor[0] : primaryColor[0], isVip ? goldColor[1] : primaryColor[1], isVip ? goldColor[2] : primaryColor[2]);
+        doc.setLineWidth(0.8);
+        doc.line(20, yPos, pageWidth - 20, yPos);
+        yPos += 10;
+        
+        // Informations du billet
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        var qrText = codeDisplay;
-        if (qrText.length > 30) qrText = qrText.substring(0, 28) + '...';
-        doc.text(qrText, margin + 10, y + 22);
-        
-        // Mini QR code stylisé
-        var qrSize = 20;
-        var qrX = pageWidth - margin - qrSize - 10;
-        var qrY = y + 12;
-        doc.setFillColor(13, 71, 161);
-        // Dessiner un petit motif de QR Code stylisé
-        for (var qi = 0; qi < 5; qi++) {
-            for (var qj = 0; qj < 5; qj++) {
-                if ((qi + qj) % 2 === 0 || qi === 0 || qi === 4 || qj === 0 || qj === 4) {
-                    doc.rect(qrX + qi * 4, qrY + qj * 4, 3, 3, 'F');
-                }
-            }
-        }
-        
-        y += 55;
-        
-        // ===== PIED DE PAGE =====
-        doc.setDrawColor(200, 200, 200);
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 8;
-        
-        doc.setTextColor(107, 114, 128);
-        doc.setFontSize(8);
+        doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
         doc.setFont('helvetica', 'normal');
-        doc.text('This ticket is valid for one entry. Please present this ticket at the entrance.', pageWidth / 2, y, { align: 'center' });
-        y += 6;
-        doc.text('BETIX - The first ticketing platform on Pi Network', pageWidth / 2, y, { align: 'center' });
         
-        // ===== BORDURE VIP =====
-        if (isVip) {
-            doc.setDrawColor(212, 145, 30);
-            doc.setLineWidth(2);
-            doc.rect(margin - 2, margin - 2, pageWidth - margin * 2 + 4, pageHeight - margin * 2 + 4);
+        var dateEvent = new Date(ticket.eventDate);
+        var dateFormatted = dateEvent.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        
+        var infoItems = [
+            ['📅 Date', dateFormatted],
+            ['⏰ Heure', timeFormatted],
+            ['📍 Lieu', ticket.eventLocation || 'En ligne'],
+            ['🎫 Type', typeLabel],
+            ['💰 Prix', ticket.price + ' Pi'],
+            ['👤 Participant', ticket.buyerName || ticket.buyerWallet || 'Anonyme']
+        ];
+        
+        var col1 = 20;
+        var col2 = 70;
+        var rowHeight = 9;
+        
+        for (var i = 0; i < infoItems.length; i++) {
+            var item = infoItems[i];
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+            doc.text(item[0] + ' :', col1, yPos);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(60, 60, 60);
+            var textWidth = doc.getTextWidth(item[1]);
+            if (textWidth > pageWidth - col2 - 20) {
+                var lines = doc.splitTextToSize(item[1], pageWidth - col2 - 20);
+                doc.text(lines, col2, yPos);
+                yPos += (lines.length - 1) * rowHeight;
+            } else {
+                doc.text(item[1], col2, yPos);
+            }
+            yPos += rowHeight;
         }
         
-        // ===== SAUVEGARDE =====
-        var fileName = 'ticket_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf';
+        yPos += 10;
+        
+        // QR Code (affichage textuel + petit code)
+        doc.setFontSize(9);
+        doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Code du billet :', 20, yPos);
+        yPos += 6;
+        
+        var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(isVip ? goldColor[0] : primaryColor[0], isVip ? goldColor[1] : primaryColor[1], isVip ? goldColor[2] : primaryColor[2]);
+        doc.text(qrCode, 20, yPos);
+        yPos += 12;
+        
+        // Avertissement
+        doc.setFontSize(8);
+        doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Ce billet est strictement personnel et nominatif.', 20, yPos);
+        yPos += 6;
+        doc.text('Présentez-le à l\'entrée de l\'événement.', 20, yPos);
+        yPos += 12;
+        
+        // Pied de page
+        doc.setFontSize(7);
+        doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+        doc.setFont('helvetica', 'normal');
+        doc.text('BETIX - Plateforme décentralisée d\'événements sur Pi Network', pageWidth / 2, pageHeight - 20, { align: 'center' });
+        doc.text('Délivré le ' + new Date(ticket.purchaseDate).toLocaleDateString('fr-FR'), pageWidth / 2, pageHeight - 13, { align: 'center' });
+        
+        // Bandeau inférieur (petit)
+        doc.setFillColor(isVip ? goldColor[0] : primaryColor[0], isVip ? goldColor[1] : primaryColor[1], isVip ? goldColor[2] : primaryColor[2]);
+        doc.rect(0, pageHeight - 5, pageWidth, 5, 'F');
+        
+        // Télécharger le PDF
+        var fileName = 'Billet_Betix_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf';
         doc.save(fileName);
         
-        addNotification(
-            'Ticket downloaded: ' + ticket.eventTitle,
-            'info'
-        );
+        addNotification('Ticket "' + ticket.eventTitle + '" téléchargé en PDF', 'info');
         
     } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('An error occurred while generating the PDF: ' + error.message);
+        alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
     }
 }
 
 // ============================================================
-// ===== MARQUER UN BILLET COMME UTILISÉ =====
+// ===== MARQUER UN BILLET COMME UTILISÉ (SUPPRIMÉ) =====
 // ============================================================
 
-function markTicketAsUsed(ticketId) {
-    if (!confirm('Mark this ticket as used? This action cannot be undone.')) {
-        return;
-    }
-    
-    if (usedTickets.indexOf(ticketId) === -1) {
-        usedTickets.push(ticketId);
-        
-        for (var i = 0; i < tickets.length; i++) {
-            if (tickets[i].id === ticketId) {
-                tickets[i].status = 'Used';
-                break;
-            }
-        }
-        
-        saveUsedTickets();
-        saveTickets();
-        
-        addNotification(
-            'Ticket has been marked as used',
-            'info'
-        );
-        
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-        
-        alert('Ticket marked as used successfully!');
-    }
-}
+// La fonction markTicketAsUsed a été supprimée car le bouton "Use Ticket" a été remplacé
+// par le bouton "Télécharger le ticket". Les organisateurs utilisent le scan du QR Code.
 
 // ============================================================
 // ===== MY RATINGS =====
@@ -3844,8 +3871,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menuBtn) {
             console.log('Menu button found, adding click listeners');
             
+            // Forcer le style du bouton menu
             menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
             
+            // Mécanisme 1: Écouteur direct
             menuBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3855,6 +3884,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             });
             
+            // Mécanisme 2: Écouteur via le parent
             if (headerRight) {
                 headerRight.addEventListener('click', function(e) {
                     var target = e.target;
@@ -3868,6 +3898,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Mécanisme 3: Écouteur sur le document (ultime secours)
             document.addEventListener('click', function(e) {
                 var target = e.target;
                 var btn = target.closest('#menuBtn');
@@ -3879,6 +3910,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            // Effet hover pour confirmer que le bouton est actif
             menuBtn.addEventListener('mouseenter', function() {
                 this.style.background = 'rgba(255,255,255,0.4)';
                 this.style.transform = 'scale(1.05)';
@@ -3888,6 +3920,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.transform = 'scale(1)';
             });
             
+            // S'assurer que le bouton est bien visible et cliquable
             menuBtn.style.pointerEvents = 'auto';
             menuBtn.style.cursor = 'pointer';
             
@@ -4049,7 +4082,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         loadAllFromSupabase();
 
-        // ✅ SYNCHRONISATION RENFORCÉE - toutes les 30 secondes
         setInterval(function() {
             syncUserToSupabase();
             syncEventsToSupabase();
@@ -4057,7 +4089,6 @@ document.addEventListener('DOMContentLoaded', function() {
             syncNotificationsToSupabase();
         }, 30000);
 
-        // ✅ SAUVEGARDE AVANT FERMETURE
         window.addEventListener('beforeunload', function() {
             syncUserToSupabase();
             syncEventsToSupabase();
@@ -4073,8 +4104,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Menu button fix applied with 3 mechanisms');
         console.log('✅ Back button fix applied');
         console.log('✅ Hero slider auto-play enabled');
+        console.log('✅ Ticket download feature added');
         console.log('✅ VIP tickets now appear in My Tickets');
-        console.log('✅ Download ticket feature added');
+        console.log('✅ Data persistence improved with Supabase');
         
     } catch (error) {
         console.error('Error during application startup:', error);
@@ -4091,6 +4123,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== FONCTIONS DE SECOURS POUR DEBUG =====
 // ============================================================
 
+// Fonctions accessibles depuis la console pour debug
 window.debugMenu = function() {
     console.log('🔍 Debug menu:');
     var btn = document.getElementById('menuBtn');
@@ -4130,6 +4163,10 @@ window.forceCloseMenu = function() {
     }
 };
 
+// ============================================================
+// ===== FONCTION DE TEST DU MENU =====
+// ============================================================
+
 function testMenuButton() {
     var btn = document.getElementById('menuBtn');
     if (btn) {
@@ -4140,8 +4177,12 @@ function testMenuButton() {
         console.log('🔍 Position:', window.getComputedStyle(btn).position);
         console.log('👀 Visibility:', window.getComputedStyle(btn).visibility);
         console.log('📦 Display:', window.getComputedStyle(btn).display);
+        
+        // Simuler un clic pour tester
         var rect = btn.getBoundingClientRect();
         console.log('📍 Position du bouton:', rect);
+        console.log('📐 Centre du bouton:', (rect.left + rect.width/2) + 'x' + (rect.top + rect.height/2));
+        
         return 'Menu button is present and visible';
     } else {
         console.error('❌ Menu button NOT found!');
@@ -4149,6 +4190,7 @@ function testMenuButton() {
     }
 }
 
+// Exécuter le test automatiquement
 setTimeout(function() {
     testMenuButton();
 }, 2000);
