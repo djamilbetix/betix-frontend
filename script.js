@@ -1262,7 +1262,13 @@ function hideConnectSpinner() {
     }
 }
 
-async function onIncompletePaymentFound(payment) { console.log("Incomplete payment found:", payment); }
+async function onIncompletePaymentFound(payment) { 
+    console.log("Incomplete payment found:", payment);
+    if (payment) {
+        alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.");
+    }
+    return payment;
+}
 
 // ============================================================
 // ===== TICKET TYPES UI =====
@@ -1542,6 +1548,8 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             return;
         }
         
+        console.log('Creating Pi payment...');
+        
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
             memo: quantity + ' ' + typeLabel + ' ticket(s): ' + event.title,
@@ -1576,7 +1584,11 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             },
             onError: function(error) { 
                 console.error('Payment error:', error);
-                alert("Payment error: " + (error.message || 'Unknown error'));
+                if (error && error.message && error.message.toLowerCase().includes('pending')) {
+                    alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.\n\nIf you continue to have issues, please try again later.");
+                } else {
+                    alert("Payment error: " + (error.message || 'Unknown error'));
+                }
                 if (confirmBtn) {
                     confirmBtn.textContent = 'Confirm purchase';
                     confirmBtn.disabled = false;
@@ -1586,15 +1598,16 @@ async function confirmPurchase(eventId, quantity, ticketType) {
         
     } catch (error) { 
         console.error('Purchase error:', error);
-        if (error.message && error.message.includes('Pi SDK')) {
-            console.log('Falling back to demo mode');
-            await processDemoPurchase(event, quantity, ticketType, totalPrice, typeLabel, confirmBtn);
+        
+        if (error && error.message && error.message.toLowerCase().includes('pending')) {
+            alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.\n\nIf you continue to have issues, please try again later.");
         } else {
             alert("Error: " + (error.message || 'Unknown error'));
-            if (confirmBtn) {
-                confirmBtn.textContent = 'Confirm purchase';
-                confirmBtn.disabled = false;
-            }
+        }
+        
+        if (confirmBtn) {
+            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.disabled = false;
         }
     }
 }
@@ -3383,7 +3396,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// ===== EVENT DETAILS =====
+// ===== EVENT DETAILS - VERSION AMELIOREE =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -3394,15 +3407,45 @@ function openEventDetails(eventId) {
     }
     var modal = document.getElementById('eventDetailModal');
     var closeBtn = document.getElementById('eventDetailClose');
+    
+    // Titre et catégorie
     document.getElementById('detailTitle').textContent = event.title;
     document.getElementById('detailCategory').textContent = event.category;
-    document.getElementById('detailCountry').textContent = event.pays || event.country || 'Not specified';
+    
+    // Pays avec drapeau
+    var flagEmojis = {
+        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪', 'Nigeria': '🇳🇬',
+        'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
+        'Ethiopia': '🇪🇹', 'Egypt': '🇪🇬', 'Morocco': '🇲🇦', 'Algeria': '🇩🇿',
+        'Tunisia': '🇹🇳', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
+        'Gabon': '🇬🇦', 'Madagascar': '🇲🇬', 'Mauritius': '🇲🇺', 'Seychelles': '🇸🇨',
+        'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼', 'Namibia': '🇳🇦',
+        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'China': '🇨🇳', 'Japan': '🇯🇵',
+        'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺', 'Mexico': '🇲🇽',
+        'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪'
+    };
+    var countryFlag = flagEmojis[event.pays || event.country] || '🌍';
+    var countryDisplay = event.pays || event.country || 'International';
+    document.getElementById('detailCountry').textContent = countryFlag + ' ' + countryDisplay;
+    
+    // Date et heure
     var dateEvent = new Date(event.date);
-    document.getElementById('detailDate').textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('detailDate').textContent = dateFormatted + ' at ' + timeFormatted;
     document.getElementById('detailLocation').textContent = event.location || 'Online';
     
+    // Prix
     var priceDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) priceDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+        priceDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
+    }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (priceDisplay) priceDisplay += ' | ';
         priceDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
@@ -3410,12 +3453,26 @@ function openEventDetails(eventId) {
     if (!priceDisplay) priceDisplay = event.price + ' Pi';
     document.getElementById('detailPrice').textContent = priceDisplay;
     
+    // Places
     document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
+    
+    // Description
     document.getElementById('detailDescription').textContent = event.description || 'No description';
-    document.getElementById('detailOrganizer').textContent = event.organizerName || event.organizer || 'Unknown';
-    document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US');
+    
+    // Organisateur
+    var organizerDisplay = event.organizerName || event.organizer || 'Unknown';
+    if (!organizerDisplay.startsWith('@')) {
+        organizerDisplay = '@' + organizerDisplay;
+    }
+    document.getElementById('detailOrganizer').textContent = organizerDisplay;
+    
+    // Date de création
+    document.getElementById('detailCreated').textContent = new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    
+    // Places restantes
     document.getElementById('detailBoosts').textContent = event.seatsLeft + '/' + event.seatsTotal;
     
+    // Durée
     var durationDisplay = document.getElementById('detailDuration');
     if (durationDisplay) {
         if (event.durationValue && event.durationUnit) {
@@ -3426,6 +3483,7 @@ function openEventDetails(eventId) {
         }
     }
     
+    // Conditions
     var conditionsContainer = document.getElementById('detailConditions');
     if (conditionsContainer) {
         if (event.conditions) {
@@ -3444,6 +3502,8 @@ function openEventDetails(eventId) {
             conditionsContainer.innerHTML = '<p style="color: var(--gray);">No conditions specified</p>';
         }
     }
+    
+    // Évaluations
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     var avgRating = 0;
     if (eventRatings.length > 0) {
@@ -3454,6 +3514,8 @@ function openEventDetails(eventId) {
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     document.getElementById('detailRating').textContent = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' reviews)' : 'Not yet rated';
+    
+    // Galerie d'images
     var gallery = document.getElementById('detailGallery');
     gallery.innerHTML = '';
     if (event.images && event.images.length > 0) {
@@ -3488,8 +3550,13 @@ function openEventDetails(eventId) {
         defaultImg.alt = event.title;
         defaultImg.onclick = function() { openGallery(event.id, 0); };
         defaultImg.style.cursor = 'pointer';
+        defaultImg.style.width = '100%';
+        defaultImg.style.height = '100%';
+        defaultImg.style.objectFit = 'cover';
         gallery.appendChild(defaultImg);
     }
+    
+    // Avis
     var reviewsContainer = document.getElementById('detailReviews');
     reviewsContainer.innerHTML = '';
     if (eventRatings.length > 0) {
@@ -3507,11 +3574,15 @@ function openEventDetails(eventId) {
     } else {
         reviewsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet</p>';
     }
+    
+    // Bouton d'achat
     document.getElementById('detailBuyBtn').onclick = function() {
         modal.classList.remove('show');
         document.body.style.overflow = '';
         openQuantityPopup(event.id);
     };
+    
+    // Fermeture
     closeBtn.onclick = function() { 
         modal.classList.remove('show');
         document.body.style.overflow = '';
