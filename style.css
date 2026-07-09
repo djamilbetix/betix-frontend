@@ -81,7 +81,7 @@ body {
 }
 
 /* ============================================================
-   ===== HEADER ET BOUTONS - CORRIGÉ =====
+   ===== HEADER ET BOUTONS =====
    ============================================================ */
 
 .header {
@@ -167,7 +167,7 @@ body {
     filter: brightness(0) invert(1);
 }
 
-/* ===== BOUTON MENU - ULTRA ROBUSTE ===== */
+/* ===== BOUTON MENU ===== */
 #menuBtn {
     font-size: 1.5rem;
     background: rgba(255,255,255,0.25) !important;
@@ -1658,6 +1658,44 @@ body {
 }
 
 /* ============================================================
+   ===== STYLES VIP =====
+   ============================================================ */
+
+.ticket-card-premium.ticket-vip {
+    border-color: #d4911e;
+    box-shadow: 0 4px 24px rgba(212, 145, 30, 0.15);
+}
+
+.ticket-card-premium.ticket-vip .ticket-header.vip-header {
+    background: linear-gradient(135deg, #b8860b, #d4911e);
+}
+
+.ticket-card-premium.ticket-vip .ticket-status.vip-badge {
+    background: rgba(255, 215, 0, 0.25);
+    border-color: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+}
+
+.ticket-card-premium.ticket-vip .ticket-category.vip-category {
+    background: rgba(212, 145, 30, 0.15);
+    color: #b8860b;
+}
+
+.ticket-card-premium.ticket-vip .qr-code.vip-qr {
+    background: #fef8f0;
+    border-color: #d4911e;
+    color: #b8860b;
+}
+
+.ticket-card-premium.ticket-vip .ticket-info-grid .ticket-info-item i {
+    color: #d4911e;
+}
+
+.ticket-card-premium.ticket-vip .ticket-logo-placeholder {
+    color: rgba(212, 145, 30, 0.15);
+}
+
+/* ============================================================
    ===== BOUTON TÉLÉCHARGER LE TICKET =====
    ============================================================ */
 
@@ -1702,41 +1740,200 @@ body {
 }
 
 /* ============================================================
-   ===== STYLES VIP =====
+   ===== IMAGE UPLOAD - STYLE JAUNE ÉLÉGANT =====
    ============================================================ */
 
-.ticket-card-premium.ticket-vip {
-    border-color: #d4911e;
-    box-shadow: 0 4px 24px rgba(212, 145, 30, 0.15);
+.image-upload-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 8px;
 }
 
-.ticket-card-premium.ticket-vip .ticket-header.vip-header {
-    background: linear-gradient(135deg, #b8860b, #d4911e);
+.upload-box-modern {
+    position: relative;
+    border: 2px dashed #e5e7eb;
+    border-radius: 16px;
+    background: #fefaf0;
+    transition: all 0.3s ease;
+    min-height: 200px;
+    overflow: hidden;
+    cursor: pointer;
 }
 
-.ticket-card-premium.ticket-vip .ticket-status.vip-badge {
-    background: rgba(255, 215, 0, 0.25);
-    border-color: rgba(255, 215, 0, 0.3);
-    color: #ffd700;
-}
-
-.ticket-card-premium.ticket-vip .ticket-category.vip-category {
-    background: rgba(212, 145, 30, 0.15);
-    color: #b8860b;
-}
-
-.ticket-card-premium.ticket-vip .qr-code.vip-qr {
+.upload-box-modern:hover {
+    border-color: #f5a623;
     background: #fef8f0;
-    border-color: #d4911e;
-    color: #b8860b;
+    box-shadow: 0 4px 20px rgba(245, 166, 35, 0.08);
 }
 
-.ticket-card-premium.ticket-vip .ticket-info-grid .ticket-info-item i {
+.upload-box-modern.dragover {
+    border-color: #f5a623;
+    background: #fef8f0;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.15);
+}
+
+.upload-box-modern.has-image {
+    border-style: solid;
+    border-color: #10b981;
+    background: #f0fdf4;
+    min-height: 200px;
+}
+
+.upload-box-modern.compress {
+    border-color: #f5a623;
+    background: #fef8f0;
+}
+
+.upload-box-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 24px;
+    text-align: center;
+}
+
+.upload-box-modern.has-image .upload-box-inner {
+    display: none;
+}
+
+.upload-icon-modern {
+    font-size: 2.8rem;
     color: #d4911e;
+    margin-bottom: 12px;
+    opacity: 0.8;
 }
 
-.ticket-card-premium.ticket-vip .ticket-logo-placeholder {
-    color: rgba(212, 145, 30, 0.15);
+.upload-text {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.upload-text span {
+    color: #f5a623;
+    font-weight: 500;
+}
+
+.upload-text span:hover {
+    text-decoration: underline;
+}
+
+.upload-help {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.upload-help i {
+    color: #f5a623;
+}
+
+.image-input-modern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.upload-progress {
+    width: 100%;
+    max-width: 200px;
+    margin: 12px auto 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f5a623, #d4911e);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+    display: block;
+}
+
+.preview-modern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.preview-modern img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.remove-image-modern {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 3;
+}
+
+.remove-image-modern:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.preview-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 3;
+    backdrop-filter: blur(4px);
+}
+
+.preview-badge i {
+    font-size: 0.6rem;
 }
 
 /* ============================================================
@@ -2541,6 +2738,467 @@ body {
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     overflow: hidden;
+}
+
+/* ============================================================
+   ===== PROFIL PAGE - DESIGN PROFESSIONNEL =====
+   ============================================================ */
+
+.profile-page-content {
+    max-width: 800px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 1.5rem auto !important;
+}
+
+.profile-header-card {
+    background: linear-gradient(145deg, #0D47A1, #1a1a2e);
+    border-radius: 24px;
+    padding: 30px 30px 25px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    box-shadow: 0 8px 40px rgba(13, 71, 161, 0.25);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.profile-header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: rgba(245, 166, 35, 0.08);
+    border-radius: 50%;
+}
+
+.profile-header-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: -10%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+}
+
+.profile-header-avatar {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-avatar-placeholder-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.profile-avatar-placeholder-large:hover {
+    transform: scale(1.05);
+}
+
+.profile-avatar-placeholder-large i {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+.profile-header-info {
+    flex: 1;
+    z-index: 1;
+    color: white;
+}
+
+.profile-header-info h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.3px;
+}
+
+.profile-header-info p {
+    margin: 2px 0;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-header-info p i {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    width: 18px;
+}
+
+.profile-badges {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-badge {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    padding: 4px 14px 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-badge i {
+    font-size: 0.7rem;
+}
+
+.profile-badge:first-child i {
+    color: #f5a623;
+}
+
+.profile-badge:last-child i {
+    color: #f5a623;
+}
+
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.profile-stats-grid .stat-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 18px 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-stats-grid .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0D47A1, #f5a623);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-stats-grid .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(245, 166, 35, 0.15);
+}
+
+.profile-stats-grid .stat-card:hover::after {
+    opacity: 1;
+}
+
+.profile-stats-grid .stat-card:active {
+    transform: scale(0.97);
+}
+
+.profile-stats-grid .stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.profile-stats-grid .stat-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.profile-stats-grid .stat-label i {
+    font-size: 0.65rem;
+    color: #f5a623;
+}
+
+.profile-stats-grid .stat-link {
+    font-size: 0.6rem;
+    color: #0D47A1;
+    font-weight: 600;
+    display: block;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-stats-grid .stat-card:hover .stat-link {
+    opacity: 1;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.profile-actions .btn-primary {
+    flex: 2;
+    min-width: 160px;
+    margin: 0;
+    padding: 14px 24px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    box-shadow: 0 4px 20px rgba(13, 71, 161, 0.25);
+    transition: all 0.3s ease;
+}
+
+.profile-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(13, 71, 161, 0.35);
+}
+
+.profile-actions .btn-primary:active {
+    transform: scale(0.97);
+}
+
+.profile-actions .btn-secondary {
+    flex: 1;
+    min-width: 100px;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #f1f3f5;
+    color: #1a1a2e;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.profile-actions .btn-secondary:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.profile-actions .btn-secondary:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   ===== MY EVENTS - DESIGN PROFESSIONNEL =====
+   ============================================================ */
+
+.my-events-container {
+    padding: 0.5rem 5% 2rem;
+}
+
+.my-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.my-event-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.my-event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.10);
+}
+
+.my-event-card .event-gallery-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.my-event-card .event-gallery-wrapper .event-gallery {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.my-event-card .event-gallery-wrapper .event-gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.my-event-card:hover .event-gallery-wrapper .event-gallery-img {
+    transform: scale(1.03);
+}
+
+.my-event-card .event-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+}
+
+.my-event-card .event-status-badge.sold-out {
+    background: rgba(239, 68, 68, 0.9);
+}
+
+.my-event-card .event-status-badge.draft {
+    background: rgba(245, 166, 35, 0.9);
+}
+
+.my-event-card .event-info {
+    padding: 16px 18px 18px;
+}
+
+.my-event-card .event-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.my-event-card .event-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    font-size: 0.78rem;
+    color: #4b5563;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+.my-event-card .event-details-grid .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.my-event-card .event-details-grid .detail-item i {
+    color: #f5a623;
+    font-size: 0.7rem;
+    width: 14px;
+    text-align: center;
+}
+
+.my-event-card .event-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.my-event-card .event-footer .event-stats {
+    display: flex;
+    gap: 14px;
+    font-size: 0.7rem;
+    color: var(--gray);
+}
+
+.my-event-card .event-footer .event-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.my-event-card .event-footer .event-stats i {
+    font-size: 0.65rem;
+}
+
+.my-event-card .event-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.my-event-card .btn-edit-event {
+    background: #f5a623;
+    color: #1a1a2e;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.my-event-card .btn-edit-event:hover {
+    background: #d4911e;
+    transform: translateY(-1px);
+}
+
+.my-event-card .btn-delete-event {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.my-event-card .btn-delete-event:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
 }
 
 /* ============================================================
@@ -3551,7 +4209,8 @@ body.dark-mode .modal-content,
 body.dark-mode .admin-event-item,
 body.dark-mode .admin-slide-item,
 body.dark-mode .quantity-popup-content,
-body.dark-mode .publish-confirm-professional {
+body.dark-mode .publish-confirm-professional,
+body.dark-mode .my-event-card {
     background-color: #1f2937;
     color: #f3f4f6;
 }
@@ -3999,6 +4658,7 @@ body.dark-mode #ticketTypeSelect:focus {
 
 body.dark-mode .profile-stats-grid {
     background: #1f2937;
+    border-color: #374151;
 }
 
 body.dark-mode .profile-stats-grid .stat-card {
@@ -4006,15 +4666,19 @@ body.dark-mode .profile-stats-grid .stat-card {
 }
 
 body.dark-mode .profile-stats-grid .stat-number {
-    color: #f5a623;
+    color: #f3f4f6;
 }
 
 body.dark-mode .profile-stats-grid .stat-label {
     color: #9ca3af;
 }
 
+body.dark-mode .profile-stats-grid .stat-link {
+    color: #f5a623;
+}
+
 body.dark-mode .profile-header-card {
-    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    background: linear-gradient(145deg, #0D47A1, #1a1a2e);
 }
 
 body.dark-mode .sidebar-avatar {
@@ -4082,6 +4746,33 @@ body.dark-mode .btn-download-ticket {
 
 body.dark-mode .ticket-card-premium.ticket-vip .btn-download-ticket {
     background: linear-gradient(135deg, #8B7500, #b8860b);
+}
+
+body.dark-mode .my-event-card .event-details-grid {
+    background: #2d3748;
+    color: #d1d5db;
+}
+
+body.dark-mode .my-event-card .event-footer {
+    border-top-color: #374151;
+}
+
+body.dark-mode .my-event-card .event-title {
+    color: #f3f4f6;
+}
+
+body.dark-mode .profile-actions .btn-secondary {
+    background: #2d3748;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode .profile-actions .btn-secondary:hover {
+    background: #374151;
+}
+
+body.dark-mode .profile-stats-grid .stat-card:hover {
+    border-color: rgba(245, 166, 35, 0.2);
 }
 
 /* ===== DARK MODE - VIP ===== */
@@ -4342,13 +5033,41 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     .profile-header-card {
         flex-direction: column;
         text-align: center;
-        padding: 20px;
+        padding: 24px 20px;
+        gap: 16px;
+    }
+    
+    .profile-header-info p {
+        justify-content: center;
+    }
+    
+    .profile-badges {
+        justify-content: center;
     }
     
     .profile-stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        padding: 15px 20px;
+        gap: 10px;
+        padding: 14px;
+    }
+    
+    .profile-stats-grid .stat-card {
+        padding: 14px 10px;
+    }
+    
+    .profile-stats-grid .stat-number {
+        font-size: 1.4rem;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .profile-actions .btn-primary,
+    .profile-actions .btn-secondary {
+        width: 100%;
+        flex: none;
+        min-width: unset;
     }
     
     .sidebar {
@@ -4359,6 +5078,11 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     .sidebar-language-selector {
         flex-direction: column;
         gap: 4px;
+    }
+    
+    .my-events-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 }
 
@@ -4547,15 +5271,20 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         padding: 16px;
     }
     
-    .profile-header-avatar {
+    .profile-header-avatar .profile-avatar-placeholder-large {
         width: 80px;
         height: 80px;
+        font-size: 2.2rem;
+    }
+    
+    .profile-header-info h2 {
+        font-size: 1.3rem;
     }
     
     .profile-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
-        padding: 12px 16px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px;
     }
     
     .profile-stats-grid .stat-number {
@@ -4564,11 +5293,6 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     
     .profile-stats-grid .stat-label {
         font-size: 0.65rem;
-    }
-    
-    .profile-page-content .btn-primary {
-        margin: 12px 16px 20px;
-        width: calc(100% - 32px);
     }
     
     .sidebar {
@@ -4664,6 +5388,11 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         padding: 12px 16px 10px;
         flex-wrap: wrap;
         gap: 4px;
+    }
+    
+    .my-events-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
 }
 
