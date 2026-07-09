@@ -312,87 +312,60 @@ async function saveEventToSupabase(eventData) {
             return false;
         }
         
+        // Construction de l'objet avec les colonnes EXACTES de la table
         const dbEvent = {
             id: eventData.id,
             organizer_pi_uid: eventData.organizerPiUid || eventData.organizer || currentUser.wallet || 'unknown',
-            organizer_name: eventData.organizerName || eventData.organizer || currentUser.name || 'Anonymous',
             title: eventData.title || 'Untitled',
             description: eventData.description || '',
             image_url: eventData.coverImage || (eventData.images && eventData.images[0]) || '',
             location: eventData.location || '',
-            pays: eventData.pays || eventData.country || 'France',
             event_date: eventData.date || new Date().toISOString(),
             category: eventData.category || '',
-            ticket_price_standard: (eventData.ticketTypes && eventData.ticketTypes.standard && eventData.ticketTypes.standard.price) || eventData.price || 0,
-            ticket_price_vip: (eventData.ticketTypes && eventData.ticketTypes.vip && eventData.ticketTypes.vip.price) || 0,
-            ticket_standard_enabled: (eventData.ticketTypes && eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled) || false,
-            ticket_vip_enabled: (eventData.ticketTypes && eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled) || false,
-            max_tickets: eventData.seatsTotal || 0,
+            ticket_price: (eventData.ticketTypes && eventData.ticketTypes.standard && eventData.ticketTypes.standard.price) || eventData.price || 0.0003,
+            max_tickets: eventData.seatsTotal || 100,
             created_at: eventData.createdAt || new Date().toISOString(),
-            conditions: eventData.conditions || '',
-            duration_value: eventData.durationValue || null,
-            duration_unit: eventData.durationUnit || null
+            pays: eventData.pays || eventData.country || 'France'
         };
         
         console.log('📤 Event data to save:');
         console.log('   Title:', dbEvent.title);
         console.log('   Pays:', dbEvent.pays);
-        console.log('   Organizer:', dbEvent.organizer_name);
+        console.log('   Organizer:', dbEvent.organizer_pi_uid);
         console.log('   Seats:', dbEvent.max_tickets);
-        console.log('   Date:', dbEvent.event_date);
+        console.log('   Price:', dbEvent.ticket_price);
         
         const { data, error } = await supabaseClient
             .from('events')
             .upsert(dbEvent, { 
-                onConflict: 'id',
-                ignoreDuplicates: false 
+                onConflict: 'id'
             });
         
         if (error) {
-            console.error('❌ Supabase error saving event:', error);
+            console.error('❌ Supabase error:', error);
             
-            if (error.code === '23505') {
-                console.log('🔄 Trying update instead...');
-                const { error: updateError } = await supabaseClient
-                    .from('events')
-                    .update(dbEvent)
-                    .eq('id', eventData.id);
-                
-                if (updateError) {
-                    console.error('❌ Update also failed:', updateError);
-                    return false;
-                }
-                console.log('✅ Event updated in Supabase:', eventData.id);
-                return true;
-            }
-            
-            // Fallback: essayer un insert simple
-            if (error.code === '42703') {
-                console.log('🔄 Trying simple insert...');
-                const simpleEvent = {
+            // Essayer avec insert simple
+            console.log('🔄 Trying simple insert...');
+            const { error: insertError } = await supabaseClient
+                .from('events')
+                .insert({
                     id: dbEvent.id,
-                    title: dbEvent.title,
                     organizer_pi_uid: dbEvent.organizer_pi_uid,
-                    organizer_name: dbEvent.organizer_name,
-                    event_date: dbEvent.event_date,
-                    max_tickets: dbEvent.max_tickets,
-                    pays: dbEvent.pays,
+                    title: dbEvent.title,
                     location: dbEvent.location,
-                    category: dbEvent.category
-                };
-                const { error: simpleError } = await supabaseClient
-                    .from('events')
-                    .insert(simpleEvent);
-                
-                if (simpleError) {
-                    console.error('❌ Simple insert failed:', simpleError);
-                    return false;
-                }
-                console.log('✅ Event saved with simple insert:', eventData.id);
-                return true;
-            }
+                    event_date: dbEvent.event_date,
+                    category: dbEvent.category,
+                    ticket_price: dbEvent.ticket_price,
+                    max_tickets: dbEvent.max_tickets,
+                    pays: dbEvent.pays
+                });
             
-            return false;
+            if (insertError) {
+                console.error('❌ Insert also failed:', insertError);
+                return false;
+            }
+            console.log('✅ Event saved with simple insert');
+            return true;
         }
         
         console.log('✅ Event saved to Supabase:', eventData.id);
@@ -765,38 +738,36 @@ async function loadAllFromSupabase() {
         if (supabaseEvents && supabaseEvents.length > 0) {
             events = supabaseEvents.map(function(e) {
                 return {
-                    id: e.id,
-                    title: e.title,
+                    id: e.id || '',
+                    title: e.title || 'Untitled',
                     category: e.category || '',
                     pays: e.pays || 'France',
                     country: e.pays || 'France',
-                    date: e.event_date,
+                    date: e.event_date || new Date().toISOString(),
                     location: e.location || '',
                     description: e.description || '',
                     conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
-                    price: e.ticket_price_standard || 0.0003,
+                    price: e.ticket_price || 0.0003,
                     seatsTotal: e.max_tickets || 100,
                     seatsLeft: e.max_tickets || 100,
                     images: e.image_url ? [e.image_url] : [],
                     coverImage: e.image_url || '',
                     organizer: e.organizer_pi_uid || '',
-                    organizerName: e.organizer_name || '',
+                    organizerName: e.organizer_name || e.organizer_pi_uid || '',
                     organizerPiUid: e.organizer_pi_uid || '',
                     createdAt: e.created_at || new Date().toISOString(),
                     boosts: 0,
                     durationValue: e.duration_value || null,
                     durationUnit: e.duration_unit || null,
                     ticketTypes: {
-                        standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
-                        vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
+                        standard: { enabled: true, price: e.ticket_price || 0.0003 },
+                        vip: { enabled: false, price: 0 }
                     }
                 };
             });
+            
             localStorage.setItem('betix_events', JSON.stringify(events));
             console.log('✅ Loaded', events.length, 'events from Supabase');
-            events.forEach(function(e, idx) {
-                console.log('   Event ' + (idx+1) + ':', e.title, '|', e.pays);
-            });
         } else {
             console.log('ℹ️ No events in Supabase, checking localStorage...');
             var localEvents = localStorage.getItem('betix_events');
@@ -807,6 +778,8 @@ async function loadAllFromSupabase() {
                 } catch (e) {
                     events = [];
                 }
+            } else {
+                events = [];
             }
         }
         
@@ -857,27 +830,7 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // === 3. CHARGER LES NOTIFICATIONS ===
-        if (currentUser.piUid || currentUser.wallet) {
-            var piUid2 = currentUser.piUid || currentUser.wallet;
-            var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
-            if (supabaseNotifs && supabaseNotifs.length > 0) {
-                notifications = supabaseNotifs.map(function(n) {
-                    return {
-                        id: n.id,
-                        message: n.message || n.title || '',
-                        type: n.type || 'info',
-                        read: n.is_read || false,
-                        date: n.created_at || new Date().toISOString()
-                    };
-                });
-                localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-                updateNotifBadgeHeader();
-                console.log('✅ Loaded', notifications.length, 'notifications from Supabase');
-            }
-        }
-        
-        // === 4. METTRE À JOUR L'AFFICHAGE ===
+        // === 3. METTRE À JOUR L'AFFICHAGE ===
         renderEventsByCategory();
         renderTickets();
         renderHistory();
@@ -886,7 +839,6 @@ async function loadAllFromSupabase() {
         console.log('✅ ===== LOAD COMPLETED =====');
         console.log('   Total events:', events.length);
         console.log('   Total tickets:', tickets.length);
-        console.log('   Total notifications:', notifications.length);
         
     } catch (error) {
         console.error('❌ Error loading data from Supabase:', error);
@@ -895,6 +847,7 @@ async function loadAllFromSupabase() {
             if (localEvents) events = JSON.parse(localEvents);
             var localTickets = localStorage.getItem('betix_tickets');
             if (localTickets) tickets = JSON.parse(localTickets);
+            renderEventsByCategory();
             console.log('⚠️ Loaded data from localStorage as fallback');
         } catch (e) {
             console.error('❌ Fallback loading failed:', e);
@@ -2028,19 +1981,14 @@ function closePublishConfirmPopup() {
 // ============================================================
 
 async function confirmPublishEvent() {
-    console.log('🔄 ===== CONFIRM PUBLISH EVENT CALLED =====');
+    console.log('🔄 ===== CONFIRM PUBLISH EVENT =====');
     
     if (!pendingEventData) {
-        console.error('❌ No pending event data');
         alert('No event data to publish');
         return;
     }
     
-    console.log('📤 Event title:', pendingEventData.title);
-    
-    var publishBtn = document.getElementById('publishEventBtn');
     var confirmBtn = document.getElementById('confirmPublishBtn');
-    
     if (confirmBtn) {
         confirmBtn.classList.add('loading');
         confirmBtn.disabled = true;
@@ -2049,129 +1997,68 @@ async function confirmPublishEvent() {
     
     try {
         var newEvent = pendingEventData;
+        console.log('📤 Publishing:', newEvent.title);
         
-        console.log('📤 ===== PUBLISHING EVENT =====');
-        console.log('Event title:', newEvent.title);
-        console.log('Organizer:', currentUser.name);
-        console.log('Pays:', newEvent.pays);
-        console.log('Date:', newEvent.date);
-        console.log('Seats:', newEvent.seatsTotal);
-        
-        // === 1. UPLOAD DES IMAGES ===
-        var uploadedUrls = [];
-        if (newEvent.images && newEvent.images.length > 0) {
-            console.log('📤 Uploading images...');
-            for (var i = 0; i < newEvent.images.length; i++) {
-                var imageData = newEvent.images[i];
-                var url = await uploadEventImage(newEvent.id, imageData, i);
-                if (url) {
-                    uploadedUrls.push(url);
-                    console.log('   Image ' + (i+1) + ' uploaded');
-                } else {
-                    uploadedUrls.push(imageData);
-                }
-            }
-        }
-        
-        newEvent.images = uploadedUrls;
-        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
+        // Ajouter les infos de l'organisateur
         newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+        newEvent.organizer = currentUser.wallet;
         newEvent.organizerName = currentUser.name;
+        newEvent.createdAt = new Date().toISOString();
         
-        // === 2. AJOUTER EN MÉMOIRE ===
+        // Ajouter en mémoire
         events.push(newEvent);
-        console.log('💾 Event added to memory, total:', events.length);
-        
-        // === 3. SAUVEGARDE LOCALE ===
         localStorage.setItem('betix_events', JSON.stringify(events));
-        console.log('💾 Event saved to localStorage');
+        console.log('💾 Event saved locally, total:', events.length);
         
-        // === 4. SAUVEGARDE SUPABASE ===
-        console.log('📤 Saving event to Supabase...');
-        var saved = false;
-        var attempts = 0;
-        var maxAttempts = 3;
-        
-        while (!saved && attempts < maxAttempts) {
-            attempts++;
-            console.log('   Attempt ' + attempts + '/' + maxAttempts);
-            saved = await saveEventToSupabase(newEvent);
-            if (!saved) {
-                console.log('   Waiting 1 second before retry...');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
+        // Sauvegarder dans Supabase
+        console.log('📤 Saving to Supabase...');
+        var saved = await saveEventToSupabase(newEvent);
         
         if (saved) {
-            console.log('✅ Event successfully saved to Supabase after ' + attempts + ' attempts');
+            console.log('✅ Event saved to Supabase!');
         } else {
-            console.error('❌ Failed to save event to Supabase after ' + maxAttempts + ' attempts');
-            console.log('🔄 Event will be synced later via auto-sync');
+            console.error('❌ Failed to save to Supabase');
+            // Sauvegarder pour synchronisation ultérieure
+            var pendingEvents = JSON.parse(localStorage.getItem('betix_pending_events') || '[]');
+            pendingEvents.push(newEvent);
+            localStorage.setItem('betix_pending_events', JSON.stringify(pendingEvents));
+            console.log('💾 Event saved to pending list');
         }
         
-        // === 5. SYNC USER ===
-        await syncUserToSupabase();
-        
-        // === 6. RÉINITIALISER ===
+        // Réinitialiser le formulaire
         var form = document.getElementById('eventForm');
         if (form) form.reset();
-        
-        for (var i = 0; i < 2; i++) {
-            removeImageModern(i);
-        }
+        for (var i = 0; i < 2; i++) removeImageModern(i);
         uploadedImages = {};
-        
-        var standardCheckbox = document.getElementById('ticketStandardEnabled');
-        var vipCheckbox = document.getElementById('ticketVipEnabled');
-        if (standardCheckbox) standardCheckbox.checked = true;
-        if (vipCheckbox) vipCheckbox.checked = false;
         setupTicketTypesUI();
         
-        // === 7. NOTIFICATION ===
-        addNotification(
-            'New event "' + newEvent.title + '" has been published!',
-            'event'
-        );
-        
-        // === 8. FERMER LE POPUP ===
         closePublishConfirmPopup();
-        document.getElementById('publishConfirmPopup').classList.remove('show');
-        
-        // === 9. METTRE À JOUR L'AFFICHAGE ===
         renderEventsByCategory();
         updateProfilePage();
         
-        if (publishBtn) {
-            publishBtn.classList.remove('loading');
-            publishBtn.disabled = false;
-        }
         if (confirmBtn) {
             confirmBtn.classList.remove('loading');
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Publish Event';
         }
         
-        // === 10. MESSAGE DE SUCCÈS ===
-        console.log('✅ ===== PUBLISH COMPLETED =====');
-        var message = '✅ Event "' + newEvent.title + '" has been successfully published!';
-        if (!saved) {
-            message += '\n\n⚠️ Database sync pending. It will be saved automatically.';
-        }
+        var message = '✅ Event "' + newEvent.title + '" published!';
+        if (!saved) message += '\n⚠️ Database sync pending. Click OK to sync now.';
         alert(message);
+        
+        if (!saved) {
+            await syncPendingEvents();
+        }
+        
         showPage('home');
         
     } catch (error) {
-        console.error('❌ Error publishing event:', error);
-        alert('An error occurred: ' + error.message);
-        
+        console.error('❌ Error:', error);
+        alert('Error: ' + error.message);
         if (confirmBtn) {
             confirmBtn.classList.remove('loading');
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Publish Event';
-        }
-        if (publishBtn) {
-            publishBtn.classList.remove('loading');
-            publishBtn.disabled = false;
         }
     }
 }
@@ -3308,18 +3195,23 @@ function renderMyEventCard(event) {
 function renderEventsByCategory() {
     var container = document.getElementById('eventsByCategory');
     if (!container) return;
+    
     var filtered = events.filter(function(e) { 
         var matchCategory = (currentFilter === 'All' || e.category === currentFilter);
         var matchCountry = (currentCountryFilter === 'All' || (e.pays || e.country) === currentCountryFilter);
-        var matchSearch = (e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery)));
+        var matchSearch = (e.title && e.title.toLowerCase().includes(searchQuery)) || 
+                          (e.location && e.location.toLowerCase().includes(searchQuery));
         return matchCategory && matchCountry && matchSearch;
     });
+    
     if (filtered.length === 0) { 
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
         return; 
     }
+    
     var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
     var html = '';
+    
     if (currentFilter !== 'All') {
         html = '<div class="category-section"><div class="events-grid-centered">';
         filtered.forEach(function(e) {
@@ -3339,6 +3231,7 @@ function renderEventsByCategory() {
             }
         }
     }
+    
     container.innerHTML = html;
 }
 
@@ -4192,8 +4085,47 @@ async function forceSyncEvents() {
     console.log('Events in memory:', events.length);
     
     if (events.length === 0) {
-        alert('❌ Aucun événement à synchroniser');
-        return;
+        console.log('⚠️ No events in memory, loading from Supabase...');
+        var supabaseEvents = await loadEventsFromSupabase();
+        if (supabaseEvents && supabaseEvents.length > 0) {
+            events = supabaseEvents.map(function(e) {
+                return {
+                    id: e.id || '',
+                    title: e.title || 'Untitled',
+                    category: e.category || '',
+                    pays: e.pays || 'France',
+                    country: e.pays || 'France',
+                    date: e.event_date || new Date().toISOString(),
+                    location: e.location || '',
+                    description: e.description || '',
+                    conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
+                    price: e.ticket_price || 0.0003,
+                    seatsTotal: e.max_tickets || 100,
+                    seatsLeft: e.max_tickets || 100,
+                    images: e.image_url ? [e.image_url] : [],
+                    coverImage: e.image_url || '',
+                    organizer: e.organizer_pi_uid || '',
+                    organizerName: e.organizer_name || e.organizer_pi_uid || '',
+                    organizerPiUid: e.organizer_pi_uid || '',
+                    createdAt: e.created_at || new Date().toISOString(),
+                    boosts: 0,
+                    durationValue: e.duration_value || null,
+                    durationUnit: e.duration_unit || null,
+                    ticketTypes: {
+                        standard: { enabled: true, price: e.ticket_price || 0.0003 },
+                        vip: { enabled: false, price: 0 }
+                    }
+                };
+            });
+            localStorage.setItem('betix_events', JSON.stringify(events));
+            renderEventsByCategory();
+            console.log('✅ Events loaded from Supabase:', events.length);
+            alert('✅ ' + events.length + ' événements chargés depuis Supabase !');
+            return;
+        } else {
+            alert('❌ Aucun événement trouvé dans Supabase');
+            return;
+        }
     }
     
     var success = 0;
@@ -4225,6 +4157,42 @@ async function forceSyncEvents() {
     
     alert('✅ ' + success + '/' + events.length + ' événements synchronisés avec Supabase !' +
           (errors.length > 0 ? '\n⚠️ Erreurs: ' + errors.length + ' événements' : ''));
+}
+
+async function syncPendingEvents() {
+    console.log('🔄 ===== SYNC PENDING EVENTS =====');
+    
+    var pendingEvents = JSON.parse(localStorage.getItem('betix_pending_events') || '[]');
+    
+    if (pendingEvents.length === 0) {
+        console.log('ℹ️ Aucun événement en attente');
+        return;
+    }
+    
+    console.log('📊 Pending events:', pendingEvents.length);
+    
+    var success = 0;
+    for (var i = 0; i < pendingEvents.length; i++) {
+        console.log('📤 Syncing:', pendingEvents[i].title);
+        var saved = await saveEventToSupabase(pendingEvents[i]);
+        if (saved) {
+            success++;
+            console.log('   ✅ Synced');
+        } else {
+            console.log('   ❌ Failed');
+        }
+    }
+    
+    var remaining = pendingEvents.slice(success);
+    localStorage.setItem('betix_pending_events', JSON.stringify(remaining));
+    
+    // Recharger les événements
+    await loadAllFromSupabase();
+    
+    console.log('✅ Synced:', success + '/' + pendingEvents.length);
+    if (success > 0) {
+        alert('✅ ' + success + '/' + pendingEvents.length + ' événements synchronisés !');
+    }
 }
 
 async function checkSupabaseData() {
@@ -4283,6 +4251,7 @@ async function showSupabaseEvents() {
 // Exposer les fonctions de debug
 window.forceSyncTickets = forceSyncTickets;
 window.forceSyncEvents = forceSyncEvents;
+window.syncPendingEvents = syncPendingEvents;
 window.checkSupabaseData = checkSupabaseData;
 window.showEvents = showEvents;
 window.showSupabaseEvents = showSupabaseEvents;
