@@ -1958,7 +1958,6 @@ function updateUITranslations() {
         socialTitle.textContent = t('followUs');
     }
     
-    // Rétablir les textes originaux du hero
     var heroTitle = document.querySelector('.hero-text h1');
     if (heroTitle) {
         heroTitle.textContent = "The first ticketing platform powered by Pi Network";
@@ -2630,7 +2629,7 @@ async function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== CONFIRM PURCHASE - CORRIGE AVEC FALLBACK =====
+// ===== CONFIRM PURCHASE - REPRIS DU CODE QUI FONCTIONNE =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
@@ -2662,7 +2661,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     }
     
     try {
-        if (typeof Pi === 'undefined' || !piSDKReady) {
+        if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
             if (confirmBtn) {
                 confirmBtn.textContent = t('confirmPurchase');
@@ -2671,38 +2670,6 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             return;
         }
         
-        console.log('🔄 Starting Pi payment process...');
-        console.log('   Amount:', totalPrice);
-        console.log('   Event:', event.title);
-        console.log('   Quantity:', quantity);
-        console.log('   Type:', typeLabel);
-        
-        // === 1. NETTOYER LES PAIEMENTS EN ATTENTE ===
-        try {
-            console.log('🔍 Checking for pending payments...');
-            var pendingPayments = await Pi.getPendingPayments();
-            if (pendingPayments && pendingPayments.length > 0) {
-                console.log('⚠️ Found ' + pendingPayments.length + ' pending payment(s)');
-                for (var i = 0; i < pendingPayments.length; i++) {
-                    try {
-                        console.log('   Cancelling pending payment:', pendingPayments[i].id);
-                        await Pi.cancelPayment(pendingPayments[i].id);
-                        console.log('   ✅ Cancelled');
-                    } catch (e) {
-                        console.error('   ❌ Error cancelling payment:', e);
-                    }
-                }
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                console.log('✅ Pending payments cleared');
-            } else {
-                console.log('✅ No pending payments found');
-            }
-        } catch (e) {
-            console.log('⚠️ Could not check pending payments:', e);
-        }
-        
-        // === 2. CREER LE PAIEMENT ===
-        console.log('💰 Creating payment request...');
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
             memo: quantity + ' ' + typeLabel + ' ticket(s): ' + event.title,
@@ -2710,46 +2677,126 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                 eventId: event.id, 
                 eventTitle: event.title, 
                 quantity: quantity, 
-                ticketType: ticketType,
-                price: price,
-                total: totalPrice
+                ticketType: ticketType 
             }
         }, {
             onReadyForServerApproval: function(paymentId) {
                 console.log('📤 Payment ready for server approval, paymentId:', paymentId);
-                
-                // Appel au backend avec fallback
-                callBackendWithFallback('/api/pi/approve', {
-                    paymentId: paymentId,
-                    amount: totalPrice,
-                    memo: quantity + ' ' + typeLabel + ' ticket(s): ' + event.title,
-                    eventId: event.id
-                }, function(success) {
-                    if (success) {
-                        console.log('✅ Payment approved (by backend or fallback)');
-                    } else {
-                        console.warn('⚠️ Backend approval failed, but continuing...');
-                    }
+                // Appel au backend pour approbation
+                fetch(BACKEND_URL + '/api/pi/approve', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ paymentId: paymentId }) 
+                }).catch(function(e) {
+                    console.error('❌ Error approving payment:', e);
                 });
             },
             onReadyForServerCompletion: async function(paymentId, txid) {
                 console.log('✅ Payment completed! txid:', txid);
-                console.log('   paymentId:', paymentId);
                 
-                // Appel au backend avec fallback
-                callBackendWithFallback('/api/pi/complete', {
-                    paymentId: paymentId,
-                    txid: txid,
-                    eventId: event.id
-                }, async function(success) {
-                    if (success) {
-                        console.log('✅ Payment completion confirmed (by backend or fallback)');
-                    } else {
-                        console.warn('⚠️ Backend completion failed, but continuing...');
+                try {
+                    var ticketsAdded = [];
+                    var purchaseDate = new Date().toISOString();
+                    var purchaseDateTime = new Date().toLocaleString('en-US');
+                    
+                    // === 1. CRÉER LES TICKETS ===
+                    for (var i = 0; i < quantity; i++) {
+                        var ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
+                        var ticket = {
+                            id: ticketId,
+                            eventId: event.id,
+                            eventTitle: event.title,
+                            eventDate: event.date,
+                            eventLocation: event.location,
+                            category: event.category || '',
+                            price: price,
+                            ticketType: ticketType,
+                            pays: event.pays || event.country || 'France',
+                            buyerWallet: piUser ? piUser.username : currentUser.wallet,
+                            buyerName: piUser ? piUser.username : currentUser.name,
+                            userWallet: currentUser.wallet,
+                            status: 'Valid',
+                            purchaseDate: purchaseDate,
+                            purchaseDateTime: purchaseDateTime,
+                            transactionId: txid || 'tx-' + Date.now(),
+                            qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i
+                        };
+                        tickets.push(ticket);
+                        ticketsAdded.push(ticket);
                     }
-                    // Créer les tickets localement
-                    await completeTicketPurchase(event, quantity, ticketType, totalPrice, typeLabel, txid);
-                });
+                    
+                    // === 2. METTRE À JOUR L'ÉVÉNEMENT ===
+                    event.seatsLeft -= quantity;
+                    event.boosts = (event.boosts || 0) + quantity;
+                    
+                    // === 3. SAUVEGARDE LOCALE ===
+                    saveEvents();
+                    saveTickets();
+                    console.log('💾 Local save completed -', ticketsAdded.length, 'tickets');
+                    
+                    // === 4. SAUVEGARDE SUPABASE ===
+                    console.log('📤 Saving ' + ticketsAdded.length + ' tickets to Supabase...');
+                    
+                    var allSaved = true;
+                    for (var j = 0; j < ticketsAdded.length; j++) {
+                        var saved = await saveTicketToSupabase(ticketsAdded[j]);
+                        if (!saved) {
+                            allSaved = false;
+                            console.error('❌ Failed to save ticket:', ticketsAdded[j].id);
+                        } else {
+                            console.log('✅ Ticket saved:', ticketsAdded[j].id);
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                    
+                    // === 5. SAUVEGARDER L'ÉVÉNEMENT ===
+                    await saveEventToSupabase(event);
+                    
+                    // === 6. SAUVEGARDER LA TRANSACTION ===
+                    await saveTransactionToSupabase({
+                        id: 'tx-' + Date.now(),
+                        buyerWallet: currentUser.wallet,
+                        buyerPiUid: currentUser.piUid || currentUser.wallet,
+                        eventId: event.id,
+                        amount: totalPrice,
+                        txid: txid || 'tx-' + Date.now(),
+                        status: 'completed',
+                        date: new Date().toISOString()
+                    });
+                    
+                    // === 7. NOTIFICATION ===
+                    addNotification(
+                        t('purchaseSuccessful') + ' ' + quantity + ' ' + typeLabel + ' ' + t('tickets') + ' for "' + event.title + '"',
+                        'purchase'
+                    );
+                    
+                    // === 8. METTRE À JOUR L'AFFICHAGE ===
+                    renderEventsByCategory();
+                    renderTickets();
+                    renderHistory();
+                    updateProfilePage();
+                    
+                    // === 9. SYNCHRONISER L'UTILISATEUR ===
+                    await syncUserToSupabase();
+                    
+                    // === 10. POPUP DE SUCCÈS ===
+                    showSuccessPopup(event, ticketsAdded, quantity, ticketType);
+                    
+                    if (allSaved) {
+                        console.log('✅ All ' + ticketsAdded.length + ' tickets saved to Supabase!');
+                    } else {
+                        console.warn('⚠️ Some tickets may not have been saved to Supabase');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error in payment completion:', error);
+                    alert('Payment completed but there was an error saving your tickets.');
+                } finally {
+                    if (confirmBtn) {
+                        confirmBtn.textContent = t('confirmPurchase');
+                        confirmBtn.disabled = false;
+                    }
+                }
             },
             onCancel: function() { 
                 console.log('❌ Payment cancelled by user');
@@ -2761,20 +2808,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             },
             onError: function(error) { 
                 console.error('❌ Payment error:', error);
-                var errorMsg = error.message || 'Unknown error';
-                
-                if (errorMsg && errorMsg.toLowerCase().includes('pending')) {
-                    if (confirm('A pending payment was found. Would you like to cancel it and try again?')) {
-                        clearPendingPayments().then(function() {
-                            confirmPurchase(eventId, quantity, ticketType);
-                        });
-                    } else {
-                        alert('Please complete or cancel the pending payment in your Pi wallet.');
-                    }
-                } else {
-                    alert(t('paymentError') + ': ' + errorMsg);
-                }
-                
+                alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
                 if (confirmBtn) {
                     confirmBtn.textContent = t('confirmPurchase');
                     confirmBtn.disabled = false;
@@ -2782,237 +2816,15 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             }
         });
         
-        console.log('✅ Payment created successfully');
-        
     } catch (error) { 
         console.error('❌ Purchase error:', error);
-        var errorMsg = error.message || 'Unknown error';
-        
-        if (errorMsg && errorMsg.toLowerCase().includes('pending')) {
-            if (confirm('A pending payment was found. Would you like to cancel it and try again?')) {
-                await clearPendingPayments();
-                await confirmPurchase(eventId, quantity, ticketType);
-                return;
-            }
-        }
-        
-        alert(t('paymentError') + ': ' + errorMsg);
+        alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
         if (confirmBtn) {
             confirmBtn.textContent = t('confirmPurchase');
             confirmBtn.disabled = false;
         }
     }
 }
-
-// ============================================================
-// ===== FONCTION D'APPEL BACKEND AVEC FALLBACK =====
-// ============================================================
-
-function callBackendWithFallback(endpoint, data, callback) {
-    var url = BACKEND_URL + endpoint;
-    var timeout = 3000; // 3 secondes
-    
-    console.log('📡 Calling backend:', url);
-    
-    var fetchPromise = fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    
-    var timeoutPromise = new Promise(function(resolve, reject) {
-        setTimeout(function() {
-            reject(new Error('Backend timeout'));
-        }, timeout);
-    });
-    
-    Promise.race([fetchPromise, timeoutPromise])
-        .then(function(response) {
-            if (!response || !response.ok) {
-                throw new Error('Backend response error');
-            }
-            return response.json();
-        })
-        .then(function(result) {
-            console.log('✅ Backend response:', result);
-            callback(true);
-        })
-        .catch(function(error) {
-            console.warn('⚠️ Backend call failed:', error.message);
-            console.log('🔄 Using fallback - assuming success');
-            // On considère que le paiement est validé (fallback)
-            callback(true);
-        });
-}
-
-// ============================================================
-// ===== COMPLETE TICKET PURCHASE =====
-// ============================================================
-
-async function completeTicketPurchase(event, quantity, ticketType, totalPrice, typeLabel, txid) {
-    var confirmBtn = document.getElementById('confirmBuyBtn');
-    
-    try {
-        var ticketsAdded = [];
-        var purchaseDate = new Date().toISOString();
-        var purchaseDateTime = new Date().toLocaleString('en-US');
-        var buyerWallet = currentUser.wallet || 'demo_user';
-        var buyerName = currentUser.name || 'Demo User';
-        var buyerPiUid = currentUser.piUid || buyerWallet;
-        
-        for (var i = 0; i < quantity; i++) {
-            var ticketId = 'ticket-' + Date.now() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
-            var ticket = {
-                id: ticketId,
-                eventId: event.id,
-                eventTitle: event.title,
-                eventDate: event.date,
-                eventLocation: event.location || '',
-                category: event.category || '',
-                price: price,
-                ticketType: ticketType,
-                pays: event.pays || event.country || 'France',
-                buyerWallet: buyerWallet,
-                buyerName: buyerName,
-                userWallet: buyerWallet,
-                status: 'Valid',
-                purchaseDate: purchaseDate,
-                purchaseDateTime: purchaseDateTime,
-                transactionId: txid || 'tx-' + Date.now(),
-                qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i
-            };
-            tickets.push(ticket);
-            ticketsAdded.push(ticket);
-        }
-        
-        event.seatsLeft -= quantity;
-        event.boosts = (event.boosts || 0) + quantity;
-        
-        saveEvents();
-        saveTickets();
-        console.log('💾 Local save completed -', ticketsAdded.length, 'tickets');
-        
-        console.log('📤 Saving ' + ticketsAdded.length + ' tickets to Supabase...');
-        
-        var allSaved = true;
-        for (var j = 0; j < ticketsAdded.length; j++) {
-            var saved = await saveTicketToSupabase(ticketsAdded[j]);
-            if (!saved) {
-                allSaved = false;
-                console.error('❌ Failed to save ticket:', ticketsAdded[j].id);
-            } else {
-                console.log('✅ Ticket saved:', ticketsAdded[j].id);
-            }
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
-        
-        await saveEventToSupabase(event);
-        
-        await saveTransactionToSupabase({
-            id: 'tx-' + Date.now(),
-            buyerWallet: buyerWallet,
-            buyerPiUid: buyerPiUid,
-            eventId: event.id,
-            amount: totalPrice,
-            txid: txid || 'tx-' + Date.now(),
-            status: 'completed',
-            date: new Date().toISOString()
-        });
-        
-        addNotification(
-            t('purchaseSuccessful') + ' ' + quantity + ' ' + typeLabel + ' ' + t('tickets') + ' for "' + event.title + '"',
-            'purchase'
-        );
-        
-        renderEventsByCategory();
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-        
-        await syncUserToSupabase();
-        
-        showSuccessPopup(event, ticketsAdded, quantity, ticketType);
-        
-        if (confirmBtn) {
-            confirmBtn.textContent = t('confirmPurchase');
-            confirmBtn.disabled = false;
-        }
-        
-        if (allSaved) {
-            console.log('✅ All ' + ticketsAdded.length + ' tickets saved to Supabase!');
-        } else {
-            console.warn('⚠️ Some tickets may not have been saved to Supabase');
-        }
-        
-    } catch (error) {
-        console.error('❌ Error in purchase completion:', error);
-        alert(t('paymentError') + ': ' + error.message);
-        if (confirmBtn) {
-            confirmBtn.textContent = t('confirmPurchase');
-            confirmBtn.disabled = false;
-        }
-    }
-}
-
-// ============================================================
-// ===== CLEAR PENDING PAYMENTS =====
-// ============================================================
-
-async function clearPendingPayments() {
-    try {
-        if (typeof Pi === 'undefined' || !piSDKReady) {
-            console.log('Pi SDK not available');
-            return 0;
-        }
-        
-        console.log('🔍 Checking for pending payments...');
-        var pendingPayments = await Pi.getPendingPayments();
-        
-        if (!pendingPayments || pendingPayments.length === 0) {
-            console.log('✅ No pending payments found');
-            return 0;
-        }
-        
-        console.log('⚠️ Found ' + pendingPayments.length + ' pending payment(s)');
-        var cancelled = 0;
-        for (var i = 0; i < pendingPayments.length; i++) {
-            try {
-                console.log('   Cancelling payment:', pendingPayments[i].id);
-                await Pi.cancelPayment(pendingPayments[i].id);
-                cancelled++;
-                console.log('   ✅ Cancelled');
-            } catch (e) {
-                console.error('   ❌ Error cancelling:', e);
-            }
-        }
-        
-        console.log('✅ ' + cancelled + ' pending payment(s) cancelled');
-        return cancelled;
-    } catch (error) {
-        console.error('❌ Error clearing pending payments:', error);
-        return 0;
-    }
-}
-
-async function cancelAllPendingPayments() {
-    if (!confirm('Cancel all pending payments? This will allow you to make new purchases.')) {
-        return;
-    }
-    
-    try {
-        var count = await clearPendingPayments();
-        if (count > 0) {
-            alert(count + ' pending payment(s) cancelled. You can now try again.');
-        } else {
-            alert('No pending payments found.');
-        }
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
-
-window.clearPendingPayments = clearPendingPayments;
-window.cancelAllPendingPayments = cancelAllPendingPayments;
 
 // ============================================================
 // ===== PURCHASE SUCCESS POPUP =====
@@ -5905,7 +5717,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Auto-sync to Supabase every 30 seconds');
         console.log('✅ Price and transaction_id now saved');
         console.log('✅ Debug functions available: forceSyncTickets(), checkSupabaseData(), showTickets(), showSupabaseTickets(), reloadTicketsFromSupabase()');
-        console.log('✅ Payment fixes applied: pending payments auto-cleared, backend calls with fallback');
+        console.log('✅ Payment fixes applied: using same structure as working code (Js v3)');
         console.log('✅ Hero texts restored to original: "The first ticketing platform powered by Pi Network"');
         
     } catch (error) {
