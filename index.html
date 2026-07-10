@@ -874,21 +874,7 @@
     </div>
 </div>
 
-<div id="paymentPendingModal" class="payment-pending-modal">
-    <div class="modal-content">
-        <div class="pending-icon">
-            <i class="fas fa-clock"></i>
-        </div>
-        <h3>Pending Payment Found</h3>
-        <p>You already have a pending payment on this app.<br><br>
-        You can either cancel the pending payment and try again, or wait for it to complete.</p>
-        <div class="btn-group">
-            <button class="btn-secondary" onclick="closePaymentPendingModal()">Ignore</button>
-            <button class="btn-danger" onclick="cancelPendingPaymentsAndRetry()">Cancel & Retry</button>
-            <button class="btn-primary" onclick="closePaymentPendingModal()">OK</button>
-        </div>
-    </div>
-</div>
+<div id="paymentPendingModal" style="display: none;"></div>
 
 </div>
 
