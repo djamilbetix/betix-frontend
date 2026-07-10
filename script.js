@@ -81,6 +81,23 @@ function initPiSDK() {
             Pi.init({ version: "2.0", sandbox: true });
             piSDKReady = true;
             console.log("Pi SDK initialized successfully");
+            
+            // Check pending payments on startup
+            setTimeout(function() {
+                try {
+                    Pi.getPendingPayments().then(function(payments) {
+                        if (payments && payments.length > 0) {
+                            console.log('Pending payments found on startup:', payments.length);
+                            addNotification('You have ' + payments.length + ' pending payment(s). Please complete or cancel them.', 'warning');
+                        }
+                    }).catch(function(e) {
+                        console.log('Could not check pending payments:', e);
+                    });
+                } catch (e) {
+                    console.log('Pending payments check error:', e);
+                }
+            }, 2000);
+            
             return true;
         } catch (error) {
             console.error("Pi SDK init error:", error);
@@ -107,6 +124,1031 @@ async function ensurePiSDKReady() {
         attempts++;
     }
     return piSDKReady;
+}
+
+// ============================================================
+// ===== TRANSLATIONS =====
+// ============================================================
+
+const translations = {
+    en: {
+        appName: 'Betix',
+        home: 'Home',
+        myEvents: 'My Events',
+        profile: 'Profile',
+        settings: 'Settings',
+        myTickets: 'My Tickets',
+        ticketHistory: 'Ticket History',
+        whitepaper: 'Whitepaper',
+        faq: 'FAQ',
+        administration: 'Administration',
+        followUs: 'Follow us',
+        notifications: 'Notifications',
+        noNotifications: 'No notifications',
+        connectPi: 'Connect Pi',
+        disconnect: 'Disconnect',
+        chooseLanguage: 'Choose Language:',
+        selectLanguage: 'Select language',
+        guest: 'Guest',
+        notConnected: 'Not connected',
+        connecting: 'Connecting...',
+        loginViaLogo: 'Admin: 5 clicks on logo + password Betix@2026#',
+        welcome: 'Welcome',
+        memberSince: 'Member since',
+        ratings: 'ratings',
+        points: 'points',
+        myEventsCount: 'My Events',
+        myTicketsCount: 'My Tickets',
+        history: 'History',
+        rated: 'Rated',
+        viewAll: 'View all',
+        createEvent: 'Create Event',
+        searchEvent: 'Search event...',
+        chooseCountry: 'Choose Country:',
+        upcomingEvents: 'Upcoming Events',
+        joinCommunity: 'Join the community and live unique experiences',
+        noEvents: 'No events found',
+        buyTicket: 'Buy Ticket',
+        ticketsAvailable: 'tickets available',
+        back: 'Back',
+        title: 'Title',
+        category: 'Category',
+        country: 'Country',
+        dateTime: 'Date & Time',
+        duration: 'Duration',
+        location: 'Location',
+        description: 'Description',
+        conditions: 'Conditions',
+        totalSeats: 'Total Seats',
+        ticketTypes: 'Ticket Types',
+        enableAtLeastOne: 'Enable at least one ticket type and set its price',
+        standard: 'Standard',
+        vip: 'VIP',
+        price: 'Price',
+        active: 'Active',
+        inactive: 'Inactive',
+        photos: 'Photos',
+        imagesRequired: '2 images required',
+        dropImage: 'Drop your image here',
+        orClick: 'or click to browse',
+        compressed: 'Compressed',
+        imagesAutoCompressed: 'Images automatically compressed to WebP format for better performance',
+        publishEvent: 'Publish Event',
+        confirmPublication: 'Confirm Publication',
+        reviewInfo: 'Please review all information before publishing your event',
+        cancel: 'Cancel',
+        publishing: 'Publishing...',
+        eventPublished: 'Event has been successfully published!',
+        editEvent: 'Edit Event',
+        modifyFields: 'Modify the fields below to update your event',
+        saveChanges: 'Save Changes',
+        chooseQuantity: 'Choose quantity',
+        maximumTickets: 'Maximum tickets available',
+        total: 'Total',
+        confirmPurchase: 'Confirm purchase',
+        purchaseSuccessful: 'Purchase successful!',
+        ticketsAdded: 'ticket(s) added successfully.',
+        event: 'Event',
+        type: 'Type',
+        quantity: 'Quantity',
+        code: 'Code',
+        ok: 'OK',
+        pendingPaymentFound: 'Pending Payment Found',
+        pendingPaymentMessage: 'You already have a pending payment on this app. You can either cancel the pending payment and try again, or wait for it to complete.',
+        ignore: 'Ignore',
+        cancelAndRetry: 'Cancel & Retry',
+        paymentError: 'Payment error',
+        pendingPaymentError: 'A pending payment was found. Please complete or cancel the previous payment in your Pi wallet, then try again.',
+        paymentCancelled: 'Payment cancelled',
+        noSeatsAvailable: 'No seats available for this event',
+        pleaseConnect: 'Please connect your Pi account first',
+        authenticationFailed: 'Authentication failed. Please try again.',
+        connectionError: 'Connection error',
+        sessionExpired: 'Session expired due to inactivity. Please reconnect.',
+        disconnected: 'You are disconnected',
+        eventNotFound: 'Event not found',
+        ticketNotFound: 'Ticket not found',
+        downloadTicket: 'Download ticket',
+        ticketDownloaded: 'Ticket downloaded',
+        markUsed: 'Mark as used',
+        markUsedConfirm: 'Mark this ticket as used? This action cannot be undone.',
+        ticketMarkedUsed: 'Ticket marked as used successfully!',
+        noActiveTickets: 'No active tickets',
+        noTicketHistory: 'No ticket history',
+        clearData: 'Clear my data',
+        clearDataConfirm: 'Delete all your data?',
+        darkMode: 'Dark mode',
+        all: 'All',
+        concert: 'Concert',
+        sport: 'Sport',
+        conference: 'Conference',
+        training: 'Training',
+        cinema: 'Cinema',
+        festival: 'Festival',
+        theatre: 'Theatre',
+        dance: 'Dance',
+        exhibition: 'Exhibition',
+        gala: 'Gala',
+        seminar: 'Seminar',
+        fullDescription: 'Full description',
+        information: 'Information',
+        organizer: 'Organizer',
+        createdOn: 'Created on',
+        seatsLeft: 'Seats left',
+        rating: 'Rating',
+        notYetRated: 'Not yet rated',
+        noReviews: 'No reviews yet',
+        noConditions: 'No conditions specified',
+        by: 'By',
+        new: 'New',
+        soldOut: 'Sold Out',
+        ended: 'Ended',
+        tickets: 'tickets',
+        views: 'views',
+        termsOfSale: 'Terms of sale',
+        termsOfUse: 'Terms of use',
+        privacyPolicy: 'Privacy policy',
+        accessibilityStatement: 'Accessibility statement',
+        privacyChoices: 'Privacy choices',
+        fanTicketGuide: 'Fan ticket guide',
+        legalNotices: 'Legal notices',
+        cookiePreferences: 'Cookie preferences',
+        aboutUs: 'About us',
+        contactUs: 'Contact us',
+        yourFeedback: 'Your feedback',
+        help: 'Help',
+        partners: 'Partners',
+        joinCommunityFooter: 'Join the Betix community',
+        piNetwork: 'Pi Network',
+        secure: 'Secure',
+        allRightsReserved: 'All rights reserved.',
+        builtOnPi: 'Built on Pi Network | Secured by Blockchain',
+        participant: 'Participant',
+        ticketCode: 'Ticket Code',
+        valid: 'Valid',
+        pastEvent: 'Past Event',
+        share: 'Share',
+        eventDate: 'Event Date',
+        eventTime: 'Event Time',
+        locationLabel: 'Location',
+        countryLabel: 'Country',
+        ticketTypeLabel: 'Ticket Type',
+        purchaseDate: 'Purchase Date',
+        transactionId: 'Transaction ID',
+        downloadTicketPDF: 'Download Ticket PDF'
+    },
+    fr: {
+        appName: 'Betix',
+        home: 'Accueil',
+        myEvents: 'Mes Événements',
+        profile: 'Profil',
+        settings: 'Paramètres',
+        myTickets: 'Mes Tickets',
+        ticketHistory: 'Historique des Tickets',
+        whitepaper: 'Livre Blanc',
+        faq: 'FAQ',
+        administration: 'Administration',
+        followUs: 'Suivez-nous',
+        notifications: 'Notifications',
+        noNotifications: 'Aucune notification',
+        connectPi: 'Connecter Pi',
+        disconnect: 'Déconnecter',
+        chooseLanguage: 'Choisir la langue :',
+        selectLanguage: 'Sélectionner la langue',
+        guest: 'Invité',
+        notConnected: 'Non connecté',
+        connecting: 'Connexion...',
+        loginViaLogo: 'Admin: 5 clics sur le logo + mot de passe Betix@2026#',
+        welcome: 'Bienvenue',
+        memberSince: 'Membre depuis',
+        ratings: 'avis',
+        points: 'points',
+        myEventsCount: 'Mes Événements',
+        myTicketsCount: 'Mes Tickets',
+        history: 'Historique',
+        rated: 'Évalués',
+        viewAll: 'Voir tout',
+        createEvent: 'Créer un Événement',
+        searchEvent: 'Rechercher un événement...',
+        chooseCountry: 'Choisir le pays :',
+        upcomingEvents: 'Événements à Venir',
+        joinCommunity: 'Rejoignez la communauté et vivez des expériences uniques',
+        noEvents: 'Aucun événement trouvé',
+        buyTicket: 'Acheter un Ticket',
+        ticketsAvailable: 'tickets disponibles',
+        back: 'Retour',
+        title: 'Titre',
+        category: 'Catégorie',
+        country: 'Pays',
+        dateTime: 'Date et Heure',
+        duration: 'Durée',
+        location: 'Lieu',
+        description: 'Description',
+        conditions: 'Conditions',
+        totalSeats: 'Places Totales',
+        ticketTypes: 'Types de Billets',
+        enableAtLeastOne: 'Activez au moins un type de billet et définissez son prix',
+        standard: 'Standard',
+        vip: 'VIP',
+        price: 'Prix',
+        active: 'Actif',
+        inactive: 'Inactif',
+        photos: 'Photos',
+        imagesRequired: '2 images requises',
+        dropImage: 'Déposez votre image ici',
+        orClick: 'ou cliquez pour parcourir',
+        compressed: 'Compressée',
+        imagesAutoCompressed: 'Images automatiquement compressées au format WebP pour de meilleures performances',
+        publishEvent: 'Publier l\'Événement',
+        confirmPublication: 'Confirmer la Publication',
+        reviewInfo: 'Veuillez vérifier toutes les informations avant de publier votre événement',
+        cancel: 'Annuler',
+        publishing: 'Publication...',
+        eventPublished: 'L\'événement a été publié avec succès !',
+        editEvent: 'Modifier l\'Événement',
+        modifyFields: 'Modifiez les champs ci-dessous pour mettre à jour votre événement',
+        saveChanges: 'Enregistrer les Modifications',
+        chooseQuantity: 'Choisir la quantité',
+        maximumTickets: 'Maximum de tickets disponibles',
+        total: 'Total',
+        confirmPurchase: 'Confirmer l\'achat',
+        purchaseSuccessful: 'Achat réussi !',
+        ticketsAdded: 'ticket(s) ajouté(s) avec succès.',
+        event: 'Événement',
+        type: 'Type',
+        quantity: 'Quantité',
+        code: 'Code',
+        ok: 'OK',
+        pendingPaymentFound: 'Paiement en Attente Trouvé',
+        pendingPaymentMessage: 'Vous avez déjà un paiement en attente sur cette application. Vous pouvez annuler le paiement en attente et réessayer, ou attendre qu\'il se termine.',
+        ignore: 'Ignorer',
+        cancelAndRetry: 'Annuler et Réessayer',
+        paymentError: 'Erreur de paiement',
+        pendingPaymentError: 'Un paiement en attente a été trouvé. Veuillez compléter ou annuler le paiement précédent dans votre portefeuille Pi, puis réessayer.',
+        paymentCancelled: 'Paiement annulé',
+        noSeatsAvailable: 'Aucune place disponible pour cet événement',
+        pleaseConnect: 'Veuillez d\'abord connecter votre compte Pi',
+        authenticationFailed: 'Échec de l\'authentification. Veuillez réessayer.',
+        connectionError: 'Erreur de connexion',
+        sessionExpired: 'Session expirée en raison d\'inactivité. Veuillez vous reconnecter.',
+        disconnected: 'Vous êtes déconnecté',
+        eventNotFound: 'Événement non trouvé',
+        ticketNotFound: 'Ticket non trouvé',
+        downloadTicket: 'Télécharger le ticket',
+        ticketDownloaded: 'Ticket téléchargé',
+        markUsed: 'Marquer comme utilisé',
+        markUsedConfirm: 'Marquer ce ticket comme utilisé ? Cette action est irréversible.',
+        ticketMarkedUsed: 'Ticket marqué comme utilisé avec succès !',
+        noActiveTickets: 'Aucun ticket actif',
+        noTicketHistory: 'Aucun historique de tickets',
+        clearData: 'Effacer mes données',
+        clearDataConfirm: 'Supprimer toutes vos données ?',
+        darkMode: 'Mode sombre',
+        all: 'Tous',
+        concert: 'Concert',
+        sport: 'Sport',
+        conference: 'Conférence',
+        training: 'Formation',
+        cinema: 'Cinéma',
+        festival: 'Festival',
+        theatre: 'Théâtre',
+        dance: 'Danse',
+        exhibition: 'Exposition',
+        gala: 'Gala',
+        seminar: 'Séminaire',
+        fullDescription: 'Description complète',
+        information: 'Informations',
+        organizer: 'Organisateur',
+        createdOn: 'Créé le',
+        seatsLeft: 'Places restantes',
+        rating: 'Évaluation',
+        notYetRated: 'Pas encore évalué',
+        noReviews: 'Aucun avis pour le moment',
+        noConditions: 'Aucune condition spécifiée',
+        by: 'Par',
+        new: 'Nouveau',
+        soldOut: 'Complet',
+        ended: 'Terminé',
+        tickets: 'tickets',
+        views: 'vues',
+        termsOfSale: 'Conditions de vente',
+        termsOfUse: 'Conditions d\'utilisation',
+        privacyPolicy: 'Politique de confidentialité',
+        accessibilityStatement: 'Déclaration d\'accessibilité',
+        privacyChoices: 'Choix de confidentialité',
+        fanTicketGuide: 'Guide du billet fan',
+        legalNotices: 'Mentions légales',
+        cookiePreferences: 'Préférences de cookies',
+        aboutUs: 'À propos de nous',
+        contactUs: 'Contactez-nous',
+        yourFeedback: 'Votre avis',
+        help: 'Aide',
+        partners: 'Partenaires',
+        joinCommunityFooter: 'Rejoignez la communauté Betix',
+        piNetwork: 'Réseau Pi',
+        secure: 'Sécurisé',
+        allRightsReserved: 'Tous droits réservés.',
+        builtOnPi: 'Construit sur Pi Network | Sécurisé par Blockchain',
+        participant: 'Participant',
+        ticketCode: 'Code du ticket',
+        valid: 'Valide',
+        pastEvent: 'Événement passé',
+        share: 'Partager',
+        eventDate: 'Date de l\'événement',
+        eventTime: 'Heure de l\'événement',
+        locationLabel: 'Lieu',
+        countryLabel: 'Pays',
+        ticketTypeLabel: 'Type de billet',
+        purchaseDate: 'Date d\'achat',
+        transactionId: 'ID de transaction',
+        downloadTicketPDF: 'Télécharger le ticket PDF'
+    },
+    pt: {
+        appName: 'Betix',
+        home: 'Início',
+        myEvents: 'Meus Eventos',
+        profile: 'Perfil',
+        settings: 'Configurações',
+        myTickets: 'Meus Ingressos',
+        ticketHistory: 'Histórico de Ingressos',
+        whitepaper: 'Whitepaper',
+        faq: 'FAQ',
+        administration: 'Administração',
+        followUs: 'Siga-nos',
+        notifications: 'Notificações',
+        noNotifications: 'Sem notificações',
+        connectPi: 'Conectar Pi',
+        disconnect: 'Desconectar',
+        chooseLanguage: 'Escolha o idioma:',
+        selectLanguage: 'Selecione o idioma',
+        guest: 'Convidado',
+        notConnected: 'Não conectado',
+        connecting: 'Conectando...',
+        loginViaLogo: 'Admin: 5 cliques no logotipo + senha Betix@2026#',
+        welcome: 'Bem-vindo',
+        memberSince: 'Membro desde',
+        ratings: 'avaliações',
+        points: 'pontos',
+        myEventsCount: 'Meus Eventos',
+        myTicketsCount: 'Meus Ingressos',
+        history: 'Histórico',
+        rated: 'Avaliados',
+        viewAll: 'Ver tudo',
+        createEvent: 'Criar Evento',
+        searchEvent: 'Pesquisar evento...',
+        chooseCountry: 'Escolha o país:',
+        upcomingEvents: 'Próximos Eventos',
+        joinCommunity: 'Junte-se à comunidade e viva experiências únicas',
+        noEvents: 'Nenhum evento encontrado',
+        buyTicket: 'Comprar Ingresso',
+        ticketsAvailable: 'ingressos disponíveis',
+        back: 'Voltar',
+        title: 'Título',
+        category: 'Categoria',
+        country: 'País',
+        dateTime: 'Data e Hora',
+        duration: 'Duração',
+        location: 'Local',
+        description: 'Descrição',
+        conditions: 'Condições',
+        totalSeats: 'Total de Lugares',
+        ticketTypes: 'Tipos de Ingressos',
+        enableAtLeastOne: 'Ative pelo menos um tipo de ingresso e defina seu preço',
+        standard: 'Padrão',
+        vip: 'VIP',
+        price: 'Preço',
+        active: 'Ativo',
+        inactive: 'Inativo',
+        photos: 'Fotos',
+        imagesRequired: '2 imagens obrigatórias',
+        dropImage: 'Solte sua imagem aqui',
+        orClick: 'ou clique para procurar',
+        compressed: 'Comprimida',
+        imagesAutoCompressed: 'Imagens automaticamente comprimidas para formato WebP para melhor desempenho',
+        publishEvent: 'Publicar Evento',
+        confirmPublication: 'Confirmar Publicação',
+        reviewInfo: 'Revise todas as informações antes de publicar seu evento',
+        cancel: 'Cancelar',
+        publishing: 'Publicando...',
+        eventPublished: 'Evento publicado com sucesso!',
+        editEvent: 'Editar Evento',
+        modifyFields: 'Modifique os campos abaixo para atualizar seu evento',
+        saveChanges: 'Salvar Alterações',
+        chooseQuantity: 'Escolha a quantidade',
+        maximumTickets: 'Máximo de ingressos disponíveis',
+        total: 'Total',
+        confirmPurchase: 'Confirmar compra',
+        purchaseSuccessful: 'Compra bem-sucedida!',
+        ticketsAdded: 'ingresso(s) adicionado(s) com sucesso.',
+        event: 'Evento',
+        type: 'Tipo',
+        quantity: 'Quantidade',
+        code: 'Código',
+        ok: 'OK',
+        pendingPaymentFound: 'Pagamento Pendente Encontrado',
+        pendingPaymentMessage: 'Você já tem um pagamento pendente neste aplicativo. Você pode cancelar o pagamento pendente e tentar novamente, ou aguardar sua conclusão.',
+        ignore: 'Ignorar',
+        cancelAndRetry: 'Cancelar e Tentar Novamente',
+        paymentError: 'Erro de pagamento',
+        pendingPaymentError: 'Foi encontrado um pagamento pendente. Por favor, complete ou cancele o pagamento anterior em sua carteira Pi e tente novamente.',
+        paymentCancelled: 'Pagamento cancelado',
+        noSeatsAvailable: 'Nenhum lugar disponível para este evento',
+        pleaseConnect: 'Por favor, conecte sua conta Pi primeiro',
+        authenticationFailed: 'Falha na autenticação. Por favor, tente novamente.',
+        connectionError: 'Erro de conexão',
+        sessionExpired: 'Sessão expirada devido à inatividade. Por favor, reconecte-se.',
+        disconnected: 'Você está desconectado',
+        eventNotFound: 'Evento não encontrado',
+        ticketNotFound: 'Ingresso não encontrado',
+        downloadTicket: 'Baixar ingresso',
+        ticketDownloaded: 'Ingresso baixado',
+        markUsed: 'Marcar como usado',
+        markUsedConfirm: 'Marcar este ingresso como usado? Esta ação não pode ser desfeita.',
+        ticketMarkedUsed: 'Ingresso marcado como usado com sucesso!',
+        noActiveTickets: 'Nenhum ingresso ativo',
+        noTicketHistory: 'Nenhum histórico de ingressos',
+        clearData: 'Limpar meus dados',
+        clearDataConfirm: 'Excluir todos os seus dados?',
+        darkMode: 'Modo escuro',
+        all: 'Todos',
+        concert: 'Concerto',
+        sport: 'Esporte',
+        conference: 'Conferência',
+        training: 'Treinamento',
+        cinema: 'Cinema',
+        festival: 'Festival',
+        theatre: 'Teatro',
+        dance: 'Dança',
+        exhibition: 'Exposição',
+        gala: 'Gala',
+        seminar: 'Seminário',
+        fullDescription: 'Descrição completa',
+        information: 'Informações',
+        organizer: 'Organizador',
+        createdOn: 'Criado em',
+        seatsLeft: 'Lugares restantes',
+        rating: 'Avaliação',
+        notYetRated: 'Ainda não avaliado',
+        noReviews: 'Nenhuma avaliação ainda',
+        noConditions: 'Nenhuma condição especificada',
+        by: 'Por',
+        new: 'Novo',
+        soldOut: 'Esgotado',
+        ended: 'Finalizado',
+        tickets: 'ingressos',
+        views: 'visualizações',
+        termsOfSale: 'Termos de venda',
+        termsOfUse: 'Termos de uso',
+        privacyPolicy: 'Política de privacidade',
+        accessibilityStatement: 'Declaração de acessibilidade',
+        privacyChoices: 'Escolhas de privacidade',
+        fanTicketGuide: 'Guia do ingresso fã',
+        legalNotices: 'Avisos legais',
+        cookiePreferences: 'Preferências de cookies',
+        aboutUs: 'Sobre nós',
+        contactUs: 'Contate-nos',
+        yourFeedback: 'Seu feedback',
+        help: 'Ajuda',
+        partners: 'Parceiros',
+        joinCommunityFooter: 'Junte-se à comunidade Betix',
+        piNetwork: 'Rede Pi',
+        secure: 'Seguro',
+        allRightsReserved: 'Todos os direitos reservados.',
+        builtOnPi: 'Construído na Pi Network | Seguro por Blockchain',
+        participant: 'Participante',
+        ticketCode: 'Código do ingresso',
+        valid: 'Válido',
+        pastEvent: 'Evento passado',
+        share: 'Compartilhar',
+        eventDate: 'Data do evento',
+        eventTime: 'Hora do evento',
+        locationLabel: 'Local',
+        countryLabel: 'País',
+        ticketTypeLabel: 'Tipo de ingresso',
+        purchaseDate: 'Data da compra',
+        transactionId: 'ID da transação',
+        downloadTicketPDF: 'Baixar ingresso PDF'
+    },
+    es: {
+        appName: 'Betix',
+        home: 'Inicio',
+        myEvents: 'Mis Eventos',
+        profile: 'Perfil',
+        settings: 'Configuración',
+        myTickets: 'Mis Entradas',
+        ticketHistory: 'Historial de Entradas',
+        whitepaper: 'Libro Blanco',
+        faq: 'FAQ',
+        administration: 'Administración',
+        followUs: 'Síguenos',
+        notifications: 'Notificaciones',
+        noNotifications: 'Sin notificaciones',
+        connectPi: 'Conectar Pi',
+        disconnect: 'Desconectar',
+        chooseLanguage: 'Elige el idioma:',
+        selectLanguage: 'Selecciona el idioma',
+        guest: 'Invitado',
+        notConnected: 'No conectado',
+        connecting: 'Conectando...',
+        loginViaLogo: 'Admin: 5 clics en el logo + contraseña Betix@2026#',
+        welcome: 'Bienvenido',
+        memberSince: 'Miembro desde',
+        ratings: 'valoraciones',
+        points: 'puntos',
+        myEventsCount: 'Mis Eventos',
+        myTicketsCount: 'Mis Entradas',
+        history: 'Historial',
+        rated: 'Valorados',
+        viewAll: 'Ver todo',
+        createEvent: 'Crear Evento',
+        searchEvent: 'Buscar evento...',
+        chooseCountry: 'Elige el país:',
+        upcomingEvents: 'Próximos Eventos',
+        joinCommunity: 'Únete a la comunidad y vive experiencias únicas',
+        noEvents: 'No se encontraron eventos',
+        buyTicket: 'Comprar Entrada',
+        ticketsAvailable: 'entradas disponibles',
+        back: 'Volver',
+        title: 'Título',
+        category: 'Categoría',
+        country: 'País',
+        dateTime: 'Fecha y Hora',
+        duration: 'Duración',
+        location: 'Ubicación',
+        description: 'Descripción',
+        conditions: 'Condiciones',
+        totalSeats: 'Total de Asientos',
+        ticketTypes: 'Tipos de Entradas',
+        enableAtLeastOne: 'Habilita al menos un tipo de entrada y establece su precio',
+        standard: 'Estándar',
+        vip: 'VIP',
+        price: 'Precio',
+        active: 'Activo',
+        inactive: 'Inactivo',
+        photos: 'Fotos',
+        imagesRequired: '2 imágenes requeridas',
+        dropImage: 'Suelta tu imagen aquí',
+        orClick: 'o haz clic para buscar',
+        compressed: 'Comprimida',
+        imagesAutoCompressed: 'Imágenes comprimidas automáticamente a formato WebP para mejor rendimiento',
+        publishEvent: 'Publicar Evento',
+        confirmPublication: 'Confirmar Publicación',
+        reviewInfo: 'Revisa toda la información antes de publicar tu evento',
+        cancel: 'Cancelar',
+        publishing: 'Publicando...',
+        eventPublished: '¡Evento publicado con éxito!',
+        editEvent: 'Editar Evento',
+        modifyFields: 'Modifica los campos a continuación para actualizar tu evento',
+        saveChanges: 'Guardar Cambios',
+        chooseQuantity: 'Elige la cantidad',
+        maximumTickets: 'Máximo de entradas disponibles',
+        total: 'Total',
+        confirmPurchase: 'Confirmar compra',
+        purchaseSuccessful: '¡Compra exitosa!',
+        ticketsAdded: 'entrada(s) añadida(s) con éxito.',
+        event: 'Evento',
+        type: 'Tipo',
+        quantity: 'Cantidad',
+        code: 'Código',
+        ok: 'OK',
+        pendingPaymentFound: 'Pago Pendiente Encontrado',
+        pendingPaymentMessage: 'Ya tienes un pago pendiente en esta aplicación. Puedes cancelar el pago pendiente e intentarlo de nuevo, o esperar a que se complete.',
+        ignore: 'Ignorar',
+        cancelAndRetry: 'Cancelar y Reintentar',
+        paymentError: 'Error de pago',
+        pendingPaymentError: 'Se encontró un pago pendiente. Por favor, completa o cancela el pago anterior en tu cartera Pi y vuelve a intentarlo.',
+        paymentCancelled: 'Pago cancelado',
+        noSeatsAvailable: 'No hay asientos disponibles para este evento',
+        pleaseConnect: 'Por favor, conecta tu cuenta Pi primero',
+        authenticationFailed: 'Error de autenticación. Por favor, inténtalo de nuevo.',
+        connectionError: 'Error de conexión',
+        sessionExpired: 'Sesión expirada por inactividad. Por favor, reconéctate.',
+        disconnected: 'Estás desconectado',
+        eventNotFound: 'Evento no encontrado',
+        ticketNotFound: 'Entrada no encontrada',
+        downloadTicket: 'Descargar entrada',
+        ticketDownloaded: 'Entrada descargada',
+        markUsed: 'Marcar como usado',
+        markUsedConfirm: '¿Marcar esta entrada como usada? Esta acción no se puede deshacer.',
+        ticketMarkedUsed: '¡Entrada marcada como usada con éxito!',
+        noActiveTickets: 'No hay entradas activas',
+        noTicketHistory: 'No hay historial de entradas',
+        clearData: 'Borrar mis datos',
+        clearDataConfirm: '¿Eliminar todos tus datos?',
+        darkMode: 'Modo oscuro',
+        all: 'Todos',
+        concert: 'Concierto',
+        sport: 'Deporte',
+        conference: 'Conferencia',
+        training: 'Entrenamiento',
+        cinema: 'Cine',
+        festival: 'Festival',
+        theatre: 'Teatro',
+        dance: 'Baile',
+        exhibition: 'Exposición',
+        gala: 'Gala',
+        seminar: 'Seminario',
+        fullDescription: 'Descripción completa',
+        information: 'Información',
+        organizer: 'Organizador',
+        createdOn: 'Creado el',
+        seatsLeft: 'Asientos restantes',
+        rating: 'Valoración',
+        notYetRated: 'Aún no valorado',
+        noReviews: 'Aún no hay reseñas',
+        noConditions: 'No se especificaron condiciones',
+        by: 'Por',
+        new: 'Nuevo',
+        soldOut: 'Agotado',
+        ended: 'Finalizado',
+        tickets: 'entradas',
+        views: 'vistas',
+        termsOfSale: 'Términos de venta',
+        termsOfUse: 'Términos de uso',
+        privacyPolicy: 'Política de privacidad',
+        accessibilityStatement: 'Declaración de accesibilidad',
+        privacyChoices: 'Opciones de privacidad',
+        fanTicketGuide: 'Guía del ticket fan',
+        legalNotices: 'Avisos legales',
+        cookiePreferences: 'Preferencias de cookies',
+        aboutUs: 'Sobre nosotros',
+        contactUs: 'Contáctanos',
+        yourFeedback: 'Tu opinión',
+        help: 'Ayuda',
+        partners: 'Socios',
+        joinCommunityFooter: 'Únete a la comunidad Betix',
+        piNetwork: 'Red Pi',
+        secure: 'Seguro',
+        allRightsReserved: 'Todos los derechos reservados.',
+        builtOnPi: 'Construido en Pi Network | Asegurado por Blockchain',
+        participant: 'Participante',
+        ticketCode: 'Código de la entrada',
+        valid: 'Válido',
+        pastEvent: 'Evento pasado',
+        share: 'Compartir',
+        eventDate: 'Fecha del evento',
+        eventTime: 'Hora del evento',
+        locationLabel: 'Ubicación',
+        countryLabel: 'País',
+        ticketTypeLabel: 'Tipo de entrada',
+        purchaseDate: 'Fecha de compra',
+        transactionId: 'ID de transacción',
+        downloadTicketPDF: 'Descargar entrada PDF'
+    },
+    zh: {
+        appName: 'Betix',
+        home: '首页',
+        myEvents: '我的活动',
+        profile: '个人资料',
+        settings: '设置',
+        myTickets: '我的门票',
+        ticketHistory: '门票历史',
+        whitepaper: '白皮书',
+        faq: '常见问题',
+        administration: '管理',
+        followUs: '关注我们',
+        notifications: '通知',
+        noNotifications: '没有通知',
+        connectPi: '连接Pi',
+        disconnect: '断开连接',
+        chooseLanguage: '选择语言：',
+        selectLanguage: '选择语言',
+        guest: '访客',
+        notConnected: '未连接',
+        connecting: '连接中...',
+        loginViaLogo: '管理员：点击徽标5次 + 密码 Betix@2026#',
+        welcome: '欢迎',
+        memberSince: '会员自',
+        ratings: '评价',
+        points: '积分',
+        myEventsCount: '我的活动',
+        myTicketsCount: '我的门票',
+        history: '历史',
+        rated: '已评价',
+        viewAll: '查看全部',
+        createEvent: '创建活动',
+        searchEvent: '搜索活动...',
+        chooseCountry: '选择国家：',
+        upcomingEvents: '即将举行的活动',
+        joinCommunity: '加入社区，体验独特的生活',
+        noEvents: '未找到活动',
+        buyTicket: '购买门票',
+        ticketsAvailable: '可用门票',
+        back: '返回',
+        title: '标题',
+        category: '类别',
+        country: '国家',
+        dateTime: '日期和时间',
+        duration: '持续时间',
+        location: '地点',
+        description: '描述',
+        conditions: '条件',
+        totalSeats: '总座位数',
+        ticketTypes: '门票类型',
+        enableAtLeastOne: '至少启用一种门票类型并设置价格',
+        standard: '标准',
+        vip: 'VIP',
+        price: '价格',
+        active: '活跃',
+        inactive: '非活跃',
+        photos: '照片',
+        imagesRequired: '需要2张图片',
+        dropImage: '将图片拖放到此处',
+        orClick: '或点击浏览',
+        compressed: '已压缩',
+        imagesAutoCompressed: '图片自动压缩为WebP格式以提高性能',
+        publishEvent: '发布活动',
+        confirmPublication: '确认发布',
+        reviewInfo: '请发布前检查所有信息',
+        cancel: '取消',
+        publishing: '发布中...',
+        eventPublished: '活动发布成功！',
+        editEvent: '编辑活动',
+        modifyFields: '修改以下字段以更新您的活动',
+        saveChanges: '保存更改',
+        chooseQuantity: '选择数量',
+        maximumTickets: '最大可用门票数',
+        total: '总计',
+        confirmPurchase: '确认购买',
+        purchaseSuccessful: '购买成功！',
+        ticketsAdded: '门票添加成功。',
+        event: '活动',
+        type: '类型',
+        quantity: '数量',
+        code: '代码',
+        ok: '确定',
+        pendingPaymentFound: '发现待处理付款',
+        pendingPaymentMessage: '您在此应用中已有待处理付款。您可以取消待处理付款并重试，或等待其完成。',
+        ignore: '忽略',
+        cancelAndRetry: '取消并重试',
+        paymentError: '付款错误',
+        pendingPaymentError: '发现待处理付款。请完成或取消Pi钱包中的先前付款，然后重试。',
+        paymentCancelled: '付款已取消',
+        noSeatsAvailable: '此活动没有可用座位',
+        pleaseConnect: '请先连接您的Pi账户',
+        authenticationFailed: '身份验证失败。请重试。',
+        connectionError: '连接错误',
+        sessionExpired: '会话因不活动而过期。请重新连接。',
+        disconnected: '您已断开连接',
+        eventNotFound: '未找到活动',
+        ticketNotFound: '未找到门票',
+        downloadTicket: '下载门票',
+        ticketDownloaded: '门票已下载',
+        markUsed: '标记为已使用',
+        markUsedConfirm: '将此门票标记为已使用？此操作不可撤销。',
+        ticketMarkedUsed: '门票已成功标记为已使用！',
+        noActiveTickets: '没有有效门票',
+        noTicketHistory: '没有门票历史',
+        clearData: '清除我的数据',
+        clearDataConfirm: '删除所有数据？',
+        darkMode: '暗色模式',
+        all: '全部',
+        concert: '音乐会',
+        sport: '体育',
+        conference: '会议',
+        training: '培训',
+        cinema: '电影院',
+        festival: '节日',
+        theatre: '剧院',
+        dance: '舞蹈',
+        exhibition: '展览',
+        gala: '晚会',
+        seminar: '研讨会',
+        fullDescription: '完整描述',
+        information: '信息',
+        organizer: '组织者',
+        createdOn: '创建于',
+        seatsLeft: '剩余座位',
+        rating: '评分',
+        notYetRated: '尚未评分',
+        noReviews: '暂无评论',
+        noConditions: '未指定条件',
+        by: '由',
+        new: '新',
+        soldOut: '已售罄',
+        ended: '已结束',
+        tickets: '门票',
+        views: '浏览',
+        termsOfSale: '销售条款',
+        termsOfUse: '使用条款',
+        privacyPolicy: '隐私政策',
+        accessibilityStatement: '无障碍声明',
+        privacyChoices: '隐私选择',
+        fanTicketGuide: '粉丝门票指南',
+        legalNotices: '法律声明',
+        cookiePreferences: 'Cookie偏好设置',
+        aboutUs: '关于我们',
+        contactUs: '联系我们',
+        yourFeedback: '您的反馈',
+        help: '帮助',
+        partners: '合作伙伴',
+        joinCommunityFooter: '加入Betix社区',
+        piNetwork: 'Pi网络',
+        secure: '安全',
+        allRightsReserved: '版权所有。',
+        builtOnPi: '基于Pi网络构建 | 区块链保障安全',
+        participant: '参与者',
+        ticketCode: '门票代码',
+        valid: '有效',
+        pastEvent: '过往活动',
+        share: '分享',
+        eventDate: '活动日期',
+        eventTime: '活动时间',
+        locationLabel: '地点',
+        countryLabel: '国家',
+        ticketTypeLabel: '门票类型',
+        purchaseDate: '购买日期',
+        transactionId: '交易ID',
+        downloadTicketPDF: '下载门票PDF'
+    },
+    id: {
+        appName: 'Betix',
+        home: 'Beranda',
+        myEvents: 'Acara Saya',
+        profile: 'Profil',
+        settings: 'Pengaturan',
+        myTickets: 'Tiket Saya',
+        ticketHistory: 'Riwayat Tiket',
+        whitepaper: 'Whitepaper',
+        faq: 'FAQ',
+        administration: 'Administrasi',
+        followUs: 'Ikuti kami',
+        notifications: 'Notifikasi',
+        noNotifications: 'Tidak ada notifikasi',
+        connectPi: 'Hubungkan Pi',
+        disconnect: 'Putuskan sambungan',
+        chooseLanguage: 'Pilih Bahasa:',
+        selectLanguage: 'Pilih bahasa',
+        guest: 'Tamu',
+        notConnected: 'Tidak terhubung',
+        connecting: 'Menghubungkan...',
+        loginViaLogo: 'Admin: 5 klik pada logo + kata sandi Betix@2026#',
+        welcome: 'Selamat datang',
+        memberSince: 'Anggota sejak',
+        ratings: 'peringkat',
+        points: 'poin',
+        myEventsCount: 'Acara Saya',
+        myTicketsCount: 'Tiket Saya',
+        history: 'Riwayat',
+        rated: 'Dinilai',
+        viewAll: 'Lihat semua',
+        createEvent: 'Buat Acara',
+        searchEvent: 'Cari acara...',
+        chooseCountry: 'Pilih Negara:',
+        upcomingEvents: 'Acara Mendatang',
+        joinCommunity: 'Bergabunglah dengan komunitas dan rasakan pengalaman unik',
+        noEvents: 'Tidak ada acara ditemukan',
+        buyTicket: 'Beli Tiket',
+        ticketsAvailable: 'tiket tersedia',
+        back: 'Kembali',
+        title: 'Judul',
+        category: 'Kategori',
+        country: 'Negara',
+        dateTime: 'Tanggal & Waktu',
+        duration: 'Durasi',
+        location: 'Lokasi',
+        description: 'Deskripsi',
+        conditions: 'Syarat & Ketentuan',
+        totalSeats: 'Total Kursi',
+        ticketTypes: 'Jenis Tiket',
+        enableAtLeastOne: 'Aktifkan setidaknya satu jenis tiket dan tetapkan harganya',
+        standard: 'Standar',
+        vip: 'VIP',
+        price: 'Harga',
+        active: 'Aktif',
+        inactive: 'Tidak Aktif',
+        photos: 'Foto',
+        imagesRequired: '2 gambar diperlukan',
+        dropImage: 'Tarik gambar Anda di sini',
+        orClick: 'atau klik untuk menjelajah',
+        compressed: 'Dikompres',
+        imagesAutoCompressed: 'Gambar otomatis dikompres ke format WebP untuk kinerja yang lebih baik',
+        publishEvent: 'Publikasikan Acara',
+        confirmPublication: 'Konfirmasi Publikasi',
+        reviewInfo: 'Tinjau semua informasi sebelum mempublikasikan acara Anda',
+        cancel: 'Batal',
+        publishing: 'Mempublikasikan...',
+        eventPublished: 'Acara berhasil dipublikasikan!',
+        editEvent: 'Edit Acara',
+        modifyFields: 'Ubah kolom di bawah ini untuk memperbarui acara Anda',
+        saveChanges: 'Simpan Perubahan',
+        chooseQuantity: 'Pilih jumlah',
+        maximumTickets: 'Maksimum tiket tersedia',
+        total: 'Total',
+        confirmPurchase: 'Konfirmasi pembelian',
+        purchaseSuccessful: 'Pembelian berhasil!',
+        ticketsAdded: 'tiket berhasil ditambahkan.',
+        event: 'Acara',
+        type: 'Tipe',
+        quantity: 'Jumlah',
+        code: 'Kode',
+        ok: 'OK',
+        pendingPaymentFound: 'Pembayaran Tertunda Ditemukan',
+        pendingPaymentMessage: 'Anda sudah memiliki pembayaran tertunda di aplikasi ini. Anda dapat membatalkan pembayaran tertunda dan mencoba lagi, atau menunggu hingga selesai.',
+        ignore: 'Abaikan',
+        cancelAndRetry: 'Batalkan & Coba Lagi',
+        paymentError: 'Kesalahan pembayaran',
+        pendingPaymentError: 'Ditemukan pembayaran tertunda. Silakan selesaikan atau batalkan pembayaran sebelumnya di dompet Pi Anda, lalu coba lagi.',
+        paymentCancelled: 'Pembayaran dibatalkan',
+        noSeatsAvailable: 'Tidak ada kursi tersedia untuk acara ini',
+        pleaseConnect: 'Silakan hubungkan akun Pi Anda terlebih dahulu',
+        authenticationFailed: 'Otentikasi gagal. Silakan coba lagi.',
+        connectionError: 'Kesalahan koneksi',
+        sessionExpired: 'Sesi berakhir karena tidak aktif. Silakan sambungkan kembali.',
+        disconnected: 'Anda terputus',
+        eventNotFound: 'Acara tidak ditemukan',
+        ticketNotFound: 'Tiket tidak ditemukan',
+        downloadTicket: 'Unduh tiket',
+        ticketDownloaded: 'Tiket diunduh',
+        markUsed: 'Tandai sebagai digunakan',
+        markUsedConfirm: 'Tandai tiket ini sebagai digunakan? Tindakan ini tidak dapat dibatalkan.',
+        ticketMarkedUsed: 'Tiket berhasil ditandai sebagai digunakan!',
+        noActiveTickets: 'Tidak ada tiket aktif',
+        noTicketHistory: 'Tidak ada riwayat tiket',
+        clearData: 'Hapus data saya',
+        clearDataConfirm: 'Hapus semua data Anda?',
+        darkMode: 'Mode gelap',
+        all: 'Semua',
+        concert: 'Konser',
+        sport: 'Olahraga',
+        conference: 'Konferensi',
+        training: 'Pelatihan',
+        cinema: 'Bioskop',
+        festival: 'Festival',
+        theatre: 'Teater',
+        dance: 'Tari',
+        exhibition: 'Pameran',
+        gala: 'Gala',
+        seminar: 'Seminar',
+        fullDescription: 'Deskripsi lengkap',
+        information: 'Informasi',
+        organizer: 'Penyelenggara',
+        createdOn: 'Dibuat pada',
+        seatsLeft: 'Kursi tersisa',
+        rating: 'Peringkat',
+        notYetRated: 'Belum dinilai',
+        noReviews: 'Belum ada ulasan',
+        noConditions: 'Tidak ada syarat yang ditentukan',
+        by: 'Oleh',
+        new: 'Baru',
+        soldOut: 'Habis',
+        ended: 'Selesai',
+        tickets: 'tiket',
+        views: 'dilihat',
+        termsOfSale: 'Syarat penjualan',
+        termsOfUse: 'Syarat penggunaan',
+        privacyPolicy: 'Kebijakan privasi',
+        accessibilityStatement: 'Pernyataan aksesibilitas',
+        privacyChoices: 'Pilihan privasi',
+        fanTicketGuide: 'Panduan tiket penggemar',
+        legalNotices: 'Pemberitahuan hukum',
+        cookiePreferences: 'Preferensi cookie',
+        aboutUs: 'Tentang kami',
+        contactUs: 'Hubungi kami',
+        yourFeedback: 'Masukan Anda',
+        help: 'Bantuan',
+        partners: 'Mitra',
+        joinCommunityFooter: 'Bergabunglah dengan komunitas Betix',
+        piNetwork: 'Jaringan Pi',
+        secure: 'Aman',
+        allRightsReserved: 'Hak cipta dilindungi.',
+        builtOnPi: 'Dibangun di Pi Network | Diamankan oleh Blockchain',
+        participant: 'Peserta',
+        ticketCode: 'Kode tiket',
+        valid: 'Berlaku',
+        pastEvent: 'Acara lalu',
+        share: 'Bagikan',
+        eventDate: 'Tanggal acara',
+        eventTime: 'Waktu acara',
+        locationLabel: 'Lokasi',
+        countryLabel: 'Negara',
+        ticketTypeLabel: 'Jenis tiket',
+        purchaseDate: 'Tanggal pembelian',
+        transactionId: 'ID transaksi',
+        downloadTicketPDF: 'Unduh tiket PDF'
+    }
+};
+
+// ============================================================
+// ===== TRANSLATION FUNCTION =====
+// ============================================================
+
+let currentLang = 'en';
+
+function getTranslation(key) {
+    var lang = currentLang || 'en';
+    if (translations[lang] && translations[lang][key] !== undefined) {
+        return translations[lang][key];
+    }
+    // Fallback to English
+    if (translations.en && translations.en[key] !== undefined) {
+        return translations.en[key];
+    }
+    return key;
+}
+
+function t(key) {
+    return getTranslation(key);
 }
 
 // ============================================================
@@ -858,11 +1900,16 @@ function renderChatMessages() {
 // ============================================================
 
 function changeLanguage(lang) {
+    currentLang = lang;
     localStorage.setItem('betix_language', lang);
+    
     var nativeSelect = document.getElementById('nativeLangSelect');
     if (nativeSelect) {
         nativeSelect.value = lang;
     }
+    
+    // Update UI with translations
+    updateUITranslations();
     
     var googleSelect = document.querySelector('.goog-te-combo');
     if (googleSelect) {
@@ -877,10 +1924,102 @@ function changeLanguage(lang) {
             googleSelectRetry.dispatchEvent(new Event('change'));
         }
     }, 1000);
+}
+
+function updateUITranslations() {
+    // Update sidebar items
+    var sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+    var pageMap = {
+        'home': 'home',
+        'myevents': 'myEvents',
+        'profile': 'profile',
+        'settings': 'settings',
+        'tickets': 'myTickets',
+        'history': 'ticketHistory',
+        'whitepaper': 'whitepaper',
+        'faq': 'faq',
+        'admin': 'administration'
+    };
     
-    setTimeout(function() {
-        location.reload();
-    }, 800);
+    sidebarItems.forEach(function(item) {
+        var page = item.dataset.page;
+        if (pageMap[page]) {
+            item.textContent = t(pageMap[page]);
+        }
+    });
+    
+    // Update header
+    var sidebarName = document.getElementById('sidebarName');
+    if (sidebarName) {
+        sidebarName.textContent = currentUser.name || t('guest');
+    }
+    
+    var sidebarWallet = document.getElementById('sidebarWallet');
+    if (sidebarWallet) {
+        sidebarWallet.textContent = currentUser.wallet ? t('notConnected') : t('notConnected');
+    }
+    
+    var walletBtn = document.getElementById('sidebarWalletBtn');
+    if (walletBtn) {
+        walletBtn.textContent = currentUser.wallet ? t('disconnect') : t('connectPi');
+    }
+    
+    // Update language selector label
+    var langLabel = document.querySelector('.sidebar-language-selector label');
+    if (langLabel) {
+        langLabel.textContent = t('chooseLanguage');
+    }
+    
+    // Update social title
+    var socialTitle = document.querySelector('.sidebar-social-title');
+    if (socialTitle) {
+        socialTitle.textContent = t('followUs');
+    }
+    
+    // Update hero
+    var heroTitle = document.querySelector('.hero-text h1');
+    if (heroTitle) {
+        heroTitle.textContent = t('appName') + ' - ' + t('welcome');
+    }
+    
+    var heroDesc = document.querySelector('.hero-text p');
+    if (heroDesc) {
+        heroDesc.textContent = t('joinCommunity');
+    }
+    
+    var heroBtn = document.querySelector('.hero-text .btn-hero');
+    if (heroBtn) {
+        heroBtn.textContent = t('createEvent');
+    }
+    
+    // Update search
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.placeholder = t('searchEvent');
+    }
+    
+    // Update country filter
+    var countryLabel = document.querySelector('.filter-country-select label');
+    if (countryLabel) {
+        countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
+    }
+    
+    // Update events title
+    var eventsTitle = document.querySelector('.events-title');
+    if (eventsTitle) {
+        eventsTitle.textContent = t('upcomingEvents');
+    }
+    
+    var eventsSub = document.querySelector('.events-sub');
+    if (eventsSub) {
+        eventsSub.textContent = t('joinCommunity');
+    }
+    
+    // Update notification icon title
+    var notifIcon = document.querySelector('.sidebar-notif-icon-top');
+    if (notifIcon) {
+        notifIcon.title = t('notifications');
+    }
 }
 
 function detectLanguage() {
@@ -891,6 +2030,8 @@ function detectLanguage() {
         localStorage.setItem('betix_language', urlLang);
         savedLang = urlLang;
     }
+    currentLang = savedLang;
+    
     var nativeSelect = document.getElementById('nativeLangSelect');
     if (nativeSelect) {
         nativeSelect.value = savedLang;
@@ -904,6 +2045,11 @@ function detectLanguage() {
         }
     }, 1500);
     
+    // Update UI translations
+    setTimeout(function() {
+        updateUITranslations();
+    }, 500);
+    
     return savedLang;
 }
 
@@ -915,7 +2061,7 @@ function renderNotificationsPage() {
     var container = document.getElementById('notificationsList');
     if (!container) return;
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>No notifications</div>';
+        container.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i>' + t('noNotifications') + '</div>';
         return;
     }
     var html = '';
@@ -1020,7 +2166,7 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 86400000; }
 
 function disconnectPi() {
-    if (confirm('Are you sure you want to disconnect your Pi account?')) {
+    if (confirm(t('disconnect') + '?')) {
         currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0 };
         piUser = null;
         saveUser();
@@ -1033,13 +2179,13 @@ function disconnectPi() {
         renderHistory();
         updateConnectButtons();
         closeSidebar();
-        alert('You are disconnected');
+        alert(t('disconnected'));
     }
 }
 
 function logout() { disconnectPi(); }
 
-function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert('Session expired due to inactivity. Please reconnect.'); } }, 60000); }
+function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 60000); }
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
 function updateBackButton(currentPage) {
@@ -1139,13 +2285,13 @@ function updateConnectButtons() {
     var sidebarBtn = document.getElementById('sidebarWalletBtn');
     if (sidebarBtn) {
         if (currentUser.wallet) {
-            sidebarBtn.textContent = 'Disconnect';
+            sidebarBtn.textContent = t('disconnect');
             sidebarBtn.classList.add('disconnect');
             sidebarBtn.classList.remove('loading');
             sidebarBtn.onclick = function() { disconnectPi(); };
             sidebarBtn.disabled = false;
         } else {
-            sidebarBtn.textContent = 'Connect Pi';
+            sidebarBtn.textContent = t('connectPi');
             sidebarBtn.classList.remove('disconnect');
             sidebarBtn.classList.remove('loading');
             sidebarBtn.onclick = function() { connectToPi(); };
@@ -1155,10 +2301,10 @@ function updateConnectButtons() {
     var profilePageBtn = document.getElementById('profileConnectBtnPage');
     if (profilePageBtn) {
         if (currentUser.wallet) {
-            profilePageBtn.textContent = 'Disconnect';
+            profilePageBtn.textContent = t('disconnect');
             profilePageBtn.onclick = function() { disconnectPi(); };
         } else {
-            profilePageBtn.textContent = 'Connect Pi';
+            profilePageBtn.textContent = t('connectPi');
             profilePageBtn.onclick = function() { connectToPi(); };
         }
     }
@@ -1233,12 +2379,12 @@ async function connectToPi() {
             closeSidebar();
         } else {
             hideConnectSpinner();
-            alert('Authentication failed. Please try again.');
+            alert(t('authenticationFailed'));
         }
     } catch (error) { 
         console.error("Pi connection error:", error); 
         hideConnectSpinner();
-        alert("Connection error: " + (error.message || "Please try again")); 
+        alert(t('connectionError') + ": " + (error.message || "Please try again")); 
     } finally {
         hideConnectSpinner();
     }
@@ -1247,7 +2393,7 @@ async function connectToPi() {
 function showConnectSpinner() {
     var btn = document.getElementById('sidebarWalletBtn');
     if (btn) {
-        btn.textContent = 'Connecting...';
+        btn.textContent = t('connecting');
         btn.disabled = true;
         btn.classList.add('loading');
     }
@@ -1264,9 +2410,11 @@ function hideConnectSpinner() {
 
 async function onIncompletePaymentFound(payment) { 
     console.log("Incomplete payment found:", payment);
+    
     if (payment) {
-        alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.");
+        showPaymentPendingModal();
     }
+    
     return payment;
 }
 
@@ -1283,8 +2431,8 @@ function setupTicketTypesUI() {
     var vipStatusBadge = document.getElementById('vipStatusBadge');
     
     function updateStatusBadge(checkbox, badge, activeText, inactiveText) {
-        activeText = activeText || 'Active';
-        inactiveText = inactiveText || 'Inactive';
+        activeText = activeText || t('active');
+        inactiveText = inactiveText || t('inactive');
         if (!checkbox || !badge) return;
         if (checkbox.checked) {
             badge.textContent = activeText;
@@ -1393,13 +2541,13 @@ function initCountrySelectors() {
 
 function openQuantityPopup(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) { alert('Event not found'); return; }
+    if (!event) { alert(t('eventNotFound')); return; }
     if (!piUser && !currentUser.wallet) {
-        alert('Please connect your Pi account first');
+        alert(t('pleaseConnect'));
         connectToPi();
         return;
     }
-    if (event.seatsLeft <= 0) { alert('No seats available for this event'); return; }
+    if (event.seatsLeft <= 0) { alert(t('noSeatsAvailable')); return; }
     
     selectedEventForPurchase = event;
     
@@ -1417,7 +2565,7 @@ function openQuantityPopup(eventId) {
         infoEl.textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' | ' + event.location;
     }
     if (maxInfo) {
-        maxInfo.textContent = 'Maximum ' + Math.min(event.seatsLeft, 10) + ' tickets available';
+        maxInfo.textContent = t('maximumTickets') + ': ' + Math.min(event.seatsLeft, 10);
     }
     if (quantityInput) {
         quantityInput.value = 1;
@@ -1429,13 +2577,13 @@ function openQuantityPopup(eventId) {
         ticketTypeSelect.innerHTML = '';
         var options = [];
         if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-            options.push({ value: 'standard', label: 'Standard - ' + event.ticketTypes.standard.price + ' Pi' });
+            options.push({ value: 'standard', label: t('standard') + ' - ' + event.ticketTypes.standard.price + ' Pi' });
         }
         if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
-            options.push({ value: 'vip', label: 'VIP - ' + event.ticketTypes.vip.price + ' Pi' });
+            options.push({ value: 'vip', label: t('vip') + ' - ' + event.ticketTypes.vip.price + ' Pi' });
         }
         if (options.length === 0) {
-            options.push({ value: 'standard', label: 'Standard - ' + event.price + ' Pi' });
+            options.push({ value: 'standard', label: t('standard') + ' - ' + event.price + ' Pi' });
         }
         for (var i = 0; i < options.length; i++) {
             var opt = document.createElement('option');
@@ -1510,26 +2658,26 @@ async function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== CONFIRM PURCHASE - CORRIGE =====
+// ===== CONFIRM PURCHASE - CORRIGE AVEC GESTION DES PAIEMENTS EN ATTENTE =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) { 
-        alert('Event not found'); 
+        alert(t('eventNotFound')); 
         return; 
     }
     
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     if (quantity > event.seatsLeft) { 
-        alert('Only ' + event.seatsLeft + ' seats available'); 
+        alert(t('noSeatsAvailable')); 
         return; 
     }
     
     var totalPrice = quantity * price;
     var typeLabel = ticketType === 'vip' ? 'VIP' : 'Standard';
     
-    if (!confirm('Buy ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) { 
+    if (!confirm(t('confirmPurchase') + ' ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '" (' + t('total') + ': ' + totalPrice.toFixed(6) + ' Pi) ?')) { 
         return; 
     }
     
@@ -1537,7 +2685,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     
     var confirmBtn = document.getElementById('confirmBuyBtn');
     if (confirmBtn) {
-        confirmBtn.textContent = 'Processing...';
+        confirmBtn.textContent = t('connecting');
         confirmBtn.disabled = true;
     }
     
@@ -1550,6 +2698,23 @@ async function confirmPurchase(eventId, quantity, ticketType) {
         
         console.log('Creating Pi payment...');
         
+        // === 1. VERIFIER S'IL Y A UN PAIEMENT EN ATTENTE ===
+        try {
+            var pendingPayments = await Pi.getPendingPayments();
+            if (pendingPayments && pendingPayments.length > 0) {
+                console.log('Pending payments found:', pendingPayments.length);
+                showPaymentPendingModal();
+                if (confirmBtn) {
+                    confirmBtn.textContent = t('confirmPurchase');
+                    confirmBtn.disabled = false;
+                }
+                return;
+            }
+        } catch (e) {
+            console.log('Could not check pending payments:', e);
+        }
+        
+        // === 2. CREER LE PAIEMENT ===
         var payment = await Pi.createPayment({
             amount: Number(totalPrice),
             memo: quantity + ' ' + typeLabel + ' ticket(s): ' + event.title,
@@ -1576,21 +2741,23 @@ async function confirmPurchase(eventId, quantity, ticketType) {
             },
             onCancel: function() { 
                 console.log('Payment cancelled by user');
-                alert("Payment cancelled");
+                alert(t('paymentCancelled'));
                 if (confirmBtn) {
-                    confirmBtn.textContent = 'Confirm purchase';
+                    confirmBtn.textContent = t('confirmPurchase');
                     confirmBtn.disabled = false;
                 }
             },
             onError: function(error) { 
                 console.error('Payment error:', error);
-                if (error && error.message && error.message.toLowerCase().includes('pending')) {
-                    alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.\n\nIf you continue to have issues, please try again later.");
+                var errorMsg = error.message || '';
+                if (errorMsg.toLowerCase().includes('pending')) {
+                    alert(t('pendingPaymentError'));
+                    showPaymentPendingModal();
                 } else {
-                    alert("Payment error: " + (error.message || 'Unknown error'));
+                    alert(t('paymentError') + ': ' + errorMsg);
                 }
                 if (confirmBtn) {
-                    confirmBtn.textContent = 'Confirm purchase';
+                    confirmBtn.textContent = t('confirmPurchase');
                     confirmBtn.disabled = false;
                 }
             }
@@ -1598,15 +2765,15 @@ async function confirmPurchase(eventId, quantity, ticketType) {
         
     } catch (error) { 
         console.error('Purchase error:', error);
-        
-        if (error && error.message && error.message.toLowerCase().includes('pending')) {
-            alert("A pending payment was found. Please complete or cancel the previous payment before making a new one.\n\nIf you continue to have issues, please try again later.");
+        var errorMsg = error.message || '';
+        if (errorMsg.toLowerCase().includes('pending')) {
+            alert(t('pendingPaymentError'));
+            showPaymentPendingModal();
         } else {
-            alert("Error: " + (error.message || 'Unknown error'));
+            alert(t('paymentError') + ': ' + errorMsg);
         }
-        
         if (confirmBtn) {
-            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.textContent = t('confirmPurchase');
             confirmBtn.disabled = false;
         }
     }
@@ -1622,9 +2789,9 @@ async function processDemoPurchase(event, quantity, ticketType, totalPrice, type
         
     } catch (error) {
         console.error('Demo purchase error:', error);
-        alert('Error processing purchase: ' + error.message);
+        alert(t('paymentError') + ': ' + error.message);
         if (confirmBtn) {
-            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.textContent = t('confirmPurchase');
             confirmBtn.disabled = false;
         }
     }
@@ -1701,7 +2868,7 @@ async function completeTicketPurchase(event, quantity, ticketType, totalPrice, t
         });
         
         addNotification(
-            'Purchase of ' + quantity + ' ' + typeLabel + ' ticket(s) for "' + event.title + '"',
+            t('purchaseSuccessful') + ' ' + quantity + ' ' + typeLabel + ' ' + t('tickets') + ' for "' + event.title + '"',
             'purchase'
         );
         
@@ -1715,7 +2882,7 @@ async function completeTicketPurchase(event, quantity, ticketType, totalPrice, t
         showSuccessPopup(event, ticketsAdded, quantity, ticketType);
         
         if (confirmBtn) {
-            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.textContent = t('confirmPurchase');
             confirmBtn.disabled = false;
         }
         
@@ -1727,9 +2894,9 @@ async function completeTicketPurchase(event, quantity, ticketType, totalPrice, t
         
     } catch (error) {
         console.error('Error in purchase completion:', error);
-        alert('An error occurred while saving your tickets: ' + error.message);
+        alert(t('paymentError') + ': ' + error.message);
         if (confirmBtn) {
-            confirmBtn.textContent = 'Confirm purchase';
+            confirmBtn.textContent = t('confirmPurchase');
             confirmBtn.disabled = false;
         }
     }
@@ -1750,8 +2917,8 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var typeLabel = ticketType === 'vip' ? 'VIP' : 'Standard';
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     
-    title.textContent = 'Purchase successful!';
-    message.textContent = qty + ' ' + typeLabel + ' ticket(s) added successfully.';
+    title.textContent = t('purchaseSuccessful');
+    message.textContent = qty + ' ' + typeLabel + ' ' + t('ticketsAdded');
     
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US');
@@ -1760,13 +2927,13 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var codeDisplay = ticket.qrCode || 'N/A';
     
     info.innerHTML = 
-        '<div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">' + typeLabel + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">' + qty + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
+        '<div class="ticket-line"><span class="ticket-label">' + t('event') + '</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('type') + '</span><span class="ticket-value">' + typeLabel + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('eventDate') + '</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('locationLabel') + '</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('quantity') + '</span><span class="ticket-value">' + qty + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('total') + '</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">' + t('code') + '</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
     
     popup.classList.add('show');
 }
@@ -1775,6 +2942,69 @@ function closeSuccessPopup() {
     var popup = document.getElementById('successPopup');
     if (popup) {
         popup.classList.remove('show');
+    }
+}
+
+// ============================================================
+// ===== PAYMENT PENDING MODAL FUNCTIONS =====
+// ============================================================
+
+function showPaymentPendingModal() {
+    var modal = document.getElementById('paymentPendingModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+function closePaymentPendingModal() {
+    var modal = document.getElementById('paymentPendingModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+async function cancelPendingPaymentsAndRetry() {
+    closePaymentPendingModal();
+    
+    try {
+        if (typeof Pi === 'undefined' || !piSDKReady) {
+            alert('Pi SDK not available. Please use demo mode.');
+            return;
+        }
+        
+        var pendingPayments = await Pi.getPendingPayments();
+        
+        if (!pendingPayments || pendingPayments.length === 0) {
+            alert(t('noActiveTickets'));
+            return;
+        }
+        
+        var cancelled = 0;
+        for (var i = 0; i < pendingPayments.length; i++) {
+            try {
+                await Pi.cancelPayment(pendingPayments[i].id);
+                cancelled++;
+                console.log('Cancelled pending payment:', pendingPayments[i].id);
+            } catch (e) {
+                console.error('Error cancelling payment:', e);
+            }
+        }
+        
+        if (cancelled > 0) {
+            alert(cancelled + ' pending payment(s) cancelled. You can now try again.');
+            if (selectedEventForPurchase) {
+                var quantityInput = document.getElementById('ticketQuantity');
+                var quantity = parseInt(quantityInput.value) || 1;
+                var ticketTypeSelect = document.getElementById('ticketTypeSelect');
+                var ticketType = ticketTypeSelect ? ticketTypeSelect.value : 'standard';
+                await confirmPurchase(selectedEventForPurchase.id, quantity, ticketType);
+            }
+        } else {
+            alert(t('paymentError'));
+        }
+    } catch (error) {
+        console.error('Error cancelling pending payments:', error);
+        alert(t('paymentError') + ': ' + error.message);
     }
 }
 
@@ -1792,7 +3022,7 @@ async function createEvent(e) {
     }
     
     if (!currentUser.wallet) { 
-        alert('Connect your Pi account first'); 
+        alert(t('pleaseConnect')); 
         return; 
     }
     
@@ -1808,11 +3038,11 @@ async function createEvent(e) {
     var durationUnit = document.getElementById('eventDurationUnit').value;
     var durationValueNum = durationValue ? parseInt(durationValue) : null;
     
-    if (!title) { alert('Please enter a title'); return; }
-    if (!date) { alert('Please select a date and time'); return; }
-    if (!location) { alert('Please enter a location'); return; }
-    if (!seatsTotal || seatsTotal < 1) { alert('Please enter a valid number of seats'); return; }
-    if (!conditions) { alert('Please add participation conditions'); return; }
+    if (!title) { alert(t('title') + ' required'); return; }
+    if (!date) { alert(t('dateTime') + ' required'); return; }
+    if (!location) { alert(t('locationLabel') + ' required'); return; }
+    if (!seatsTotal || seatsTotal < 1) { alert(t('totalSeats') + ' must be at least 1'); return; }
+    if (!conditions) { alert(t('conditions') + ' required'); return; }
     
     var standardEnabled = document.getElementById('ticketStandardEnabled').checked;
     var vipEnabled = document.getElementById('ticketVipEnabled').checked;
@@ -1820,21 +3050,21 @@ async function createEvent(e) {
     var vipPrice = parseFloat(document.getElementById('ticketVipPrice').value);
     
     if (!standardEnabled && !vipEnabled) {
-        alert('Please enable at least one ticket type (Standard or VIP)');
+        alert(t('enableAtLeastOne'));
         return;
     }
     if (standardEnabled && (!standardPrice || standardPrice <= 0)) {
-        alert('Please enter a valid price for Standard tickets');
+        alert(t('standard') + ' ' + t('price') + ' must be greater than 0');
         return;
     }
     if (vipEnabled && (!vipPrice || vipPrice <= 0)) {
-        alert('Please enter a valid price for VIP tickets');
+        alert(t('vip') + ' ' + t('price') + ' must be greater than 0');
         return;
     }
     
     var images = getUploadedImages();
     if (images.length < 2) { 
-        alert('Please add 2 photos for your event'); 
+        alert(t('imagesRequired')); 
         return; 
     }
     
@@ -1874,7 +3104,7 @@ async function createEvent(e) {
         
     } catch (error) {
         console.error('Error creating event:', error);
-        alert('An error occurred while creating the event: ' + error.message);
+        alert(t('paymentError') + ': ' + error.message);
         publishBtn.classList.remove('loading');
         publishBtn.disabled = false;
     }
@@ -1905,7 +3135,7 @@ function openPublishConfirm(eventData) {
         !confirmLocation || !confirmPrice || !confirmSeats || !confirmOrganizer || 
         !confirmDescription || !confirmConditions || !confirmImages) {
         console.error('Some confirmation elements are missing from the DOM');
-        alert('An error occurred: missing confirmation elements. Please try again.');
+        alert(t('paymentError'));
         var publishBtn = document.getElementById('publishEventBtn');
         if (publishBtn) {
             publishBtn.classList.remove('loading');
@@ -1928,10 +3158,10 @@ function openPublishConfirm(eventData) {
     if (confirmTicketTypes) {
         var types = [];
         if (eventData.ticketTypes && eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled) {
-            types.push('Standard: ' + eventData.ticketTypes.standard.price + ' Pi');
+            types.push(t('standard') + ': ' + eventData.ticketTypes.standard.price + ' Pi');
         }
         if (eventData.ticketTypes && eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled) {
-            types.push('VIP: ' + eventData.ticketTypes.vip.price + ' Pi');
+            types.push(t('vip') + ': ' + eventData.ticketTypes.vip.price + ' Pi');
         }
         confirmTicketTypes.textContent = types.join(' | ') || 'Not specified';
     }
@@ -1970,7 +3200,7 @@ function closePublishConfirmPopup() {
 
 async function confirmPublishEvent() {
     if (!pendingEventData) {
-        alert('No event data to publish');
+        alert(t('eventNotFound'));
         return;
     }
     
@@ -1980,7 +3210,7 @@ async function confirmPublishEvent() {
     if (confirmBtn) {
         confirmBtn.classList.add('loading');
         confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Publishing...';
+        confirmBtn.textContent = t('publishing');
     }
     
     try {
@@ -2024,7 +3254,7 @@ async function confirmPublishEvent() {
         setupTicketTypesUI();
         
         addNotification(
-            'New event "' + newEvent.title + '" has been published!',
+            t('eventPublished') + ' "' + newEvent.title + '"',
             'event'
         );
         
@@ -2041,21 +3271,21 @@ async function confirmPublishEvent() {
         if (confirmBtn) {
             confirmBtn.classList.remove('loading');
             confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Publish Event';
+            confirmBtn.textContent = t('publishEvent');
         }
         
         console.log('Event saved to Supabase:', newEvent.id);
-        alert('Event "' + newEvent.title + '" has been successfully published!');
+        alert(t('eventPublished'));
         showPage('home');
         
     } catch (error) {
         console.error('Error publishing event:', error);
-        alert('An error occurred while publishing the event: ' + error.message);
+        alert(t('paymentError') + ': ' + error.message);
         
         if (confirmBtn) {
             confirmBtn.classList.remove('loading');
             confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Publish Event';
+            confirmBtn.textContent = t('publishEvent');
         }
         if (publishBtn) {
             publishBtn.classList.remove('loading');
@@ -2210,7 +3440,7 @@ function getUploadedImages() {
 function openEditEventModal(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) {
-        alert('Event not found');
+        alert(t('eventNotFound'));
         return;
     }
     
@@ -2241,7 +3471,7 @@ async function saveEventEdits() {
     
     var event = events.find(function(e) { return e.id === editingEventId; });
     if (!event) {
-        alert('Event not found');
+        alert(t('eventNotFound'));
         return;
     }
     
@@ -2253,7 +3483,7 @@ async function saveEventEdits() {
     var durationUnit = document.getElementById('editEventDurationUnit').value;
     
     if (!seatsTotal || seatsTotal < 1) {
-        alert('Please enter a valid number of seats');
+        alert(t('totalSeats') + ' must be at least 1');
         return;
     }
     
@@ -2293,14 +3523,14 @@ async function saveEventEdits() {
     });
     
     addNotification(
-        'Event "' + event.title + '" has been updated',
+        t('editEvent') + ' "' + event.title + '"',
         'event'
     );
     
     closeEditEventModal();
     renderEventsByCategory();
     renderMyEvents();
-    alert('Event updated successfully!');
+    alert(t('eventPublished'));
 }
 
 // ============================================================
@@ -2320,7 +3550,7 @@ function renderTickets() {
     active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     
     if (!active.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No active tickets</p>'; 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>'; 
         return; 
     }
     container.innerHTML = active.map(function(t) { return renderTicketCard(t, 'valid'); }).join('');
@@ -2339,7 +3569,7 @@ function renderHistory() {
     history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
     
     if (!history.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No ticket history</p>'; 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noTicketHistory') + '</p>'; 
         return; 
     }
     container.innerHTML = history.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
@@ -2352,8 +3582,8 @@ function renderTicketCard(ticket, status) {
     
     var isVip = ticket.ticketType === 'vip';
     var statusClass = status === 'valid' ? 'valid' : 'past';
-    var statusText = status === 'valid' ? 'Valid' : 'Past Event';
-    var typeLabel = isVip ? 'VIP' : 'Standard';
+    var statusText = status === 'valid' ? t('valid') : t('pastEvent');
+    var typeLabel = isVip ? t('vip') : t('standard');
     
     var vipClass = isVip ? 'ticket-vip' : '';
     var vipBadgeStyle = isVip ? 'vip-badge' : '';
@@ -2373,7 +3603,7 @@ function renderTicketCard(ticket, status) {
     var downloadButton = '';
     if (status === 'valid') {
         downloadButton = '<button class="btn-download-ticket" onclick="downloadTicket(\'' + ticket.id + '\')">' +
-            '<i class="fas fa-download"></i> Download ticket' +
+            '<i class="fas fa-download"></i> ' + t('downloadTicket') +
         '</button>';
     }
     
@@ -2386,20 +3616,20 @@ function renderTicketCard(ticket, status) {
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
             '<span class="ticket-category ' + (isVip ? 'vip-category' : '') + '">' + escapeHtml(categoryDisplay) + ' | ' + typeLabel + ' | ' + escapeHtml(paysDisplay) + '</span>' +
             '<div class="ticket-info-grid">' +
-                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">Date</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">Time</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">Location</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">Price</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-ticket-alt"></i> <span class="ticket-label">Type</span> <span class="ticket-value">' + typeLabel + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-globe"></i> <span class="ticket-label">Pays</span> <span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">' + t('eventDate') + '</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">' + t('eventTime') + '</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">' + t('locationLabel') + '</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">' + t('price') + '</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-ticket-alt"></i> <span class="ticket-label">' + t('ticketTypeLabel') + '</span> <span class="ticket-value">' + typeLabel + '</span></div>' +
+                '<div class="ticket-info-item"><i class="fas fa-globe"></i> <span class="ticket-label">' + t('countryLabel') + '</span> <span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
             '</div>' +
             '<div class="ticket-footer">' +
                 '<div class="ticket-qr">' +
                     '<div class="qr-code ' + (isVip ? 'vip-qr' : '') + '">' + shortQr + '</div>' +
-                    '<div><span class="qr-label">Ticket Code</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
+                    '<div><span class="qr-label">' + t('ticketCode') + '</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
                 '</div>' +
                 '<div class="ticket-participant">' +
-                    'Participant<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
+                    t('participant') + '<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
                 '</div>' +
             '</div>' +
             downloadButton +
@@ -2415,7 +3645,7 @@ function renderTicketCard(ticket, status) {
 async function downloadTicket(ticketId) {
     var ticket = tickets.find(function(t) { return t.id === ticketId; });
     if (!ticket) {
-        alert('Ticket not found');
+        alert(t('ticketNotFound'));
         return;
     }
     
@@ -2442,7 +3672,7 @@ async function downloadTicket(ticketId) {
         y = 55;
         
         var isVip = ticket.ticketType === 'vip';
-        var typeLabel = isVip ? 'VIP' : 'Standard';
+        var typeLabel = isVip ? t('vip') : t('standard');
         
         if (isVip) {
             doc.setFillColor(212, 145, 30);
@@ -2482,7 +3712,7 @@ async function downloadTicket(ticketId) {
         var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         
         doc.setTextColor(107, 114, 128);
-        doc.text('Date:', margin + 10, infoY);
+        doc.text(t('eventDate') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(dateFormatted, margin + 55, infoY);
@@ -2490,7 +3720,7 @@ async function downloadTicket(ticketId) {
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
-        doc.text('Time:', margin + 10, infoY);
+        doc.text(t('eventTime') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(timeFormatted, margin + 55, infoY);
@@ -2498,7 +3728,7 @@ async function downloadTicket(ticketId) {
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
-        doc.text('Location:', margin + 10, infoY);
+        doc.text(t('locationLabel') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(ticket.eventLocation || 'Online', margin + 55, infoY);
@@ -2506,7 +3736,7 @@ async function downloadTicket(ticketId) {
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
-        doc.text('Price:', margin + 10, infoY);
+        doc.text(t('price') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text((ticket.price || 0) + ' Pi', margin + 55, infoY);
@@ -2514,7 +3744,7 @@ async function downloadTicket(ticketId) {
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
-        doc.text('Type:', margin + 10, infoY);
+        doc.text(t('ticketTypeLabel') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(typeLabel, margin + 55, infoY);
@@ -2522,7 +3752,7 @@ async function downloadTicket(ticketId) {
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
-        doc.text('Country:', margin + 10, infoY);
+        doc.text(t('countryLabel') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(ticket.pays || 'France', margin + 55, infoY);
@@ -2536,7 +3766,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(107, 114, 128);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text('Ticket Number', margin + 10, y + 8);
+        doc.text(t('ticketCode'), margin + 10, y + 8);
         
         doc.setTextColor(26, 26, 46);
         doc.setFontSize(12);
@@ -2597,13 +3827,13 @@ async function downloadTicket(ticketId) {
         doc.save(fileName);
         
         addNotification(
-            'Ticket downloaded: ' + ticket.eventTitle,
+            t('ticketDownloaded') + ': ' + ticket.eventTitle,
             'info'
         );
         
     } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('An error occurred while generating the PDF: ' + error.message);
+        alert(t('paymentError') + ': ' + error.message);
     }
 }
 
@@ -2612,7 +3842,7 @@ async function downloadTicket(ticketId) {
 // ============================================================
 
 function markTicketAsUsed(ticketId) {
-    if (!confirm('Mark this ticket as used? This action cannot be undone.')) {
+    if (!confirm(t('markUsedConfirm'))) {
         return;
     }
     
@@ -2630,7 +3860,7 @@ function markTicketAsUsed(ticketId) {
         saveTickets();
         
         addNotification(
-            'Ticket has been marked as used',
+            t('ticketMarkedUsed'),
             'info'
         );
         
@@ -2638,7 +3868,7 @@ function markTicketAsUsed(ticketId) {
         renderHistory();
         updateProfilePage();
         
-        alert('Ticket marked as used successfully!');
+        alert(t('ticketMarkedUsed'));
     }
 }
 
@@ -2650,8 +3880,8 @@ function renderMyRatings() {
     var container = document.getElementById('myRatingsList');
     if (!container) return;
     var myRatings = ratings.filter(function(r) { return r.userWallet === (currentUser.wallet || currentUser.name); });
-    if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">No ratings</p>'; return; }
-    container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>Rating: ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
+    if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">' + t('noReviews') + '</p>'; return; }
+    container.innerHTML = myRatings.map(function(r) { var stars = ''; for (var i = 0; i < r.rating; i++) stars += '★'; for (var i = r.rating; i < 5; i++) stars += '☆'; return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>' + t('rating') + ': ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>'; }).join('');
 }
 
 // ============================================================
@@ -2918,18 +4148,18 @@ function renderAdminEvents() {
     }
     container.innerHTML = events.map(function(e) {
         var types = [];
-        if (e.ticketTypes && e.ticketTypes.standard && e.ticketTypes.standard.enabled) types.push('Standard: ' + e.ticketTypes.standard.price + ' Pi');
-        if (e.ticketTypes && e.ticketTypes.vip && e.ticketTypes.vip.enabled) types.push('VIP: ' + e.ticketTypes.vip.price + ' Pi');
+        if (e.ticketTypes && e.ticketTypes.standard && e.ticketTypes.standard.enabled) types.push(t('standard') + ': ' + e.ticketTypes.standard.price + ' Pi');
+        if (e.ticketTypes && e.ticketTypes.vip && e.ticketTypes.vip.enabled) types.push(t('vip') + ': ' + e.ticketTypes.vip.price + ' Pi');
         var typesDisplay = types.join(' | ') || 'No ticket types';
         return '<div class="admin-event-item">' +
             '<div class="event-info">' +
                 '<strong>' + escapeHtml(e.title) + '</strong>' +
-                '<small>' + e.category + ' | ' + (e.pays || e.country || 'France') + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' seats | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
-                '<small>Tickets: ' + typesDisplay + '</small>' +
-                '<small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
+                '<small>' + e.category + ' | ' + (e.pays || e.country || 'France') + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' ' + t('tickets') + ' | ' + new Date(e.date).toLocaleDateString('en-US') + '</small>' +
+                '<small>' + t('ticketTypes') + ': ' + typesDisplay + '</small>' +
+                '<small>' + t('organizer') + ': ' + escapeHtml(e.organizerName || e.organizer) + '</small>' +
             '</div>' +
             '<div class="event-actions">' +
-                '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Delete</button>' +
+                '<button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">' + t('cancel') + '</button>' +
             '</div>' +
         '</div>';
     }).join('');
@@ -2975,8 +4205,8 @@ function renderAdminSlides() {
                 '<p>' + (slide.badge || 'Uncategorized') + ' • ' + (slide.description || '') + '</p>' +
             '</div>' +
             '<div class="slide-actions">' +
-                '<button class="edit-btn" onclick="adminEditSlide(' + index + ')">Edit</button>' +
-                '<button class="delete-btn" onclick="adminDeleteSlide(' + index + ')">Delete</button>' +
+                '<button class="edit-btn" onclick="adminEditSlide(' + index + ')">' + t('editEvent') + '</button>' +
+                '<button class="delete-btn" onclick="adminDeleteSlide(' + index + ')">' + t('cancel') + '</button>' +
             '</div>' +
         '</div>';
     }).join('');
@@ -3136,8 +4366,8 @@ function renderMyEvents() {
     if (myEvents.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;">' +
             '<i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i>' +
-            '<p style="font-size:1rem;font-weight:500;margin-bottom:4px;">You haven\'t created any events yet</p>' +
-            '<p style="font-size:0.85rem;">Click "Create Event" to get started</p>' +
+            '<p style="font-size:1rem;font-weight:500;margin-bottom:4px;">' + t('noEvents') + '</p>' +
+            '<p style="font-size:0.85rem;">' + t('createEvent') + '</p>' +
         '</div>';
         return;
     }
@@ -3164,13 +4394,13 @@ function renderMyEventCardModern(event) {
     var statusBadge = '';
     var statusClass = '';
     if (event.seatsLeft <= 0) {
-        statusBadge = 'Sold Out';
+        statusBadge = t('soldOut');
         statusClass = 'sold-out';
     } else if (new Date(event.date) < new Date()) {
-        statusBadge = 'Ended';
+        statusBadge = t('ended');
         statusClass = 'ended';
     } else {
-        statusBadge = 'Active';
+        statusBadge = t('active');
         statusClass = '';
     }
     
@@ -3201,11 +4431,11 @@ function renderMyEventCardModern(event) {
     
     var typesDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        typesDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
+        typesDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
     }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (typesDisplay) typesDisplay += ' | ';
-        typesDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
+        typesDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
     }
     if (!typesDisplay) typesDisplay = 'No ticket types';
     
@@ -3217,23 +4447,23 @@ function renderMyEventCardModern(event) {
         '<div class="event-body-modern">' +
             '<div class="event-title-modern">' + escapeHtml(event.title) + '</div>' +
             '<div class="event-details-modern">' +
-                '<div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">Date</span> <span class="detail-value">' + dateFormatted + '</span></div>' +
-                '<div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">Time</span> <span class="detail-value">' + timeFormatted + '</span></div>' +
-                '<div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">Location</span> <span class="detail-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
-                '<div class="detail-item-modern"><span style="font-size:1rem;">' + countryFlag + '</span> <span class="detail-label">Country</span> <span class="detail-value">' + escapeHtml(countryDisplay) + '</span></div>' +
-                '<div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">Sold</span> <span class="detail-value">' + ticketSold + '</span></div>' +
-                '<div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">Seats</span> <span class="detail-value">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>' +
-                (durationDisplay ? '<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">Duration</span> <span class="detail-value">' + durationDisplay + '</span></div>' : '') +
-                '<div class="detail-item-modern" style="grid-column:' + (durationDisplay ? '2' : '1') + '/-1;"><i class="fas fa-tags"></i> <span class="detail-label">Types</span> <span class="detail-value" style="font-size:0.7rem;">' + escapeHtml(typesDisplay) + '</span></div>' +
+                '<div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">' + t('eventDate') + '</span> <span class="detail-value">' + dateFormatted + '</span></div>' +
+                '<div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">' + t('eventTime') + '</span> <span class="detail-value">' + timeFormatted + '</span></div>' +
+                '<div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">' + t('locationLabel') + '</span> <span class="detail-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+                '<div class="detail-item-modern"><span style="font-size:1rem;">' + countryFlag + '</span> <span class="detail-label">' + t('countryLabel') + '</span> <span class="detail-value">' + escapeHtml(countryDisplay) + '</span></div>' +
+                '<div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">' + t('tickets') + ' ' + t('soldOut') + '</span> <span class="detail-value">' + ticketSold + '</span></div>' +
+                '<div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">' + t('seatsLeft') + '</span> <span class="detail-value">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>' +
+                (durationDisplay ? '<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">' + t('duration') + '</span> <span class="detail-value">' + durationDisplay + '</span></div>' : '') +
+                '<div class="detail-item-modern" style="grid-column:' + (durationDisplay ? '2' : '1') + '/-1;"><i class="fas fa-tags"></i> <span class="detail-label">' + t('ticketTypes') + '</span> <span class="detail-value" style="font-size:0.7rem;">' + escapeHtml(typesDisplay) + '</span></div>' +
             '</div>' +
             '<div class="event-footer-modern">' +
                 '<div class="event-stats-modern">' +
-                    '<span><i class="fas fa-eye"></i> ' + (event.boosts || 0) + ' views</span>' +
+                    '<span><i class="fas fa-eye"></i> ' + (event.boosts || 0) + ' ' + t('views') + '</span>' +
                     '<span><i class="fas fa-calendar-plus"></i> ' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span>' +
                 '</div>' +
                 '<div class="event-actions-modern">' +
                     '<button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')">' +
-                        '<i class="fas fa-pen"></i> Edit' +
+                        '<i class="fas fa-pen"></i> ' + t('editEvent') +
                     '</button>' +
                 '</div>' +
             '</div>' +
@@ -3255,7 +4485,7 @@ function renderEventsByCategory() {
         return matchCategory && matchCountry && matchSearch;
     });
     if (filtered.length === 0) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">No events found</p>'; 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>'; 
         return; 
     }
     var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
@@ -3271,7 +4501,7 @@ function renderEventsByCategory() {
             var cat = cats[i];
             var catEvents = filtered.filter(function(e) { return e.category === cat; });
             if (catEvents.length) {
-                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
+                html += '<div class="category-section"><div class="category-header">' + t(cat.toLowerCase()) + '</div><div class="events-grid-centered">';
                 catEvents.forEach(function(e) {
                     html += renderEventCard(e);
                 });
@@ -3347,16 +4577,16 @@ function renderEventCard(event) {
         for (var i = fullStars; i < 5; i++) stars += '☆';
         ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
     } else {
-        ratingDisplay = '<span class="new-badge">New</span>';
+        ratingDisplay = '<span class="new-badge">' + t('new') + '</span>';
     }
     
     var priceDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
+        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
     }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
+        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
     }
     if (!priceDisplay) {
         priceDisplay = event.price + ' Pi';
@@ -3385,11 +4615,11 @@ function renderEventCard(event) {
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
                 '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' seats</span>' +
+                ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>' +
             '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
             '<div class="event-organizer-classic">' +
-                '<span class="org-icon"><i class="fas fa-user"></i></span> By ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
             '</div>' +
         '</div>' +
     '</div>';
@@ -3402,7 +4632,7 @@ function renderEventCard(event) {
 function openEventDetails(eventId) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) {
-        alert('Event not found');
+        alert(t('eventNotFound'));
         return;
     }
     var modal = document.getElementById('eventDetailModal');
@@ -3438,26 +4668,27 @@ function openEventDetails(eventId) {
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('detailDate').textContent = dateFormatted + ' at ' + timeFormatted;
+    document.getElementById('detailDate').textContent = dateFormatted;
+    document.getElementById('detailTime').textContent = timeFormatted;
     document.getElementById('detailLocation').textContent = event.location || 'Online';
     
     // Prix
     var priceDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += 'Standard: ' + event.ticketTypes.standard.price + ' Pi';
+        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
     }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += 'VIP: ' + event.ticketTypes.vip.price + ' Pi';
+        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
     }
     if (!priceDisplay) priceDisplay = event.price + ' Pi';
     document.getElementById('detailPrice').textContent = priceDisplay;
     
     // Places
-    document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' seats';
+    document.getElementById('detailSeats').textContent = event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets');
     
     // Description
-    document.getElementById('detailDescription').textContent = event.description || 'No description';
+    document.getElementById('detailDescription').textContent = event.description || t('noConditions');
     
     // Organisateur
     var organizerDisplay = event.organizerName || event.organizer || 'Unknown';
@@ -3476,7 +4707,7 @@ function openEventDetails(eventId) {
     var durationDisplay = document.getElementById('detailDuration');
     if (durationDisplay) {
         if (event.durationValue && event.durationUnit) {
-            durationDisplay.textContent = 'Duration: ' + event.durationValue + ' ' + event.durationUnit;
+            durationDisplay.textContent = t('duration') + ': ' + event.durationValue + ' ' + event.durationUnit;
             durationDisplay.style.display = 'block';
         } else {
             durationDisplay.style.display = 'none';
@@ -3499,7 +4730,7 @@ function openEventDetails(eventId) {
                 conditionsContainer.innerHTML = '<p>' + escapeHtml(event.conditions) + '</p>';
             }
         } else {
-            conditionsContainer.innerHTML = '<p style="color: var(--gray);">No conditions specified</p>';
+            conditionsContainer.innerHTML = '<p style="color: var(--gray);">' + t('noConditions') + '</p>';
         }
     }
     
@@ -3513,7 +4744,7 @@ function openEventDetails(eventId) {
     var fullStars = Math.floor(avgRating);
     for (var i = 0; i < fullStars; i++) ratingStars += '★';
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
-    document.getElementById('detailRating').textContent = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' reviews)' : 'Not yet rated';
+    document.getElementById('detailRating').textContent = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' ' + t('ratings') + ')' : t('notYetRated');
     
     // Galerie d'images
     var gallery = document.getElementById('detailGallery');
@@ -3541,7 +4772,7 @@ function openEventDetails(eventId) {
         if (event.images.length > 5) {
             var badge = document.createElement('div');
             badge.className = 'gallery-badge';
-            badge.textContent = '+' + (event.images.length - 5) + ' photos';
+            badge.textContent = '+' + (event.images.length - 5) + ' ' + t('photos');
             gallery.appendChild(badge);
         }
     } else {
@@ -3572,7 +4803,7 @@ function openEventDetails(eventId) {
             reviewsContainer.appendChild(div);
         });
     } else {
-        reviewsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">No reviews yet</p>';
+        reviewsContainer.innerHTML = '<p style="color: var(--gray); font-size: 0.9rem;">' + t('noReviews') + '</p>';
     }
     
     // Bouton d'achat
@@ -3581,6 +4812,7 @@ function openEventDetails(eventId) {
         document.body.style.overflow = '';
         openQuantityPopup(event.id);
     };
+    document.getElementById('detailBuyBtn').textContent = t('buyTicket');
     
     // Fermeture
     closeBtn.onclick = function() { 
@@ -3611,7 +4843,7 @@ function openGallery(eventId, startIndex) {
         modal = document.createElement('div');
         modal.id = 'fullGalleryModal';
         modal.className = 'gallery-modal';
-        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">Previous</button><button id="galleryNext">Next</button></div>';
+        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">' + t('back') + '</button><button id="galleryNext">' + t('viewAll') + '</button></div>';
         document.body.appendChild(modal);
         document.querySelector('#fullGalleryModal .gallery-close').onclick = function() { document.getElementById('fullGalleryModal').classList.remove('show'); };
     }
@@ -3633,9 +4865,18 @@ function initFilters() {
     var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
     var container = document.getElementById('filtersContainer');
     if (!container) return;
-    container.innerHTML = cats.map(function(c) { return '<div class="filter-chip ' + (c === currentFilter ? 'active' : '') + '" data-category="' + c + '">' + c + '</div>'; }).join('');
+    container.innerHTML = cats.map(function(c) { 
+        var label = c === 'All' ? t('all') : t(c.toLowerCase());
+        return '<div class="filter-chip ' + (c === currentFilter ? 'active' : '') + '" data-category="' + c + '">' + label + '</div>'; 
+    }).join('');
     var chips = document.querySelectorAll('.filter-chip');
-    for (var i = 0; i < chips.length; i++) { chips[i].addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }); }
+    for (var i = 0; i < chips.length; i++) { 
+        chips[i].addEventListener('click', function() { 
+            currentFilter = this.dataset.category; 
+            initFilters(); 
+            renderEventsByCategory(); 
+        }); 
+    }
 }
 
 // ============================================================
@@ -3677,7 +4918,7 @@ function trackUserConnection() {
 // ============================================================
 
 function clearAllData() { 
-    if (confirm('Delete all your data?')) { 
+    if (confirm(t('clearDataConfirm'))) { 
         localStorage.clear(); 
         location.reload(); 
     } 
@@ -4119,15 +5360,16 @@ function updateUserInfo() {
     var profileWallet = document.getElementById('profileWalletDisplay');
     var memberSince = document.getElementById('memberSince');
     
-    if (nameEl) nameEl.textContent = currentUser.name || 'Guest';
-    if (walletEl) walletEl.textContent = currentUser.wallet ? 'Wallet: ' + currentUser.wallet : 'Not connected';
+    if (nameEl) nameEl.textContent = currentUser.name || t('guest');
+    if (walletEl) walletEl.textContent = currentUser.wallet ? t('notConnected') : t('notConnected');
     if (avatarText) avatarText.textContent = (currentUser.name || 'U')[0].toUpperCase();
-    if (profileName) profileName.textContent = currentUser.name || 'Guest';
-    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (profileName) profileName.textContent = currentUser.name || t('guest');
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
     
     updateConnectButtons();
     updateSidebarNotifBadge();
+    updateUITranslations();
 }
 
 function updateProfilePage() {
@@ -4155,8 +5397,8 @@ function updateProfilePage() {
     if (ratedCount) ratedCount.textContent = userRatings.length;
     if (ratingDisplay) ratingDisplay.textContent = userRatings.length;
     if (loyaltyDisplay) loyaltyDisplay.textContent = currentUser.loyaltyPoints || 0;
-    if (profileName) profileName.textContent = currentUser.name || 'Guest';
-    if (profileWallet) profileWallet.textContent = currentUser.wallet || 'Not connected';
+    if (profileName) profileName.textContent = currentUser.name || t('guest');
+    if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
 }
 
