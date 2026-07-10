@@ -41,10 +41,6 @@ body {
     --card-hover-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
 }
 
-/* ============================================================
-   ===== LOADER =====
-   ============================================================ */
-
 .loader-container {
     position: fixed;
     top: 0;
@@ -79,10 +75,6 @@ body {
     font-size: 1rem;
     font-weight: 500;
 }
-
-/* ============================================================
-   ===== HEADER ET BOUTONS =====
-   ============================================================ */
 
 .header {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
@@ -204,10 +196,6 @@ body {
     font-size: 1.5rem !important;
     pointer-events: none !important;
 }
-
-/* ============================================================
-   ===== SIDEBAR =====
-   ============================================================ */
 
 .sidebar {
     position: fixed;
@@ -511,10 +499,6 @@ body {
     box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   ===== HERO =====
-   ============================================================ */
-
 .hero {
     width: 100%;
     background: #ffffff;
@@ -758,10 +742,6 @@ body {
     box-shadow: 0 8px 30px rgba(13, 71, 161, 0.5);
 }
 
-/* ============================================================
-   ===== SEARCH & FILTERS =====
-   ============================================================ */
-
 .search-bar {
     padding: 1.5rem 5% 0.5rem;
 }
@@ -873,10 +853,6 @@ body {
     box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   ===== EVENTS =====
-   ============================================================ */
-
 .events-container {
     padding: 0.5rem 5% 2rem;
     overflow: hidden;
@@ -936,10 +912,6 @@ body {
         grid-template-columns: 1fr;
     }
 }
-
-/* ============================================================
-   ===== TICKET TYPES =====
-   ============================================================ */
 
 .ticket-types-container {
     background: #f8fafc;
@@ -1169,10 +1141,6 @@ body {
     }
 }
 
-/* ============================================================
-   ===== PUBLISH BUTTON =====
-   ============================================================ */
-
 .btn-publish-wrapper {
     position: relative;
     width: 100%;
@@ -1247,10 +1215,6 @@ body {
 .btn-publish-wrapper .btn-primary .btn-text {
     display: inline-block;
 }
-
-/* ============================================================
-   ===== EVENT CARD =====
-   ============================================================ */
 
 .event-card-classic {
     background: #ffffff;
@@ -1468,10 +1432,6 @@ body {
     font-size: 0.7rem;
 }
 
-/* ============================================================
-   ===== TICKET CARD - AVEC COULEURS VIP =====
-   ============================================================ */
-
 .ticket-card-premium {
     background: #ffffff;
     border-radius: 20px;
@@ -1652,10 +1612,6 @@ body {
     text-transform: uppercase;
 }
 
-/* ============================================================
-   ===== STYLES VIP =====
-   ============================================================ */
-
 .ticket-card-premium.ticket-vip {
     border-color: #d4911e;
     box-shadow: 0 4px 24px rgba(212, 145, 30, 0.15);
@@ -1729,10 +1685,6 @@ body {
 .ticket-card-premium.ticket-vip .btn-download-ticket:hover {
     box-shadow: 0 4px 12px rgba(212, 145, 30, 0.3);
 }
-
-/* ============================================================
-   ===== IMAGE UPLOAD =====
-   ============================================================ */
 
 .image-upload-container {
     display: grid;
@@ -1927,10 +1879,6 @@ body {
     font-size: 0.6rem;
 }
 
-/* ============================================================
-   ===== MODALS =====
-   ============================================================ */
-
 .modal {
     display: none;
     position: fixed;
@@ -2042,10 +1990,6 @@ body {
     background: #f3f4f6;
     border-color: #d1d5db;
 }
-
-/* ============================================================
-   ===== QUANTITY & SUCCESS POPUPS =====
-   ============================================================ */
 
 .quantity-popup {
     display: none;
@@ -2306,10 +2250,6 @@ body {
     opacity: 0.9;
     transform: translateY(-2px);
 }
-
-/* ============================================================
-   ===== PUBLISH CONFIRM =====
-   ============================================================ */
 
 .publish-confirm {
     display: none;
@@ -2595,10 +2535,6 @@ body {
     }
 }
 
-/* ============================================================
-   ===== BUTTONS & COMMON ELEMENTS =====
-   ============================================================ */
-
 .btn-primary {
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: white;
@@ -2729,10 +2665,6 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     overflow: hidden;
 }
-
-/* ============================================================
-   ===== PROFIL PAGE =====
-   ============================================================ */
 
 .profile-page-content {
     max-width: 800px !important;
@@ -3008,10 +2940,6 @@ body {
 .profile-actions .btn-secondary:active {
     transform: scale(0.97);
 }
-
-/* ============================================================
-   ===== MY EVENTS - DESIGN PROFESSIONNEL MODERNE =====
-   ============================================================ */
 
 .my-events-container {
     padding: 0.5rem 5% 2rem;
@@ -3302,10 +3230,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     }
 }
 
-/* ============================================================
-   ===== EVENT DETAIL - DESIGN PROFESSIONNEL =====
-   ============================================================ */
-
 .event-detail-modal .modal-content {
     max-width: 820px !important;
     padding: 0 !important;
@@ -3364,37 +3288,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 500;
-}
-
-.event-detail-gallery .gallery-nav-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.event-detail-gallery .gallery-nav-arrow:hover {
-    background: rgba(255,255,255,0.35);
-}
-
-.event-detail-gallery .gallery-nav-arrow.prev {
-    left: 12px;
-}
-
-.event-detail-gallery .gallery-nav-arrow.next {
-    right: 12px;
 }
 
 .event-detail-info {
@@ -3770,9 +3663,153 @@ body.dark-mode .event-detail-footer {
     }
 }
 
-/* ============================================================
-   ===== CHAT =====
-   ============================================================ */
+.payment-pending-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 5000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+}
+
+.payment-pending-modal.show {
+    display: flex;
+}
+
+.payment-pending-modal .modal-content {
+    background: white;
+    border-radius: 24px;
+    max-width: 440px;
+    width: 90%;
+    padding: 32px 28px 28px;
+    text-align: center;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.payment-pending-modal .modal-content .pending-icon {
+    font-size: 3.5rem;
+    color: #f59e0b;
+    margin-bottom: 12px;
+}
+
+.payment-pending-modal .modal-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+}
+
+.payment-pending-modal .modal-content p {
+    color: #6b7280;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.payment-pending-modal .modal-content .btn-group {
+    display: flex;
+    gap: 12px;
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-primary {
+    flex: 1;
+    margin: 0;
+    padding: 12px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    color: white;
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-secondary {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 40px;
+    border: 2px solid #e5e7eb;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--gray);
+    transition: all 0.2s;
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-danger {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 40px;
+    border: none;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.payment-pending-modal .modal-content .btn-group .btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+body.dark-mode .payment-pending-modal .modal-content {
+    background: #1f2937;
+}
+
+body.dark-mode .payment-pending-modal .modal-content h3 {
+    color: #f3f4f6;
+}
+
+body.dark-mode .payment-pending-modal .modal-content p {
+    color: #9ca3af;
+}
+
+body.dark-mode .payment-pending-modal .modal-content .btn-secondary {
+    color: #9ca3af;
+    border-color: #4b5563;
+}
+
+body.dark-mode .payment-pending-modal .modal-content .btn-secondary:hover {
+    background: #374151;
+}
+
+@media (max-width: 480px) {
+    .payment-pending-modal .modal-content {
+        padding: 24px 20px 20px;
+    }
+    
+    .payment-pending-modal .modal-content .pending-icon {
+        font-size: 2.8rem;
+    }
+    
+    .payment-pending-modal .modal-content h3 {
+        font-size: 1.1rem;
+    }
+    
+    .payment-pending-modal .modal-content .btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
 
 .chat-float-btn {
     position: fixed;
@@ -3894,10 +3931,6 @@ body.dark-mode .event-detail-footer {
     opacity: 0.9;
 }
 
-/* ============================================================
-   ===== GALLERY MODAL =====
-   ============================================================ */
-
 .gallery-modal {
     position: fixed;
     top: 0;
@@ -3952,10 +3985,6 @@ body.dark-mode .event-detail-footer {
 .gallery-nav button:hover {
     background: rgba(255,255,255,0.3);
 }
-
-/* ============================================================
-   ===== ADMIN =====
-   ============================================================ */
 
 .admin-content {
     max-width: 1000px !important;
@@ -4346,10 +4375,6 @@ body.dark-mode .event-detail-footer {
     font-size: 0.9rem;
 }
 
-/* ============================================================
-   ===== FOOTER =====
-   ============================================================ */
-
 .betix-footer {
     background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 100%);
     color: #c8d4e6;
@@ -4515,10 +4540,6 @@ body.dark-mode .event-detail-footer {
     gap: 4px;
 }
 
-/* ============================================================
-   ===== FAQ =====
-   ============================================================ */
-
 .faq-page-content {
     max-width: 900px !important;
     padding: 30px !important;
@@ -4680,10 +4701,6 @@ body.dark-mode .event-detail-footer {
     background: #f7c35c;
 }
 
-/* ============================================================
-   ===== NOTIFICATIONS =====
-   ============================================================ */
-
 #notificationsList .notification-item {
     padding: 14px 18px;
     border-bottom: 1px solid #f0f0f0;
@@ -4734,10 +4751,6 @@ body.dark-mode .event-detail-footer {
     border-left: 4px solid #f5a623;
     background: #fefaf0;
 }
-
-/* ============================================================
-   ===== DARK MODE =====
-   ============================================================ */
 
 body.dark-mode {
     background-color: #111827;
@@ -5371,10 +5384,6 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
     color: rgba(212, 145, 30, 0.15);
 }
 
-/* ============================================================
-   ===== RESPONSIVE =====
-   ============================================================ */
-
 @media (max-width: 992px) {
     .footer-container {
         grid-template-columns: repeat(2, 1fr);
@@ -5963,10 +5972,6 @@ body.dark-mode .ticket-card-premium.ticket-vip .ticket-logo-placeholder {
         gap: 14px;
     }
 }
-
-/* ============================================================
-   ===== GOOGLE TRANSLATE FIXES =====
-   ============================================================ */
 
 .goog-te-banner-frame {
     display: none !important;
