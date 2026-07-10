@@ -9,16 +9,13 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     
-    <!-- jsPDF pour le telechargement des tickets -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Pi SDK Initialization -->
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -41,7 +38,6 @@
         })();
     </script>
     
-    <!-- Google Translate Script -->
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -72,7 +68,6 @@
     </div>
 </header>
 
-<!-- ===== SIDEBAR ===== -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -141,7 +136,6 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ===== NOTIFICATIONS PAGE ===== -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
@@ -209,7 +203,6 @@
     </div>
 </div>
 
-<!-- ===== MY EVENTS PAGE ===== -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
@@ -219,7 +212,6 @@
     </div>
 </div>
 
-<!-- ===== CREATE EVENT PAGE ===== -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -273,7 +265,6 @@
             
             <div class="form-group"><label>Total Seats</label><input type="number" id="eventSeats" placeholder="Ex: 100" required></div>
             
-            <!-- ===== TYPES DE BILLETS ===== -->
             <div class="form-group">
                 <div class="ticket-types-container">
                     <div class="ticket-types-title">
@@ -318,7 +309,6 @@
                 <p id="ticketTypesError" style="color: #ef4444; font-size: 0.8rem; margin-top: 6px; display: none;">Please enable at least one ticket type and set its price.</p>
             </div>
             
-            <!-- Images -->
             <div class="form-group">
                 <label>Photos (2 images required)</label>
                 <div id="imageUploadContainer" class="image-upload-container">
@@ -374,7 +364,6 @@
     </div>
 </div>
 
-<!-- ===== PUBLISH CONFIRMATION POPUP ===== -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
@@ -461,7 +450,6 @@
     </div>
 </div>
 
-<!-- ===== TICKETS PAGE ===== -->
 <div id="ticketsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Active Tickets</h2>
@@ -471,7 +459,6 @@
     </div>
 </div>
 
-<!-- ===== HISTORY PAGE ===== -->
 <div id="historyPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">Ticket History</h2>
@@ -481,12 +468,10 @@
     </div>
 </div>
 
-<!-- ===== RATINGS PAGE ===== -->
 <div id="ratingsPage" class="hidden-page">
     <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
 </div>
 
-<!-- ===== PROFILE PAGE ===== -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -540,7 +525,6 @@
     </div>
 </div>
 
-<!-- ===== WHITEPAPER PAGE ===== -->
 <div id="whitepaperPage" class="hidden-page">
     <div class="page-content">
         <h2>Whitepaper</h2>
@@ -550,7 +534,6 @@
     </div>
 </div>
 
-<!-- ===== FAQ PAGE ===== -->
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
         <div class="faq-header">
@@ -570,7 +553,6 @@
     </div>
 </div>
 
-<!-- ===== SETTINGS PAGE ===== -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -585,7 +567,6 @@
     </div>
 </div>
 
-<!-- ===== ADMIN PAGE ===== -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -695,7 +676,6 @@
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -750,7 +730,6 @@
     </div>
 </footer>
 
-<!-- ===== MODALS ===== -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
@@ -758,7 +737,6 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
@@ -811,7 +789,6 @@
     </div>
 </div>
 
-<!-- ===== MODIFIER EVENEMENT - MODAL ===== -->
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
@@ -859,7 +836,6 @@
     </div>
 </div>
 
-<!-- ===== TICKET QUANTITY POPUP ===== -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content">
         <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
@@ -886,7 +862,6 @@
     </div>
 </div>
 
-<!-- ===== PURCHASE SUCCESS POPUP ===== -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
@@ -896,6 +871,22 @@
         <p id="successMessage">Your tickets have been added successfully.</p>
         <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
         <button class="btn-primary success-btn-blue" onclick="closeSuccessPopup()">OK</button>
+    </div>
+</div>
+
+<div id="paymentPendingModal" class="payment-pending-modal">
+    <div class="modal-content">
+        <div class="pending-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <h3>Pending Payment Found</h3>
+        <p>You already have a pending payment on this app.<br><br>
+        You can either cancel the pending payment and try again, or wait for it to complete.</p>
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="closePaymentPendingModal()">Ignore</button>
+            <button class="btn-danger" onclick="cancelPendingPaymentsAndRetry()">Cancel & Retry</button>
+            <button class="btn-primary" onclick="closePaymentPendingModal()">OK</button>
+        </div>
     </div>
 </div>
 
