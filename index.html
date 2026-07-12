@@ -16,6 +16,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- ===== AJOUT 1 : Librairie QRCode.js ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- ========================================= -->
+    
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -116,6 +120,13 @@
         <button class="sidebar-item" data-page="settings">Settings</button>
         <button class="sidebar-item" data-page="tickets">My Tickets</button>
         <button class="sidebar-item" data-page="history">Ticket History</button>
+        
+        <!-- ===== AJOUT 2 : Bouton Scanner dans le menu ===== -->
+        <button class="sidebar-item" data-page="scan" onclick="window.location.href='scan.html'" style="background: #1a73e8; color: white; border-radius: 8px;">
+            <i class="fas fa-qrcode"></i> Scanner un billet
+        </button>
+        <!-- ================================================ -->
+        
         <button class="sidebar-item" data-page="whitepaper">Whitepaper</button>
         <button class="sidebar-item" data-page="faq">FAQ</button>
         
