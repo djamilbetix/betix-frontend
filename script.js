@@ -1893,6 +1893,9 @@ async function loadAllFromSupabase() {
         renderHistory();
         updateProfilePage();
         
+        // ---- NOUVEAU : Générer les QR codes après le rendu ----
+        setTimeout(generateAllQRCodes, 300);
+        
         console.log('LOAD COMPLETED');
         console.log('   Total events:', events.length);
         console.log('   Total tickets:', tickets.length);
@@ -2817,6 +2820,9 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     renderHistory();
                     updateProfilePage();
                     
+                    // ---- NOUVEAU : Générer les QR codes après ajout des tickets ----
+                    setTimeout(generateAllQRCodes, 300);
+                    
                     await syncUserToSupabase();
                     
                     showSuccessPopup(event, ticketsAdded, quantity, ticketType);
@@ -3435,47 +3441,49 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY =====
+// ===== TICKETS AND HISTORY (MODIFIÉ POUR QR CODES) =====
 // ============================================================
 
-function renderTickets() {
-    var container = document.getElementById('ticketsList');
-    if (!container) return;
+// ---- NOUVELLE FONCTION DE GÉNÉRATION DES QR CODES ----
+function generateAllQRCodes() {
+    console.log('Generating QR codes...');
+    const containers = document.querySelectorAll('.qr-code-container');
+    console.log('Found', containers.length, 'QR containers');
     
-    var active = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired && t.status !== 'Used';
+    containers.forEach(container => {
+        const ticketId = container.dataset.ticketId || container.id.replace('qr-', '');
+        const ticket = tickets.find(t => t.id === ticketId);
+        
+        if (!ticket) {
+            container.innerHTML = '<p style="color:gray;font-size:10px;">Ticket introuvable</p>';
+            return;
+        }
+
+        const isUsed = usedTickets.indexOf(ticket.id) !== -1;
+        const isExpired = new Date(ticket.eventDate) <= new Date();
+        if (isUsed || isExpired || ticket.status === 'Used') {
+            container.innerHTML = '<div style="color:gray;font-size:11px;text-align:center;"><i class="fas fa-check-circle" style="color:#10b981;"></i> Utilisé</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        try {
+            new QRCode(container, {
+                text: ticket.id,
+                width: 100,
+                height: 100,
+                colorDark: "#1a73e8",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch (e) {
+            console.warn('Erreur génération QR pour', ticket.id, e);
+            container.innerHTML = '<span style="color:red;">Erreur</span>';
+        }
     });
-    
-    active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    
-    if (!active.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>'; 
-        return; 
-    }
-    container.innerHTML = active.map(function(t) { return renderTicketCard(t, 'valid'); }).join('');
 }
 
-function renderHistory() {
-    var container = document.getElementById('historyList');
-    if (!container) return;
-    
-    var history = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return isUsed || isExpired || t.status === 'Used';
-    });
-    
-    history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    
-    if (!history.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noTicketHistory') + '</p>'; 
-        return; 
-    }
-    container.innerHTML = history.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
-}
-
+// ---- RENDER TICKET CARD (AVEC QR CODE) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -3500,6 +3508,8 @@ function renderTicketCard(ticket, status) {
     
     var categoryDisplay = ticket.category || 'Event';
     var paysDisplay = ticket.pays || 'France';
+    
+    var qrContainerId = 'qr-' + ticket.id;
     
     var downloadButton = '';
     if (status === 'valid') {
@@ -3526,7 +3536,9 @@ function renderTicketCard(ticket, status) {
             '</div>' +
             '<div class="ticket-footer">' +
                 '<div class="ticket-qr">' +
-                    '<div class="qr-code ' + (isVip ? 'vip-qr' : '') + '">' + shortQr + '</div>' +
+                    '<div class="qr-code ' + (isVip ? 'vip-qr' : '') + '">' +
+                        '<div id="' + qrContainerId + '" class="qr-code-container" data-ticket-id="' + ticket.id + '"></div>' +
+                    '</div>' +
                     '<div><span class="qr-label">' + t('ticketCode') + '</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
                 '</div>' +
                 '<div class="ticket-participant">' +
@@ -3537,6 +3549,50 @@ function renderTicketCard(ticket, status) {
         '</div>' +
         '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
+}
+
+// ---- RENDER TICKETS (AVEC APPEL QR) ----
+function renderTickets() {
+    var container = document.getElementById('ticketsList');
+    if (!container) return;
+    
+    var active = tickets.filter(function(t) {
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return !isUsed && !isExpired && t.status !== 'Used';
+    });
+    
+    active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
+    
+    if (!active.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>'; 
+        return; 
+    }
+    container.innerHTML = active.map(function(t) { return renderTicketCard(t, 'valid'); }).join('');
+    
+    setTimeout(generateAllQRCodes, 200);
+}
+
+// ---- RENDER HISTORY (AVEC APPEL QR) ----
+function renderHistory() {
+    var container = document.getElementById('historyList');
+    if (!container) return;
+    
+    var history = tickets.filter(function(t) {
+        var isUsed = usedTickets.indexOf(t.id) !== -1;
+        var isExpired = new Date(t.eventDate) <= new Date();
+        return isUsed || isExpired || t.status === 'Used';
+    });
+    
+    history.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
+    
+    if (!history.length) { 
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noTicketHistory') + '</p>'; 
+        return; 
+    }
+    container.innerHTML = history.map(function(t) { return renderTicketCard(t, 'past'); }).join('');
+    
+    setTimeout(generateAllQRCodes, 200);
 }
 
 // ============================================================
@@ -5755,6 +5811,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Debug functions available: forceSyncTickets(), checkSupabaseData(), showTickets(), showSupabaseTickets(), reloadTicketsFromSupabase()');
         console.log('Payment fixes applied: using same structure as working code (Js v3)');
         console.log('Hero texts restored to original: "The first ticketing platform powered by Pi Network"');
+        console.log('QR Code generation integrated successfully!');
         
     } catch (error) {
         console.error('Error during application startup:', error);
