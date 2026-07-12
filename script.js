@@ -110,6 +110,58 @@ async function ensurePiSDKReady() {
 }
 
 // ============================================================
+// ===== BACKEND URL =====
+// ============================================================
+
+const BACKEND_URL = "https://betix-backend.onrender.com";
+
+// ============================================================
+// ===== FUNCTION : ON INCOMPLETE PAYMENT FOUND =====
+// ============================================================
+
+let isResolving = false;
+
+async function onIncompletePaymentFound(payment) {
+    // Evite les appels multiples
+    if (isResolving) {
+        console.log("Resolution deja en cours, ignore...");
+        return null;
+    }
+    
+    console.log("Incomplete payment found:", payment);
+    isResolving = true;
+    
+    try {
+        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier })
+        });
+        const result = await response.json();
+        console.log("Resolution du paiement :", result);
+        
+        if (result.status === 'completed') {
+            alert("Un paiement precedent a ete complete automatiquement. Vous pouvez maintenant acheter vos tickets.");
+            window.location.reload();
+            return result;
+        } else if (result.status === 'cancelled') {
+            alert("Un paiement precedent a ete annule automatiquement. Vous pouvez reessayer.");
+            window.location.reload();
+            return result;
+        } else {
+            alert("Un paiement precedent a ete trouve mais n'a pas pu etre resolu automatiquement. Veuillez reessayer dans quelques instants.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Erreur lors de la resolution du paiement:", error);
+        alert("Erreur lors de la resolution du paiement. Veuillez reessayer plus tard.");
+        return null;
+    } finally {
+        isResolving = false;
+    }
+}
+
+// ============================================================
 // ===== TRANSLATIONS =====
 // ============================================================
 
@@ -1206,8 +1258,6 @@ if (heroSlides.length === 0) {
     ];
     localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
 }
-
-const BACKEND_URL = "https://betix-backend.onrender.com";
 
 // ============================================================
 // ===== EVENT IMAGES =====
@@ -2384,38 +2434,6 @@ function hideConnectSpinner() {
     }
 }
 
-async function onIncompletePaymentFound(payment) {
-    console.log("Incomplete payment found:", payment);
-    try {
-        // Appel au backend pour résoudre automatiquement
-        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId: payment.identifier })
-        });
-        const result = await response.json();
-        console.log("Resolution du paiement :", result);
-        
-        // Affiche un message à l'utilisateur
-        if (result.status === 'completed') {
-            alert("Un paiement precedent a ete complete automatiquement. Vous pouvez maintenant acheter vos tickets.");
-        } else if (result.status === 'cancelled') {
-            alert("Un paiement precedent a ete annule automatiquement. Vous pouvez reessayer.");
-        } else {
-            alert("Un paiement precedent a ete trouve mais n'a pas pu etre resolu automatiquement. Veuillez reessayer dans quelques instants.");
-        }
-        
-        // Recharge la page pour rafraîchir l'état
-        setTimeout(() => window.location.reload(), 2000);
-        
-        return result;
-    } catch (error) {
-        console.error("Erreur lors de la resolution du paiement:", error);
-        alert("Erreur lors de la resolution du paiement. Veuillez reessayer plus tard.");
-        return null;
-    }
-}
-
 // ============================================================
 // ===== TICKET TYPES UI =====
 // ============================================================
@@ -2656,7 +2674,7 @@ async function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// ===== CONFIRM PURCHASE - REPRIS DU CODE QUI FONCTIONNE =====
+// ===== CONFIRM PURCHASE =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
@@ -4230,7 +4248,7 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// ===== MY EVENTS - VERSION MODERNE =====
+// ===== MY EVENTS =====
 // ============================================================
 
 function renderMyEvents() {
@@ -4254,10 +4272,6 @@ function renderMyEvents() {
         return renderMyEventCardModern(e);
     }).join('');
 }
-
-// ============================================================
-// ===== RENDER MY EVENT CARD - MODERNE =====
-// ============================================================
 
 function renderMyEventCardModern(event) {
     var dateEvent = new Date(event.date);
@@ -4504,7 +4518,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// ===== EVENT DETAILS - VERSION SIMPLIFIEE =====
+// ===== EVENT DETAILS =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -5267,7 +5281,7 @@ function updateProfilePage() {
 }
 
 // ============================================================
-// ===== FORCE SYNC - FONCTIONS DE DEBUG =====
+// ===== FORCE SYNC - DEBUG FUNCTIONS =====
 // ============================================================
 
 async function forceSyncTickets() {
