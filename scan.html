@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Scanner un billet - Betix</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0e1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #131a2e;
+            border-radius: 24px;
+            padding: 24px 20px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            border: 1px solid #1e2a44;
+        }
+        h1 {
+            font-size: 1.6rem;
+            text-align: center;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        h1 span {
+            background: linear-gradient(135deg, #1a73e8, #4fc3f7);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        #reader {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            background: #0d1424;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px dashed #2a3a5e;
+            position: relative;
+        }
+        #reader video {
+            border-radius: 14px;
+        }
+        #result {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.95rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d1424;
+            border: 1px solid #1e2a44;
+            color: #8892b0;
+            transition: all 0.3s;
+        }
+        #result.success {
+            background: #0a2e1a;
+            border-color: #10b981;
+            color: #6ee7b7;
+        }
+        #result.error {
+            background: #2e0a0a;
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+        #result.loading {
+            background: #1a1a2e;
+            border-color: #f59e0b;
+            color: #fcd34d;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px 18px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+            min-width: 120px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.4);
+        }
+        .btn-secondary {
+            background: #1e2a44;
+            color: #8892b0;
+        }
+        .btn-secondary:hover {
+            background: #2a3a5e;
+        }
+        .btn-danger {
+            background: #2e0a0a;
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+        }
+        .btn-danger:hover {
+            background: #3f0f0f;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-success {
+            background: #10b981;
+            color: #fff;
+        }
+        .badge-error {
+            background: #ef4444;
+            color: #fff;
+        }
+        .badge-warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+        .ticket-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #0d1424;
+            border-radius: 10px;
+            border: 1px solid #1e2a44;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #ccd6f6;
+            display: none;
+        }
+        .ticket-info.show {
+            display: block;
+        }
+        .ticket-info .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .ticket-info .row:last-child {
+            border-bottom: none;
+        }
+        .ticket-info .label {
+            color: #8892b0;
+            font-weight: 400;
+        }
+        .ticket-info .value {
+            font-weight: 600;
+            color: #fff;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-all;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #4a5a7a;
+        }
+        .footer a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 2px solid rgba(26, 115, 232, 0.5);
+            border-radius: 12px;
+            pointer-events: none;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
+            display: none;
+        }
+        .scanner-overlay.active {
+            display: block;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            .btn {
+                font-size: 0.85rem;
+                padding: 12px 14px;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>
+        Scanner
+        <span>BETA</span>
+    </h1>
+    <p class="subtitle">Placez le QR code devant la camera</p>
+
+    <div id="reader">
+        <div class="scanner-overlay" id="scannerOverlay"></div>
+    </div>
+
+    <div id="result">En attente de scan...</div>
+
+    <div class="ticket-info" id="ticketInfo">
+        <div class="row">
+            <span class="label">Evenement</span>
+            <span class="value" id="infoEvent">-</span>
+        </div>
+        <div class="row">
+            <span class="label">Type</span>
+            <span class="value" id="infoType">-</span>
+        </div>
+        <div class="row">
+            <span class="label">Acheteur</span>
+            <span class="value" id="infoBuyer">-</span>
+        </div>
+        <div class="row">
+            <span class="label">ID</span>
+            <span class="value" id="infoId">-</span>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary" id="scanBtn">Activer la camera</button>
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'">Accueil</button>
+    </div>
+    <div class="btn-group">
+        <button class="btn btn-danger" id="stopBtn" style="display:none;">Arreter le scan</button>
+    </div>
+
+    <div class="footer">
+        <p>Securise via Pi Network  <a href="#" onclick="window.location.href='index.html'">Retour a Betix</a></p>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    const BACKEND_URL = "https://betix-backend.onrender.com";
+    let html5QrCode = null;
+    let isScanning = false;
+
+    // ============================================================
+    // DOM ELEMENTS
+    // ============================================================
+    const readerEl = document.getElementById('reader');
+    const resultEl = document.getElementById('result');
+    const scanBtn = document.getElementById('scanBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const ticketInfo = document.getElementById('ticketInfo');
+    const infoEvent = document.getElementById('infoEvent');
+    const infoType = document.getElementById('infoType');
+    const infoBuyer = document.getElementById('infoBuyer');
+    const infoId = document.getElementById('infoId');
+    const overlay = document.getElementById('scannerOverlay');
+
+    // ============================================================
+    // FUNCTIONS
+    // ============================================================
+
+    function setResult(message, type) {
+        resultEl.textContent = message;
+        resultEl.className = type || '';
+        if (type === 'success') {
+            resultEl.innerHTML = 'Succes: ' + message;
+        } else if (type === 'error') {
+            resultEl.innerHTML = 'Erreur: ' + message;
+        } else if (type === 'loading') {
+            resultEl.innerHTML = 'Chargement: ' + message;
+        } else {
+            resultEl.innerHTML = message;
+        }
+    }
+
+    function showTicketInfo(ticket) {
+        ticketInfo.classList.add('show');
+        infoEvent.textContent = ticket.event_title || 'Inconnu';
+        infoType.textContent = ticket.ticket_type || 'standard';
+        infoBuyer.textContent = ticket.buyer_name || 'Inconnu';
+        infoId.textContent = ticket.id || '-';
+    }
+
+    function hideTicketInfo() {
+        ticketInfo.classList.remove('show');
+    }
+
+    async function validateTicket(ticketId) {
+        setResult('Validation en cours...', 'loading');
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/tickets/validate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticketId: ticketId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setResult('Ticket valide: ' + data.message, 'success');
+                if (data.ticket) {
+                    showTicketInfo(data.ticket);
+                }
+                // Beep de succes
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.frequency.value = 880;
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.15;
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                } catch (e) { /* ignore */ }
+            } else {
+                setResult('Erreur: ' + data.message, 'error');
+                hideTicketInfo();
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.frequency.value = 440;
+                    oscillator.type = 'square';
+                    gainNode.gain.value = 0.1;
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 300);
+                } catch (e) { /* ignore */ }
+            }
+        } catch (error) {
+            console.error('Erreur validation:', error);
+            setResult('Erreur reseau: ' + error.message, 'error');
+            hideTicketInfo();
+        }
+    }
+
+    // ============================================================
+    // SCANNER
+    // ============================================================
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log('QR scanne:', decodedText);
+
+        if (html5QrCode && isScanning) {
+            html5QrCode.stop().then(() => {
+                isScanning = false;
+                stopBtn.style.display = 'none';
+                scanBtn.textContent = 'Scanner un autre ticket';
+                overlay.classList.remove('active');
+            }).catch(err => {
+                console.warn('Erreur arret scanner:', err);
+            });
+        }
+
+        let ticketId = decodedText;
+        if (ticketId.startsWith('BETIX-')) {
+            ticketId = ticketId.substring(6);
+            const parts = ticketId.split('-');
+            if (parts.length === 3) {
+                ticketId = parts[0] + '-' + parts[2];
+            }
+        }
+
+        console.log('ID nettoie:', ticketId);
+        validateTicket(ticketId);
+    }
+
+    function onScanError(error) {
+        // ignore les erreurs mineures
+    }
+
+    async function startScanner() {
+        if (isScanning) {
+            return;
+        }
+
+        if (!html5QrCode) {
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+            } catch (e) {
+                setResult('Erreur initialisation: ' + e.message, 'error');
+                return;
+            }
+        }
+
+        setResult('Demande d acces a la camera...', 'loading');
+        overlay.classList.add('active');
+
+        try {
+            await html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 15,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                onScanSuccess,
+                onScanError
+            );
+            isScanning = true;
+            scanBtn.textContent = 'Scan en cours...';
+            stopBtn.style.display = 'block';
+            setResult('Camera active, scannez un QR code', '');
+            hideTicketInfo();
+        } catch (error) {
+            console.error('Erreur demarrage camera:', error);
+            overlay.classList.remove('active');
+            if (error.message && error.message.includes('NotAllowedError')) {
+                setResult('Acces a la camera refuse. Autorisez l acces et reessayez.', 'error');
+            } else if (error.message && error.message.includes('NotFoundError')) {
+                setResult('Aucune camera trouvee sur cet appareil.', 'error');
+            } else {
+                setResult('Erreur: ' + error.message, 'error');
+            }
+            scanBtn.textContent = 'Activer la camera';
+            stopBtn.style.display = 'none';
+            isScanning = false;
+        }
+    }
+
+    async function stopScanner() {
+        if (html5QrCode && isScanning) {
+            try {
+                await html5QrCode.stop();
+                isScanning = false;
+                stopBtn.style.display = 'none';
+                scanBtn.textContent = 'Scanner un autre ticket';
+                overlay.classList.remove('active');
+                setResult('Scan arrete', '');
+            } catch (error) {
+                console.warn('Erreur arret:', error);
+            }
+        } else {
+            stopBtn.style.display = 'none';
+            scanBtn.textContent = 'Activer la camera';
+            overlay.classList.remove('active');
+        }
+    }
+
+    // ============================================================
+    // EVENTS
+    // ============================================================
+
+    scanBtn.addEventListener('click', startScanner);
+    stopBtn.addEventListener('click', stopScanner);
+
+    window.addEventListener('beforeunload', function() {
+        if (html5QrCode && isScanning) {
+            html5QrCode.stop().catch(() => {});
+        }
+    });
+
+    // ============================================================
+    // AUTO START (optional)
+    // ============================================================
+
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        setTimeout(startScanner, 800);
+    }
+
+    console.log('Scan page loaded');
+    console.log('Backend URL:', BACKEND_URL);
+</script>
+
+</body>
+</html>
