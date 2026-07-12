@@ -116,21 +116,29 @@ async function ensurePiSDKReady() {
 const BACKEND_URL = "https://betix-backend.onrender.com";
 
 // ============================================================
-// ===== FUNCTION : ON INCOMPLETE PAYMENT FOUND =====
+// ===== CALLBACK SILENCIEUX POUR PAIEMENTS INCOMPLETS =====
 // ============================================================
 
 let isResolving = false;
+let resolveAttempts = 0;
 
 async function onIncompletePaymentFound(payment) {
-    // Evite les appels multiples
+    // Évite les appels multiples
     if (isResolving) {
-        console.log("Resolution deja en cours, ignore...");
+        console.log("Resolution deja en cours, ignore.");
         return null;
     }
-    
-    console.log("Incomplete payment found:", payment);
+
+    // Limite les tentatives pour éviter les boucles
+    if (resolveAttempts > 3) {
+        console.log("Trop de tentatives, stop.");
+        return null;
+    }
+
+    console.log("Paiement incomplet detecte:", payment);
     isResolving = true;
-    
+    resolveAttempts++;
+
     try {
         const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
             method: 'POST',
@@ -138,27 +146,24 @@ async function onIncompletePaymentFound(payment) {
             body: JSON.stringify({ paymentId: payment.identifier })
         });
         const result = await response.json();
-        console.log("Resolution du paiement :", result);
-        
-        if (result.status === 'completed') {
-            alert("Un paiement precedent a ete complete automatiquement. Vous pouvez maintenant acheter vos tickets.");
-            window.location.reload();
-            return result;
-        } else if (result.status === 'cancelled') {
-            alert("Un paiement precedent a ete annule automatiquement. Vous pouvez reessayer.");
-            window.location.reload();
+        console.log("Resolution:", result);
+
+        // Si la résolution a réussi, on recharge la page pour rafraîchir l'état
+        if (result.status === 'completed' || result.status === 'cancelled') {
+            // Pas de popup, juste un refresh silencieux
+            setTimeout(() => window.location.reload(), 2000);
             return result;
         } else {
-            alert("Un paiement precedent a ete trouve mais n'a pas pu etre resolu automatiquement. Veuillez reessayer dans quelques instants.");
-            return null;
+            console.warn("Resolution non reconnue:", result);
         }
     } catch (error) {
-        console.error("Erreur lors de la resolution du paiement:", error);
-        alert("Erreur lors de la resolution du paiement. Veuillez reessayer plus tard.");
-        return null;
+        console.error("Erreur lors de la resolution:", error);
     } finally {
         isResolving = false;
+        // Réinitialiser le compteur après 10 secondes
+        setTimeout(() => { resolveAttempts = 0; }, 10000);
     }
+    return null;
 }
 
 // ============================================================
