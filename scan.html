@@ -19,6 +19,7 @@
             align-items: center;
             padding: 20px;
             color: #fff;
+            overflow-x: hidden;
         }
         .container {
             width: 100%;
@@ -28,6 +29,7 @@
             padding: 24px 20px 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
             border: 1px solid #1e2a44;
+            position: relative;
         }
         h1 {
             font-size: 1.6rem;
@@ -139,46 +141,38 @@
         .btn-danger:hover {
             background: #3f0f0f;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .badge-success {
-            background: #10b981;
-            color: #fff;
-        }
-        .badge-error {
-            background: #ef4444;
-            color: #fff;
-        }
-        .badge-warning {
-            background: #f59e0b;
-            color: #fff;
-        }
+
+        /* ============================================================
+           TICKET INFO CARD (AGGRANDIE)
+           ============================================================ */
         .ticket-info {
-            margin-top: 12px;
-            padding: 12px 16px;
-            background: #0d1424;
-            border-radius: 10px;
-            border: 1px solid #1e2a44;
+            margin-top: 20px;
+            padding: 20px 24px;
+            background: linear-gradient(145deg, #1a2438, #0f1a2e);
+            border-radius: 20px;
+            border: 1px solid #2a3a5e;
             text-align: left;
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: #ccd6f6;
             display: none;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            transform: scale(0.95);
+            opacity: 0;
         }
         .ticket-info.show {
             display: block;
+            transform: scale(1);
+            opacity: 1;
         }
         .ticket-info .row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #1a1a2e;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a2a44;
         }
         .ticket-info .row:last-child {
             border-bottom: none;
@@ -186,27 +180,109 @@
         .ticket-info .label {
             color: #8892b0;
             font-weight: 400;
+            font-size: 0.85rem;
         }
         .ticket-info .value {
             font-weight: 600;
             color: #fff;
             text-align: right;
-            max-width: 60%;
+            max-width: 65%;
             word-break: break-all;
+            font-size: 1rem;
         }
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.75rem;
-            color: #4a5a7a;
-        }
-        .footer a {
+        .ticket-info .value-highlight {
             color: #4fc3f7;
-            text-decoration: none;
+            font-size: 1.1rem;
         }
-        .footer a:hover {
-            text-decoration: underline;
+        .ticket-info .purchase-date {
+            color: #6ee7b7;
+            font-size: 0.85rem;
         }
+
+        /* ============================================================
+           VALIDATION OVERLAY (ANIMATION SUCCES)
+           ============================================================ */
+        #validationOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            animation: fadeInOverlay 0.3s ease;
+        }
+        #validationOverlay.active {
+            display: flex;
+        }
+
+        .validation-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseCircle 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            border: 4px solid #10b981;
+            box-shadow: 0 0 60px rgba(16, 185, 129, 0.3);
+        }
+        .validation-circle .check {
+            font-size: 5rem;
+            color: #10b981;
+            animation: popCheck 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        /* Particules / Confettis */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10000;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+
+        /* ============================================================
+           ANIMATIONS
+           ============================================================ */
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulseCircle {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes popCheck {
+            0% { opacity: 0; transform: scale(0) rotate(-30deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ============================================================
+           OVERLAY SCANNER
+           ============================================================ */
         .scanner-overlay {
             position: absolute;
             top: 50%;
@@ -223,6 +299,10 @@
         .scanner-overlay.active {
             display: block;
         }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
         @media (max-width: 480px) {
             .container {
                 padding: 16px;
@@ -234,6 +314,17 @@
                 font-size: 0.85rem;
                 padding: 12px 14px;
                 min-width: 100px;
+            }
+            .ticket-info {
+                padding: 16px 18px;
+                font-size: 0.9rem;
+            }
+            .validation-circle {
+                width: 140px;
+                height: 140px;
+            }
+            .validation-circle .check {
+                font-size: 4rem;
             }
         }
     </style>
@@ -253,10 +344,13 @@
 
     <div id="result">En attente de scan...</div>
 
+    <!-- ============================================================
+         CARTE TICKET (AGGRANDIE AVEC DATE)
+         ============================================================ -->
     <div class="ticket-info" id="ticketInfo">
         <div class="row">
             <span class="label">Evenement</span>
-            <span class="value" id="infoEvent">-</span>
+            <span class="value value-highlight" id="infoEvent">-</span>
         </div>
         <div class="row">
             <span class="label">Type</span>
@@ -267,11 +361,18 @@
             <span class="value" id="infoBuyer">-</span>
         </div>
         <div class="row">
+            <span class="label">Date d achat</span>
+            <span class="value purchase-date" id="infoPurchaseDate">-</span>
+        </div>
+        <div class="row">
             <span class="label">ID</span>
-            <span class="value" id="infoId">-</span>
+            <span class="value" style="font-size:0.75rem;font-family:monospace;" id="infoId">-</span>
         </div>
     </div>
 
+    <!-- ============================================================
+         BOUTONS
+         ============================================================ -->
     <div class="btn-group">
         <button class="btn btn-primary" id="scanBtn">Activer la camera</button>
         <button class="btn btn-secondary" onclick="window.location.href='index.html'">Accueil</button>
@@ -285,6 +386,23 @@
     </div>
 </div>
 
+<!-- ============================================================
+     VALIDATION OVERLAY (ANIMATION DE SUCCES)
+     ============================================================ -->
+<div id="validationOverlay">
+    <div class="validation-circle">
+        <span class="check">✓</span>
+    </div>
+</div>
+
+<!-- ============================================================
+     CONFETTIS CONTAINER
+     ============================================================ -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- ============================================================
+     LIBRAIRIES & SCRIPTS
+     ============================================================ -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <script>
@@ -306,11 +424,14 @@
     const infoEvent = document.getElementById('infoEvent');
     const infoType = document.getElementById('infoType');
     const infoBuyer = document.getElementById('infoBuyer');
+    const infoPurchaseDate = document.getElementById('infoPurchaseDate');
     const infoId = document.getElementById('infoId');
     const overlay = document.getElementById('scannerOverlay');
+    const validationOverlay = document.getElementById('validationOverlay');
+    const confettiContainer = document.getElementById('confettiContainer');
 
     // ============================================================
-    // FUNCTIONS
+    // FONCTIONS
     // ============================================================
 
     function setResult(message, type) {
@@ -333,11 +454,103 @@
         infoType.textContent = ticket.ticket_type || 'standard';
         infoBuyer.textContent = ticket.buyer_name || 'Inconnu';
         infoId.textContent = ticket.id || '-';
+
+        if (ticket.purchase_date) {
+            const date = new Date(ticket.purchase_date);
+            infoPurchaseDate.textContent = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+        } else {
+            infoPurchaseDate.textContent = 'Non disponible';
+        }
     }
 
     function hideTicketInfo() {
         ticketInfo.classList.remove('show');
     }
+
+    // ============================================================
+    // ANIMATION DE SUCCES (CERCLE + CONFETTIS + SON + VIBRATION)
+    // ============================================================
+
+    function playSuccessAnimation() {
+        // 1. Afficher l'overlay avec animation du cercle
+        validationOverlay.classList.add('active');
+
+        // 2. Son de succès (via Web Audio API)
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Son mélodique (accord de succès)
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // Do, Mi, Sol, Do
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + index * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.08 + 0.4);
+                osc.start(audioCtx.currentTime + index * 0.08);
+                osc.stop(audioCtx.currentTime + index * 0.08 + 0.4);
+            });
+
+            // Un petit arpège en fond
+            const oscBg = audioCtx.createOscillator();
+            const gainBg = audioCtx.createGain();
+            oscBg.connect(gainBg);
+            gainBg.connect(audioCtx.destination);
+            oscBg.frequency.value = 880;
+            oscBg.type = 'sine';
+            gainBg.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.2);
+            gainBg.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+            oscBg.start(audioCtx.currentTime + 0.2);
+            oscBg.stop(audioCtx.currentTime + 0.8);
+        } catch (e) {
+            console.log('Audio non disponible');
+        }
+
+        // 3. Vibration (si disponible)
+        if (navigator.vibrate) {
+            navigator.vibrate([50, 50, 50, 50, 100]);
+        }
+
+        // 4. Confettis
+        launchConfetti();
+
+        // 5. Cacher l'overlay après 2.5 secondes
+        setTimeout(() => {
+            validationOverlay.classList.remove('active');
+        }, 2500);
+    }
+
+    // ============================================================
+    // CONFETTIS
+    // ============================================================
+
+    function launchConfetti() {
+        const colors = ['#10b981', '#4fc3f7', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#34d399'];
+        for (let i = 0; i < 60; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = (Math.random() * 8 + 4) + 'px';
+            confetti.style.height = (Math.random() * 8 + 4) + 'px';
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+            confetti.style.animationDelay = (Math.random() * 0.8) + 's';
+            confettiContainer.appendChild(confetti);
+
+            // Supprimer après animation
+            setTimeout(() => {
+                confetti.remove();
+            }, 3500);
+        }
+    }
+
+    // ============================================================
+    // VALIDATION DU TICKET (APPEL API)
+    // ============================================================
 
     async function validateTicket(ticketId) {
         setResult('Validation en cours...', 'loading');
@@ -356,33 +569,23 @@
                 if (data.ticket) {
                     showTicketInfo(data.ticket);
                 }
-                // Beep de succes
-                try {
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    oscillator.frequency.value = 880;
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.15;
-                    oscillator.start();
-                    setTimeout(() => oscillator.stop(), 200);
-                } catch (e) { /* ignore */ }
+                // LANCER L'ANIMATION DE SUCCES
+                playSuccessAnimation();
             } else {
                 setResult('Erreur: ' + data.message, 'error');
                 hideTicketInfo();
+                // Son d'erreur (optionnel)
                 try {
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    oscillator.frequency.value = 440;
-                    oscillator.type = 'square';
-                    gainNode.gain.value = 0.1;
-                    oscillator.start();
-                    setTimeout(() => oscillator.stop(), 300);
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = 220;
+                    osc.type = 'square';
+                    gain.gain.value = 0.1;
+                    osc.start();
+                    setTimeout(() => osc.stop(), 300);
                 } catch (e) { /* ignore */ }
             }
         } catch (error) {
@@ -393,7 +596,7 @@
     }
 
     // ============================================================
-    // SCANNER
+    // SCANNEUR
     // ============================================================
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -509,14 +712,14 @@
     });
 
     // ============================================================
-    // AUTO START (optional)
+    // AUTO START (mobile)
     // ============================================================
 
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
         setTimeout(startScanner, 800);
     }
 
-    console.log('Scan page loaded');
+    console.log('Scan page loaded with animations');
     console.log('Backend URL:', BACKEND_URL);
 </script>
 
