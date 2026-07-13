@@ -123,13 +123,11 @@ let isResolving = false;
 let resolveAttempts = 0;
 
 async function onIncompletePaymentFound(payment) {
-    // Évite les appels multiples
     if (isResolving) {
         console.log("Resolution deja en cours, ignore.");
         return null;
     }
 
-    // Limite les tentatives pour éviter les boucles
     if (resolveAttempts > 3) {
         console.log("Trop de tentatives, stop.");
         return null;
@@ -148,9 +146,7 @@ async function onIncompletePaymentFound(payment) {
         const result = await response.json();
         console.log("Resolution:", result);
 
-        // Si la résolution a réussi, on recharge la page pour rafraîchir l'état
         if (result.status === 'completed' || result.status === 'cancelled') {
-            // Pas de popup, juste un refresh silencieux
             setTimeout(() => window.location.reload(), 2000);
             return result;
         } else {
@@ -160,7 +156,6 @@ async function onIncompletePaymentFound(payment) {
         console.error("Erreur lors de la resolution:", error);
     } finally {
         isResolving = false;
-        // Réinitialiser le compteur après 10 secondes
         setTimeout(() => { resolveAttempts = 0; }, 10000);
     }
     return null;
@@ -1893,7 +1888,6 @@ async function loadAllFromSupabase() {
         renderHistory();
         updateProfilePage();
         
-        // ---- NOUVEAU : Générer les QR codes après le rendu ----
         setTimeout(generateAllQRCodes, 300);
         
         console.log('LOAD COMPLETED');
@@ -2820,7 +2814,6 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     renderHistory();
                     updateProfilePage();
                     
-                    // ---- NOUVEAU : Générer les QR codes après ajout des tickets ----
                     setTimeout(generateAllQRCodes, 300);
                     
                     await syncUserToSupabase();
@@ -3441,10 +3434,10 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY (MODIFIÉ POUR QR CODES) =====
+// ===== TICKETS AND HISTORY (MODIFIÉ POUR QR CODES + DESIGN PRO) =====
 // ============================================================
 
-// ---- NOUVELLE FONCTION DE GÉNÉRATION DES QR CODES ----
+// ---- GÉNÉRATION DES QR CODES ----
 function generateAllQRCodes() {
     console.log('Generating QR codes...');
     const containers = document.querySelectorAll('.qr-code-container');
@@ -3483,7 +3476,7 @@ function generateAllQRCodes() {
     });
 }
 
-// ---- RENDER TICKET CARD (AVEC QR CODE + DATE D'ACHAT) ----
+// ---- RENDER TICKET CARD (VERSION PROFESSIONNELLE AVEC FILIGRANE) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -3499,7 +3492,6 @@ function renderTicketCard(ticket, status) {
     var vipHeaderStyle = isVip ? 'vip-header' : '';
     
     var qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
-    var shortQr = qrCode.length > 12 ? qrCode.substring(0, 10) + '...' : qrCode;
     
     var participantName = ticket.buyerName || ticket.buyerWallet || 'Anonymous';
     if (participantName.length > 20) {
@@ -3509,7 +3501,7 @@ function renderTicketCard(ticket, status) {
     var categoryDisplay = ticket.category || 'Event';
     var paysDisplay = ticket.pays || 'France';
     
-    // ---- DATE D'ACHAT (formatée) ----
+    // ---- DATE D'ACHAT (format simple : 13/07/2026 10:57) ----
     var purchaseDateDisplay = 'Non disponible';
     if (ticket.purchaseDate) {
         var pd = new Date(ticket.purchaseDate);
@@ -3525,42 +3517,63 @@ function renderTicketCard(ticket, status) {
         '</button>';
     }
     
-    return '<div class="ticket-card-premium ' + vipClass + '">' +
+    // ============================================================
+    // CARTE PROFESSIONNELLE AVEC FILIGRANE BETIX
+    // ============================================================
+    return '<div class="ticket-card-professional ' + vipClass + '">' +
+        // ---- FILIGRANE BETIX (arrière-plan) ----
+        '<div class="ticket-watermark">Betix</div>' +
+        
+        // ---- EN-TÊTE ----
         '<div class="ticket-header ' + vipHeaderStyle + '">' +
             '<span class="ticket-status ' + statusClass + ' ' + vipBadgeStyle + '">' + statusText + ' - ' + typeLabel + '</span>' +
             '<span class="ticket-number">#' + ticket.id.substring(0, 8).toUpperCase() + '</span>' +
         '</div>' +
+        
+        // ---- CORPS ----
         '<div class="ticket-body">' +
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
-            '<span class="ticket-category ' + (isVip ? 'vip-category' : '') + '">' + escapeHtml(categoryDisplay) + ' | ' + typeLabel + ' | ' + escapeHtml(paysDisplay) + '</span>' +
-            '<div class="ticket-info-grid">' +
-                '<div class="ticket-info-item"><i class="fas fa-calendar-day"></i> <span class="ticket-label">' + t('eventDate') + '</span> <span class="ticket-value">' + dateFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-clock"></i> <span class="ticket-label">' + t('eventTime') + '</span> <span class="ticket-value">' + timeFormatted + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-map-marker-alt"></i> <span class="ticket-label">' + t('locationLabel') + '</span> <span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">' + t('price') + '</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-ticket-alt"></i> <span class="ticket-label">' + t('ticketTypeLabel') + '</span> <span class="ticket-value">' + typeLabel + '</span></div>' +
-                '<div class="ticket-info-item"><i class="fas fa-globe"></i> <span class="ticket-label">' + t('countryLabel') + '</span> <span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
-                // ---- AJOUT : Date d'achat ----
-                '<div class="ticket-info-item" style="grid-column:1/-1;"><i class="fas fa-shopping-cart"></i> <span class="ticket-label">' + t('purchaseDate') + '</span> <span class="ticket-value" style="color:#4fc3f7; font-weight:600;">' + purchaseDateDisplay + '</span></div>' +
-            '</div>' +
-            '<div class="ticket-footer">' +
-                '<div class="ticket-qr">' +
-                    '<div class="qr-code ' + (isVip ? 'vip-qr' : '') + '">' +
-                        '<div id="' + qrContainerId + '" class="qr-code-container" data-ticket-id="' + ticket.id + '"></div>' +
+            '<div class="ticket-category ' + (isVip ? 'vip-category' : '') + '">' + escapeHtml(categoryDisplay) + '  |  ' + typeLabel + '  |  ' + escapeHtml(paysDisplay) + '</div>' +
+            
+            // ---- GRILLE 2 COLONNES ----
+            '<div class="ticket-grid">' +
+                // COLONNE GAUCHE : infos
+                '<div class="ticket-col-left">' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('eventDate') + '</span><span class="ticket-value">' + dateFormatted + '</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('eventTime') + '</span><span class="ticket-value">' + timeFormatted + '</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('locationLabel') + '</span><span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('price') + '</span><span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('ticketTypeLabel') + '</span><span class="ticket-value">' + typeLabel + '</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('countryLabel') + '</span><span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
+                '</div>' +
+                
+                // COLONNE DROITE : QR + participant
+                '<div class="ticket-col-right">' +
+                    '<div class="ticket-qr-box">' +
+                        '<div class="ticket-qr-code">' +
+                            '<div id="' + qrContainerId + '" class="qr-code-container" data-ticket-id="' + ticket.id + '"></div>' +
+                        '</div>' +
+                        '<div class="ticket-code">' + qrCode + '</div>' +
                     '</div>' +
-                    '<div><span class="qr-label">' + t('ticketCode') + '</span><br><span style="font-size:0.6rem;color:var(--gray);font-family:monospace;">' + qrCode + '</span></div>' +
-                '</div>' +
-                '<div class="ticket-participant">' +
-                    t('participant') + '<br><span class="participant-name">' + escapeHtml(participantName) + '</span>' +
+                    '<div class="ticket-participant-box">' +
+                        '<span class="ticket-participant-label">' + t('participant') + '</span>' +
+                        '<span class="ticket-participant-name">' + escapeHtml(participantName) + '</span>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
+            
+            // ---- DATE D'ACHAT (format simple, en bas) ----
+            '<div class="ticket-purchase-date">' +
+                '<span class="purchase-label">' + t('purchaseDate') + ' :</span> ' +
+                '<span class="purchase-value">' + purchaseDateDisplay + '</span>' +
+            '</div>' +
+            
             downloadButton +
         '</div>' +
-        '<div class="ticket-logo-placeholder">BETIX</div>' +
     '</div>';
 }
 
-// ---- RENDER TICKETS (AVEC APPEL QR) ----
+// ---- RENDER TICKETS ----
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
@@ -3582,7 +3595,7 @@ function renderTickets() {
     setTimeout(generateAllQRCodes, 200);
 }
 
-// ---- RENDER HISTORY (AVEC APPEL QR) ----
+// ---- RENDER HISTORY ----
 function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
@@ -5822,6 +5835,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Hero texts restored to original: "The first ticketing platform powered by Pi Network"');
         console.log('QR Code generation integrated successfully!');
         console.log('Purchase date now displayed on tickets!');
+        console.log('Professional ticket card design with watermark "Betix"');
         
     } catch (error) {
         console.error('Error during application startup:', error);
