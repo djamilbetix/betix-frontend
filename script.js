@@ -3483,7 +3483,7 @@ function generateAllQRCodes() {
     });
 }
 
-// ---- RENDER TICKET CARD (AVEC QR CODE) ----
+// ---- RENDER TICKET CARD (AVEC QR CODE + DATE D'ACHAT) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -3509,6 +3509,13 @@ function renderTicketCard(ticket, status) {
     var categoryDisplay = ticket.category || 'Event';
     var paysDisplay = ticket.pays || 'France';
     
+    // ---- DATE D'ACHAT (formatée) ----
+    var purchaseDateDisplay = 'Non disponible';
+    if (ticket.purchaseDate) {
+        var pd = new Date(ticket.purchaseDate);
+        purchaseDateDisplay = pd.toLocaleDateString('fr-FR') + ' ' + pd.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    }
+    
     var qrContainerId = 'qr-' + ticket.id;
     
     var downloadButton = '';
@@ -3533,6 +3540,8 @@ function renderTicketCard(ticket, status) {
                 '<div class="ticket-info-item"><i class="fas fa-tag"></i> <span class="ticket-label">' + t('price') + '</span> <span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-ticket-alt"></i> <span class="ticket-label">' + t('ticketTypeLabel') + '</span> <span class="ticket-value">' + typeLabel + '</span></div>' +
                 '<div class="ticket-info-item"><i class="fas fa-globe"></i> <span class="ticket-label">' + t('countryLabel') + '</span> <span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
+                // ---- AJOUT : Date d'achat ----
+                '<div class="ticket-info-item" style="grid-column:1/-1;"><i class="fas fa-shopping-cart"></i> <span class="ticket-label">' + t('purchaseDate') + '</span> <span class="ticket-value" style="color:#4fc3f7; font-weight:600;">' + purchaseDateDisplay + '</span></div>' +
             '</div>' +
             '<div class="ticket-footer">' +
                 '<div class="ticket-qr">' +
@@ -5812,6 +5821,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Payment fixes applied: using same structure as working code (Js v3)');
         console.log('Hero texts restored to original: "The first ticketing platform powered by Pi Network"');
         console.log('QR Code generation integrated successfully!');
+        console.log('Purchase date now displayed on tickets!');
         
     } catch (error) {
         console.error('Error during application startup:', error);
