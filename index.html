@@ -63,13 +63,9 @@
             <span>Betix</span>
         </div>
     </div>
-    <!-- HEADER RIGHT SUPPRIME (menu hamburger en haut) -->
     <div class="header-right" id="headerRight"></div>
 </header>
 
-<!-- ============================================================
-     SIDEBAR AVEC ICONES
-     ============================================================ -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -119,7 +115,6 @@
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
         <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
         
-        <!-- ===== BOUTON SCANNER (condition affichage dans JS) ===== -->
         <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #1a73e8; color: white; border-radius: 8px;">
             <i class="fas fa-qrcode"></i> Scanner un billet
         </button>
@@ -145,7 +140,7 @@
 <div class="overlay" id="overlay"></div>
 
 <!-- ============================================================
-     BARRE DE NAVIGATION EN BAS (STYLE FIRESIDE PI)
+     BARRE DE NAVIGATION EN BAS
      ============================================================ -->
 <nav class="bottom-nav" id="bottomNav">
     <button class="nav-item active" id="navHome" onclick="showPage('home')">
@@ -205,7 +200,6 @@
             <div class="hero-text">
                 <h1>The first ticketing platform powered by Pi Network</h1>
                 <p>Discover and book unique experiences. Pay with your Pi crypto.</p>
-                <button class="btn-hero" onclick="showPage('create')">Create Event</button>
             </div>
         </div>
     </section>
@@ -229,9 +223,8 @@
     </div>
 </div>
 
-<!-- Le reste du body reste inchangé -->
-<!-- (Toutes les pages : myeventsPage, createPage, ticketsPage, historyPage, etc.) -->
-<!-- Je les garde identiques pour ne rien casser -->
+<!-- ===== LE RESTE DU BODY EST INCHANGÉ (toutes les pages et modals) ===== -->
+<!-- Je garde toutes les autres pages identiques pour ne rien casser -->
 
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
