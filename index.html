@@ -16,9 +16,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- ===== AJOUT 1 : Librairie QRCode.js ===== -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <!-- ========================================= -->
     
     <script>
         (function initPiSDK() {
@@ -65,13 +63,13 @@
             <span>Betix</span>
         </div>
     </div>
-    <div class="header-right" id="headerRight">
-        <button class="menu-btn" id="menuBtn">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
+    <!-- HEADER RIGHT SUPPRIME (menu hamburger en haut) -->
+    <div class="header-right" id="headerRight"></div>
 </header>
 
+<!-- ============================================================
+     SIDEBAR AVEC ICONES
+     ============================================================ -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -114,23 +112,22 @@
     </div>
     
     <div class="sidebar-nav">
-        <button class="sidebar-item" data-page="home">Home</button>
-        <button class="sidebar-item" data-page="myevents">My Events</button>
-        <button class="sidebar-item" data-page="profile">Profile</button>
-        <button class="sidebar-item" data-page="settings">Settings</button>
-        <button class="sidebar-item" data-page="tickets">My Tickets</button>
-        <button class="sidebar-item" data-page="history">Ticket History</button>
+        <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
+        <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
+        <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
+        <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
+        <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
+        <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
         
-        <!-- ===== AJOUT 2 : Bouton Scanner dans le menu ===== -->
-        <button class="sidebar-item" data-page="scan" onclick="window.location.href='scan.html'" style="background: #1a73e8; color: white; border-radius: 8px;">
+        <!-- ===== BOUTON SCANNER (condition affichage dans JS) ===== -->
+        <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #1a73e8; color: white; border-radius: 8px;">
             <i class="fas fa-qrcode"></i> Scanner un billet
         </button>
-        <!-- ================================================ -->
         
-        <button class="sidebar-item" data-page="whitepaper">Whitepaper</button>
-        <button class="sidebar-item" data-page="faq">FAQ</button>
+        <button class="sidebar-item" data-page="whitepaper"><i class="fas fa-file-alt"></i> Whitepaper</button>
+        <button class="sidebar-item" data-page="faq"><i class="fas fa-question-circle"></i> FAQ</button>
         
-        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;">Administration</button>
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -146,6 +143,24 @@
     </div>
 </div>
 <div class="overlay" id="overlay"></div>
+
+<!-- ============================================================
+     BARRE DE NAVIGATION EN BAS (STYLE FIRESIDE PI)
+     ============================================================ -->
+<nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" id="navHome" onclick="showPage('home')">
+        <i class="fas fa-home"></i>
+        <span>Accueil</span>
+    </button>
+    <button class="nav-item" id="navCreate" onclick="showPage('create')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Publier</span>
+    </button>
+    <button class="nav-item" id="navMenu" onclick="openSidebar()">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
+    </button>
+</nav>
 
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
@@ -213,6 +228,10 @@
         <div id="eventsByCategory" class="events-grid-centered"></div>
     </div>
 </div>
+
+<!-- Le reste du body reste inchangé -->
+<!-- (Toutes les pages : myeventsPage, createPage, ticketsPage, historyPage, etc.) -->
+<!-- Je les garde identiques pour ne rien casser -->
 
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
@@ -748,7 +767,6 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL - VERSION SIMPLIFIEE ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
