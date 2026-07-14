@@ -3476,6 +3476,29 @@ function generateAllQRCodes() {
     });
 }
 
+// ============================================================
+// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
+// ============================================================
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    var userId = currentUser.piUid || currentUser.wallet;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
+    });
+    return myEvents.length > 0;
+}
+
+function updateScanButtonVisibility() {
+    var scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    if (userHasPublishedEvents()) {
+        scanBtn.style.display = 'block';
+    } else {
+        scanBtn.style.display = 'none';
+    }
+}
+
 // ---- RENDER TICKET CARD (VERSION PROFESSIONNELLE AVEC FILIGRANE) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
@@ -4354,6 +4377,9 @@ function renderMyEvents() {
     container.innerHTML = myEvents.map(function(e) {
         return renderMyEventCardModern(e);
     }).join('');
+    
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
+    updateScanButtonVisibility();
 }
 
 function renderMyEventCardModern(event) {
@@ -4488,7 +4514,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD =====
+// ===== RENDER EVENT CARD (AVEC DATE DE PUBLICATION STYLE TWITTER/X) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -4544,6 +4570,36 @@ function renderEventCard(event) {
         organizerFormatted = '@' + organizerFormatted;
     }
     
+    // ---- DATE DE PUBLICATION (style Twitter/X) ----
+    var publishDateDisplay = '';
+    if (event.createdAt) {
+        var pd = new Date(event.createdAt);
+        var now = new Date();
+        var diffMs = now - pd;
+        var diffMins = Math.floor(diffMs / 60000);
+        var diffHours = Math.floor(diffMs / 3600000);
+        var diffDays = Math.floor(diffMs / 86400000);
+        var diffWeeks = Math.floor(diffDays / 7);
+        var diffMonths = Math.floor(diffDays / 30);
+        var diffYears = Math.floor(diffDays / 365);
+        
+        if (diffMins < 1) {
+            publishDateDisplay = 'À l\'instant';
+        } else if (diffMins < 60) {
+            publishDateDisplay = 'Il y a ' + diffMins + ' min';
+        } else if (diffHours < 24) {
+            publishDateDisplay = 'Il y a ' + diffHours + ' h';
+        } else if (diffDays < 7) {
+            publishDateDisplay = 'Il y a ' + diffDays + ' j';
+        } else if (diffWeeks < 4) {
+            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
+        } else if (diffMonths < 12) {
+            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
+        } else {
+            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+    }
+    
     var ratingDisplay = '';
     if (eventRatings.length > 0) {
         var stars = '';
@@ -4596,6 +4652,8 @@ function renderEventCard(event) {
             '<div class="event-organizer-classic">' +
                 '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
             '</div>' +
+            // ---- DATE DE PUBLICATION (style Twitter/X) ----
+            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
     '</div>';
 }
@@ -5331,6 +5389,9 @@ function updateUserInfo() {
     updateConnectButtons();
     updateSidebarNotifBadge();
     updateUITranslations();
+    
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
+    updateScanButtonVisibility();
 }
 
 function updateProfilePage() {
@@ -5361,6 +5422,9 @@ function updateProfilePage() {
     if (profileName) profileName.textContent = currentUser.name || t('guest');
     if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
+    
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
+    updateScanButtonVisibility();
 }
 
 // ============================================================
@@ -5836,6 +5900,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('QR Code generation integrated successfully!');
         console.log('Purchase date now displayed on tickets!');
         console.log('Professional ticket card design with watermark "Betix"');
+        console.log('Scanner button only visible for event publishers!');
+        console.log('Publication date (Twitter/X style) added to event cards!');
         
     } catch (error) {
         console.error('Error during application startup:', error);
