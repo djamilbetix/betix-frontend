@@ -2938,10 +2938,13 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
             '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + escapeHtml(codeDisplay) + '</span></div>';
     }
     
-    // ---- BOUTON "VOIR MON TICKET" AVEC LIEN DYNAMIQUE ----
+    // ---- BOUTON "VOIR MON TICKET" ----
+    // Redirige vers la page "My Tickets" (ticketsPage)
     if (viewBtn) {
-        var ticketCode = ticket.id || ticket.qrCode || 'BETIX-' + Date.now();
-        viewBtn.href = 'https://betixapp.vercel.app/my-ticket?code=' + encodeURIComponent(ticketCode);
+        viewBtn.onclick = function() {
+            closeSuccessPopup();
+            showPage('tickets');
+        };
         viewBtn.style.display = 'inline-block';
     }
     
