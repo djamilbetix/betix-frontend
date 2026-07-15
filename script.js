@@ -2216,21 +2216,15 @@ function logout() { disconnectPi(); }
 function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 60000); }
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
-// ============================================================
-// ===== BACK BUTTON CORRIGE =====
-// ============================================================
-
 function updateBackButton(currentPage) {
     var backBtn = document.getElementById('backBtn');
     if (!backBtn) return;
-    
-    // Cacher le bouton retour sur la page d'accueil
-    if (currentPage === 'home' || currentPage === 'homePage' || currentPage === undefined) {
-        backBtn.style.display = 'none';
-        backBtn.classList.remove('visible');
-    } else {
+    if (currentPage !== 'home' && currentPage !== 'homePage') {
         backBtn.style.display = 'flex';
         backBtn.classList.add('visible');
+    } else {
+        backBtn.style.display = 'none';
+        backBtn.classList.remove('visible');
     }
 }
 
@@ -2872,7 +2866,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
 }
 
 // ============================================================
-// ===== SHOW SUCCESS POPUP (MODIFIÉE) =====
+// ===== SHOW SUCCESS POPUP (MODIFIÉE AVEC BOUTONS FONCTIONNELS) =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity, ticketType) {
@@ -2882,6 +2876,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var info = document.getElementById('successTicketInfo');
     var viewBtn = document.getElementById('viewTicketBtn');
     var eventNameEl = document.getElementById('successEventName');
+    var closeBtn = document.getElementById('closeSuccessBtn');
     
     if (!popup) return;
     
@@ -2939,16 +2934,31 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     }
     
     // ---- BOUTON "VOIR MON TICKET" ----
-    // Redirige vers la page "My Tickets" (ticketsPage)
     if (viewBtn) {
-        viewBtn.onclick = function() {
+        viewBtn.onclick = function(e) {
+            e.preventDefault();
             closeSuccessPopup();
             showPage('tickets');
         };
         viewBtn.style.display = 'inline-block';
     }
     
+    // ---- BOUTON "FERMER" ----
+    if (closeBtn) {
+        closeBtn.onclick = function(e) {
+            e.preventDefault();
+            closeSuccessPopup();
+        };
+    }
+    
     popup.classList.add('show');
+}
+
+function closeSuccessPopup() {
+    var popup = document.getElementById('successPopup');
+    if (popup) {
+        popup.classList.remove('show');
+    }
 }
 
 // ============================================================
@@ -3517,6 +3527,29 @@ function generateAllQRCodes() {
             container.innerHTML = '<span style="color:red;">Erreur</span>';
         }
     });
+}
+
+// ============================================================
+// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
+// ============================================================
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    var userId = currentUser.piUid || currentUser.wallet;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
+    });
+    return myEvents.length > 0;
+}
+
+function updateScanButtonVisibility() {
+    var scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    if (userHasPublishedEvents()) {
+        scanBtn.style.display = 'block';
+    } else {
+        scanBtn.style.display = 'none';
+    }
 }
 
 // ---- RENDER TICKET CARD (VERSION PROFESSIONNELLE AVEC FILIGRANE) ----
@@ -4398,6 +4431,7 @@ function renderMyEvents() {
         return renderMyEventCardModern(e);
     }).join('');
     
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -4671,6 +4705,7 @@ function renderEventCard(event) {
             '<div class="event-organizer-classic">' +
                 '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
             '</div>' +
+            // ---- DATE DE PUBLICATION (style Twitter/X) ----
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
     '</div>';
@@ -5407,6 +5442,8 @@ function updateUserInfo() {
     updateConnectButtons();
     updateSidebarNotifBadge();
     updateUITranslations();
+    
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -5439,30 +5476,8 @@ function updateProfilePage() {
     if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
     
+    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
-}
-
-// ============================================================
-// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
-// ============================================================
-
-function userHasPublishedEvents() {
-    if (!currentUser.wallet && !currentUser.piUid) return false;
-    var userId = currentUser.piUid || currentUser.wallet;
-    var myEvents = events.filter(function(e) {
-        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
-    });
-    return myEvents.length > 0;
-}
-
-function updateScanButtonVisibility() {
-    var scanBtn = document.getElementById('scanMenuItem');
-    if (!scanBtn) return;
-    if (userHasPublishedEvents()) {
-        scanBtn.style.display = 'block';
-    } else {
-        scanBtn.style.display = 'none';
-    }
 }
 
 // ============================================================
@@ -5663,13 +5678,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Loader or main content not found');
         }
         
-        // ---- FORCER LE BOUTON RETOUR À ÊTRE CACHÉ AU CHARGEMENT ----
-        var backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.style.display = 'none';
-            backBtn.classList.remove('visible');
-        }
-        
         detectLanguage();
         loadUsedTickets();
         
@@ -5771,13 +5779,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Menu button not found in DOM');
         }
         
-        var backBtn2 = document.getElementById('backBtn');
-        if (backBtn2) {
+        var backBtn = document.getElementById('backBtn');
+        if (backBtn) {
             console.log('Back button found, adding click listener');
             
-            backBtn2.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
+            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
             
-            backBtn2.addEventListener('click', function(e) {
+            backBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Back button clicked');
@@ -5785,8 +5793,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             });
             
-            backBtn2.style.pointerEvents = 'auto';
-            backBtn2.style.cursor = 'pointer';
+            backBtn.style.pointerEvents = 'auto';
+            backBtn.style.cursor = 'pointer';
         }
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
@@ -5947,7 +5955,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Professional ticket card design with watermark "Betix"');
         console.log('Scanner button only visible for event publishers!');
         console.log('Publication date (Twitter/X style) added to event cards!');
-        console.log('Back button fixed - only visible on secondary pages!');
+        console.log('Success popup buttons fixed: "Voir mon ticket" redirects to My Tickets page, "Fermer" closes popup');
         
     } catch (error) {
         console.error('Error during application startup:', error);
