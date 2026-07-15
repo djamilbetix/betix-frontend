@@ -2191,7 +2191,7 @@ function updateLoyaltyPointsDisplay() {
 }
 
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
-function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 86400000; }
+function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 2592000000; } // 30 jours
 
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
@@ -2213,7 +2213,15 @@ function disconnectPi() {
 
 function logout() { disconnectPi(); }
 
-function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 60000); }
+function startSessionMonitor() { 
+    setInterval(function() { 
+        if (currentUser.wallet && isSessionExpired()) { 
+            disconnectPi(); 
+            alert(t('sessionExpired')); 
+        } 
+    }, 300000); // 5 minutes
+}
+
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
 function updateBackButton(currentPage) {
@@ -2866,7 +2874,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
 }
 
 // ============================================================
-// ===== SHOW SUCCESS POPUP (MODIFIÉE AVEC BOUTONS FONCTIONNELS) =====
+// ===== SHOW SUCCESS POPUP (MODIFIÉE AVEC VÉRIFICATION ET NETTOYAGE) =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity, ticketType) {
@@ -2879,6 +2887,12 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var closeBtn = document.getElementById('closeSuccessBtn');
     
     if (!popup) return;
+    
+    // ---- EMPÊCHER LES DOUBLONS ----
+    if (popup.classList.contains('show')) {
+        console.log('Popup already shown, ignoring duplicate call');
+        return;
+    }
     
     var qty = quantity || ticketsList.length;
     var ticket = ticketsList[0] || {};
@@ -2951,14 +2965,32 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
         };
     }
     
+    // ---- AFFICHER LA POPUP ----
+    popup.style.display = 'flex';
     popup.classList.add('show');
 }
+
+// ============================================================
+// ===== CLOSE SUCCESS POPUP (MODIFIÉE AVEC NETTOYAGE COMPLET) =====
+// ============================================================
 
 function closeSuccessPopup() {
     var popup = document.getElementById('successPopup');
     if (popup) {
         popup.classList.remove('show');
+        popup.style.display = 'none';
     }
+    
+    // ---- VIDER LE CONTENU POUR ÉVITER LES RÉAPPARITIONS ----
+    var info = document.getElementById('successTicketInfo');
+    if (info) {
+        info.innerHTML = '';
+    }
+    
+    // ---- SUPPRIMER TOUT ÉVENTUEL ÉTAT EN MÉMOIRE ----
+    localStorage.removeItem('betix_success_popup_shown');
+    
+    console.log('Success popup closed and cleaned');
 }
 
 // ============================================================
@@ -5660,7 +5692,38 @@ window.reloadTicketsFromSupabase = reloadTicketsFromSupabase;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded - Starting application...');
     
+    // ============================================================
+    // ==== FORCER LA FERMETURE DE LA POPUP AU CHARGEMENT ====
+    // ============================================================
+    var successPopup = document.getElementById('successPopup');
+    if (successPopup) {
+        successPopup.classList.remove('show');
+        successPopup.style.display = 'none';
+    }
+    var successInfo = document.getElementById('successTicketInfo');
+    if (successInfo) {
+        successInfo.innerHTML = '';
+    }
+    localStorage.removeItem('betix_success_popup_shown');
+    
     try {
+        // ============================================================
+        // ==== RESTAURER L'UTILISATEUR AU CHARGEMENT ====
+        // ============================================================
+        var savedUser = localStorage.getItem('betix_user');
+        if (savedUser) {
+            try {
+                var userData = JSON.parse(savedUser);
+                if (userData.wallet || userData.piUid) {
+                    currentUser = userData;
+                    piUser = { username: userData.wallet || userData.piUid };
+                    console.log('User restored from localStorage:', currentUser.name);
+                }
+            } catch (e) {
+                console.warn('Failed to restore user:', e);
+            }
+        }
+        
         var loader = document.getElementById('loader');
         var main = document.getElementById('main-content');
         
@@ -5671,7 +5734,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() {
                     loader.style.display = 'none';
                     main.style.display = 'block';
+                    
+                    // ---- METTRE À JOUR L'UI APRÈS RESTAURATION ----
+                    updateUserInfo();
+                    updateProfilePage();
+                    updateConnectButtons();
+                    
                     console.log('Application loaded successfully');
+                    
+                    // ---- CHARGER LES DONNÉES AVEC L'UTILISATEUR RESTAURÉ ----
+                    loadAllFromSupabase();
+                    
                 }, 500);
             }, 800);
         } else {
@@ -5921,7 +5994,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         bindActivityListeners(); 
-        startSessionMonitor();
+        // startSessionMonitor(); // Désactivé temporairement pour éviter les déconnexions intempestives
+        
+        // ---- SAUVEGARDER L'UTILISATEUR RÉGULIÈREMENT ----
+        setInterval(function() {
+            if (currentUser.wallet) {
+                saveUser();
+                console.log('User session refreshed');
+            }
+        }, 30000); // Toutes les 30 secondes
 
         setTimeout(function() {
             loadAllFromSupabase();
@@ -5956,6 +6037,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Scanner button only visible for event publishers!');
         console.log('Publication date (Twitter/X style) added to event cards!');
         console.log('Success popup buttons fixed: "Voir mon ticket" redirects to My Tickets page, "Fermer" closes popup');
+        console.log('Success popup cleaned on page load to prevent reappearance');
+        console.log('User session restored from localStorage on page load');
+        console.log('Session monitor disabled to prevent disconnections');
+        console.log('User session refreshed every 30 seconds');
         
     } catch (error) {
         console.error('Error during application startup:', error);
