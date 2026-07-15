@@ -198,7 +198,6 @@
             <div class="hero-text">
                 <h1>The first ticketing platform powered by Pi Network</h1>
                 <p>Discover and book unique experiences. Pay with your Pi crypto.</p>
-                <!-- BOUTON CREATE EVENT SUPPRIME -->
             </div>
         </div>
     </section>
@@ -222,7 +221,6 @@
     </div>
 </div>
 
-<!-- ===== TOUTES LES AUTRES PAGES RESTENT IDENTIQUES ===== -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
@@ -837,15 +835,26 @@
     </div>
 </div>
 
+<!-- ===== SUCCESS POPUP (MODIFIÉE) ===== -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
             <i class="fas fa-check-circle"></i>
         </div>
-        <h3 id="successTitle">Purchase successful</h3>
-        <p id="successMessage">Your tickets have been added successfully.</p>
-        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
-        <button class="btn-primary success-btn-blue" onclick="closeSuccessPopup()">OK</button>
+        <h3 id="successTitle">Achat réussi !</h3>
+        <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">
+            Merci d'avoir acheté votre ticket pour <strong id="successEventName">Blockchain Africa</strong>
+        </p>
+
+        <!-- Récapitulatif rapide -->
+        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
+
+        <!-- BOUTON VOIR MON TICKET -->
+        <a id="viewTicketBtn" href="#" target="_blank" class="btn-primary success-btn-blue" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #0D47A1, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box;">
+            <i class="fas fa-eye"></i> Voir mon ticket
+        </a>
+
+        <button class="btn-secondary" onclick="closeSuccessPopup()" style="margin-top:10px; background:transparent; border:1px solid #e5e7eb; padding:10px; border-radius:40px; width:100%; cursor:pointer; font-weight:500; color:var(--gray);">Fermer</button>
     </div>
 </div>
 
