@@ -2225,7 +2225,7 @@ function updateBackButton(currentPage) {
     if (!backBtn) return;
     
     // Cacher le bouton retour sur la page d'accueil
-    if (currentPage === 'home' || currentPage === 'homePage') {
+    if (currentPage === 'home' || currentPage === 'homePage' || currentPage === undefined) {
         backBtn.style.display = 'none';
         backBtn.classList.remove('visible');
     } else {
@@ -5626,6 +5626,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Loader or main content not found');
         }
         
+        // ---- FORCER LE BOUTON RETOUR À ÊTRE CACHÉ AU CHARGEMENT ----
+        var backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.style.display = 'none';
+            backBtn.classList.remove('visible');
+        }
+        
         detectLanguage();
         loadUsedTickets();
         
@@ -5727,13 +5734,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Menu button not found in DOM');
         }
         
-        var backBtn = document.getElementById('backBtn');
-        if (backBtn) {
+        var backBtn2 = document.getElementById('backBtn');
+        if (backBtn2) {
             console.log('Back button found, adding click listener');
             
-            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
+            backBtn2.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
             
-            backBtn.addEventListener('click', function(e) {
+            backBtn2.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Back button clicked');
@@ -5741,8 +5748,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             });
             
-            backBtn.style.pointerEvents = 'auto';
-            backBtn.style.cursor = 'pointer';
+            backBtn2.style.pointerEvents = 'auto';
+            backBtn2.style.cursor = 'pointer';
         }
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
