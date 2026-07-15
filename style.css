@@ -2369,8 +2369,9 @@ body.dark-mode .event-publish-date i {
 }
 
 /* ============================================================
-   SUCCESS POPUP
+   SUCCESS POPUP - VERSION CENTRÉE ET RESPONSIVE
    ============================================================ */
+
 .success-popup {
     display: none;
     position: fixed;
@@ -2399,6 +2400,7 @@ body.dark-mode .event-publish-date i {
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 25px 60px rgba(0,0,0,0.3);
     border: 1px solid rgba(245, 166, 35, 0.1);
+    margin: 20px auto;
 }
 
 .success-icon-blue {
@@ -2470,6 +2472,53 @@ body.dark-mode .event-publish-date i {
 .success-btn-blue:hover {
     opacity: 0.9;
     transform: translateY(-2px);
+}
+
+/* ---- DARK MODE ---- */
+body.dark-mode .success-popup-content.success-blue {
+    background: linear-gradient(145deg, #1f2937, #1a2332);
+    border-color: rgba(245, 166, 35, 0.2);
+}
+
+body.dark-mode .success-ticket-blue {
+    background: #1a2332;
+}
+
+body.dark-mode .success-ticket-blue .ticket-label {
+    color: #9ca3af;
+}
+
+body.dark-mode .success-ticket-blue .ticket-value {
+    color: #f3f4f6;
+}
+
+body.dark-mode .success-popup-content h3 {
+    color: #f3f4f6;
+}
+
+body.dark-mode .success-popup-content p {
+    color: #9ca3af;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 480px) {
+    .success-popup-content {
+        padding: 24px 16px 20px;
+    }
+    .success-popup-content h3 {
+        font-size: 1.1rem;
+    }
+    .success-ticket-blue {
+        padding: 10px 12px;
+    }
+    .success-ticket-blue .ticket-line {
+        font-size: 0.7rem;
+        padding: 3px 0;
+    }
+    #viewTicketBtn {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+    }
 }
 
 /* ============================================================
