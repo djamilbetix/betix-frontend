@@ -2216,15 +2216,21 @@ function logout() { disconnectPi(); }
 function startSessionMonitor() { setInterval(function() { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 60000); }
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
+// ============================================================
+// ===== BACK BUTTON CORRIGE =====
+// ============================================================
+
 function updateBackButton(currentPage) {
     var backBtn = document.getElementById('backBtn');
     if (!backBtn) return;
-    if (currentPage !== 'home' && currentPage !== 'homePage') {
-        backBtn.style.display = 'flex';
-        backBtn.classList.add('visible');
-    } else {
+    
+    // Cacher le bouton retour sur la page d'accueil
+    if (currentPage === 'home' || currentPage === 'homePage') {
         backBtn.style.display = 'none';
         backBtn.classList.remove('visible');
+    } else {
+        backBtn.style.display = 'flex';
+        backBtn.classList.add('visible');
     }
 }
 
@@ -3476,29 +3482,6 @@ function generateAllQRCodes() {
     });
 }
 
-// ============================================================
-// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
-// ============================================================
-
-function userHasPublishedEvents() {
-    if (!currentUser.wallet && !currentUser.piUid) return false;
-    var userId = currentUser.piUid || currentUser.wallet;
-    var myEvents = events.filter(function(e) {
-        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
-    });
-    return myEvents.length > 0;
-}
-
-function updateScanButtonVisibility() {
-    var scanBtn = document.getElementById('scanMenuItem');
-    if (!scanBtn) return;
-    if (userHasPublishedEvents()) {
-        scanBtn.style.display = 'block';
-    } else {
-        scanBtn.style.display = 'none';
-    }
-}
-
 // ---- RENDER TICKET CARD (VERSION PROFESSIONNELLE AVEC FILIGRANE) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
@@ -4378,7 +4361,6 @@ function renderMyEvents() {
         return renderMyEventCardModern(e);
     }).join('');
     
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -4652,7 +4634,6 @@ function renderEventCard(event) {
             '<div class="event-organizer-classic">' +
                 '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
             '</div>' +
-            // ---- DATE DE PUBLICATION (style Twitter/X) ----
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
     '</div>';
@@ -5389,8 +5370,6 @@ function updateUserInfo() {
     updateConnectButtons();
     updateSidebarNotifBadge();
     updateUITranslations();
-    
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -5423,8 +5402,30 @@ function updateProfilePage() {
     if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
     
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
+}
+
+// ============================================================
+// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
+// ============================================================
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    var userId = currentUser.piUid || currentUser.wallet;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
+    });
+    return myEvents.length > 0;
+}
+
+function updateScanButtonVisibility() {
+    var scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    if (userHasPublishedEvents()) {
+        scanBtn.style.display = 'block';
+    } else {
+        scanBtn.style.display = 'none';
+    }
 }
 
 // ============================================================
@@ -5902,6 +5903,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Professional ticket card design with watermark "Betix"');
         console.log('Scanner button only visible for event publishers!');
         console.log('Publication date (Twitter/X style) added to event cards!');
+        console.log('Back button fixed - only visible on secondary pages!');
         
     } catch (error) {
         console.error('Error during application startup:', error);
