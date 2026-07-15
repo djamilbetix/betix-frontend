@@ -2872,7 +2872,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
 }
 
 // ============================================================
-// ===== PURCHASE SUCCESS POPUP =====
+// ===== SHOW SUCCESS POPUP (MODIFIÉE) =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity, ticketType) {
@@ -2880,38 +2880,72 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var title = document.getElementById('successTitle');
     var message = document.getElementById('successMessage');
     var info = document.getElementById('successTicketInfo');
+    var viewBtn = document.getElementById('viewTicketBtn');
+    var eventNameEl = document.getElementById('successEventName');
+    
     if (!popup) return;
+    
     var qty = quantity || ticketsList.length;
     var ticket = ticketsList[0] || {};
     var typeLabel = ticketType === 'vip' ? 'VIP' : 'Standard';
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
-    
-    title.textContent = t('purchaseSuccessful');
-    message.textContent = qty + ' ' + typeLabel + ' ' + t('ticketsAdded');
-    
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US');
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     var totalPrice = qty * price;
-    var codeDisplay = ticket.qrCode || 'N/A';
     
-    info.innerHTML = 
-        '<div class="ticket-line"><span class="ticket-label">' + t('event') + '</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('type') + '</span><span class="ticket-value">' + typeLabel + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('eventDate') + '</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('locationLabel') + '</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('quantity') + '</span><span class="ticket-value">' + qty + '</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('total') + '</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
-        '<div class="ticket-line"><span class="ticket-label">' + t('code') + '</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + codeDisplay + '</span></div>';
+    // ---- TITRE ET MESSAGE ----
+    if (title) title.textContent = 'Achat réussi !';
+    if (eventNameEl) eventNameEl.textContent = event.title || 'Blockchain Africa';
+    if (message) {
+        message.innerHTML = 'Merci d\'avoir acheté votre ticket pour <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
+    }
+    
+    // ---- RÉCAPITULATIF RAPIDE ----
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
+    var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    var codeDisplay = ticket.qrCode || ticket.id || 'N/A';
+    
+    // ---- DÉTERMINER LE PAYS AVEC DRAPEAU ----
+    var paysDisplay = event.pays || event.country || 'France';
+    var flagEmojis = {
+        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪', 'Nigeria': '🇳🇬',
+        'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
+        'Ethiopia': '🇪🇹', 'Egypt': '🇪🇬', 'Morocco': '🇲🇦', 'Algeria': '🇩🇿',
+        'Tunisia': '🇹🇳', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
+        'Gabon': '🇬🇦', 'Madagascar': '🇲🇬', 'Mauritius': '🇲🇺', 'Seychelles': '🇸🇨',
+        'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼', 'Namibia': '🇳🇦',
+        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'China': '🇨🇳', 'Japan': '🇯🇵',
+        'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺', 'Mexico': '🇲🇽',
+        'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪'
+    };
+    var countryFlag = flagEmojis[paysDisplay] || '';
+    var countryDisplay = countryFlag + ' ' + paysDisplay;
+    
+    if (info) {
+        info.innerHTML = 
+            '<div class="ticket-line"><span class="ticket-label">Événement</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">' + typeLabel + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' à ' + timeFormatted + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">' + escapeHtml(event.location || 'En ligne') + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">' + countryDisplay + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Quantité</span><span class="ticket-value">' + qty + '</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Total</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
+            '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + escapeHtml(codeDisplay) + '</span></div>';
+    }
+    
+    // ---- BOUTON "VOIR MON TICKET" AVEC LIEN DYNAMIQUE ----
+    if (viewBtn) {
+        var ticketCode = ticket.id || ticket.qrCode || 'BETIX-' + Date.now();
+        viewBtn.href = 'https://betixapp.vercel.app/my-ticket?code=' + encodeURIComponent(ticketCode);
+        viewBtn.style.display = 'inline-block';
+    }
     
     popup.classList.add('show');
-}
-
-function closeSuccessPopup() {
-    var popup = document.getElementById('successPopup');
-    if (popup) {
-        popup.classList.remove('show');
-    }
 }
 
 // ============================================================
