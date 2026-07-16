@@ -234,7 +234,6 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
-            <!-- ===== TITLE AVEC LIMITE DE CARACTÈRES ===== -->
             <div class="form-group">
                 <label>Titre <span class="char-count" id="titleCharCount">(0/100)</span></label>
                 <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" maxlength="100" required oninput="updateCharCount(this, 100, 'titleCharCount', 'titleCharFill')">
@@ -263,7 +262,6 @@
             
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
-            <!-- ===== DURÉE MODERNISÉE ===== -->
             <div class="form-group">
                 <label>Durée</label>
                 <div class="event-duration-wrapper-modern">
@@ -285,21 +283,18 @@
             
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             
-            <!-- ===== DESCRIPTION AVEC LIMITE ===== -->
             <div class="form-group">
                 <label>Description <span class="char-count" id="descCharCount">(0/500)</span></label>
                 <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="500" oninput="updateCharCount(this, 500, 'descCharCount', 'descCharFill')"></textarea>
                 <div class="char-count-bar"><div class="char-count-fill" id="descCharFill" style="width:0%"></div></div>
             </div>
             
-            <!-- ===== CONDITIONS AVEC LIMITE ===== -->
             <div class="form-group">
                 <label>Conditions <span class="char-count" id="condCharCount">(0/1500)</span></label>
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500" oninput="updateCharCount(this, 1500, 'condCharCount', 'condCharFill')"></textarea>
                 <div class="char-count-bar"><div class="char-count-fill" id="condCharFill" style="width:0%"></div></div>
             </div>
             
-            <!-- ===== NOMBRES DE BILLETS PAR TYPE ===== -->
             <div class="form-group">
                 <label>Nombres de billets par type</label>
                 <div class="ticket-seats-grid">
@@ -791,9 +786,9 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL (NOUVEAU DESIGN) ===== -->
-<div id="eventDetailModal" class="modal">
-    <div class="modal-content event-detail-modal">
+<!-- ===== EVENT DETAIL MODAL (CORRIGÉ) ===== -->
+<div id="eventDetailModal" class="modal event-detail-modal">
+    <div class="modal-content">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
         <div id="eventDetailContent"></div>
     </div>
@@ -821,7 +816,6 @@
             <textarea id="editEventConditions" rows="3" placeholder="Participation conditions..."></textarea>
         </div>
         
-        <!-- ===== DURÉE MODERNISÉE DANS LE MODAL ===== -->
         <div class="form-group">
             <label>Durée</label>
             <div class="event-duration-wrapper-modern">
@@ -840,7 +834,6 @@
             </div>
         </div>
         
-        <!-- ===== PLACES PAR TYPE ===== -->
         <div class="form-group">
             <label>Nombres de billets par type</label>
             <div class="ticket-seats-grid">
