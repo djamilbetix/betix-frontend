@@ -1284,80 +1284,7 @@ const eventImagesList = {
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
-function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
-
-// ============================================================
-// ===== NOUVELLE FONCTION : COMPTEUR DE CARACTÈRES =====
-// ============================================================
-
-function updateCharCount(input, maxLength, counterId, fillId) {
-    var length = input.value.length;
-    var counter = document.getElementById(counterId);
-    var fill = document.getElementById(fillId);
-    
-    if (counter) {
-        counter.textContent = '(' + length + '/' + maxLength + ')';
-        var percentage = (length / maxLength) * 100;
-        if (percentage > 90) {
-            counter.classList.add('danger');
-            counter.classList.remove('warning');
-        } else if (percentage > 70) {
-            counter.classList.add('warning');
-            counter.classList.remove('danger');
-        } else {
-            counter.classList.remove('warning', 'danger');
-        }
-    }
-    
-    if (fill) {
-        var percent = (length / maxLength) * 100;
-        fill.style.width = Math.min(percent, 100) + '%';
-    }
-}
-
-// ============================================================
-// ===== VARIABLES POUR LE CARROUSEL DES DÉTAILS =====
-// ============================================================
-
-var detailCarouselIndex = 0;
-var detailCarouselImages = [];
-
-function eventDetailCarouselGoTo(index) {
-    var slides = document.getElementById('eventDetailCarouselSlides');
-    var dots = document.querySelectorAll('.event-detail-carousel-dot');
-    var counter = document.getElementById('carouselCounter');
-    
-    if (!slides) return;
-    if (index < 0) index = 0;
-    if (index >= detailCarouselImages.length) index = detailCarouselImages.length - 1;
-    
-    detailCarouselIndex = index;
-    slides.style.transform = 'translateX(-' + (index * 100) + '%)';
-    
-    dots.forEach(function(dot, i) {
-        dot.classList.toggle('active', i === index);
-    });
-    
-    if (counter) {
-        counter.textContent = (index + 1) + ' / ' + detailCarouselImages.length;
-    }
-}
-
-function eventDetailCarouselPrev() {
-    if (detailCarouselImages.length <= 1) return;
-    var newIndex = detailCarouselIndex - 1;
-    if (newIndex < 0) newIndex = detailCarouselImages.length - 1;
-    eventDetailCarouselGoTo(newIndex);
-}
-
-function eventDetailCarouselNext() {
-    if (detailCarouselImages.length <= 1) return;
-    var newIndex = detailCarouselIndex + 1;
-    if (newIndex >= detailCarouselImages.length) newIndex = 0;
-    eventDetailCarouselGoTo(newIndex);
-}
-
-// ============================================================
+function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }// ============================================================
 // ===== SUPABASE STORAGE FUNCTIONS =====
 // ============================================================
 
@@ -1387,7 +1314,9 @@ async function uploadEventImage(eventId, base64Data, index) {
         console.error('Error uploading to Supabase storage:', error);
         return null;
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== SUPABASE TABLE FUNCTIONS =====
 // ============================================================
 
@@ -1467,6 +1396,7 @@ async function saveEventToSupabase(eventData) {
             conditions: eventData.conditions || '',
             duration_value: eventData.durationValue || null,
             duration_unit: eventData.durationUnit || null,
+            // ---- NOUVEAU : COLONNES POUR LES PLACES PAR TYPE ----
             standard_seats: eventData.standardSeats || 0,
             vip_seats: eventData.vipSeats || 0,
             standard_sold: eventData.standardSold || 0,
@@ -1888,6 +1818,7 @@ async function loadAllFromSupabase() {
                     boosts: 0,
                     durationValue: e.duration_value || null,
                     durationUnit: e.duration_unit || null,
+                    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
                     standardSeats: e.standard_seats || 0,
                     vipSeats: e.vip_seats || 0,
                     standardSold: e.standard_sold || 0,
@@ -2643,7 +2574,7 @@ function initCountrySelectors() {
 }
 
 // ============================================================
-// ===== QUANTITY POPUP (MODIFIÉ) =====
+// ===== QUANTITY POPUP (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 function openQuantityPopup(eventId) {
@@ -2655,6 +2586,7 @@ function openQuantityPopup(eventId) {
         return;
     }
     
+    // ---- NOUVEAU : VÉRIFIER SI AU MOINS UN TYPE DE BILLET EST DISPONIBLE ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
@@ -2708,6 +2640,7 @@ function openQuantityPopup(eventId) {
         selectedTicketType = options[0].value;
     }
     
+    // ---- NOUVEAU : METTRE À JOUR LA QUANTITÉ MAX PAR TYPE ----
     if (quantityInput) {
         quantityInput.value = 1;
         quantityInput.min = 1;
@@ -2722,6 +2655,7 @@ function openQuantityPopup(eventId) {
     popup.classList.add('show');
 }
 
+// ---- NOUVEAU : FONCTION POUR METTRE À JOUR LA QUANTITÉ MAX ----
 function updateMaxQuantity() {
     var ticketTypeSelect = document.getElementById('ticketTypeSelect');
     var quantityInput = document.getElementById('ticketQuantity');
@@ -2794,6 +2728,7 @@ async function confirmPurchaseFromPopup() {
         return;
     }
     
+    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
     var availableSeats = 0;
     if (ticketType === 'standard') {
         availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
@@ -2820,7 +2755,7 @@ async function confirmPurchaseFromPopup() {
     
     await confirmPurchase(selectedEventForPurchase.id, quantity, ticketType);
 }// ============================================================
-// ===== CONFIRM PURCHASE (MODIFIÉ) =====
+// ===== CONFIRM PURCHASE (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
@@ -2832,6 +2767,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     
+    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
     var availableSeats = 0;
     if (ticketType === 'standard') {
         availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
@@ -2904,6 +2840,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     var purchaseDate = new Date().toISOString();
                     var purchaseDateTime = new Date().toLocaleString('en-US');
                     
+                    // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
                     if (ticketType === 'standard') {
                         event.standardSold = (event.standardSold || 0) + quantity;
                         event.standardLeft = (event.standardSeats || 0) - event.standardSold;
@@ -2970,9 +2907,11 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         date: new Date().toISOString()
                     });
                     
+                    // ---- NOUVEAU : NOTIFICATION À L'ORGANISATEUR ----
                     var organizerMessage = '🎫 Nouvelle vente ! ' + quantity + ' ' + typeLabel + ' ticket(s) acheté(s) pour "' + event.title + '"';
                     addNotification(organizerMessage, 'purchase');
                     
+                    // ---- NOUVEAU : NOTIFICATION À L'ACHETEUR ----
                     var buyerMessage = '✅ Achat réussi ! ' + quantity + ' ' + typeLabel + ' ticket(s) pour "' + event.title + '"';
                     addNotification(buyerMessage, 'purchase');
                     
@@ -3047,6 +2986,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     
     if (!popup) return;
     
+    // ---- EMPÊCHER LES DOUBLONS ----
     if (popup.classList.contains('show')) {
         console.log('Popup already shown, ignoring duplicate call');
         return;
@@ -3058,17 +2998,20 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     var totalPrice = qty * price;
     
+    // ---- TITRE ET MESSAGE ----
     if (title) title.textContent = 'Achat réussi !';
     if (eventNameEl) eventNameEl.textContent = event.title || 'Blockchain Africa';
     if (message) {
         message.innerHTML = 'Merci d\'avoir acheté votre ticket pour <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
     }
     
+    // ---- RÉCAPITULATIF RAPIDE ----
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
     var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     var codeDisplay = ticket.qrCode || ticket.id || 'N/A';
     
+    // ---- DÉTERMINER LE PAYS AVEC DRAPEAU ----
     var paysDisplay = event.pays || event.country || 'France';
     var flagEmojis = {
         'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
@@ -3102,6 +3045,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
             '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + escapeHtml(codeDisplay) + '</span></div>';
     }
     
+    // ---- BOUTON "VOIR MON TICKET" ----
     if (viewBtn) {
         viewBtn.onclick = function(e) {
             e.preventDefault();
@@ -3111,6 +3055,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
         viewBtn.style.display = 'inline-block';
     }
     
+    // ---- BOUTON "FERMER" ----
     if (closeBtn) {
         closeBtn.onclick = function(e) {
             e.preventDefault();
@@ -3118,6 +3063,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
         };
     }
     
+    // ---- AFFICHER LA POPUP ----
     popup.style.display = 'flex';
     popup.classList.add('show');
 }
@@ -3133,18 +3079,20 @@ function closeSuccessPopup() {
         popup.style.display = 'none';
     }
     
+    // ---- VIDER LE CONTENU POUR ÉVITER LES RÉAPPARITIONS ----
     var info = document.getElementById('successTicketInfo');
     if (info) {
         info.innerHTML = '';
     }
     
+    // ---- SUPPRIMER TOUT ÉVENTUEL ÉTAT EN MÉMOIRE ----
     localStorage.removeItem('betix_success_popup_shown');
     
     console.log('Success popup closed and cleaned');
 }
 
 // ============================================================
-// ===== CREATE EVENT (MODIFIÉ) =====
+// ===== CREATE EVENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 async function createEvent(e) {
@@ -3169,6 +3117,7 @@ async function createEvent(e) {
     var description = document.getElementById('eventDescription').value.trim();
     var conditions = document.getElementById('eventConditions').value.trim();
     
+    // ---- NOUVEAU : RÉCUPÉRER LES NOMBRES DE BILLETS ----
     var standardSeats = parseInt(document.getElementById('eventStandardSeats').value) || 0;
     var vipSeats = parseInt(document.getElementById('eventVipSeats').value) || 0;
     var seatsTotal = standardSeats + vipSeats;
@@ -3188,6 +3137,7 @@ async function createEvent(e) {
     var standardPrice = parseFloat(document.getElementById('ticketStandardPrice').value);
     var vipPrice = parseFloat(document.getElementById('ticketVipPrice').value);
     
+    // ---- VÉRIFICATION : SI UN TYPE EST ACTIF, IL DOIT AVOIR DES PLACES ----
     if (standardEnabled && standardSeats <= 0) {
         alert('Le type Standard est activé mais n\'a pas de places disponibles');
         return;
@@ -3233,6 +3183,7 @@ async function createEvent(e) {
             price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
             seatsTotal: seatsTotal,
             seatsLeft: seatsTotal,
+            // ---- NOUVEAU : SUIVI PAR TYPE ----
             standardSeats: standardSeats,
             vipSeats: vipSeats,
             standardSold: 0,
@@ -3588,7 +3539,7 @@ function getUploadedImages() {
 }
 
 // ============================================================
-// ===== MODIFIER UN EVENEMENT (MODIFIÉ) =====
+// ===== MODIFIER UN EVENEMENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 function openEditEventModal(eventId) {
@@ -3611,6 +3562,7 @@ function openEditEventModal(eventId) {
     document.getElementById('editEventDurationValue').value = event.durationValue || '';
     document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
     
+    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
     document.getElementById('editEventStandardSeats').value = event.standardSeats || 0;
     document.getElementById('editEventVipSeats').value = event.vipSeats || 0;
     
@@ -3637,10 +3589,12 @@ async function saveEventEdits() {
     var durationValue = document.getElementById('editEventDurationValue').value;
     var durationUnit = document.getElementById('editEventDurationUnit').value;
     
+    // ---- NOUVEAU : RÉCUPÉRER LES PLACES PAR TYPE ----
     var standardSeats = parseInt(document.getElementById('editEventStandardSeats').value) || 0;
     var vipSeats = parseInt(document.getElementById('editEventVipSeats').value) || 0;
     var seatsTotal = standardSeats + vipSeats;
     
+    // ---- VÉRIFICATIONS ----
     if (seatsTotal < 1) {
         alert('Au moins un billet (Standard ou VIP) doit être disponible');
         return;
@@ -3666,6 +3620,7 @@ async function saveEventEdits() {
         seatsLeft: seatsTotal - (ticketsSoldStandard + ticketsSoldVip),
         durationValue: durationValue ? parseInt(durationValue) : null,
         durationUnit: durationUnit || null,
+        // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
         standardSeats: standardSeats,
         vipSeats: vipSeats,
         standardLeft: standardSeats - ticketsSoldStandard,
@@ -3674,6 +3629,7 @@ async function saveEventEdits() {
         vipSold: ticketsSoldVip
     };
     
+    // Mettre à jour l'événement en mémoire
     event.description = updates.description;
     event.location = updates.location;
     event.conditions = updates.conditions;
@@ -3712,8 +3668,10 @@ async function saveEventEdits() {
     renderEventsByCategory();
     renderMyEvents();
     alert(t('eventPublished'));
-}// ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ AVEC AFFICHAGE DES PLACES) =====
+}
+
+// ============================================================
+// ===== RENDER EVENT CARD (MODIFIÉ AVEC AFFICHAGE DES PLACES PAR TYPE) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -3769,6 +3727,7 @@ function renderEventCard(event) {
         organizerFormatted = '@' + organizerFormatted;
     }
     
+    // ---- DATE DE PUBLICATION (style Twitter/X) ----
     var publishDateDisplay = '';
     if (event.createdAt) {
         var pd = new Date(event.createdAt);
@@ -3809,6 +3768,7 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="new-badge">' + t('new') + '</span>';
     }
     
+    // ---- NOUVEAU : AFFICHAGE DES PLACES RESTANTES PAR TYPE ----
     var seatsDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
         var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
@@ -3859,6 +3819,7 @@ function renderEventCard(event) {
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
                 '<span class="event-price-classic">' + priceDisplay + '</span>' +
+                // ---- NOUVEAU : AFFICHAGE DES PLACES PAR TYPE ----
                 '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
             '</div>' +
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
@@ -3868,211 +3829,6 @@ function renderEventCard(event) {
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
     '</div>';
-}
-
-// ============================================================
-// ===== EVENT DETAILS (NOUVEAU AVEC CARROUSEL) =====
-// ============================================================
-
-function openEventDetails(eventId) {
-    var event = events.find(function(e) { return e.id === eventId; });
-    if (!event) {
-        alert(t('eventNotFound'));
-        return;
-    }
-    
-    var modal = document.getElementById('eventDetailModal');
-    var closeBtn = document.getElementById('eventDetailClose');
-    var content = document.getElementById('eventDetailContent');
-    
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var flagEmojis = {
-        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
-        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
-        'Cote d\'Ivoire': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪', 'Nigeria': '🇳🇬',
-        'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
-        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
-        'Ethiopia': '🇪🇹', 'Egypt': '🇪🇬', 'Morocco': '🇲🇦', 'Algeria': '🇩🇿',
-        'Tunisia': '🇹🇳', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
-        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
-        'Gabon': '🇬🇦', 'Madagascar': '🇲🇬', 'Mauritius': '🇲🇺', 'Seychelles': '🇸🇨',
-        'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼', 'Namibia': '🇳🇦',
-        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
-        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
-        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'China': '🇨🇳', 'Japan': '🇯🇵',
-        'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺', 'Mexico': '🇲🇽',
-        'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪'
-    };
-    var countryFlag = flagEmojis[event.pays || event.country] || '';
-    var countryDisplay = event.pays || event.country || 'International';
-    
-    var priceDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += '<span class="price-tag">Standard: ' + event.ticketTypes.standard.price + ' Pi</span>';
-    }
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
-        priceDisplay += '<span class="price-tag vip-price">VIP: ' + event.ticketTypes.vip.price + ' Pi</span>';
-    }
-    if (!priceDisplay) {
-        priceDisplay = '<span class="price-tag">' + event.price + ' Pi</span>';
-    }
-    
-    var images = event.images && event.images.length > 0 ? event.images : [eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop'];
-    detailCarouselImages = images;
-    detailCarouselIndex = 0;
-    
-    var conditionsHtml = '';
-    if (event.conditions) {
-        var conditionsList = event.conditions.split('\n').filter(function(line) { return line.trim() !== ''; });
-        if (conditionsList.length > 0) {
-            conditionsHtml = '<ul>';
-            for (var i = 0; i < conditionsList.length; i++) {
-                conditionsHtml += '<li>' + escapeHtml(conditionsList[i].trim()) + '</li>';
-            }
-            conditionsHtml += '</ul>';
-        } else {
-            conditionsHtml = '<p>' + escapeHtml(event.conditions) + '</p>';
-        }
-    } else {
-        conditionsHtml = '<p style="color: var(--gray);">Aucune condition spécifiée</p>';
-    }
-    
-    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
-    var reviewsHtml = '';
-    if (eventRatings.length > 0) {
-        for (var i = 0; i < eventRatings.length; i++) {
-            var r = eventRatings[i];
-            var stars = '';
-            for (var k = 0; k < r.rating; k++) stars += '★';
-            for (var k = r.rating; k < 5; k++) stars += '☆';
-            reviewsHtml += '<div class="review-item">' +
-                '<div><span class="review-user">' + escapeHtml(r.userName || r.userWallet) + '</span> <span class="review-stars">' + stars + '</span></div>' +
-                (r.comment ? '<div class="review-text">"' + escapeHtml(r.comment) + '"</div>' : '') +
-                '<div class="review-date">' + new Date(r.date).toLocaleDateString('en-US') + '</div>' +
-            '</div>';
-        }
-    } else {
-        reviewsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">Aucun avis pour le moment</p>';
-    }
-    
-    var avgRating = 0;
-    if (eventRatings.length > 0) {
-        avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length;
-    }
-    var ratingStars = '';
-    var fullStars = Math.floor(avgRating);
-    for (var i = 0; i < fullStars; i++) ratingStars += '★';
-    for (var i = fullStars; i < 5; i++) ratingStars += '☆';
-    var ratingDisplay = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' avis)' : 'Non évalué';
-    
-    var organizerDisplay = event.organizerName || event.organizer || 'Unknown';
-    if (!organizerDisplay.startsWith('@')) {
-        organizerDisplay = '@' + organizerDisplay;
-    }
-    
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = event.durationValue + ' ' + event.durationUnit;
-    } else {
-        durationDisplay = 'Non spécifié';
-    }
-    
-    var seatsDisplay = event.seatsLeft + '/' + event.seatsTotal + ' places';
-    
-    // Création du carrousel HTML
-    var slidesHtml = images.map(function(img, idx) {
-        return '<div class="event-detail-carousel-slide" data-index="' + idx + '"><img src="' + img + '" alt="Event image ' + (idx+1) + '" onerror="this.src=\'' + eventImagesList[event.category] + '\'"></div>';
-    }).join('');
-    
-    var dotsHtml = images.map(function(img, idx) {
-        return '<button class="event-detail-carousel-dot' + (idx === 0 ? ' active' : '') + '" data-index="' + idx + '" onclick="eventDetailCarouselGoTo(' + idx + ')"></button>';
-    }).join('');
-    
-    var carouselHtml = 
-        '<div class="event-detail-carousel-wrapper">' +
-            '<div class="event-detail-carousel" id="eventDetailCarousel">' +
-                '<div class="event-detail-carousel-slides" id="eventDetailCarouselSlides">' + slidesHtml + '</div>' +
-                (images.length > 1 ? '<button class="event-detail-carousel-btn prev" onclick="eventDetailCarouselPrev()"><i class="fas fa-chevron-left"></i></button>' : '') +
-                (images.length > 1 ? '<button class="event-detail-carousel-btn next" onclick="eventDetailCarouselNext()"><i class="fas fa-chevron-right"></i></button>' : '') +
-                '<div class="event-detail-carousel-dots" id="carouselDots">' + dotsHtml + '</div>' +
-                '<div class="event-detail-carousel-counter" id="carouselCounter">1 / ' + images.length + '</div>' +
-            '</div>' +
-        '</div>';
-    
-    content.innerHTML = 
-        '<div class="event-detail-body-simple">' +
-            carouselHtml +
-            '<div class="event-detail-main-info">' +
-                '<h1 class="event-detail-title">' + escapeHtml(event.title) + '</h1>' +
-                '<span class="event-detail-category-badge">' + escapeHtml(event.category) + '</span>' +
-                '<div class="event-detail-organizer"><i class="fas fa-user"></i> ' + escapeHtml(organizerDisplay) + '</div>' +
-            '</div>' +
-            '<div class="event-detail-info-grid-modern">' +
-                '<div class="event-detail-info-card"><i class="fas fa-calendar-day"></i><div><span class="info-label">Date</span><span class="info-value">' + dateFormatted + '</span></div></div>' +
-                '<div class="event-detail-info-card"><i class="fas fa-clock"></i><div><span class="info-label">Heure</span><span class="info-value">' + timeFormatted + '</span></div></div>' +
-                '<div class="event-detail-info-card"><i class="fas fa-map-marker-alt"></i><div><span class="info-label">Lieu</span><span class="info-value">' + escapeHtml(event.location || 'En ligne') + '</span></div></div>' +
-                '<div class="event-detail-info-card"><i class="fas fa-flag"></i><div><span class="info-label">Pays</span><span class="info-value">' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</span></div></div>' +
-                '<div class="event-detail-info-card full-width"><i class="fas fa-hourglass-half"></i><div><span class="info-label">Durée</span><span class="info-value">' + durationDisplay + '</span></div></div>' +
-                '<div class="event-detail-info-card full-width"><i class="fas fa-ticket-alt"></i><div><span class="info-label">Billets disponibles</span><span class="info-value">' + seatsDisplay + '</span></div></div>' +
-            '</div>' +
-            '<div class="event-detail-price-section">' +
-                '<div class="event-detail-prices">' + priceDisplay + '</div>' +
-                '<button class="btn-buy-detail" id="detailBuyBtnSimple"><i class="fas fa-ticket-alt"></i> Acheter un ticket</button>' +
-            '</div>' +
-            '<div class="event-detail-section">' +
-                '<h4><i class="fas fa-align-left"></i> Description</h4>' +
-                '<p>' + (event.description || 'Aucune description') + '</p>' +
-            '</div>' +
-            '<div class="event-detail-section">' +
-                '<h4><i class="fas fa-check-circle"></i> Conditions</h4>' +
-                conditionsHtml +
-            '</div>' +
-            '<div class="event-detail-section meta-section">' +
-                '<h4><i class="fas fa-info-circle"></i> Informations</h4>' +
-                '<div class="meta-grid-modern">' +
-                    '<div class="meta-item-modern"><span class="meta-label">Organisateur</span><span class="meta-value">' + escapeHtml(organizerDisplay) + '</span></div>' +
-                    '<div class="meta-item-modern"><span class="meta-label">Créé le</span><span class="meta-value">' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</span></div>' +
-                    '<div class="meta-item-modern"><span class="meta-label">Places restantes</span><span class="meta-value">' + seatsDisplay + '</span></div>' +
-                    '<div class="meta-item-modern"><span class="meta-label">Évaluation</span><span class="meta-value">' + ratingDisplay + '</span></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="event-detail-section reviews-section">' +
-                '<h4><i class="fas fa-star"></i> Avis</h4>' +
-                reviewsHtml +
-            '</div>' +
-        '</div>';
-    
-    document.getElementById('detailBuyBtnSimple').onclick = function() {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-        openQuantityPopup(event.id);
-    };
-    
-    closeBtn.onclick = function() { 
-        closeEventDetailModal();
-    };
-    
-    window.onclick = function(e) { 
-        if (e.target === modal) {
-            closeEventDetailModal();
-        }
-    };
-    
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeEventDetailModal() {
-    var modal = document.getElementById('eventDetailModal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-    detailCarouselImages = [];
-    detailCarouselIndex = 0;
 }
 
 // ============================================================
@@ -4255,15 +4011,18 @@ async function downloadTicket(ticketId) {
         
         doc.setFillColor(13, 71, 161);
         doc.rect(0, 0, pageWidth, 45, 'F');
+        
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(28);
         doc.setFont('helvetica', 'bold');
         doc.text('BETIX', pageWidth / 2, 22, { align: 'center' });
+        
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
         doc.text('Event Ticket', pageWidth / 2, 34, { align: 'center' });
         
         y = 55;
+        
         var isVip = ticket.ticketType === 'vip';
         var typeLabel = isVip ? t('vip') : t('standard');
         
@@ -4284,6 +4043,7 @@ async function downloadTicket(ticketId) {
         }
         
         y += 20;
+        
         doc.setTextColor(26, 26, 46);
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -4308,6 +4068,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(dateFormatted, margin + 55, infoY);
+        
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
@@ -4315,6 +4076,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(timeFormatted, margin + 55, infoY);
+        
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
@@ -4322,6 +4084,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(ticket.eventLocation || 'Online', margin + 55, infoY);
+        
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
@@ -4329,6 +4092,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text((ticket.price || 0) + ' Pi', margin + 55, infoY);
+        
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
@@ -4336,6 +4100,7 @@ async function downloadTicket(ticketId) {
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
         doc.text(typeLabel, margin + 55, infoY);
+        
         infoY += 10;
         doc.setTextColor(107, 114, 128);
         doc.setFont('helvetica', 'normal');
@@ -4345,13 +4110,16 @@ async function downloadTicket(ticketId) {
         doc.text(ticket.pays || 'France', margin + 55, infoY);
         
         y += 120;
+        
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(margin, y, pageWidth - margin * 2, 30, 4, 4, 'FD');
+        
         doc.setTextColor(107, 114, 128);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.text(t('ticketCode'), margin + 10, y + 8);
+        
         doc.setTextColor(26, 26, 46);
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
@@ -4359,13 +4127,16 @@ async function downloadTicket(ticketId) {
         doc.text(codeDisplay, margin + 10, y + 22);
         
         y += 40;
+        
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(245, 247, 250);
         doc.roundedRect(margin, y, pageWidth - margin * 2, 45, 4, 4, 'FD');
+        
         doc.setTextColor(107, 114, 128);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.text('QR Code', margin + 10, y + 8);
+        
         doc.setTextColor(26, 26, 46);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
@@ -4386,9 +4157,11 @@ async function downloadTicket(ticketId) {
         }
         
         y += 55;
+        
         doc.setDrawColor(200, 200, 200);
         doc.line(margin, y, pageWidth - margin, y);
         y += 8;
+        
         doc.setTextColor(107, 114, 128);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
@@ -4405,7 +4178,10 @@ async function downloadTicket(ticketId) {
         var fileName = 'ticket_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf';
         doc.save(fileName);
         
-        addNotification(t('ticketDownloaded') + ': ' + ticket.eventTitle, 'info');
+        addNotification(
+            t('ticketDownloaded') + ': ' + ticket.eventTitle,
+            'info'
+        );
         
     } catch (error) {
         console.error('Error generating PDF:', error);
@@ -4420,23 +4196,29 @@ function markTicketAsUsed(ticketId) {
     
     if (usedTickets.indexOf(ticketId) === -1) {
         usedTickets.push(ticketId);
+        
         for (var i = 0; i < tickets.length; i++) {
             if (tickets[i].id === ticketId) {
                 tickets[i].status = 'Used';
                 break;
             }
         }
+        
         saveUsedTickets();
         saveTickets();
-        addNotification(t('ticketMarkedUsed'), 'info');
+        
+        addNotification(
+            t('ticketMarkedUsed'),
+            'info'
+        );
+        
         renderTickets();
         renderHistory();
         updateProfilePage();
+        
         alert(t('ticketMarkedUsed'));
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== MY RATINGS =====
 // ============================================================
 
@@ -5075,7 +4857,225 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== FUNCTIONS ADDITIONNELLES =====
+// ===== EVENT DETAILS =====
+// ============================================================
+
+function openEventDetails(eventId) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) {
+        alert(t('eventNotFound'));
+        return;
+    }
+    
+    var modal = document.getElementById('eventDetailModal');
+    var closeBtn = document.getElementById('eventDetailClose');
+    var content = document.getElementById('eventDetailContent');
+    
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var flagEmojis = {
+        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪', 'Nigeria': '🇳🇬',
+        'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
+        'Ethiopia': '🇪🇹', 'Egypt': '🇪🇬', 'Morocco': '🇲🇦', 'Algeria': '🇩🇿',
+        'Tunisia': '🇹🇳', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
+        'Gabon': '🇬🇦', 'Madagascar': '🇲🇬', 'Mauritius': '🇲🇺', 'Seychelles': '🇸🇨',
+        'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼', 'Namibia': '🇳🇦',
+        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'China': '🇨🇳', 'Japan': '🇯🇵',
+        'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺', 'Mexico': '🇲🇽',
+        'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪'
+    };
+    var countryFlag = flagEmojis[event.pays || event.country] || '';
+    var countryDisplay = event.pays || event.country || 'International';
+    
+    var priceDisplay = '';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
+    }
+    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+        if (priceDisplay) priceDisplay += ' | ';
+        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
+    }
+    if (!priceDisplay) priceDisplay = event.price + ' Pi';
+    
+    var fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+    var imageUrl = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    var imageCount = event.images ? event.images.length : 0;
+    
+    var conditionsHtml = '';
+    if (event.conditions) {
+        var conditionsList = event.conditions.split('\n').filter(function(line) { return line.trim() !== ''; });
+        if (conditionsList.length > 0) {
+            conditionsHtml = '<ul>';
+            for (var i = 0; i < conditionsList.length; i++) {
+                conditionsHtml += '<li>' + escapeHtml(conditionsList[i].trim()) + '</li>';
+            }
+            conditionsHtml += '</ul>';
+        } else {
+            conditionsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">' + escapeHtml(event.conditions) + '</p>';
+        }
+    } else {
+        conditionsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">' + t('noConditions') + '</p>';
+    }
+    
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    var reviewsHtml = '';
+    if (eventRatings.length > 0) {
+        for (var i = 0; i < eventRatings.length; i++) {
+            var r = eventRatings[i];
+            var stars = '';
+            for (var k = 0; k < r.rating; k++) stars += '★';
+            for (var k = r.rating; k < 5; k++) stars += '☆';
+            reviewsHtml += '<div class="review-item-simple">' +
+                '<div class="review-header"><span class="review-user">' + escapeHtml(r.userName || r.userWallet) + '</span><span class="review-stars">' + stars + '</span></div>' +
+                (r.comment ? '<div class="review-text">"' + escapeHtml(r.comment) + '"</div>' : '') +
+                '<div class="review-date">' + new Date(r.date).toLocaleDateString('en-US') + '</div>' +
+            '</div>';
+        }
+    } else {
+        reviewsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">' + t('noReviews') + '</p>';
+    }
+    
+    var avgRating = 0;
+    if (eventRatings.length > 0) {
+        avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length;
+    }
+    var ratingStars = '';
+    var fullStars = Math.floor(avgRating);
+    for (var i = 0; i < fullStars; i++) ratingStars += '★';
+    for (var i = fullStars; i < 5; i++) ratingStars += '☆';
+    var ratingDisplay = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' ' + t('reviews') + ')' : t('notYetRated');
+    
+    var organizerDisplay = event.organizerName || event.organizer || 'Unknown';
+    if (!organizerDisplay.startsWith('@')) {
+        organizerDisplay = '@' + organizerDisplay;
+    }
+    
+    content.innerHTML = 
+        '<div class="event-detail-header-simple">' +
+            '<button class="back-btn-detail" onclick="closeEventDetailModal()">' +
+                '<i class="fas fa-arrow-left"></i>' +
+            '</button>' +
+            '<span class="detail-title-header">' + escapeHtml(event.title) + '</span>' +
+            '<span class="detail-category-tag-simple">' + escapeHtml(event.category) + '</span>' +
+        '</div>' +
+        
+        '<div class="event-detail-body-simple">' +
+            '<div class="event-detail-image-wrapper">' +
+                '<img src="' + imageUrl + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+                (imageCount > 1 ? '<span class="image-count-badge"><i class="fas fa-images"></i> ' + imageCount + ' ' + t('photos') + '</span>' : '') +
+            '</div>' +
+            
+            '<div class="event-detail-info-grid">' +
+                '<div class="info-item"><i class="fas fa-calendar-day"></i> <span class="info-label">' + t('eventDate') + '</span> <span class="info-value">' + dateFormatted + '</span></div>' +
+                '<div class="info-item"><i class="fas fa-clock"></i> <span class="info-label">' + t('eventTime') + '</span> <span class="info-value">' + timeFormatted + '</span></div>' +
+                '<div class="info-item"><i class="fas fa-map-marker-alt"></i> <span class="info-label">' + t('locationLabel') + '</span> <span class="info-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+                '<div class="info-item"><i class="fas fa-flag"></i> <span class="info-label">' + t('countryLabel') + '</span> <span class="info-value">' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</span></div>' +
+                (event.durationValue && event.durationUnit ? '<div class="info-item full-width"><i class="fas fa-hourglass-half"></i> <span class="info-label">' + t('duration') + '</span> <span class="info-value">' + event.durationValue + ' ' + event.durationUnit + '</span></div>' : '') +
+            '</div>' +
+            
+            '<div class="event-detail-price-seats-simple">' +
+                '<span class="price-simple">' + priceDisplay + '</span>' +
+                '<span class="seats-simple"><i class="fas fa-users"></i> ' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>' +
+            '</div>' +
+            
+            '<div class="event-detail-description">' +
+                '<h4>' + t('fullDescription') + '</h4>' +
+                '<p>' + (event.description || t('noConditions')) + '</p>' +
+            '</div>' +
+            
+            '<div class="event-detail-conditions">' +
+                '<h4>' + t('conditions') + '</h4>' +
+                conditionsHtml +
+            '</div>' +
+            
+            '<div class="event-detail-meta">' +
+                '<h4>' + t('information') + '</h4>' +
+                '<div class="meta-grid">' +
+                    '<div class="meta-item"><span class="meta-label">' + t('organizer') + '</span><span class="meta-value">' + escapeHtml(organizerDisplay) + '</span></div>' +
+                    '<div class="meta-item"><span class="meta-label">' + t('createdOn') + '</span><span class="meta-value">' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</span></div>' +
+                    '<div class="meta-item"><span class="meta-label">' + t('seatsLeft') + '</span><span class="meta-value">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>' +
+                    '<div class="meta-item"><span class="meta-label">' + t('rating') + '</span><span class="meta-value">' + ratingDisplay + '</span></div>' +
+                '</div>' +
+            '</div>' +
+            
+            '<div class="event-detail-reviews">' +
+                '<h4>' + t('reviews') + '</h4>' +
+                reviewsHtml +
+            '</div>' +
+        '</div>' +
+        
+        '<div class="event-detail-footer-simple">' +
+            '<button class="btn-buy-simple" id="detailBuyBtnSimple">' +
+                '<i class="fas fa-ticket-alt"></i> ' + t('buyTicket') +
+            '</button>' +
+        '</div>';
+    
+    document.getElementById('detailBuyBtnSimple').onclick = function() {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        openQuantityPopup(event.id);
+    };
+    
+    closeBtn.onclick = function() { 
+        closeEventDetailModal();
+    };
+    
+    window.onclick = function(e) { 
+        if (e.target === modal) {
+            closeEventDetailModal();
+        }
+    };
+    
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEventDetailModal() {
+    var modal = document.getElementById('eventDetailModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// ============================================================
+// ===== GALLERY =====
+// ============================================================
+
+function openGallery(eventId, startIndex) {
+    var event = events.find(function(e) { return e.id === eventId; });
+    if (!event) return;
+    var images = event.images && event.images.length ? event.images : [eventImagesList[event.category]];
+    var currentIndex = startIndex || 0;
+    var modal = document.getElementById('fullGalleryModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'fullGalleryModal';
+        modal.className = 'gallery-modal';
+        modal.innerHTML = '<span class="gallery-close">&times;</span><img id="galleryCurrentImage" src=""><div class="gallery-nav"><button id="galleryPrev">' + t('back') + '</button><button id="galleryNext">' + t('viewAll') + '</button></div>';
+        document.body.appendChild(modal);
+        document.querySelector('#fullGalleryModal .gallery-close').onclick = function() { document.getElementById('fullGalleryModal').classList.remove('show'); };
+    }
+    var imgElement = document.getElementById('galleryCurrentImage');
+    var prevBtn = document.getElementById('galleryPrev');
+    var nextBtn = document.getElementById('galleryNext');
+    function updateImage(index) { if (index < 0) index = images.length - 1; if (index >= images.length) index = 0; currentIndex = index; imgElement.src = images[currentIndex]; }
+    updateImage(currentIndex);
+    prevBtn.onclick = function() { updateImage(currentIndex - 1); };
+    nextBtn.onclick = function() { updateImage(currentIndex + 1); };
+    modal.classList.add('show');
+}
+
+// ============================================================
+// ===== INIT FILTERS =====
 // ============================================================
 
 function initFilters() {
@@ -5095,6 +5095,10 @@ function initFilters() {
         }); 
     }
 }
+
+// ============================================================
+// ===== TRACK USER CONNECTION =====
+// ============================================================
 
 function trackUserConnection() {
     if (currentUser.wallet) {
@@ -5126,6 +5130,10 @@ function trackUserConnection() {
     }
 }
 
+// ============================================================
+// ===== CLEAR DATA =====
+// ============================================================
+
 function clearAllData() { 
     if (confirm(t('clearDataConfirm'))) { 
         localStorage.clear(); 
@@ -5142,6 +5150,10 @@ function toggleDarkMode(e) {
         localStorage.setItem('darkMode', 'false'); 
     } 
 }
+
+// ============================================================
+// ===== SHOW LEGAL =====
+// ============================================================
 
 function showLegal(type) {
     var modal = document.getElementById('legalModal');
@@ -5514,10 +5526,18 @@ function initHeroSlider() {
     console.log('Hero slider initialized with ' + totalSlides + ' slides');
 }
 
+// ============================================================
+// ===== FILTER BY COUNTRY =====
+// ============================================================
+
 function filterByCountry(country) {
     currentCountryFilter = country;
     renderEventsByCategory();
 }
+
+// ============================================================
+// ===== LOGO MANAGEMENT =====
+// ============================================================
 
 function handleLogoClick() {
     logoClickCount++;
@@ -5544,6 +5564,10 @@ function handleLogoClick() {
         }
     }
 }
+
+// ============================================================
+// ===== UPDATE USER INFO =====
+// ============================================================
 
 function updateUserInfo() {
     var nameEl = document.getElementById('sidebarName');
@@ -6143,8 +6167,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Seats display on event cards: STD: X/Y | VIP: X/Y');
         console.log('Notifications sent to organizer for each ticket purchase');
         console.log('Duration field modernized with dropdown menus');
-        console.log('Event detail page redesigned with image carousel');
-        console.log('Character count limits added to form fields');
         
     } catch (error) {
         console.error('Error during application startup:', error);
