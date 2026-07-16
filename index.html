@@ -234,11 +234,7 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
-            <div class="form-group">
-                <label>Titre <span class="char-count" id="titleCharCount">(0/100)</span></label>
-                <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" maxlength="100" required oninput="updateCharCount(this, 100, 'titleCharCount', 'titleCharFill')">
-                <div class="char-count-bar"><div class="char-count-fill" id="titleCharFill" style="width:0%"></div></div>
-            </div>
+            <div class="form-group"><label>Title</label><input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required></div>
             
             <div class="form-group"><label>Category</label>
                 <select id="eventCategory">
@@ -262,6 +258,7 @@
             
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
+            <!-- ===== DURÉE MODERNISÉE AVEC MENUS DÉROULANTS ===== -->
             <div class="form-group">
                 <label>Durée</label>
                 <div class="event-duration-wrapper-modern">
@@ -283,18 +280,14 @@
             
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             
-            <div class="form-group">
-                <label>Description <span class="char-count" id="descCharCount">(0/500)</span></label>
-                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="500" oninput="updateCharCount(this, 500, 'descCharCount', 'descCharFill')"></textarea>
-                <div class="char-count-bar"><div class="char-count-fill" id="descCharFill" style="width:0%"></div></div>
-            </div>
+            <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
             
             <div class="form-group">
-                <label>Conditions <span class="char-count" id="condCharCount">(0/1500)</span></label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500" oninput="updateCharCount(this, 1500, 'condCharCount', 'condCharFill')"></textarea>
-                <div class="char-count-bar"><div class="char-count-fill" id="condCharFill" style="width:0%"></div></div>
+                <label>Conditions</label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
             </div>
             
+            <!-- ===== NOUVEAU : NOMBRES DE BILLETS PAR TYPE ===== -->
             <div class="form-group">
                 <label>Nombres de billets par type</label>
                 <div class="ticket-seats-grid">
@@ -786,15 +779,14 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL (CORRIGÉ) ===== -->
-<div id="eventDetailModal" class="modal event-detail-modal">
-    <div class="modal-content">
+<div id="eventDetailModal" class="modal">
+    <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
         <div id="eventDetailContent"></div>
     </div>
 </div>
 
-<!-- ===== EDIT EVENT MODAL ===== -->
+<!-- ===== MODAL D'ÉDITION MODIFIÉ AVEC NOUVEAUX CHAMPS ===== -->
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
@@ -816,6 +808,7 @@
             <textarea id="editEventConditions" rows="3" placeholder="Participation conditions..."></textarea>
         </div>
         
+        <!-- ===== DURÉE MODERNISÉE DANS LE MODAL D'ÉDITION ===== -->
         <div class="form-group">
             <label>Durée</label>
             <div class="event-duration-wrapper-modern">
@@ -834,6 +827,7 @@
             </div>
         </div>
         
+        <!-- ===== NOUVEAU : PLACES PAR TYPE DANS LE MODAL D'ÉDITION ===== -->
         <div class="form-group">
             <label>Nombres de billets par type</label>
             <div class="ticket-seats-grid">
@@ -896,8 +890,10 @@
             Merci d'avoir acheté votre ticket pour <strong id="successEventName">Blockchain Africa</strong>
         </p>
 
+        <!-- Récapitulatif rapide -->
         <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
 
+        <!-- BOUTON VOIR MON TICKET -->
         <button class="btn-primary success-btn-blue" id="viewTicketBtn" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #0D47A1, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box; border:none; cursor:pointer;">
             <i class="fas fa-eye"></i> Voir mon ticket
         </button>
