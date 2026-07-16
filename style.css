@@ -3538,6 +3538,7 @@ body.dark-mode .char-count-bar {
     border-radius: 16px 16px 0 0;
     overflow: hidden;
     aspect-ratio: 16 / 9;
+    flex-shrink: 0;
 }
 
 .event-detail-carousel {
@@ -3897,6 +3898,79 @@ body.dark-mode .char-count-bar {
     color: #9ca3af;
 }
 
+/* ============================================================
+   FIX : MODAL EVENT DETAIL - SCROLLABLE À L'INTÉRIEUR
+   ============================================================ */
+
+/* Le modal lui-même doit occuper tout l'écran */
+.event-detail-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: rgba(0,0,0,0.7) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2000 !important;
+    overflow: hidden !important;
+}
+
+/* Le contenu du modal */
+.event-detail-modal .modal-content {
+    position: relative !important;
+    max-width: 780px !important;
+    width: 100% !important;
+    max-height: 90vh !important;
+    height: auto !important;
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35) !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+/* Le corps du modal qui doit être scrollable */
+.event-detail-body-simple {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    padding: 0 !important;
+    max-height: calc(90vh - 60px) !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Le header du modal (bouton fermer) */
+.event-detail-modal .modal-close {
+    position: sticky !important;
+    top: 0 !important;
+    right: 0 !important;
+    z-index: 20 !important;
+    background: rgba(0,0,0,0.5) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    float: right !important;
+    margin: 10px !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.event-detail-modal .modal-close:hover {
+    background: rgba(255,255,255,0.2) !important;
+}
+
 /* ---- DARK MODE ---- */
 body.dark-mode .event-detail-main-info {
     background: #1f2937;
@@ -3947,6 +4021,26 @@ body.dark-mode .reviews-section .review-item {
 
 body.dark-mode .reviews-section .review-item .review-text {
     color: #d1d5db;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 600px) {
+    .event-detail-modal {
+        padding: 10px !important;
+    }
+    
+    .event-detail-modal .modal-content {
+        max-height: 98vh !important;
+        border-radius: 16px !important;
+    }
+    
+    .event-detail-body-simple {
+        max-height: calc(98vh - 50px) !important;
+    }
+    
+    .event-detail-carousel-wrapper {
+        aspect-ratio: 16 / 10 !important;
+    }
 }
 
 /* ============================================================
