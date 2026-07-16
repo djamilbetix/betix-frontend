@@ -1285,7 +1285,6 @@ const eventImagesList = {
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
 function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
-
 // ============================================================
 // ===== SUPABASE STORAGE FUNCTIONS =====
 // ============================================================
@@ -1368,7 +1367,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// ===== SAVE EVENT TO SUPABASE =====
+// ===== SAVE EVENT TO SUPABASE (MODIFIÉ) =====
 // ============================================================
 
 async function saveEventToSupabase(eventData) {
@@ -1397,13 +1396,20 @@ async function saveEventToSupabase(eventData) {
             created_at: eventData.createdAt || new Date().toISOString(),
             conditions: eventData.conditions || '',
             duration_value: eventData.durationValue || null,
-            duration_unit: eventData.durationUnit || null
+            duration_unit: eventData.durationUnit || null,
+            // ---- NOUVEAU : COLONNES POUR LES PLACES PAR TYPE ----
+            standard_seats: eventData.standardSeats || 0,
+            vip_seats: eventData.vipSeats || 0,
+            standard_sold: eventData.standardSold || 0,
+            vip_sold: eventData.vipSold || 0
         };
         
         console.log('Saving event to Supabase:', eventData.id);
         console.log('   Title:', dbEvent.title);
         console.log('   Pays:', dbEvent.pays);
         console.log('   Organizer:', dbEvent.organizer_name);
+        console.log('   Standard Seats:', dbEvent.standard_seats);
+        console.log('   VIP Seats:', dbEvent.vip_seats);
         
         const { data, error } = await supabaseClient
             .from('events')
@@ -1778,7 +1784,7 @@ async function syncAllToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD ALL FROM SUPABASE =====
+// ===== LOAD ALL FROM SUPABASE (MODIFIÉ) =====
 // ============================================================
 
 async function loadAllFromSupabase() {
@@ -1813,6 +1819,13 @@ async function loadAllFromSupabase() {
                     boosts: 0,
                     durationValue: e.duration_value || null,
                     durationUnit: e.duration_unit || null,
+                    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
+                    standardSeats: e.standard_seats || 0,
+                    vipSeats: e.vip_seats || 0,
+                    standardSold: e.standard_sold || 0,
+                    vipSold: e.vip_sold || 0,
+                    standardLeft: (e.standard_seats || 0) - (e.standard_sold || 0),
+                    vipLeft: (e.vip_seats || 0) - (e.vip_sold || 0),
                     ticketTypes: {
                         standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
                         vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
@@ -2562,7 +2575,7 @@ function initCountrySelectors() {
 }
 
 // ============================================================
-// ===== QUANTITY POPUP =====
+// ===== QUANTITY POPUP (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 function openQuantityPopup(eventId) {
@@ -2573,7 +2586,21 @@ function openQuantityPopup(eventId) {
         connectToPi();
         return;
     }
-    if (event.seatsLeft <= 0) { alert(t('noSeatsAvailable')); return; }
+    
+    // ---- NOUVEAU : VÉRIFIER SI AU MOINS UN TYPE DE BILLET EST DISPONIBLE ----
+    var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
+    var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
+    var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+    var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
+    
+    if (!hasStandard && !hasVip) {
+        alert('Aucun type de billet disponible');
+        return;
+    }
+    if (hasStandard && standardLeft <= 0 && hasVip && vipLeft <= 0) {
+        alert('Tous les billets sont épuisés pour cet événement');
+        return;
+    }
     
     selectedEventForPurchase = event;
     
@@ -2590,26 +2617,20 @@ function openQuantityPopup(eventId) {
         var dateEvent = new Date(event.date);
         infoEl.textContent = dateEvent.toLocaleDateString('en-US') + ' at ' + dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' | ' + event.location;
     }
-    if (maxInfo) {
-        maxInfo.textContent = t('maximumTickets') + ': ' + Math.min(event.seatsLeft, 10);
-    }
-    if (quantityInput) {
-        quantityInput.value = 1;
-        quantityInput.max = Math.min(event.seatsLeft, 10);
-        quantityInput.min = 1;
-    }
     
     if (ticketTypeSelect) {
         ticketTypeSelect.innerHTML = '';
         var options = [];
-        if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-            options.push({ value: 'standard', label: t('standard') + ' - ' + event.ticketTypes.standard.price + ' Pi' });
+        if (hasStandard && standardLeft > 0) {
+            options.push({ value: 'standard', label: t('standard') + ' - ' + event.ticketTypes.standard.price + ' Pi (dispo: ' + standardLeft + ')' });
         }
-        if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
-            options.push({ value: 'vip', label: t('vip') + ' - ' + event.ticketTypes.vip.price + ' Pi' });
+        if (hasVip && vipLeft > 0) {
+            options.push({ value: 'vip', label: t('vip') + ' - ' + event.ticketTypes.vip.price + ' Pi (dispo: ' + vipLeft + ')' });
         }
         if (options.length === 0) {
-            options.push({ value: 'standard', label: t('standard') + ' - ' + event.price + ' Pi' });
+            alert('Aucun billet disponible');
+            closeQuantityPopup();
+            return;
         }
         for (var i = 0; i < options.length; i++) {
             var opt = document.createElement('option');
@@ -2620,8 +2641,46 @@ function openQuantityPopup(eventId) {
         selectedTicketType = options[0].value;
     }
     
+    // ---- NOUVEAU : METTRE À JOUR LA QUANTITÉ MAX PAR TYPE ----
+    if (quantityInput) {
+        quantityInput.value = 1;
+        quantityInput.min = 1;
+        updateMaxQuantity();
+    }
+    
+    if (maxInfo) {
+        maxInfo.textContent = 'Sélectionnez un type de billet ci-dessus';
+    }
+    
     updateTicketTotal();
     popup.classList.add('show');
+}
+
+// ---- NOUVEAU : FONCTION POUR METTRE À JOUR LA QUANTITÉ MAX ----
+function updateMaxQuantity() {
+    var ticketTypeSelect = document.getElementById('ticketTypeSelect');
+    var quantityInput = document.getElementById('ticketQuantity');
+    var maxInfo = document.getElementById('maxQuantityInfo');
+    
+    if (!ticketTypeSelect || !quantityInput || !selectedEventForPurchase) return;
+    
+    var type = ticketTypeSelect.value;
+    var maxSeats = 0;
+    if (type === 'standard') {
+        maxSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
+    } else if (type === 'vip') {
+        maxSeats = selectedEventForPurchase.vipLeft !== undefined ? selectedEventForPurchase.vipLeft : (selectedEventForPurchase.vipSeats || 0);
+    }
+    
+    var maxAllowed = Math.min(maxSeats, 10);
+    quantityInput.max = maxAllowed;
+    if (parseInt(quantityInput.value) > maxAllowed) {
+        quantityInput.value = maxAllowed;
+    }
+    if (maxInfo) {
+        maxInfo.textContent = 'Maximum: ' + maxAllowed + ' ticket(s) disponible(s)';
+    }
+    updateTicketTotal();
 }
 
 function updateTicketTotal() {
@@ -2670,8 +2729,23 @@ async function confirmPurchaseFromPopup() {
         return;
     }
     
-    if (quantity > selectedEventForPurchase.seatsLeft) {
-        alert('Only ' + selectedEventForPurchase.seatsLeft + ' tickets available');
+    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
+    var availableSeats = 0;
+    if (ticketType === 'standard') {
+        availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
+    } else if (ticketType === 'vip') {
+        availableSeats = selectedEventForPurchase.vipLeft !== undefined ? selectedEventForPurchase.vipLeft : (selectedEventForPurchase.vipSeats || 0);
+    }
+    
+    if (quantity > availableSeats) {
+        var msg = 'Plus de places disponibles pour ce type de billet.\n';
+        if (selectedEventForPurchase.ticketTypes && selectedEventForPurchase.ticketTypes.standard && selectedEventForPurchase.ticketTypes.standard.enabled) {
+            msg += 'STD: ' + (selectedEventForPurchase.standardLeft || 0) + ' restants\n';
+        }
+        if (selectedEventForPurchase.ticketTypes && selectedEventForPurchase.ticketTypes.vip && selectedEventForPurchase.ticketTypes.vip.enabled) {
+            msg += 'VIP: ' + (selectedEventForPurchase.vipLeft || 0) + ' restants';
+        }
+        alert(msg);
         return;
     }
     
@@ -2681,10 +2755,8 @@ async function confirmPurchaseFromPopup() {
     }
     
     await confirmPurchase(selectedEventForPurchase.id, quantity, ticketType);
-}
-
-// ============================================================
-// ===== CONFIRM PURCHASE =====
+}// ============================================================
+// ===== CONFIRM PURCHASE (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 async function confirmPurchase(eventId, quantity, ticketType) {
@@ -2695,8 +2767,24 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     }
     
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
-    if (quantity > event.seatsLeft) { 
-        alert(t('noSeatsAvailable')); 
+    
+    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
+    var availableSeats = 0;
+    if (ticketType === 'standard') {
+        availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+    } else if (ticketType === 'vip') {
+        availableSeats = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
+    }
+    
+    if (quantity > availableSeats) { 
+        var msg = 'Plus de places disponibles pour ce type de billet.\n';
+        if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+            msg += 'STD: ' + (event.standardLeft || 0) + ' restants\n';
+        }
+        if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+            msg += 'VIP: ' + (event.vipLeft || 0) + ' restants';
+        }
+        alert(msg);
         return; 
     }
     
@@ -2753,6 +2841,17 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     var purchaseDate = new Date().toISOString();
                     var purchaseDateTime = new Date().toLocaleString('en-US');
                     
+                    // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
+                    if (ticketType === 'standard') {
+                        event.standardSold = (event.standardSold || 0) + quantity;
+                        event.standardLeft = (event.standardSeats || 0) - event.standardSold;
+                    } else if (ticketType === 'vip') {
+                        event.vipSold = (event.vipSold || 0) + quantity;
+                        event.vipLeft = (event.vipSeats || 0) - event.vipSold;
+                    }
+                    event.seatsLeft -= quantity;
+                    event.boosts = (event.boosts || 0) + quantity;
+                    
                     for (var i = 0; i < quantity; i++) {
                         var ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         var ticket = {
@@ -2777,9 +2876,6 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
                     }
-                    
-                    event.seatsLeft -= quantity;
-                    event.boosts = (event.boosts || 0) + quantity;
                     
                     saveEvents();
                     saveTickets();
@@ -2812,10 +2908,13 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         date: new Date().toISOString()
                     });
                     
-                    addNotification(
-                        t('purchaseSuccessful') + ' ' + quantity + ' ' + typeLabel + ' ' + t('tickets') + ' for "' + event.title + '"',
-                        'purchase'
-                    );
+                    // ---- NOUVEAU : NOTIFICATION À L'ORGANISATEUR ----
+                    var organizerMessage = '🎫 Nouvelle vente ! ' + quantity + ' ' + typeLabel + ' ticket(s) acheté(s) pour "' + event.title + '"';
+                    addNotification(organizerMessage, 'purchase');
+                    
+                    // ---- NOUVEAU : NOTIFICATION À L'ACHETEUR ----
+                    var buyerMessage = '✅ Achat réussi ! ' + quantity + ' ' + typeLabel + ' ticket(s) pour "' + event.title + '"';
+                    addNotification(buyerMessage, 'purchase');
                     
                     renderEventsByCategory();
                     renderTickets();
@@ -2874,7 +2973,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
 }
 
 // ============================================================
-// ===== SHOW SUCCESS POPUP (MODIFIÉE AVEC VÉRIFICATION ET NETTOYAGE) =====
+// ===== SHOW SUCCESS POPUP =====
 // ============================================================
 
 function showSuccessPopup(event, ticketsList, quantity, ticketType) {
@@ -2971,7 +3070,7 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
 }
 
 // ============================================================
-// ===== CLOSE SUCCESS POPUP (MODIFIÉE AVEC NETTOYAGE COMPLET) =====
+// ===== CLOSE SUCCESS POPUP =====
 // ============================================================
 
 function closeSuccessPopup() {
@@ -2994,7 +3093,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 async function createEvent(e) {
@@ -3018,7 +3117,12 @@ async function createEvent(e) {
     var location = document.getElementById('eventLocation').value.trim();
     var description = document.getElementById('eventDescription').value.trim();
     var conditions = document.getElementById('eventConditions').value.trim();
-    var seatsTotal = parseInt(document.getElementById('eventSeats').value);
+    
+    // ---- NOUVEAU : RÉCUPÉRER LES NOMBRES DE BILLETS ----
+    var standardSeats = parseInt(document.getElementById('eventStandardSeats').value) || 0;
+    var vipSeats = parseInt(document.getElementById('eventVipSeats').value) || 0;
+    var seatsTotal = standardSeats + vipSeats;
+    
     var durationValue = document.getElementById('eventDurationValue').value;
     var durationUnit = document.getElementById('eventDurationUnit').value;
     var durationValueNum = durationValue ? parseInt(durationValue) : null;
@@ -3026,7 +3130,7 @@ async function createEvent(e) {
     if (!title) { alert(t('title') + ' required'); return; }
     if (!date) { alert(t('dateTime') + ' required'); return; }
     if (!location) { alert(t('locationLabel') + ' required'); return; }
-    if (!seatsTotal || seatsTotal < 1) { alert(t('totalSeats') + ' must be at least 1'); return; }
+    if (seatsTotal < 1) { alert('Au moins un billet (Standard ou VIP) doit être disponible'); return; }
     if (!conditions) { alert(t('conditions') + ' required'); return; }
     
     var standardEnabled = document.getElementById('ticketStandardEnabled').checked;
@@ -3034,10 +3138,20 @@ async function createEvent(e) {
     var standardPrice = parseFloat(document.getElementById('ticketStandardPrice').value);
     var vipPrice = parseFloat(document.getElementById('ticketVipPrice').value);
     
+    // ---- VÉRIFICATION : SI UN TYPE EST ACTIF, IL DOIT AVOIR DES PLACES ----
+    if (standardEnabled && standardSeats <= 0) {
+        alert('Le type Standard est activé mais n\'a pas de places disponibles');
+        return;
+    }
+    if (vipEnabled && vipSeats <= 0) {
+        alert('Le type VIP est activé mais n\'a pas de places disponibles');
+        return;
+    }
     if (!standardEnabled && !vipEnabled) {
         alert(t('enableAtLeastOne'));
         return;
     }
+    
     if (standardEnabled && (!standardPrice || standardPrice <= 0)) {
         alert(t('standard') + ' ' + t('price') + ' must be greater than 0');
         return;
@@ -3070,6 +3184,13 @@ async function createEvent(e) {
             price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
             seatsTotal: seatsTotal,
             seatsLeft: seatsTotal,
+            // ---- NOUVEAU : SUIVI PAR TYPE ----
+            standardSeats: standardSeats,
+            vipSeats: vipSeats,
+            standardSold: 0,
+            vipSold: 0,
+            standardLeft: standardSeats,
+            vipLeft: vipSeats,
             images: images,
             coverImage: images[0],
             organizer: currentUser.wallet,
@@ -3419,7 +3540,7 @@ function getUploadedImages() {
 }
 
 // ============================================================
-// ===== MODIFIER UN EVENEMENT =====
+// ===== MODIFIER UN EVENEMENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
 // ============================================================
 
 function openEditEventModal(eventId) {
@@ -3439,9 +3560,12 @@ function openEditEventModal(eventId) {
     document.getElementById('editEventDescription').value = event.description || '';
     document.getElementById('editEventLocation').value = event.location || '';
     document.getElementById('editEventConditions').value = event.conditions || '';
-    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
     document.getElementById('editEventDurationValue').value = event.durationValue || '';
     document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
+    
+    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
+    document.getElementById('editEventStandardSeats').value = event.standardSeats || 0;
+    document.getElementById('editEventVipSeats').value = event.vipSeats || 0;
     
     document.getElementById('editEventModal').classList.add('show');
 }
@@ -3463,18 +3587,29 @@ async function saveEventEdits() {
     var description = document.getElementById('editEventDescription').value.trim();
     var location = document.getElementById('editEventLocation').value.trim();
     var conditions = document.getElementById('editEventConditions').value.trim();
-    var seatsTotal = parseInt(document.getElementById('editEventSeats').value);
     var durationValue = document.getElementById('editEventDurationValue').value;
     var durationUnit = document.getElementById('editEventDurationUnit').value;
     
-    if (!seatsTotal || seatsTotal < 1) {
-        alert(t('totalSeats') + ' must be at least 1');
+    // ---- NOUVEAU : RÉCUPÉRER LES PLACES PAR TYPE ----
+    var standardSeats = parseInt(document.getElementById('editEventStandardSeats').value) || 0;
+    var vipSeats = parseInt(document.getElementById('editEventVipSeats').value) || 0;
+    var seatsTotal = standardSeats + vipSeats;
+    
+    // ---- VÉRIFICATIONS ----
+    if (seatsTotal < 1) {
+        alert('Au moins un billet (Standard ou VIP) doit être disponible');
         return;
     }
     
-    var ticketsSold = tickets.filter(function(t) { return t.eventId === editingEventId; }).length;
-    if (seatsTotal < ticketsSold) {
-        alert('You cannot reduce the number of seats below the number already sold (' + ticketsSold + ' seats sold)');
+    var ticketsSoldStandard = tickets.filter(function(t) { return t.eventId === editingEventId && t.ticketType === 'standard'; }).length;
+    var ticketsSoldVip = tickets.filter(function(t) { return t.eventId === editingEventId && t.ticketType === 'vip'; }).length;
+    
+    if (standardSeats < ticketsSoldStandard) {
+        alert('Vous ne pouvez pas réduire le nombre de places Standard en dessous des ' + ticketsSoldStandard + ' déjà vendues');
+        return;
+    }
+    if (vipSeats < ticketsSoldVip) {
+        alert('Vous ne pouvez pas réduire le nombre de places VIP en dessous des ' + ticketsSoldVip + ' déjà vendues');
         return;
     }
     
@@ -3483,11 +3618,19 @@ async function saveEventEdits() {
         location: location,
         conditions: conditions,
         seatsTotal: seatsTotal,
-        seatsLeft: seatsTotal - ticketsSold,
+        seatsLeft: seatsTotal - (ticketsSoldStandard + ticketsSoldVip),
         durationValue: durationValue ? parseInt(durationValue) : null,
-        durationUnit: durationUnit || null
+        durationUnit: durationUnit || null,
+        // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
+        standardSeats: standardSeats,
+        vipSeats: vipSeats,
+        standardLeft: standardSeats - ticketsSoldStandard,
+        vipLeft: vipSeats - ticketsSoldVip,
+        standardSold: ticketsSoldStandard,
+        vipSold: ticketsSoldVip
     };
     
+    // Mettre à jour l'événement en mémoire
     event.description = updates.description;
     event.location = updates.location;
     event.conditions = updates.conditions;
@@ -3495,6 +3638,12 @@ async function saveEventEdits() {
     event.seatsLeft = updates.seatsLeft;
     event.durationValue = updates.durationValue;
     event.durationUnit = updates.durationUnit;
+    event.standardSeats = updates.standardSeats;
+    event.vipSeats = updates.vipSeats;
+    event.standardLeft = updates.standardLeft;
+    event.vipLeft = updates.vipLeft;
+    event.standardSold = updates.standardSold;
+    event.vipSold = updates.vipSold;
     
     saveEvents();
     
@@ -3504,7 +3653,11 @@ async function saveEventEdits() {
         conditions: updates.conditions,
         max_tickets: updates.seatsTotal,
         duration_value: updates.durationValue,
-        duration_unit: updates.durationUnit
+        duration_unit: updates.durationUnit,
+        standard_seats: updates.standardSeats,
+        vip_seats: updates.vipSeats,
+        standard_sold: updates.standardSold,
+        vip_sold: updates.vipSold
     });
     
     addNotification(
@@ -3519,10 +3672,170 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== TICKETS AND HISTORY (MODIFIÉ POUR QR CODES + DESIGN PRO) =====
+// ===== RENDER EVENT CARD (MODIFIÉ AVEC AFFICHAGE DES PLACES PAR TYPE) =====
 // ============================================================
 
-// ---- GÉNÉRATION DES QR CODES ----
+function renderEventCard(event) {
+    var avgRating = 0;
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
+    
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    
+    var flagEmojis = {
+        'France': 'FR', 'RDC': 'CD', 'Congo': 'CG', 'Belgium': 'BE',
+        'Switzerland': 'CH', 'Canada': 'CA', 'Senegal': 'SN', 'Cameroon': 'CM',
+        'Cote d\'Ivoire': 'CI', 'Ivory Coast': 'CI', 'Mali': 'ML', 'Niger': 'NE',
+        'Nigeria': 'NG', 'South Africa': 'ZA', 'Angola': 'AO', 'Mozambique': 'MZ',
+        'Kenya': 'KE', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Rwanda': 'RW',
+        'Burundi': 'BI', 'Ethiopia': 'ET', 'Somalia': 'SO', 'Djibouti': 'DJ',
+        'Eritrea': 'ER', 'Sudan': 'SD', 'South Sudan': 'SS', 'Egypt': 'EG',
+        'Libya': 'LY', 'Tunisia': 'TN', 'Algeria': 'DZ', 'Morocco': 'MA',
+        'Mauritania': 'MR', 'Ghana': 'GH', 'Guinea': 'GN', 'Burkina Faso': 'BF',
+        'Benin': 'BJ', 'Togo': 'TG', 'Liberia': 'LR', 'Sierra Leone': 'SL',
+        'Gambia': 'GM', 'Guinea-Bissau': 'GW', 'Cape Verde': 'CV', 'Sao Tome': 'ST',
+        'Gabon': 'GA', 'Equatorial Guinea': 'GQ', 'Central African Republic': 'CF',
+        'Chad': 'TD', 'Madagascar': 'MG', 'Comoros': 'KM', 'Mauritius': 'MU',
+        'Seychelles': 'SC', 'Zambia': 'ZM', 'Zimbabwe': 'ZW', 'Botswana': 'BW',
+        'Namibia': 'NA', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Malawi': 'MW',
+        'Spain': 'ES', 'Portugal': 'PT', 'Germany': 'DE', 'Italy': 'IT',
+        'United Kingdom': 'GB', 'United States': 'US', 'Russia': 'RU',
+        'Ukraine': 'UA', 'Turkey': 'TR', 'Iran': 'IR', 'China': 'CN',
+        'Japan': 'JP', 'India': 'IN', 'Indonesia': 'ID', 'Australia': 'AU',
+        'Mexico': 'MX', 'Argentina': 'AR', 'Brazil': 'BR', 'Denmark': 'DK',
+        'Sweden': 'SE', 'Austria': 'AT'
+    };
+    
+    var countryFlag = flagEmojis[event.pays || event.country] || '';
+    var countryDisplay = event.pays || event.country || 'International';
+    
+    var desc = event.description || '';
+    if (desc.length > 120) {
+        desc = desc.substring(0, 117) + '...';
+    }
+    
+    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
+    if (organizerDisplay.length > 20) {
+        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    }
+    var organizerFormatted = organizerDisplay;
+    if (!organizerFormatted.startsWith('@')) {
+        organizerFormatted = '@' + organizerFormatted;
+    }
+    
+    // ---- DATE DE PUBLICATION (style Twitter/X) ----
+    var publishDateDisplay = '';
+    if (event.createdAt) {
+        var pd = new Date(event.createdAt);
+        var now = new Date();
+        var diffMs = now - pd;
+        var diffMins = Math.floor(diffMs / 60000);
+        var diffHours = Math.floor(diffMs / 3600000);
+        var diffDays = Math.floor(diffMs / 86400000);
+        var diffWeeks = Math.floor(diffDays / 7);
+        var diffMonths = Math.floor(diffDays / 30);
+        var diffYears = Math.floor(diffDays / 365);
+        
+        if (diffMins < 1) {
+            publishDateDisplay = 'À l\'instant';
+        } else if (diffMins < 60) {
+            publishDateDisplay = 'Il y a ' + diffMins + ' min';
+        } else if (diffHours < 24) {
+            publishDateDisplay = 'Il y a ' + diffHours + ' h';
+        } else if (diffDays < 7) {
+            publishDateDisplay = 'Il y a ' + diffDays + ' j';
+        } else if (diffWeeks < 4) {
+            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
+        } else if (diffMonths < 12) {
+            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
+        } else {
+            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+    }
+    
+    var ratingDisplay = '';
+    if (eventRatings.length > 0) {
+        var stars = '';
+        var fullStars = Math.floor(avgRating);
+        for (var i = 0; i < fullStars; i++) stars += '★';
+        for (var i = fullStars; i < 5; i++) stars += '☆';
+        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
+    } else {
+        ratingDisplay = '<span class="new-badge">' + t('new') + '</span>';
+    }
+    
+    // ---- NOUVEAU : AFFICHAGE DES PLACES RESTANTES PAR TYPE ----
+    var seatsDisplay = '';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+        var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+        var standardTotal = event.standardSeats || 0;
+        seatsDisplay += '<span class="seats-type standard-seats">STD: <span class="seats-count">' + standardLeft + '/' + standardTotal + '</span></span>';
+    }
+    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+        var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
+        var vipTotal = event.vipSeats || 0;
+        seatsDisplay += '<span class="seats-type vip-seats">VIP: <span class="seats-count">' + vipLeft + '/' + vipTotal + '</span></span>';
+    }
+    if (!seatsDisplay) {
+        seatsDisplay = '<span class="seats-type">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>';
+    }
+    
+    var priceDisplay = '';
+    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
+    }
+    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+        if (priceDisplay) priceDisplay += ' | ';
+        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
+    }
+    if (!priceDisplay) {
+        priceDisplay = event.price + ' Pi';
+    }
+    
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
+    }
+    
+    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
+        '<div class="poster-wrapper-classic">' +
+            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
+        '</div>' +
+        '<div class="card-content-classic">' +
+            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
+            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
+            '<div class="info-grid-classic">' +
+                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
+            '</div>' +
+            durationDisplay +
+            '<div class="card-footer-classic">' +
+                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
+                '<span class="event-price-classic">' + priceDisplay + '</span>' +
+                // ---- NOUVEAU : AFFICHAGE DES PLACES PAR TYPE ----
+                '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
+            '</div>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
+            '<div class="event-organizer-classic">' +
+                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
+            '</div>' +
+            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
+        '</div>' +
+    '</div>';
+}
+
+// ============================================================
+// ===== TICKETS AND HISTORY =====
+// ============================================================
+
 function generateAllQRCodes() {
     console.log('Generating QR codes...');
     const containers = document.querySelectorAll('.qr-code-container');
@@ -3561,30 +3874,6 @@ function generateAllQRCodes() {
     });
 }
 
-// ============================================================
-// ===== VÉRIFICATION SI L'UTILISATEUR A PUBLIÉ UN ÉVÉNEMENT =====
-// ============================================================
-
-function userHasPublishedEvents() {
-    if (!currentUser.wallet && !currentUser.piUid) return false;
-    var userId = currentUser.piUid || currentUser.wallet;
-    var myEvents = events.filter(function(e) {
-        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
-    });
-    return myEvents.length > 0;
-}
-
-function updateScanButtonVisibility() {
-    var scanBtn = document.getElementById('scanMenuItem');
-    if (!scanBtn) return;
-    if (userHasPublishedEvents()) {
-        scanBtn.style.display = 'block';
-    } else {
-        scanBtn.style.display = 'none';
-    }
-}
-
-// ---- RENDER TICKET CARD (VERSION PROFESSIONNELLE AVEC FILIGRANE) ----
 function renderTicketCard(ticket, status) {
     var dateEvent = new Date(ticket.eventDate);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -3609,7 +3898,6 @@ function renderTicketCard(ticket, status) {
     var categoryDisplay = ticket.category || 'Event';
     var paysDisplay = ticket.pays || 'France';
     
-    // ---- DATE D'ACHAT (format simple : 13/07/2026 10:57) ----
     var purchaseDateDisplay = 'Non disponible';
     if (ticket.purchaseDate) {
         var pd = new Date(ticket.purchaseDate);
@@ -3625,27 +3913,16 @@ function renderTicketCard(ticket, status) {
         '</button>';
     }
     
-    // ============================================================
-    // CARTE PROFESSIONNELLE AVEC FILIGRANE BETIX
-    // ============================================================
     return '<div class="ticket-card-professional ' + vipClass + '">' +
-        // ---- FILIGRANE BETIX (arrière-plan) ----
         '<div class="ticket-watermark">Betix</div>' +
-        
-        // ---- EN-TÊTE ----
         '<div class="ticket-header ' + vipHeaderStyle + '">' +
             '<span class="ticket-status ' + statusClass + ' ' + vipBadgeStyle + '">' + statusText + ' - ' + typeLabel + '</span>' +
             '<span class="ticket-number">#' + ticket.id.substring(0, 8).toUpperCase() + '</span>' +
         '</div>' +
-        
-        // ---- CORPS ----
         '<div class="ticket-body">' +
             '<div class="ticket-event-title">' + escapeHtml(ticket.eventTitle) + '</div>' +
             '<div class="ticket-category ' + (isVip ? 'vip-category' : '') + '">' + escapeHtml(categoryDisplay) + '  |  ' + typeLabel + '  |  ' + escapeHtml(paysDisplay) + '</div>' +
-            
-            // ---- GRILLE 2 COLONNES ----
             '<div class="ticket-grid">' +
-                // COLONNE GAUCHE : infos
                 '<div class="ticket-col-left">' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('eventDate') + '</span><span class="ticket-value">' + dateFormatted + '</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('eventTime') + '</span><span class="ticket-value">' + timeFormatted + '</span></div>' +
@@ -3654,8 +3931,6 @@ function renderTicketCard(ticket, status) {
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('ticketTypeLabel') + '</span><span class="ticket-value">' + typeLabel + '</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('countryLabel') + '</span><span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
                 '</div>' +
-                
-                // COLONNE DROITE : QR + participant
                 '<div class="ticket-col-right">' +
                     '<div class="ticket-qr-box">' +
                         '<div class="ticket-qr-code">' +
@@ -3669,19 +3944,15 @@ function renderTicketCard(ticket, status) {
                     '</div>' +
                 '</div>' +
             '</div>' +
-            
-            // ---- DATE D'ACHAT (format simple, en bas) ----
             '<div class="ticket-purchase-date">' +
                 '<span class="purchase-label">' + t('purchaseDate') + ' :</span> ' +
                 '<span class="purchase-value">' + purchaseDateDisplay + '</span>' +
             '</div>' +
-            
             downloadButton +
         '</div>' +
     '</div>';
 }
 
-// ---- RENDER TICKETS ----
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
@@ -3703,7 +3974,6 @@ function renderTickets() {
     setTimeout(generateAllQRCodes, 200);
 }
 
-// ---- RENDER HISTORY ----
 function renderHistory() {
     var container = document.getElementById('historyList');
     if (!container) return;
@@ -3724,10 +3994,6 @@ function renderHistory() {
     
     setTimeout(generateAllQRCodes, 200);
 }
-
-// ============================================================
-// ===== TELECHARGER LE TICKET EN PDF =====
-// ============================================================
 
 async function downloadTicket(ticketId) {
     var ticket = tickets.find(function(t) { return t.id === ticketId; });
@@ -3924,10 +4190,6 @@ async function downloadTicket(ticketId) {
     }
 }
 
-// ============================================================
-// ===== MARK TICKET AS USED =====
-// ============================================================
-
 function markTicketAsUsed(ticketId) {
     if (!confirm(t('markUsedConfirm'))) {
         return;
@@ -3957,9 +4219,7 @@ function markTicketAsUsed(ticketId) {
         
         alert(t('ticketMarkedUsed'));
     }
-}
-
-// ============================================================
+}// ============================================================
 // ===== MY RATINGS =====
 // ============================================================
 
@@ -4463,7 +4723,6 @@ function renderMyEvents() {
         return renderMyEventCardModern(e);
     }).join('');
     
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -4596,151 +4855,6 @@ function renderEventsByCategory() {
         }
     }
     container.innerHTML = html;
-}
-
-// ============================================================
-// ===== RENDER EVENT CARD (AVEC DATE DE PUBLICATION STYLE TWITTER/X) =====
-// ============================================================
-
-function renderEventCard(event) {
-    var avgRating = 0;
-    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
-    if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
-    
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
-    
-    var flagEmojis = {
-        'France': 'FR', 'RDC': 'CD', 'Congo': 'CG', 'Belgium': 'BE',
-        'Switzerland': 'CH', 'Canada': 'CA', 'Senegal': 'SN', 'Cameroon': 'CM',
-        'Cote d\'Ivoire': 'CI', 'Ivory Coast': 'CI', 'Mali': 'ML', 'Niger': 'NE',
-        'Nigeria': 'NG', 'South Africa': 'ZA', 'Angola': 'AO', 'Mozambique': 'MZ',
-        'Kenya': 'KE', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Rwanda': 'RW',
-        'Burundi': 'BI', 'Ethiopia': 'ET', 'Somalia': 'SO', 'Djibouti': 'DJ',
-        'Eritrea': 'ER', 'Sudan': 'SD', 'South Sudan': 'SS', 'Egypt': 'EG',
-        'Libya': 'LY', 'Tunisia': 'TN', 'Algeria': 'DZ', 'Morocco': 'MA',
-        'Mauritania': 'MR', 'Ghana': 'GH', 'Guinea': 'GN', 'Burkina Faso': 'BF',
-        'Benin': 'BJ', 'Togo': 'TG', 'Liberia': 'LR', 'Sierra Leone': 'SL',
-        'Gambia': 'GM', 'Guinea-Bissau': 'GW', 'Cape Verde': 'CV', 'Sao Tome': 'ST',
-        'Gabon': 'GA', 'Equatorial Guinea': 'GQ', 'Central African Republic': 'CF',
-        'Chad': 'TD', 'Madagascar': 'MG', 'Comoros': 'KM', 'Mauritius': 'MU',
-        'Seychelles': 'SC', 'Zambia': 'ZM', 'Zimbabwe': 'ZW', 'Botswana': 'BW',
-        'Namibia': 'NA', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Malawi': 'MW',
-        'Spain': 'ES', 'Portugal': 'PT', 'Germany': 'DE', 'Italy': 'IT',
-        'United Kingdom': 'GB', 'United States': 'US', 'Russia': 'RU',
-        'Ukraine': 'UA', 'Turkey': 'TR', 'Iran': 'IR', 'China': 'CN',
-        'Japan': 'JP', 'India': 'IN', 'Indonesia': 'ID', 'Australia': 'AU',
-        'Mexico': 'MX', 'Argentina': 'AR', 'Brazil': 'BR', 'Denmark': 'DK',
-        'Sweden': 'SE', 'Austria': 'AT'
-    };
-    
-    var countryFlag = flagEmojis[event.pays || event.country] || '';
-    var countryDisplay = event.pays || event.country || 'International';
-    
-    var desc = event.description || '';
-    if (desc.length > 120) {
-        desc = desc.substring(0, 117) + '...';
-    }
-    
-    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 20) {
-        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
-    }
-    var organizerFormatted = organizerDisplay;
-    if (!organizerFormatted.startsWith('@')) {
-        organizerFormatted = '@' + organizerFormatted;
-    }
-    
-    // ---- DATE DE PUBLICATION (style Twitter/X) ----
-    var publishDateDisplay = '';
-    if (event.createdAt) {
-        var pd = new Date(event.createdAt);
-        var now = new Date();
-        var diffMs = now - pd;
-        var diffMins = Math.floor(diffMs / 60000);
-        var diffHours = Math.floor(diffMs / 3600000);
-        var diffDays = Math.floor(diffMs / 86400000);
-        var diffWeeks = Math.floor(diffDays / 7);
-        var diffMonths = Math.floor(diffDays / 30);
-        var diffYears = Math.floor(diffDays / 365);
-        
-        if (diffMins < 1) {
-            publishDateDisplay = 'À l\'instant';
-        } else if (diffMins < 60) {
-            publishDateDisplay = 'Il y a ' + diffMins + ' min';
-        } else if (diffHours < 24) {
-            publishDateDisplay = 'Il y a ' + diffHours + ' h';
-        } else if (diffDays < 7) {
-            publishDateDisplay = 'Il y a ' + diffDays + ' j';
-        } else if (diffWeeks < 4) {
-            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
-        } else if (diffMonths < 12) {
-            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
-        } else {
-            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-    }
-    
-    var ratingDisplay = '';
-    if (eventRatings.length > 0) {
-        var stars = '';
-        var fullStars = Math.floor(avgRating);
-        for (var i = 0; i < fullStars; i++) stars += '★';
-        for (var i = fullStars; i < 5; i++) stars += '☆';
-        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
-    } else {
-        ratingDisplay = '<span class="new-badge">' + t('new') + '</span>';
-    }
-    
-    var priceDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
-    }
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
-        if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
-    }
-    if (!priceDisplay) {
-        priceDisplay = event.price + ' Pi';
-    }
-    
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
-    }
-    
-    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
-        '<div class="poster-wrapper-classic">' +
-            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
-        '</div>' +
-        '<div class="card-content-classic">' +
-            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
-            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
-            '<div class="info-grid-classic">' +
-                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
-            '</div>' +
-            durationDisplay +
-            '<div class="card-footer-classic">' +
-                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
-                '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                ' <span class="event-seats-classic">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>' +
-            '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
-            '<div class="event-organizer-classic">' +
-                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
-            '</div>' +
-            // ---- DATE DE PUBLICATION (style Twitter/X) ----
-            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
-        '</div>' +
-    '</div>';
 }
 
 // ============================================================
@@ -5474,8 +5588,6 @@ function updateUserInfo() {
     updateConnectButtons();
     updateSidebarNotifBadge();
     updateUITranslations();
-    
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
 }
 
@@ -5508,8 +5620,26 @@ function updateProfilePage() {
     if (profileWallet) profileWallet.textContent = currentUser.wallet || t('notConnected');
     if (memberSince) memberSince.textContent = currentUser.memberSince || '2026';
     
-    // ---- METTRE À JOUR LA VISIBILITÉ DU BOUTON SCANNER ----
     updateScanButtonVisibility();
+}
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    var userId = currentUser.piUid || currentUser.wallet;
+    var myEvents = events.filter(function(e) {
+        return e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name;
+    });
+    return myEvents.length > 0;
+}
+
+function updateScanButtonVisibility() {
+    var scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    if (userHasPublishedEvents()) {
+        scanBtn.style.display = 'block';
+    } else {
+        scanBtn.style.display = 'none';
+    }
 }
 
 // ============================================================
@@ -5692,9 +5822,7 @@ window.reloadTicketsFromSupabase = reloadTicketsFromSupabase;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded - Starting application...');
     
-    // ============================================================
-    // ==== FORCER LA FERMETURE DE LA POPUP AU CHARGEMENT ====
-    // ============================================================
+    // ---- FORCER LA FERMETURE DE LA POPUP AU CHARGEMENT ----
     var successPopup = document.getElementById('successPopup');
     if (successPopup) {
         successPopup.classList.remove('show');
@@ -5707,9 +5835,7 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('betix_success_popup_shown');
     
     try {
-        // ============================================================
-        // ==== RESTAURER L'UTILISATEUR AU CHARGEMENT ====
-        // ============================================================
+        // ---- RESTAURER L'UTILISATEUR AU CHARGEMENT ----
         var savedUser = localStorage.getItem('betix_user');
         if (savedUser) {
             try {
@@ -5735,14 +5861,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     loader.style.display = 'none';
                     main.style.display = 'block';
                     
-                    // ---- METTRE À JOUR L'UI APRÈS RESTAURATION ----
                     updateUserInfo();
                     updateProfilePage();
                     updateConnectButtons();
                     
                     console.log('Application loaded successfully');
-                    
-                    // ---- CHARGER LES DONNÉES AVEC L'UTILISATEUR RESTAURÉ ----
                     loadAllFromSupabase();
                     
                 }, 500);
@@ -5906,7 +6029,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         var ticketTypeSelect = document.getElementById('ticketTypeSelect');
         if (ticketTypeSelect) {
-            ticketTypeSelect.addEventListener('change', updateTicketTotal);
+            ticketTypeSelect.addEventListener('change', function() {
+                updateMaxQuantity();
+                updateTicketTotal();
+            });
         }
         
         var adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
@@ -5994,15 +6120,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         bindActivityListeners(); 
-        // startSessionMonitor(); // Désactivé temporairement pour éviter les déconnexions intempestives
         
-        // ---- SAUVEGARDER L'UTILISATEUR RÉGULIÈREMENT ----
         setInterval(function() {
             if (currentUser.wallet) {
                 saveUser();
                 console.log('User session refreshed');
             }
-        }, 30000); // Toutes les 30 secondes
+        }, 30000);
 
         setTimeout(function() {
             loadAllFromSupabase();
@@ -6039,8 +6163,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Success popup buttons fixed: "Voir mon ticket" redirects to My Tickets page, "Fermer" closes popup');
         console.log('Success popup cleaned on page load to prevent reappearance');
         console.log('User session restored from localStorage on page load');
-        console.log('Session monitor disabled to prevent disconnections');
         console.log('User session refreshed every 30 seconds');
+        console.log('Ticket seats (Standard/VIP) management added!');
+        console.log('Seats display on event cards: STD: X/Y | VIP: X/Y');
+        console.log('Notifications sent to organizer for each ticket purchase');
+        console.log('Duration field modernized with dropdown menus');
         
     } catch (error) {
         console.error('Error during application startup:', error);
