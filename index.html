@@ -258,7 +258,6 @@
             
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             
-            <!-- ===== DURÉE MODERNISÉE AVEC MENUS DÉROULANTS ===== -->
             <div class="form-group">
                 <label>Durée</label>
                 <div class="event-duration-wrapper-modern">
@@ -287,7 +286,6 @@
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
             </div>
             
-            <!-- ===== NOUVEAU : NOMBRES DE BILLETS PAR TYPE ===== -->
             <div class="form-group">
                 <label>Nombres de billets par type</label>
                 <div class="ticket-seats-grid">
@@ -779,7 +777,6 @@
     </div>
 </div>
 
-<!-- ===== EVENT DETAIL MODAL AVEC CARROUSEL D'IMAGES ===== -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <span class="modal-close" id="eventDetailClose"><i class="fas fa-times"></i></span>
@@ -787,7 +784,6 @@
     </div>
 </div>
 
-<!-- ===== MODAL D'ÉDITION ===== -->
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
@@ -878,7 +874,6 @@
     </div>
 </div>
 
-<!-- ===== SUCCESS POPUP ===== -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
@@ -888,15 +883,10 @@
         <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">
             Merci d'avoir acheté votre ticket pour <strong id="successEventName">Blockchain Africa</strong>
         </p>
-
-        <!-- Récapitulatif rapide -->
         <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
-
-        <!-- BOUTON VOIR MON TICKET -->
         <button class="btn-primary success-btn-blue" id="viewTicketBtn" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #0D47A1, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box; border:none; cursor:pointer;">
             <i class="fas fa-eye"></i> Voir mon ticket
         </button>
-
         <button class="btn-secondary" id="closeSuccessBtn" style="margin-top:10px; background:transparent; border:1px solid #e5e7eb; padding:10px; border-radius:40px; width:100%; cursor:pointer; font-weight:500; color:var(--gray);">Fermer</button>
     </div>
 </div>
