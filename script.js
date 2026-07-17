@@ -1368,7 +1368,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// ===== SAVE EVENT TO SUPABASE (MODIFIÉ) =====
+// ===== SAVE EVENT TO SUPABASE =====
 // ============================================================
 
 async function saveEventToSupabase(eventData) {
@@ -1405,11 +1405,6 @@ async function saveEventToSupabase(eventData) {
         };
         
         console.log('Saving event to Supabase:', eventData.id);
-        console.log('   Title:', dbEvent.title);
-        console.log('   Pays:', dbEvent.pays);
-        console.log('   Organizer:', dbEvent.organizer_name);
-        console.log('   Standard Seats:', dbEvent.standard_seats);
-        console.log('   VIP Seats:', dbEvent.vip_seats);
         
         const { data, error } = await supabaseClient
             .from('events')
@@ -1475,15 +1470,6 @@ async function saveTicketToSupabase(ticketData) {
             transaction_id: ticketData.transactionId || ''
         };
         
-        console.log('Ticket data to save:');
-        console.log('   ID:', dbTicket.id);
-        console.log('   Event:', dbTicket.event_title);
-        console.log('   Type:', dbTicket.ticket_type);
-        console.log('   Price:', dbTicket.price);
-        console.log('   Transaction ID:', dbTicket.transaction_id);
-        console.log('   Pays:', dbTicket.pays);
-        console.log('   Buyer:', dbTicket.buyer_name);
-        
         const { data, error } = await supabaseClient
             .from('tickets')
             .upsert(dbTicket, { 
@@ -1493,7 +1479,6 @@ async function saveTicketToSupabase(ticketData) {
         
         if (error) {
             console.error('Supabase error:', error);
-            console.error('   Error details:', error.message, error.code, error.details);
             return false;
         }
         
@@ -1553,10 +1538,6 @@ async function loadTicketsFromSupabase(piUid) {
         }
         
         console.log('Tickets loaded:', data ? data.length : 0);
-        if (data && data.length > 0) {
-            console.log('   First ticket price:', data[0].price);
-            console.log('   First ticket transaction_id:', data[0].transaction_id);
-        }
         return data || [];
     } catch (error) {
         console.error('Error loading tickets from Supabase:', error);
@@ -1764,10 +1745,6 @@ async function syncNotificationsToSupabase() {
 
 async function syncAllToSupabase() {
     console.log('SYNC ALL TO SUPABASE');
-    console.log('Users: 1');
-    console.log('Events to sync:', events.length);
-    console.log('Tickets to sync:', tickets.length);
-    console.log('Notifications to sync:', notifications.length);
     
     try {
         await syncUserToSupabase();
@@ -1784,7 +1761,7 @@ async function syncAllToSupabase() {
 }
 
 // ============================================================
-// ===== LOAD ALL FROM SUPABASE (MODIFIÉ) =====
+// ===== LOAD ALL FROM SUPABASE =====
 // ============================================================
 
 async function loadAllFromSupabase() {
@@ -1867,10 +1844,6 @@ async function loadAllFromSupabase() {
                 
                 localStorage.setItem('betix_tickets', JSON.stringify(tickets));
                 console.log('Loaded', tickets.length, 'tickets from Supabase');
-                
-                tickets.forEach(function(t, idx) {
-                    console.log('   Ticket ' + (idx+1) + ':', t.id, '|', t.eventTitle, '|', t.ticketType, '|', t.price, 'Pi');
-                });
             } else {
                 console.log('No tickets in Supabase for this user');
             }
@@ -1903,9 +1876,6 @@ async function loadAllFromSupabase() {
         setTimeout(generateAllQRCodes, 300);
         
         console.log('LOAD COMPLETED');
-        console.log('   Total events:', events.length);
-        console.log('   Total tickets:', tickets.length);
-        console.log('   Total notifications:', notifications.length);
         
     } catch (error) {
         console.error('Error loading data from Supabase:', error);
@@ -1919,6 +1889,213 @@ async function loadAllFromSupabase() {
             console.error('Fallback loading failed:', e);
         }
     }
+}
+
+// ============================================================
+// ===== RENDER EVENT CARD (MODIFIÉ - PRIX VERT, PAYS + DURÉE) =====
+// ============================================================
+
+function renderEventCard(event) {
+    var avgRating = 0;
+    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
+    if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
+    
+    var dateEvent = new Date(event.date);
+    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    
+    // ---- DRAPEAU PAYS ----
+    var flagEmojis = {
+        'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
+        'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Senegal': '🇸🇳', 'Cameroon': '🇨🇲',
+        'Cote d\'Ivoire': '🇨🇮', 'Ivory Coast': '🇨🇮', 'Mali': '🇲🇱', 'Niger': '🇳🇪',
+        'Nigeria': '🇳🇬', 'South Africa': '🇿🇦', 'Angola': '🇦🇴', 'Mozambique': '🇲🇿',
+        'Kenya': '🇰🇪', 'Tanzania': '🇹🇿', 'Uganda': '🇺🇬', 'Rwanda': '🇷🇼',
+        'Burundi': '🇧🇮', 'Ethiopia': '🇪🇹', 'Somalia': '🇸🇴', 'Djibouti': '🇩🇯',
+        'Eritrea': '🇪🇷', 'Sudan': '🇸🇩', 'South Sudan': '🇸🇸', 'Egypt': '🇪🇬',
+        'Libya': '🇱🇾', 'Tunisia': '🇹🇳', 'Algeria': '🇩🇿', 'Morocco': '🇲🇦',
+        'Mauritania': '🇲🇷', 'Ghana': '🇬🇭', 'Guinea': '🇬🇳', 'Burkina Faso': '🇧🇫',
+        'Benin': '🇧🇯', 'Togo': '🇹🇬', 'Liberia': '🇱🇷', 'Sierra Leone': '🇸🇱',
+        'Gambia': '🇬🇲', 'Guinea-Bissau': '🇬🇼', 'Cape Verde': '🇨🇻', 'Sao Tome': '🇸🇹',
+        'Gabon': '🇬🇦', 'Equatorial Guinea': '🇬🇶', 'Central African Republic': '🇨🇫',
+        'Chad': '🇹🇩', 'Madagascar': '🇲🇬', 'Comoros': '🇰🇲', 'Mauritius': '🇲🇺',
+        'Seychelles': '🇸🇨', 'Zambia': '🇿🇲', 'Zimbabwe': '🇿🇼', 'Botswana': '🇧🇼',
+        'Namibia': '🇳🇦', 'Lesotho': '🇱🇸', 'Eswatini': '🇸🇿', 'Malawi': '🇲🇼',
+        'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
+        'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'Iran': '🇮🇷', 'China': '🇨🇳',
+        'Japan': '🇯🇵', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺',
+        'Mexico': '🇲🇽', 'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰',
+        'Sweden': '🇸🇪', 'Austria': '🇦🇹'
+    };
+    
+    var countryFlag = flagEmojis[event.pays || event.country] || '';
+    var countryDisplay = event.pays || event.country || 'International';
+    
+    var desc = event.description || '';
+    if (desc.length > 100) {
+        desc = desc.substring(0, 97) + '...';
+    }
+    
+    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
+    if (organizerDisplay.length > 20) {
+        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    }
+    var organizerFormatted = organizerDisplay;
+    if (!organizerFormatted.startsWith('@')) {
+        organizerFormatted = '@' + organizerFormatted;
+    }
+    
+    // ---- DATE DE PUBLICATION ----
+    var publishDateDisplay = '';
+    if (event.createdAt) {
+        var pd = new Date(event.createdAt);
+        var now = new Date();
+        var diffMs = now - pd;
+        var diffMins = Math.floor(diffMs / 60000);
+        var diffHours = Math.floor(diffMs / 3600000);
+        var diffDays = Math.floor(diffMs / 86400000);
+        var diffWeeks = Math.floor(diffDays / 7);
+        var diffMonths = Math.floor(diffDays / 30);
+        var diffYears = Math.floor(diffDays / 365);
+        
+        if (diffMins < 1) {
+            publishDateDisplay = 'À l\'instant';
+        } else if (diffMins < 60) {
+            publishDateDisplay = 'Il y a ' + diffMins + ' min';
+        } else if (diffHours < 24) {
+            publishDateDisplay = 'Il y a ' + diffHours + ' h';
+        } else if (diffDays < 7) {
+            publishDateDisplay = 'Il y a ' + diffDays + ' j';
+        } else if (diffWeeks < 4) {
+            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
+        } else if (diffMonths < 12) {
+            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
+        } else {
+            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+    }
+    
+    // ---- BADGE PRIX VERT (REMPLACE "NEW") ----
+    var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
+    var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
+    var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
+    var vipPrice = hasVip ? event.ticketTypes.vip.price : 0;
+    
+    var priceBadgeText = '';
+    var priceBadgeClass = 'price-badge-green';
+    if (hasStandard && hasVip) {
+        var minPrice = Math.min(standardPrice, vipPrice);
+        var maxPrice = Math.max(standardPrice, vipPrice);
+        priceBadgeText = 'Prix : ' + minPrice.toFixed(6) + ' – ' + maxPrice.toFixed(6) + ' Pi';
+        priceBadgeClass = 'price-badge-green range';
+    } else if (hasStandard) {
+        priceBadgeText = 'Prix : ' + standardPrice.toFixed(6) + ' Pi';
+    } else if (hasVip) {
+        priceBadgeText = 'Prix : ' + vipPrice.toFixed(6) + ' Pi';
+    } else {
+        priceBadgeText = 'Prix : ' + (event.price || 0).toFixed(6) + ' Pi';
+    }
+    
+    // ---- RATING DISPLAY AVEC BADGE PRIX VERT ----
+    var ratingDisplay = '';
+    if (eventRatings.length > 0) {
+        var stars = '';
+        var fullStars = Math.floor(avgRating);
+        for (var i = 0; i < fullStars; i++) stars += '★';
+        for (var i = fullStars; i < 5; i++) stars += '☆';
+        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
+    } else {
+        ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceBadgeText + '</span>';
+    }
+    
+    // ---- AFFICHAGE DES PLACES PAR TYPE ----
+    var seatsDisplay = '';
+    if (hasStandard) {
+        var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+        var standardTotal = event.standardSeats || 0;
+        seatsDisplay += '<span class="seats-type standard-seats">STD: <span class="seats-count">' + standardLeft + '/' + standardTotal + '</span></span>';
+    }
+    if (hasVip) {
+        var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
+        var vipTotal = event.vipSeats || 0;
+        seatsDisplay += '<span class="seats-type vip-seats">VIP: <span class="seats-count">' + vipLeft + '/' + vipTotal + '</span></span>';
+    }
+    if (!seatsDisplay) {
+        seatsDisplay = '<span class="seats-type">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>';
+    }
+    
+    // ---- PRIX AFFICHÉ DANS LE FOOTER ----
+    var priceDisplay = '';
+    if (hasStandard) {
+        priceDisplay += t('standard') + ': ' + standardPrice.toFixed(6) + ' Pi';
+    }
+    if (hasVip) {
+        if (priceDisplay) priceDisplay += ' | ';
+        priceDisplay += t('vip') + ': ' + vipPrice.toFixed(6) + ' Pi';
+    }
+    if (!priceDisplay) {
+        priceDisplay = (event.price || 0).toFixed(6) + ' Pi';
+    }
+    
+    // ---- DURÉE ----
+    var durationText = '';
+    if (event.durationValue && event.durationUnit) {
+        var unitLabels = {
+            'hours': 'h',
+            'days': 'j',
+            'weeks': 'sem',
+            'months': 'mois',
+            'years': 'ans'
+        };
+        var unitLabel = unitLabels[event.durationUnit] || event.durationUnit;
+        durationText = event.durationValue + ' ' + unitLabel;
+    }
+    
+    // ---- PAYS + DURÉE SUR UNE LIGNE ----
+    var countryDurationHtml = '';
+    if (countryFlag || durationText) {
+        countryDurationHtml = '<div class="event-country-duration">';
+        if (countryFlag) {
+            countryDurationHtml += '<span class="country-flag">' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</span>';
+        }
+        if (durationText) {
+            if (countryFlag) countryDurationHtml += ' • ';
+            countryDurationHtml += '<span class="duration-text"><i class="fas fa-hourglass-half"></i> ' + durationText + '</span>';
+        }
+        countryDurationHtml += '</div>';
+    }
+    
+    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
+        '<div class="poster-wrapper-classic">' +
+            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
+            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
+            (event.images && event.images.length > 1 ? '<span class="image-count-badge-card"><i class="fas fa-images"></i> ' + event.images.length + '</span>' : '') +
+        '</div>' +
+        '<div class="card-content-classic">' +
+            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
+            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
+            countryDurationHtml +
+            '<div class="info-grid-classic">' +
+                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                '<div class="info-item-classic"><i class="fas fa-ticket-alt"></i> ' + event.seatsLeft + '/' + event.seatsTotal + '</div>' +
+            '</div>' +
+            '<div class="card-footer-classic">' +
+                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
+                '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
+            '</div>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
+            '<div class="event-organizer-classic">' +
+                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
+            '</div>' +
+            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -2030,11 +2207,6 @@ function updateUITranslations() {
     var heroDesc = document.querySelector('.hero-text p');
     if (heroDesc) {
         heroDesc.textContent = "Discover and book unique experiences. Pay with your Pi crypto.";
-    }
-    
-    var heroBtn = document.querySelector('.hero-text .btn-hero');
-    if (heroBtn) {
-        heroBtn.textContent = t('createEvent');
     }
     
     var searchInput = document.getElementById('searchInput');
@@ -2203,7 +2375,7 @@ function updateLoyaltyPointsDisplay() {
 }
 
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
-function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 2592000000; } // 30 jours
+function isSessionExpired() { var last = parseInt(localStorage.getItem('betix_last_activity') || 0); var now = Date.now(); return (now - last) > 2592000000; }
 
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
@@ -2231,7 +2403,7 @@ function startSessionMonitor() {
             disconnectPi(); 
             alert(t('sessionExpired')); 
         } 
-    }, 300000); // 5 minutes
+    }, 300000);
 }
 
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
@@ -2574,7 +2746,7 @@ function initCountrySelectors() {
 }
 
 // ============================================================
-// ===== QUANTITY POPUP (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
+// ===== QUANTITY POPUP =====
 // ============================================================
 
 function openQuantityPopup(eventId) {
@@ -2710,7 +2882,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// ===== CONFIRM PURCHASE (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
+// ===== CONFIRM PURCHASE =====
 // ============================================================
 
 async function confirmPurchaseFromPopup() {
@@ -3073,7 +3245,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 async function createEvent(e) {
@@ -3517,7 +3689,7 @@ function getUploadedImages() {
 }
 
 // ============================================================
-// ===== MODIFIER UN EVENEMENT (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
+// ===== MODIFIER UN EVENEMENT =====
 // ============================================================
 
 function openEditEventModal(eventId) {
@@ -3641,183 +3813,6 @@ async function saveEventEdits() {
     renderEventsByCategory();
     renderMyEvents();
     alert(t('eventPublished'));
-}
-
-// ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - PRIX À LA PLACE DE "NEW") =====
-// ============================================================
-
-function renderEventCard(event) {
-    var avgRating = 0;
-    var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
-    if (eventRatings.length > 0) { avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length; }
-    
-    var dateEvent = new Date(event.date);
-    var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-    var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
-    
-    var flagEmojis = {
-        'France': 'FR', 'RDC': 'CD', 'Congo': 'CG', 'Belgium': 'BE',
-        'Switzerland': 'CH', 'Canada': 'CA', 'Senegal': 'SN', 'Cameroon': 'CM',
-        'Cote d\'Ivoire': 'CI', 'Ivory Coast': 'CI', 'Mali': 'ML', 'Niger': 'NE',
-        'Nigeria': 'NG', 'South Africa': 'ZA', 'Angola': 'AO', 'Mozambique': 'MZ',
-        'Kenya': 'KE', 'Tanzania': 'TZ', 'Uganda': 'UG', 'Rwanda': 'RW',
-        'Burundi': 'BI', 'Ethiopia': 'ET', 'Somalia': 'SO', 'Djibouti': 'DJ',
-        'Eritrea': 'ER', 'Sudan': 'SD', 'South Sudan': 'SS', 'Egypt': 'EG',
-        'Libya': 'LY', 'Tunisia': 'TN', 'Algeria': 'DZ', 'Morocco': 'MA',
-        'Mauritania': 'MR', 'Ghana': 'GH', 'Guinea': 'GN', 'Burkina Faso': 'BF',
-        'Benin': 'BJ', 'Togo': 'TG', 'Liberia': 'LR', 'Sierra Leone': 'SL',
-        'Gambia': 'GM', 'Guinea-Bissau': 'GW', 'Cape Verde': 'CV', 'Sao Tome': 'ST',
-        'Gabon': 'GA', 'Equatorial Guinea': 'GQ', 'Central African Republic': 'CF',
-        'Chad': 'TD', 'Madagascar': 'MG', 'Comoros': 'KM', 'Mauritius': 'MU',
-        'Seychelles': 'SC', 'Zambia': 'ZM', 'Zimbabwe': 'ZW', 'Botswana': 'BW',
-        'Namibia': 'NA', 'Lesotho': 'LS', 'Eswatini': 'SZ', 'Malawi': 'MW',
-        'Spain': 'ES', 'Portugal': 'PT', 'Germany': 'DE', 'Italy': 'IT',
-        'United Kingdom': 'GB', 'United States': 'US', 'Russia': 'RU',
-        'Ukraine': 'UA', 'Turkey': 'TR', 'Iran': 'IR', 'China': 'CN',
-        'Japan': 'JP', 'India': 'IN', 'Indonesia': 'ID', 'Australia': 'AU',
-        'Mexico': 'MX', 'Argentina': 'AR', 'Brazil': 'BR', 'Denmark': 'DK',
-        'Sweden': 'SE', 'Austria': 'AT'
-    };
-    
-    var countryFlag = flagEmojis[event.pays || event.country] || '';
-    var countryDisplay = event.pays || event.country || 'International';
-    
-    var desc = event.description || '';
-    if (desc.length > 120) {
-        desc = desc.substring(0, 117) + '...';
-    }
-    
-    var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
-    if (organizerDisplay.length > 20) {
-        organizerDisplay = organizerDisplay.substring(0, 18) + '...';
-    }
-    var organizerFormatted = organizerDisplay;
-    if (!organizerFormatted.startsWith('@')) {
-        organizerFormatted = '@' + organizerFormatted;
-    }
-    
-    var publishDateDisplay = '';
-    if (event.createdAt) {
-        var pd = new Date(event.createdAt);
-        var now = new Date();
-        var diffMs = now - pd;
-        var diffMins = Math.floor(diffMs / 60000);
-        var diffHours = Math.floor(diffMs / 3600000);
-        var diffDays = Math.floor(diffMs / 86400000);
-        var diffWeeks = Math.floor(diffDays / 7);
-        var diffMonths = Math.floor(diffDays / 30);
-        var diffYears = Math.floor(diffDays / 365);
-        
-        if (diffMins < 1) {
-            publishDateDisplay = 'À l\'instant';
-        } else if (diffMins < 60) {
-            publishDateDisplay = 'Il y a ' + diffMins + ' min';
-        } else if (diffHours < 24) {
-            publishDateDisplay = 'Il y a ' + diffHours + ' h';
-        } else if (diffDays < 7) {
-            publishDateDisplay = 'Il y a ' + diffDays + ' j';
-        } else if (diffWeeks < 4) {
-            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
-        } else if (diffMonths < 12) {
-            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
-        } else {
-            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-    }
-    
-    // ---- NOUVEAU : AFFICHAGE DU PRIX À LA PLACE DU BADGE "NEW" ----
-    var priceBadge = '';
-    var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
-    var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
-    var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
-    var vipPrice = hasVip ? event.ticketTypes.vip.price : 0;
-    
-    if (hasStandard && hasVip) {
-        var minPrice = Math.min(standardPrice, vipPrice);
-        var maxPrice = Math.max(standardPrice, vipPrice);
-        priceBadge = '<span class="price-badge price-range">Prix: ' + minPrice.toFixed(6) + ' - ' + maxPrice.toFixed(6) + ' Pi</span>';
-    } else if (hasStandard) {
-        priceBadge = '<span class="price-badge">Prix: ' + standardPrice.toFixed(6) + ' Pi</span>';
-    } else if (hasVip) {
-        priceBadge = '<span class="price-badge">Prix: ' + vipPrice.toFixed(6) + ' Pi</span>';
-    } else {
-        priceBadge = '<span class="price-badge">Prix: ' + (event.price || 0).toFixed(6) + ' Pi</span>';
-    }
-    
-    var ratingDisplay = '';
-    if (eventRatings.length > 0) {
-        var stars = '';
-        var fullStars = Math.floor(avgRating);
-        for (var i = 0; i < fullStars; i++) stars += '★';
-        for (var i = fullStars; i < 5; i++) stars += '☆';
-        ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
-    } else {
-        ratingDisplay = priceBadge;
-    }
-    
-    var seatsDisplay = '';
-    if (hasStandard) {
-        var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
-        var standardTotal = event.standardSeats || 0;
-        seatsDisplay += '<span class="seats-type standard-seats">STD: <span class="seats-count">' + standardLeft + '/' + standardTotal + '</span></span>';
-    }
-    if (hasVip) {
-        var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
-        var vipTotal = event.vipSeats || 0;
-        seatsDisplay += '<span class="seats-type vip-seats">VIP: <span class="seats-count">' + vipLeft + '/' + vipTotal + '</span></span>';
-    }
-    if (!seatsDisplay) {
-        seatsDisplay = '<span class="seats-type">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>';
-    }
-    
-    var priceDisplay = '';
-    if (hasStandard) {
-        priceDisplay += t('standard') + ': ' + standardPrice.toFixed(6) + ' Pi';
-    }
-    if (hasVip) {
-        if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += t('vip') + ': ' + vipPrice.toFixed(6) + ' Pi';
-    }
-    if (!priceDisplay) {
-        priceDisplay = (event.price || 0).toFixed(6) + ' Pi';
-    }
-    
-    var durationDisplay = '';
-    if (event.durationValue && event.durationUnit) {
-        durationDisplay = '<span class="event-duration-display"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + event.durationUnit + '</span>';
-    }
-    
-    return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
-        '<div class="poster-wrapper-classic">' +
-            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
-        '</div>' +
-        '<div class="card-content-classic">' +
-            '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
-            (desc ? '<div class="event-desc-classic">' + escapeHtml(desc) + '</div>' : '') +
-            '<div class="info-grid-classic">' +
-                '<div class="info-item-classic"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="info-item-classic"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
-                '<div class="info-item-classic"><span class="flag-icon">' + countryFlag + '</span> ' + escapeHtml(countryDisplay) + '</div>' +
-            '</div>' +
-            durationDisplay +
-            '<div class="card-footer-classic">' +
-                '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
-                '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
-            '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
-            '<div class="event-organizer-classic">' +
-                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
-            '</div>' +
-            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
-        '</div>' +
-    '</div>';
 }
 
 // ============================================================
@@ -4848,7 +4843,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== EVENT DETAILS AVEC CARROUSEL D'IMAGES (MODIFIÉ) =====
+// ===== EVENT DETAILS AVEC CARROUSEL D'IMAGES =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -4919,7 +4914,7 @@ function openEventDetails(eventId) {
         if (imageCount > 1) {
             carouselHtml += '<button class="carousel-btn prev" onclick="carouselPrev(\'' + event.id + '\')">‹</button>';
             carouselHtml += '<button class="carousel-btn next" onclick="carouselNext(\'' + event.id + '\')">›</button>';
-            carouselHtml += '<div class="carousel-counter"><span id="carousel-current-' + event.id + '">1</span>/' + imageCount + '</div>';
+            carouselHtml += '<div class="carousel-counter"><i class="fas fa-image"></i><span id="carousel-current-' + event.id + '">1</span>/' + imageCount + '</div>';
             carouselHtml += '<div class="carousel-dots" id="' + dotsId + '">';
             for (var d = 0; d < imageCount; d++) {
                 carouselHtml += '<button class="cdot' + (d === 0 ? ' active' : '') + '" onclick="carouselGoTo(\'' + event.id + '\', ' + d + ')"></button>';
@@ -5209,7 +5204,7 @@ function trackUserConnection() {
 }
 
 // ============================================================
-// ===== VERIFY SUPABASE PERSISTENCE (NOUVEAU) =====
+// ===== VERIFY SUPABASE PERSISTENCE =====
 // ============================================================
 
 async function verifySupabasePersistence() {
@@ -6331,10 +6326,13 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Seats display on event cards: STD: X/Y | VIP: X/Y');
         console.log('Notifications sent to organizer for each ticket purchase');
         console.log('Duration field modernized with dropdown menus');
-        console.log('Price badge replaces "New" on event cards!');
-        console.log('Carousel added to event detail page for multiple images!');
-        console.log('Supabase persistence verification functions added!');
-        console.log('verifySupabasePersistence() and forceFullSync() available in console');
+        console.log('Price badge replaces "New" on event cards (green background, white text)!');
+        console.log('Country displayed with flag on event cards!');
+        console.log('Duration displayed on event cards!');
+        console.log('Country + Duration on same line with separator!');
+        console.log('Carousel improved with better dots, counter and progress bar!');
+        console.log('Verify Supabase persistence: verifySupabasePersistence()');
+        console.log('Force full sync: forceFullSync()');
         
     } catch (error) {
         console.error('Error during application startup:', error);
