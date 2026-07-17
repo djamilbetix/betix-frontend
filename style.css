@@ -161,9 +161,6 @@ body {
     filter: brightness(0) invert(1);
 }
 
-/* ============================================================
-   BARRE DE NAVIGATION EN BAS (STYLE FIRESIDE PI)
-   ============================================================ */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -256,7 +253,6 @@ body {
     border: 2px solid white;
 }
 
-/* ---- DARK MODE BOTTOM NAV ---- */
 body.dark-mode .bottom-nav {
     background: rgba(31, 41, 55, 0.95);
     border-top-color: rgba(255, 255, 255, 0.06);
@@ -282,7 +278,6 @@ body.dark-mode .bottom-nav .nav-item:hover {
     color: #4fc3f7;
 }
 
-/* ---- RESPONSIVE BOTTOM NAV ---- */
 @media (max-width: 480px) {
     .bottom-nav .nav-item {
         min-width: 50px;
@@ -628,9 +623,6 @@ body.dark-mode .bottom-nav .nav-item:hover {
     box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   HERO (CARROUSEL REDUIT)
-   ============================================================ */
 .hero {
     width: 100%;
     background: #ffffff;
@@ -856,9 +848,6 @@ body.dark-mode .bottom-nav .nav-item:hover {
     color: #6b7280;
 }
 
-/* ============================================================
-   SEARCH & FILTERS
-   ============================================================ */
 .search-bar {
     padding: 1.2rem 5% 0.5rem;
 }
@@ -970,9 +959,6 @@ body.dark-mode .bottom-nav .nav-item:hover {
     box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
 }
 
-/* ============================================================
-   EVENTS
-   ============================================================ */
 .events-container {
     padding: 0.5rem 5% 2rem;
     overflow: hidden;
@@ -1034,9 +1020,6 @@ body.dark-mode .bottom-nav .nav-item:hover {
     }
 }
 
-/* ============================================================
-   EVENT CARD - DATE DE PUBLICATION (STYLE TWITTER/X)
-   ============================================================ */
 .event-publish-date {
     font-size: 0.65rem;
     color: #9ca3af;
@@ -1063,41 +1046,111 @@ body.dark-mode .event-publish-date i {
 }
 
 /* ============================================================
-   EVENT CARD CLASSIC - PRIX AFFICHÉ
+   BADGE PRIX VERT (REMPLACE "NEW")
+   ============================================================ */
+.price-badge-green {
+    background: #10b981;
+    color: #ffffff !important;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.price-badge-green:hover {
+    background: #059669;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+.price-badge-green.range {
+    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 2px 14px;
+}
+
+/* ============================================================
+   PAYS + DURÉE SUR LA CARTE
+   ============================================================ */
+.event-country-duration {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #4b5563;
+    background: #f8fafc;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin: 2px 0 4px 0;
+    flex-wrap: wrap;
+}
+
+.event-country-duration .country-flag {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.event-country-duration .duration-text {
+    color: #6b7280;
+    font-size: 0.7rem;
+}
+
+.event-country-duration .duration-text i {
+    color: #f5a623;
+    font-size: 0.6rem;
+    margin-right: 2px;
+}
+
+/* ============================================================
+   INDICATEUR NOMBRE D'IMAGES SUR LA CARTE
+   ============================================================ */
+.image-count-badge-card {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    z-index: 2;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.image-count-badge-card i {
+    font-size: 0.55rem;
+    color: #f5a623;
+}
+
+/* ============================================================
+   EVENT CARD CLASSIC - AMÉLIORÉ PROFESSIONNEL
    ============================================================ */
 .event-card-classic {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.04);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     padding: 0;
+    position: relative;
 }
 
 .event-card-classic:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-    border-color: #e0e0e0;
-}
-
-.event-card-classic .category-badge-classic {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-    color: #fff;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    border-color: rgba(245, 166, 35, 0.15);
 }
 
 .event-card-classic .poster-wrapper-classic {
@@ -1112,29 +1165,59 @@ body.dark-mode .event-publish-date i {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .event-card-classic:hover .poster-wrapper-classic img {
-    transform: scale(1.03);
+    transform: scale(1.05);
+}
+
+.event-card-classic .poster-wrapper-classic::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+    pointer-events: none;
+}
+
+.event-card-classic .category-badge-classic {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    z-index: 2;
+    box-shadow: 0 4px 16px rgba(13, 71, 161, 0.25);
+    backdrop-filter: blur(4px);
 }
 
 .event-card-classic .card-content-classic {
-    padding: 12px 14px 14px;
+    padding: 14px 16px 16px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    flex: 1;
 }
 
 .event-card-classic .event-title-classic {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--dark, #1a1a2e);
+    color: #1a1a2e;
     line-height: 1.3;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6rem;
 }
 
 .event-card-classic .event-desc-classic {
@@ -1151,19 +1234,20 @@ body.dark-mode .event-publish-date i {
 .event-card-classic .info-grid-classic {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2px 10px;
+    gap: 3px 12px;
     font-size: 0.7rem;
     color: #4b5563;
     background: #f8fafc;
-    padding: 6px 10px;
-    border-radius: 8px;
-    margin: 2px 0;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 4px 0 2px 0;
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .event-card-classic .info-grid-classic .info-item-classic {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     white-space: nowrap;
 }
 
@@ -1172,6 +1256,7 @@ body.dark-mode .event-publish-date i {
     font-size: 0.65rem;
     width: 14px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .event-card-classic .info-grid-classic .info-item-classic .flag-icon {
@@ -1183,19 +1268,20 @@ body.dark-mode .event-publish-date i {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 6px;
+    padding-top: 8px;
     border-top: 1px solid #f0f0f0;
-    margin-top: 2px;
+    margin-top: 4px;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
 }
 
 .event-card-classic .event-rating-classic {
     font-size: 0.7rem;
-    color: var(--gray, #6b7280);
+    color: #6b7280;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .event-card-classic .event-rating-classic .stars {
@@ -1203,52 +1289,32 @@ body.dark-mode .event-publish-date i {
     letter-spacing: 1px;
 }
 
-/* ---- NOUVEAU : BADGE PRIX À LA PLACE DE "NEW" ---- */
-.event-card-classic .event-rating-classic .price-badge {
-    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-    color: #fff;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.6rem;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(13, 71, 161, 0.2);
-    white-space: nowrap;
-}
-
-.event-card-classic .event-rating-classic .price-badge.price-range {
-    background: linear-gradient(135deg, #d4911e, #f5a623);
-}
-
-.event-card-classic .event-price-classic {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #f5a623;
-}
-
 .event-card-classic .event-seats-classic {
     font-size: 0.65rem;
-    color: var(--gray, #6b7280);
+    color: #6b7280;
 }
 
 .event-card-classic .buy-btn-classic {
     width: 100%;
-    padding: 8px 14px;
+    padding: 10px 14px;
     border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.8rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.3s ease;
     background: linear-gradient(135deg, #0D47A1, #1a1a2e);
     color: #fff;
-    margin-top: 4px;
+    margin-top: 6px;
     text-align: center;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 16px rgba(13, 71, 161, 0.15);
 }
 
 .event-card-classic .buy-btn-classic:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(13, 71, 161, 0.2);
+    opacity: 0.95;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(13, 71, 161, 0.25);
 }
 
 .event-card-classic .buy-btn-classic:active {
@@ -1260,31 +1326,295 @@ body.dark-mode .event-publish-date i {
     font-size: 0.7rem;
     color: #1a1a2e;
     margin-top: 6px;
-    padding-top: 4px;
+    padding-top: 6px;
     border-top: 1px solid #f0f0f0;
     font-weight: 500;
     letter-spacing: 0.2px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .event-card-classic .event-organizer-classic .org-icon {
     font-size: 0.8rem;
-    color: #1a1a2e;
+    color: #f5a623;
 }
 
-.event-duration-display {
-    font-size: 0.65rem;
-    color: var(--gray);
+body.dark-mode .event-card-classic {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .event-card-classic .event-title-classic {
+    color: #f3f4f6;
+}
+
+body.dark-mode .event-card-classic .event-desc-classic {
+    color: #9ca3af;
+}
+
+body.dark-mode .event-card-classic .info-grid-classic {
+    background: #2d3748;
+    color: #d1d5db;
+    border-color: #374151;
+}
+
+body.dark-mode .event-card-classic .card-footer-classic {
+    border-top-color: #374151;
+}
+
+body.dark-mode .event-card-classic .event-organizer-classic {
+    border-top-color: #374151;
+    color: #d1d5db;
+}
+
+body.dark-mode .event-card-classic .event-publish-date {
+    border-top-color: #374151;
+    color: #6b7280;
+}
+
+body.dark-mode .event-card-classic .event-publish-date i {
+    color: #6b7280;
+}
+
+body.dark-mode .event-country-duration {
+    background: #2d3748;
+    color: #d1d5db;
+}
+
+body.dark-mode .event-country-duration .duration-text {
+    color: #9ca3af;
+}
+
+/* ============================================================
+   CARROUSEL D'IMAGES - VERSION AMÉLIORÉE
+   ============================================================ */
+.event-detail-image-carousel {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    background: #0f172a;
+    flex-shrink: 0;
+}
+
+.event-detail-image-carousel .carousel-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.event-detail-image-carousel .carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    position: relative;
+}
+
+.event-detail-image-carousel .carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.event-detail-image-carousel .carousel-slide .slide-number {
+    position: absolute;
+    bottom: 60px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-detail-image-carousel .carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.event-duration-display i {
-    color: #f5a623;
+.event-detail-image-carousel .carousel-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.event-detail-image-carousel .carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.event-detail-image-carousel .carousel-btn.prev {
+    left: 16px;
+}
+
+.event-detail-image-carousel .carousel-btn.next {
+    right: 16px;
+}
+
+.event-detail-image-carousel .carousel-dots {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 5;
+}
+
+.event-detail-image-carousel .carousel-dots .cdot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.event-detail-image-carousel .carousel-dots .cdot:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.event-detail-image-carousel .carousel-dots .cdot.active {
+    background: #f5a623;
+    width: 28px;
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(245, 166, 35, 0.4);
+}
+
+.event-detail-image-carousel .carousel-counter {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    letter-spacing: 0.5px;
+}
+
+.event-detail-image-carousel .carousel-counter i {
+    margin-right: 4px;
     font-size: 0.65rem;
+}
+
+.event-detail-image-carousel .carousel-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f5a623, #0D47A1);
+    z-index: 5;
+    transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .event-detail-image-carousel {
+        height: 220px;
+    }
+    
+    .event-detail-image-carousel .carousel-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 0.9rem;
+    }
+    
+    .event-detail-image-carousel .carousel-btn.prev {
+        left: 10px;
+    }
+    
+    .event-detail-image-carousel .carousel-btn.next {
+        right: 10px;
+    }
+    
+    .event-detail-image-carousel .carousel-dots .cdot {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .event-detail-image-carousel .carousel-dots .cdot.active {
+        width: 20px;
+    }
+    
+    .event-detail-image-carousel .carousel-counter {
+        font-size: 0.65rem;
+        padding: 2px 10px;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-detail-image-carousel {
+        height: 180px;
+    }
+    
+    .event-detail-image-carousel .carousel-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .event-card-classic .event-title-classic {
+        font-size: 0.9rem;
+        min-height: 2.2rem;
+    }
+    
+    .event-card-classic .event-desc-classic {
+        font-size: 0.7rem;
+        min-height: 1.8rem;
+    }
+    
+    .event-card-classic .info-grid-classic {
+        font-size: 0.6rem;
+        padding: 6px 8px;
+        gap: 2px 8px;
+    }
+    
+    .event-card-classic .buy-btn-classic {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .event-card-classic .event-rating-classic .price-badge-green {
+        font-size: 0.55rem;
+        padding: 1px 10px;
+    }
+    
+    .event-country-duration {
+        font-size: 0.6rem;
+        padding: 3px 8px;
+    }
+    
+    .event-card-classic .card-content-classic {
+        padding: 10px 12px 12px;
+    }
 }
 
 /* ============================================================
@@ -1902,111 +2232,68 @@ body.dark-mode .event-publish-date i {
     }
 }
 
-/* ============================================================
-   CARROUSEL D'IMAGES POUR LES ÉVÉNEMENTS (NOUVEAU)
-   ============================================================ */
-.event-detail-image-carousel {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    overflow: hidden;
-    background: #1a1a2e;
+body.dark-mode .ticket-card-professional {
+    background: #1f2937;
+    border-color: #374151;
 }
 
-.event-detail-image-carousel .carousel-track {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+body.dark-mode .ticket-card-professional .ticket-event-title {
+    color: #f3f4f6;
 }
 
-.event-detail-image-carousel .carousel-slide {
-    flex: 0 0 100%;
-    height: 100%;
+body.dark-mode .ticket-card-professional .ticket-category {
+    color: #9ca3af;
 }
 
-.event-detail-image-carousel .carousel-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+body.dark-mode .ticket-card-professional .ticket-info-row {
+    border-bottom-color: #2d3748;
 }
 
-.event-detail-image-carousel .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-    font-size: 1.1rem;
-    cursor: pointer;
-    z-index: 5;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+body.dark-mode .ticket-card-professional .ticket-info-row .ticket-value {
+    color: #f3f4f6;
 }
 
-.event-detail-image-carousel .carousel-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: translateY(-50%) scale(1.08);
+body.dark-mode .ticket-card-professional .ticket-qr-box,
+body.dark-mode .ticket-card-professional .ticket-participant-box {
+    background: #2d3748;
+    border-color: #4b5563;
 }
 
-.event-detail-image-carousel .carousel-btn.prev {
-    left: 10px;
+body.dark-mode .ticket-card-professional .ticket-participant-name {
+    color: #4fc3f7;
 }
 
-.event-detail-image-carousel .carousel-btn.next {
-    right: 10px;
+body.dark-mode .ticket-card-professional.ticket-vip .ticket-participant-name {
+    color: #ffd700;
 }
 
-.event-detail-image-carousel .carousel-dots {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 5;
+body.dark-mode .ticket-card-professional .ticket-purchase-date {
+    background: #2d3748;
+    border-color: #4b5563;
 }
 
-.event-detail-image-carousel .carousel-dots .cdot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.35);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    padding: 0;
+body.dark-mode .ticket-card-professional .ticket-purchase-date .purchase-value {
+    color: #4fc3f7;
 }
 
-.event-detail-image-carousel .carousel-dots .cdot.active {
-    background: #f5a623;
-    width: 20px;
-    border-radius: 4px;
+body.dark-mode .ticket-card-professional.ticket-vip .ticket-purchase-date .purchase-value {
+    color: #ffd700;
 }
 
-.event-detail-image-carousel .carousel-counter {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    color: white;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    z-index: 5;
+body.dark-mode .ticket-card-professional .ticket-watermark {
+    color: rgba(255, 255, 255, 0.03);
 }
 
-body.dark-mode .event-detail-image-carousel {
-    background: #0f172a;
+body.dark-mode .ticket-card-professional.ticket-vip .ticket-watermark {
+    color: rgba(212, 145, 30, 0.04);
+}
+
+body.dark-mode .ticket-card-professional .btn-download-ticket {
+    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
+}
+
+body.dark-mode .ticket-card-professional.ticket-vip .btn-download-ticket {
+    background: linear-gradient(135deg, #8B7500, #b8860b);
 }
 
 /* ============================================================
@@ -2485,7 +2772,6 @@ body.dark-mode .event-detail-image-carousel {
 /* ============================================================
    SUCCESS POPUP - VERSION CENTRÉE ET RESPONSIVE
    ============================================================ */
-
 .success-popup {
     display: none;
     position: fixed;
@@ -2593,7 +2879,6 @@ body.dark-mode .event-detail-image-carousel {
     box-shadow: 0 6px 25px rgba(245, 166, 35, 0.4) !important;
 }
 
-/* ---- DARK MODE ---- */
 body.dark-mode .success-popup-content.success-blue {
     background: linear-gradient(145deg, #1f2937, #1a2332);
     border-color: rgba(245, 166, 35, 0.2);
@@ -2619,7 +2904,6 @@ body.dark-mode .success-popup-content p {
     color: #9ca3af;
 }
 
-/* ---- RESPONSIVE ---- */
 @media (max-width: 480px) {
     .success-popup-content {
         padding: 24px 16px 20px;
@@ -3532,7 +3816,6 @@ body.dark-mode .success-popup-content p {
     color: #ef4444;
 }
 
-/* ---- DARK MODE ---- */
 body.dark-mode .event-duration-wrapper-modern {
     background: #2d3748;
     border-color: #4b5563;
@@ -3577,7 +3860,6 @@ body.dark-mode .seats-type.vip-seats {
     color: #fbbf24;
 }
 
-/* ---- RESPONSIVE ---- */
 @media (max-width: 600px) {
     .event-duration-wrapper-modern {
         flex-direction: column;
