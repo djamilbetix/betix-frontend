@@ -1284,7 +1284,9 @@ const eventImagesList = {
 
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleDateString('en-US') : 'Date to be defined'; }
-function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }// ============================================================
+function formatDateTime(dateStr) { var date = new Date(dateStr); return !isNaN(date.getTime()) ? date.toLocaleString('en-US') : 'Unknown date'; }
+
+// ============================================================
 // ===== SUPABASE STORAGE FUNCTIONS =====
 // ============================================================
 
@@ -1396,7 +1398,6 @@ async function saveEventToSupabase(eventData) {
             conditions: eventData.conditions || '',
             duration_value: eventData.durationValue || null,
             duration_unit: eventData.durationUnit || null,
-            // ---- NOUVEAU : COLONNES POUR LES PLACES PAR TYPE ----
             standard_seats: eventData.standardSeats || 0,
             vip_seats: eventData.vipSeats || 0,
             standard_sold: eventData.standardSold || 0,
@@ -1818,7 +1819,6 @@ async function loadAllFromSupabase() {
                     boosts: 0,
                     durationValue: e.duration_value || null,
                     durationUnit: e.duration_unit || null,
-                    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
                     standardSeats: e.standard_seats || 0,
                     vipSeats: e.vip_seats || 0,
                     standardSold: e.standard_sold || 0,
@@ -2586,7 +2586,6 @@ function openQuantityPopup(eventId) {
         return;
     }
     
-    // ---- NOUVEAU : VÉRIFIER SI AU MOINS UN TYPE DE BILLET EST DISPONIBLE ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
@@ -2621,10 +2620,10 @@ function openQuantityPopup(eventId) {
         ticketTypeSelect.innerHTML = '';
         var options = [];
         if (hasStandard && standardLeft > 0) {
-            options.push({ value: 'standard', label: t('standard') + ' - ' + event.ticketTypes.standard.price + ' Pi (dispo: ' + standardLeft + ')' });
+            options.push({ value: 'standard', label: t('standard') + ' - ' + event.ticketTypes.standard.price.toFixed(6) + ' Pi (dispo: ' + standardLeft + ')' });
         }
         if (hasVip && vipLeft > 0) {
-            options.push({ value: 'vip', label: t('vip') + ' - ' + event.ticketTypes.vip.price + ' Pi (dispo: ' + vipLeft + ')' });
+            options.push({ value: 'vip', label: t('vip') + ' - ' + event.ticketTypes.vip.price.toFixed(6) + ' Pi (dispo: ' + vipLeft + ')' });
         }
         if (options.length === 0) {
             alert('Aucun billet disponible');
@@ -2640,7 +2639,6 @@ function openQuantityPopup(eventId) {
         selectedTicketType = options[0].value;
     }
     
-    // ---- NOUVEAU : METTRE À JOUR LA QUANTITÉ MAX PAR TYPE ----
     if (quantityInput) {
         quantityInput.value = 1;
         quantityInput.min = 1;
@@ -2655,7 +2653,6 @@ function openQuantityPopup(eventId) {
     popup.classList.add('show');
 }
 
-// ---- NOUVEAU : FONCTION POUR METTRE À JOUR LA QUANTITÉ MAX ----
 function updateMaxQuantity() {
     var ticketTypeSelect = document.getElementById('ticketTypeSelect');
     var quantityInput = document.getElementById('ticketQuantity');
@@ -2712,6 +2709,10 @@ function updateQuantity(delta) {
     updateTicketTotal();
 }
 
+// ============================================================
+// ===== CONFIRM PURCHASE (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
+// ============================================================
+
 async function confirmPurchaseFromPopup() {
     if (!selectedEventForPurchase) {
         alert('No event selected');
@@ -2728,7 +2729,6 @@ async function confirmPurchaseFromPopup() {
         return;
     }
     
-    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
     var availableSeats = 0;
     if (ticketType === 'standard') {
         availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
@@ -2754,9 +2754,7 @@ async function confirmPurchaseFromPopup() {
     }
     
     await confirmPurchase(selectedEventForPurchase.id, quantity, ticketType);
-}// ============================================================
-// ===== CONFIRM PURCHASE (MODIFIÉ AVEC GESTION DES PLACES PAR TYPE) =====
-// ============================================================
+}
 
 async function confirmPurchase(eventId, quantity, ticketType) {
     var event = events.find(function(e) { return e.id === eventId; });
@@ -2767,7 +2765,6 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     
-    // ---- NOUVEAU : VÉRIFIER LES PLACES DISPONIBLES PAR TYPE ----
     var availableSeats = 0;
     if (ticketType === 'standard') {
         availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
@@ -2840,7 +2837,6 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                     var purchaseDate = new Date().toISOString();
                     var purchaseDateTime = new Date().toLocaleString('en-US');
                     
-                    // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
                     if (ticketType === 'standard') {
                         event.standardSold = (event.standardSold || 0) + quantity;
                         event.standardLeft = (event.standardSeats || 0) - event.standardSold;
@@ -2907,11 +2903,9 @@ async function confirmPurchase(eventId, quantity, ticketType) {
                         date: new Date().toISOString()
                     });
                     
-                    // ---- NOUVEAU : NOTIFICATION À L'ORGANISATEUR ----
                     var organizerMessage = '🎫 Nouvelle vente ! ' + quantity + ' ' + typeLabel + ' ticket(s) acheté(s) pour "' + event.title + '"';
                     addNotification(organizerMessage, 'purchase');
                     
-                    // ---- NOUVEAU : NOTIFICATION À L'ACHETEUR ----
                     var buyerMessage = '✅ Achat réussi ! ' + quantity + ' ' + typeLabel + ' ticket(s) pour "' + event.title + '"';
                     addNotification(buyerMessage, 'purchase');
                     
@@ -2986,7 +2980,6 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     
     if (!popup) return;
     
-    // ---- EMPÊCHER LES DOUBLONS ----
     if (popup.classList.contains('show')) {
         console.log('Popup already shown, ignoring duplicate call');
         return;
@@ -2998,20 +2991,17 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     var totalPrice = qty * price;
     
-    // ---- TITRE ET MESSAGE ----
     if (title) title.textContent = 'Achat réussi !';
     if (eventNameEl) eventNameEl.textContent = event.title || 'Blockchain Africa';
     if (message) {
         message.innerHTML = 'Merci d\'avoir acheté votre ticket pour <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
     }
     
-    // ---- RÉCAPITULATIF RAPIDE ----
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('fr-FR');
     var timeFormatted = dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     var codeDisplay = ticket.qrCode || ticket.id || 'N/A';
     
-    // ---- DÉTERMINER LE PAYS AVEC DRAPEAU ----
     var paysDisplay = event.pays || event.country || 'France';
     var flagEmojis = {
         'France': '🇫🇷', 'RDC': '🇨🇩', 'Congo': '🇨🇬', 'Belgium': '🇧🇪',
@@ -3045,7 +3035,6 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
             '<div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + escapeHtml(codeDisplay) + '</span></div>';
     }
     
-    // ---- BOUTON "VOIR MON TICKET" ----
     if (viewBtn) {
         viewBtn.onclick = function(e) {
             e.preventDefault();
@@ -3055,7 +3044,6 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
         viewBtn.style.display = 'inline-block';
     }
     
-    // ---- BOUTON "FERMER" ----
     if (closeBtn) {
         closeBtn.onclick = function(e) {
             e.preventDefault();
@@ -3063,14 +3051,9 @@ function showSuccessPopup(event, ticketsList, quantity, ticketType) {
         };
     }
     
-    // ---- AFFICHER LA POPUP ----
     popup.style.display = 'flex';
     popup.classList.add('show');
 }
-
-// ============================================================
-// ===== CLOSE SUCCESS POPUP =====
-// ============================================================
 
 function closeSuccessPopup() {
     var popup = document.getElementById('successPopup');
@@ -3079,13 +3062,11 @@ function closeSuccessPopup() {
         popup.style.display = 'none';
     }
     
-    // ---- VIDER LE CONTENU POUR ÉVITER LES RÉAPPARITIONS ----
     var info = document.getElementById('successTicketInfo');
     if (info) {
         info.innerHTML = '';
     }
     
-    // ---- SUPPRIMER TOUT ÉVENTUEL ÉTAT EN MÉMOIRE ----
     localStorage.removeItem('betix_success_popup_shown');
     
     console.log('Success popup closed and cleaned');
@@ -3117,7 +3098,6 @@ async function createEvent(e) {
     var description = document.getElementById('eventDescription').value.trim();
     var conditions = document.getElementById('eventConditions').value.trim();
     
-    // ---- NOUVEAU : RÉCUPÉRER LES NOMBRES DE BILLETS ----
     var standardSeats = parseInt(document.getElementById('eventStandardSeats').value) || 0;
     var vipSeats = parseInt(document.getElementById('eventVipSeats').value) || 0;
     var seatsTotal = standardSeats + vipSeats;
@@ -3137,7 +3117,6 @@ async function createEvent(e) {
     var standardPrice = parseFloat(document.getElementById('ticketStandardPrice').value);
     var vipPrice = parseFloat(document.getElementById('ticketVipPrice').value);
     
-    // ---- VÉRIFICATION : SI UN TYPE EST ACTIF, IL DOIT AVOIR DES PLACES ----
     if (standardEnabled && standardSeats <= 0) {
         alert('Le type Standard est activé mais n\'a pas de places disponibles');
         return;
@@ -3183,7 +3162,6 @@ async function createEvent(e) {
             price: standardEnabled ? standardPrice : (vipEnabled ? vipPrice : 0.0003),
             seatsTotal: seatsTotal,
             seatsLeft: seatsTotal,
-            // ---- NOUVEAU : SUIVI PAR TYPE ----
             standardSeats: standardSeats,
             vipSeats: vipSeats,
             standardSold: 0,
@@ -3263,10 +3241,10 @@ function openPublishConfirm(eventData) {
     if (confirmTicketTypes) {
         var types = [];
         if (eventData.ticketTypes && eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled) {
-            types.push(t('standard') + ': ' + eventData.ticketTypes.standard.price + ' Pi');
+            types.push(t('standard') + ': ' + eventData.ticketTypes.standard.price.toFixed(6) + ' Pi');
         }
         if (eventData.ticketTypes && eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled) {
-            types.push(t('vip') + ': ' + eventData.ticketTypes.vip.price + ' Pi');
+            types.push(t('vip') + ': ' + eventData.ticketTypes.vip.price.toFixed(6) + ' Pi');
         }
         confirmTicketTypes.textContent = types.join(' | ') || 'Not specified';
     }
@@ -3562,7 +3540,6 @@ function openEditEventModal(eventId) {
     document.getElementById('editEventDurationValue').value = event.durationValue || '';
     document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
     
-    // ---- NOUVEAU : CHARGER LES PLACES PAR TYPE ----
     document.getElementById('editEventStandardSeats').value = event.standardSeats || 0;
     document.getElementById('editEventVipSeats').value = event.vipSeats || 0;
     
@@ -3589,12 +3566,10 @@ async function saveEventEdits() {
     var durationValue = document.getElementById('editEventDurationValue').value;
     var durationUnit = document.getElementById('editEventDurationUnit').value;
     
-    // ---- NOUVEAU : RÉCUPÉRER LES PLACES PAR TYPE ----
     var standardSeats = parseInt(document.getElementById('editEventStandardSeats').value) || 0;
     var vipSeats = parseInt(document.getElementById('editEventVipSeats').value) || 0;
     var seatsTotal = standardSeats + vipSeats;
     
-    // ---- VÉRIFICATIONS ----
     if (seatsTotal < 1) {
         alert('Au moins un billet (Standard ou VIP) doit être disponible');
         return;
@@ -3620,7 +3595,6 @@ async function saveEventEdits() {
         seatsLeft: seatsTotal - (ticketsSoldStandard + ticketsSoldVip),
         durationValue: durationValue ? parseInt(durationValue) : null,
         durationUnit: durationUnit || null,
-        // ---- NOUVEAU : METTRE À JOUR LES PLACES PAR TYPE ----
         standardSeats: standardSeats,
         vipSeats: vipSeats,
         standardLeft: standardSeats - ticketsSoldStandard,
@@ -3629,7 +3603,6 @@ async function saveEventEdits() {
         vipSold: ticketsSoldVip
     };
     
-    // Mettre à jour l'événement en mémoire
     event.description = updates.description;
     event.location = updates.location;
     event.conditions = updates.conditions;
@@ -3671,7 +3644,7 @@ async function saveEventEdits() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ AVEC AFFICHAGE DES PLACES PAR TYPE) =====
+// ===== RENDER EVENT CARD (MODIFIÉ - PRIX À LA PLACE DE "NEW") =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -3727,7 +3700,6 @@ function renderEventCard(event) {
         organizerFormatted = '@' + organizerFormatted;
     }
     
-    // ---- DATE DE PUBLICATION (style Twitter/X) ----
     var publishDateDisplay = '';
     if (event.createdAt) {
         var pd = new Date(event.createdAt);
@@ -3757,6 +3729,25 @@ function renderEventCard(event) {
         }
     }
     
+    // ---- NOUVEAU : AFFICHAGE DU PRIX À LA PLACE DU BADGE "NEW" ----
+    var priceBadge = '';
+    var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
+    var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
+    var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
+    var vipPrice = hasVip ? event.ticketTypes.vip.price : 0;
+    
+    if (hasStandard && hasVip) {
+        var minPrice = Math.min(standardPrice, vipPrice);
+        var maxPrice = Math.max(standardPrice, vipPrice);
+        priceBadge = '<span class="price-badge price-range">Prix: ' + minPrice.toFixed(6) + ' - ' + maxPrice.toFixed(6) + ' Pi</span>';
+    } else if (hasStandard) {
+        priceBadge = '<span class="price-badge">Prix: ' + standardPrice.toFixed(6) + ' Pi</span>';
+    } else if (hasVip) {
+        priceBadge = '<span class="price-badge">Prix: ' + vipPrice.toFixed(6) + ' Pi</span>';
+    } else {
+        priceBadge = '<span class="price-badge">Prix: ' + (event.price || 0).toFixed(6) + ' Pi</span>';
+    }
+    
     var ratingDisplay = '';
     if (eventRatings.length > 0) {
         var stars = '';
@@ -3765,17 +3756,16 @@ function renderEventCard(event) {
         for (var i = fullStars; i < 5; i++) stars += '☆';
         ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
     } else {
-        ratingDisplay = '<span class="new-badge">' + t('new') + '</span>';
+        ratingDisplay = priceBadge;
     }
     
-    // ---- NOUVEAU : AFFICHAGE DES PLACES RESTANTES PAR TYPE ----
     var seatsDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
+    if (hasStandard) {
         var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
         var standardTotal = event.standardSeats || 0;
         seatsDisplay += '<span class="seats-type standard-seats">STD: <span class="seats-count">' + standardLeft + '/' + standardTotal + '</span></span>';
     }
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+    if (hasVip) {
         var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
         var vipTotal = event.vipSeats || 0;
         seatsDisplay += '<span class="seats-type vip-seats">VIP: <span class="seats-count">' + vipLeft + '/' + vipTotal + '</span></span>';
@@ -3785,15 +3775,15 @@ function renderEventCard(event) {
     }
     
     var priceDisplay = '';
-    if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
+    if (hasStandard) {
+        priceDisplay += t('standard') + ': ' + standardPrice.toFixed(6) + ' Pi';
     }
-    if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
+    if (hasVip) {
         if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
+        priceDisplay += t('vip') + ': ' + vipPrice.toFixed(6) + ' Pi';
     }
     if (!priceDisplay) {
-        priceDisplay = event.price + ' Pi';
+        priceDisplay = (event.price || 0).toFixed(6) + ' Pi';
     }
     
     var durationDisplay = '';
@@ -3819,7 +3809,6 @@ function renderEventCard(event) {
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
                 '<span class="event-price-classic">' + priceDisplay + '</span>' +
-                // ---- NOUVEAU : AFFICHAGE DES PLACES PAR TYPE ----
                 '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
             '</div>' +
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
@@ -3926,7 +3915,7 @@ function renderTicketCard(ticket, status) {
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('eventDate') + '</span><span class="ticket-value">' + dateFormatted + '</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('eventTime') + '</span><span class="ticket-value">' + timeFormatted + '</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('locationLabel') + '</span><span class="ticket-value">' + escapeHtml(ticket.eventLocation || 'Online') + '</span></div>' +
-                    '<div class="ticket-info-row"><span class="ticket-label">' + t('price') + '</span><span class="ticket-value">' + (ticket.price || 0) + ' Pi</span></div>' +
+                    '<div class="ticket-info-row"><span class="ticket-label">' + t('price') + '</span><span class="ticket-value">' + (ticket.price || 0).toFixed(6) + ' Pi</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('ticketTypeLabel') + '</span><span class="ticket-value">' + typeLabel + '</span></div>' +
                     '<div class="ticket-info-row"><span class="ticket-label">' + t('countryLabel') + '</span><span class="ticket-value">' + escapeHtml(paysDisplay) + '</span></div>' +
                 '</div>' +
@@ -4091,7 +4080,7 @@ async function downloadTicket(ticketId) {
         doc.text(t('price') + ':', margin + 10, infoY);
         doc.setTextColor(26, 26, 46);
         doc.setFont('helvetica', 'bold');
-        doc.text((ticket.price || 0) + ' Pi', margin + 55, infoY);
+        doc.text((ticket.price || 0).toFixed(6) + ' Pi', margin + 55, infoY);
         
         infoY += 10;
         doc.setTextColor(107, 114, 128);
@@ -4218,7 +4207,9 @@ function markTicketAsUsed(ticketId) {
         
         alert(t('ticketMarkedUsed'));
     }
-}// ============================================================
+}
+
+// ============================================================
 // ===== MY RATINGS =====
 // ============================================================
 
@@ -4494,8 +4485,8 @@ function renderAdminEvents() {
     }
     container.innerHTML = events.map(function(e) {
         var types = [];
-        if (e.ticketTypes && e.ticketTypes.standard && e.ticketTypes.standard.enabled) types.push(t('standard') + ': ' + e.ticketTypes.standard.price + ' Pi');
-        if (e.ticketTypes && e.ticketTypes.vip && e.ticketTypes.vip.enabled) types.push(t('vip') + ': ' + e.ticketTypes.vip.price + ' Pi');
+        if (e.ticketTypes && e.ticketTypes.standard && e.ticketTypes.standard.enabled) types.push(t('standard') + ': ' + e.ticketTypes.standard.price.toFixed(6) + ' Pi');
+        if (e.ticketTypes && e.ticketTypes.vip && e.ticketTypes.vip.enabled) types.push(t('vip') + ': ' + e.ticketTypes.vip.price.toFixed(6) + ' Pi');
         var typesDisplay = types.join(' | ') || 'No ticket types';
         return '<div class="admin-event-item">' +
             '<div class="event-info">' +
@@ -4775,11 +4766,11 @@ function renderMyEventCardModern(event) {
     
     var typesDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        typesDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
+        typesDisplay += t('standard') + ': ' + event.ticketTypes.standard.price.toFixed(6) + ' Pi';
     }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (typesDisplay) typesDisplay += ' | ';
-        typesDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
+        typesDisplay += t('vip') + ': ' + event.ticketTypes.vip.price.toFixed(6) + ' Pi';
     }
     if (!typesDisplay) typesDisplay = 'No ticket types';
     
@@ -4857,7 +4848,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== EVENT DETAILS =====
+// ===== EVENT DETAILS AVEC CARROUSEL D'IMAGES (MODIFIÉ) =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -4897,17 +4888,47 @@ function openEventDetails(eventId) {
     
     var priceDisplay = '';
     if (event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled) {
-        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price + ' Pi';
+        priceDisplay += t('standard') + ': ' + event.ticketTypes.standard.price.toFixed(6) + ' Pi';
     }
     if (event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled) {
         if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price + ' Pi';
+        priceDisplay += t('vip') + ': ' + event.ticketTypes.vip.price.toFixed(6) + ' Pi';
     }
-    if (!priceDisplay) priceDisplay = event.price + ' Pi';
+    if (!priceDisplay) priceDisplay = (event.price || 0).toFixed(6) + ' Pi';
     
     var fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
-    var imageUrl = event.coverImage || (event.images && event.images[0]) || fallbackImage;
-    var imageCount = event.images ? event.images.length : 0;
+    var images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
+    
+    // ---- CONSTRUCTION DU CARROUSEL D'IMAGES ----
+    var carouselHtml = '';
+    var imageCount = images.length;
+    var trackId = 'carousel-track-' + event.id;
+    var dotsId = 'carousel-dots-' + event.id;
+    
+    if (imageCount > 0) {
+        carouselHtml = '<div class="event-detail-image-carousel" id="carousel-' + event.id + '">';
+        carouselHtml += '<div class="carousel-track" id="' + trackId + '">';
+        
+        for (var i = 0; i < images.length; i++) {
+            var imgSrc = images[i] || fallbackImage;
+            carouselHtml += '<div class="carousel-slide"><img src="' + imgSrc + '" alt="Image ' + (i+1) + '" onerror="this.src=\'' + fallbackImage + '\'"></div>';
+        }
+        
+        carouselHtml += '</div>';
+        
+        if (imageCount > 1) {
+            carouselHtml += '<button class="carousel-btn prev" onclick="carouselPrev(\'' + event.id + '\')">‹</button>';
+            carouselHtml += '<button class="carousel-btn next" onclick="carouselNext(\'' + event.id + '\')">›</button>';
+            carouselHtml += '<div class="carousel-counter"><span id="carousel-current-' + event.id + '">1</span>/' + imageCount + '</div>';
+            carouselHtml += '<div class="carousel-dots" id="' + dotsId + '">';
+            for (var d = 0; d < imageCount; d++) {
+                carouselHtml += '<button class="cdot' + (d === 0 ? ' active' : '') + '" onclick="carouselGoTo(\'' + event.id + '\', ' + d + ')"></button>';
+            }
+            carouselHtml += '</div>';
+        }
+        
+        carouselHtml += '</div>';
+    }
     
     var conditionsHtml = '';
     if (event.conditions) {
@@ -4968,10 +4989,7 @@ function openEventDetails(eventId) {
         '</div>' +
         
         '<div class="event-detail-body-simple">' +
-            '<div class="event-detail-image-wrapper">' +
-                '<img src="' + imageUrl + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
-                (imageCount > 1 ? '<span class="image-count-badge"><i class="fas fa-images"></i> ' + imageCount + ' ' + t('photos') + '</span>' : '') +
-            '</div>' +
+            carouselHtml +
             
             '<div class="event-detail-info-grid">' +
                 '<div class="info-item"><i class="fas fa-calendar-day"></i> <span class="info-label">' + t('eventDate') + '</span> <span class="info-value">' + dateFormatted + '</span></div>' +
@@ -5036,6 +5054,61 @@ function openEventDetails(eventId) {
     
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
+    
+    if (images.length > 1) {
+        var carouselData = {
+            currentIndex: 0,
+            totalSlides: images.length,
+            trackId: trackId,
+            dotsId: dotsId,
+            eventId: event.id
+        };
+        window._carousels = window._carousels || {};
+        window._carousels[event.id] = carouselData;
+        
+        var counter = document.getElementById('carousel-current-' + event.id);
+        if (counter) counter.textContent = '1';
+    }
+}
+
+// ============================================================
+// ===== FONCTIONS DE NAVIGATION DU CARROUSEL =====
+// ============================================================
+
+function carouselGoTo(eventId, index) {
+    var carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    
+    var track = document.getElementById(carousel.trackId);
+    if (!track) return;
+    
+    var total = carousel.totalSlides;
+    if (index < 0) index = total - 1;
+    if (index >= total) index = 0;
+    carousel.currentIndex = index;
+    
+    var offset = -index * 100;
+    track.style.transform = 'translateX(' + offset + '%)';
+    
+    var dots = document.querySelectorAll('#' + carousel.dotsId + ' .cdot');
+    dots.forEach(function(dot, i) {
+        dot.classList.toggle('active', i === index);
+    });
+    
+    var counter = document.getElementById('carousel-current-' + eventId);
+    if (counter) counter.textContent = (index + 1);
+}
+
+function carouselPrev(eventId) {
+    var carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    carouselGoTo(eventId, carousel.currentIndex - 1);
+}
+
+function carouselNext(eventId) {
+    var carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    carouselGoTo(eventId, carousel.currentIndex + 1);
 }
 
 function closeEventDetailModal() {
@@ -5043,6 +5116,11 @@ function closeEventDetailModal() {
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = '';
+    }
+    if (window._carousels) {
+        for (var key in window._carousels) {
+            delete window._carousels[key];
+        }
     }
 }
 
@@ -5129,6 +5207,94 @@ function trackUserConnection() {
         syncUserToSupabase();
     }
 }
+
+// ============================================================
+// ===== VERIFY SUPABASE PERSISTENCE (NOUVEAU) =====
+// ============================================================
+
+async function verifySupabasePersistence() {
+    console.log('🔍 VÉRIFICATION SUPABASE - PERSISTANCE DES DONNÉES');
+    console.log('==================================================');
+    
+    try {
+        var supabaseEvents = await loadEventsFromSupabase();
+        console.log('📋 Événements dans Supabase:', supabaseEvents ? supabaseEvents.length : 0);
+        if (supabaseEvents && supabaseEvents.length > 0) {
+            console.log('   Dernier événement:', supabaseEvents[supabaseEvents.length - 1].title);
+        }
+        
+        if (currentUser.piUid || currentUser.wallet) {
+            var piUid = currentUser.piUid || currentUser.wallet;
+            var supabaseTickets = await loadTicketsFromSupabase(piUid);
+            console.log('🎫 Tickets dans Supabase pour', piUid, ':', supabaseTickets ? supabaseTickets.length : 0);
+            if (supabaseTickets && supabaseTickets.length > 0) {
+                console.log('   Dernier ticket:', supabaseTickets[supabaseTickets.length - 1].id);
+            }
+        }
+        
+        if (currentUser.piUid || currentUser.wallet) {
+            var piUid2 = currentUser.piUid || currentUser.wallet;
+            var supabaseNotifs = await loadNotificationsFromSupabase(piUid2);
+            console.log('🔔 Notifications dans Supabase:', supabaseNotifs ? supabaseNotifs.length : 0);
+        }
+        
+        console.log('🔄 Synchronisation mémoire/Supabase:');
+        console.log('   Événements en mémoire:', events.length);
+        console.log('   Tickets en mémoire:', tickets.length);
+        console.log('   Notifications en mémoire:', notifications.length);
+        
+        console.log('✅ VÉRIFICATION TERMINÉE');
+        alert('Vérification Supabase terminée. Consultez la console pour les détails.');
+        
+        return {
+            events: supabaseEvents ? supabaseEvents.length : 0,
+            tickets: supabaseTickets ? supabaseTickets.length : 0,
+            notifications: supabaseNotifs ? supabaseNotifs.length : 0,
+            memoryEvents: events.length,
+            memoryTickets: tickets.length
+        };
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la vérification:', error);
+        alert('Erreur: ' + error.message);
+        return null;
+    }
+}
+
+async function forceFullSync() {
+    console.log('🔄 FORCE FULL SYNC - Début');
+    console.log('==================================================');
+    
+    try {
+        console.log('   Synchronisation des événements...');
+        await syncEventsToSupabase();
+        
+        console.log('   Synchronisation des tickets...');
+        await syncTicketsToSupabase();
+        
+        console.log('   Synchronisation des notifications...');
+        await syncNotificationsToSupabase();
+        
+        console.log('   Synchronisation de l\'utilisateur...');
+        await syncUserToSupabase();
+        
+        console.log('✅ FORCE FULL SYNC - Terminé');
+        console.log('   Événements:', events.length);
+        console.log('   Tickets:', tickets.length);
+        console.log('   Notifications:', notifications.length);
+        
+        alert('Synchronisation complète terminée !');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la synchronisation:', error);
+        alert('Erreur: ' + error.message);
+        return false;
+    }
+}
+
+window.verifySupabasePersistence = verifySupabasePersistence;
+window.forceFullSync = forceFullSync;
 
 // ============================================================
 // ===== CLEAR DATA =====
@@ -5821,7 +5987,6 @@ window.reloadTicketsFromSupabase = reloadTicketsFromSupabase;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded - Starting application...');
     
-    // ---- FORCER LA FERMETURE DE LA POPUP AU CHARGEMENT ----
     var successPopup = document.getElementById('successPopup');
     if (successPopup) {
         successPopup.classList.remove('show');
@@ -5834,7 +5999,6 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('betix_success_popup_shown');
     
     try {
-        // ---- RESTAURER L'UTILISATEUR AU CHARGEMENT ----
         var savedUser = localStorage.getItem('betix_user');
         if (savedUser) {
             try {
@@ -6167,6 +6331,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Seats display on event cards: STD: X/Y | VIP: X/Y');
         console.log('Notifications sent to organizer for each ticket purchase');
         console.log('Duration field modernized with dropdown menus');
+        console.log('Price badge replaces "New" on event cards!');
+        console.log('Carousel added to event detail page for multiple images!');
+        console.log('Supabase persistence verification functions added!');
+        console.log('verifySupabasePersistence() and forceFullSync() available in console');
         
     } catch (error) {
         console.error('Error during application startup:', error);
