@@ -1890,9 +1890,8 @@ async function loadAllFromSupabase() {
         }
     }
 }
-
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - PRIX VERT, PAYS + DURÉE) =====
+// ===== RENDER EVENT CARD (MODIFIÉ - PRIX AMÉLIORÉ + SEATS) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -1979,25 +1978,36 @@ function renderEventCard(event) {
         }
     }
     
-    // ---- BADGE PRIX VERT (REMPLACE "NEW") ----
+    // ---- BADGE PRIX VERT (REMPLACE "NEW") AVEC COULEURS AMÉLIORÉES ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
     var vipPrice = hasVip ? event.ticketTypes.vip.price : 0;
     
-    var priceBadgeText = '';
     var priceBadgeClass = 'price-badge-green';
+    var priceHtml = '';
+    
     if (hasStandard && hasVip) {
         var minPrice = Math.min(standardPrice, vipPrice);
         var maxPrice = Math.max(standardPrice, vipPrice);
-        priceBadgeText = 'Prix : ' + minPrice.toFixed(6) + ' – ' + maxPrice.toFixed(6) + ' Pi';
+        priceHtml = '<span class="price-label">Prix : </span>' +
+                    '<span class="price-value-range">' + minPrice.toFixed(6) + '</span>' +
+                    '<span class="price-separator"> – </span>' +
+                    '<span class="price-value-range">' + maxPrice.toFixed(6) + '</span>' +
+                    '<span class="price-currency"> Pi</span>';
         priceBadgeClass = 'price-badge-green range';
     } else if (hasStandard) {
-        priceBadgeText = 'Prix : ' + standardPrice.toFixed(6) + ' Pi';
+        priceHtml = '<span class="price-label">Prix : </span>' +
+                    '<span class="price-value">' + standardPrice.toFixed(6) + '</span>' +
+                    '<span class="price-currency"> Pi</span>';
     } else if (hasVip) {
-        priceBadgeText = 'Prix : ' + vipPrice.toFixed(6) + ' Pi';
+        priceHtml = '<span class="price-label">Prix : </span>' +
+                    '<span class="price-value">' + vipPrice.toFixed(6) + '</span>' +
+                    '<span class="price-currency"> Pi</span>';
     } else {
-        priceBadgeText = 'Prix : ' + (event.price || 0).toFixed(6) + ' Pi';
+        priceHtml = '<span class="price-label">Prix : </span>' +
+                    '<span class="price-value">' + (event.price || 0).toFixed(6) + '</span>' +
+                    '<span class="price-currency"> Pi</span>';
     }
     
     // ---- RATING DISPLAY AVEC BADGE PRIX VERT ----
@@ -2009,20 +2019,26 @@ function renderEventCard(event) {
         for (var i = fullStars; i < 5; i++) stars += '☆';
         ratingDisplay = '<span class="stars">' + stars + '</span> ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ')';
     } else {
-        ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceBadgeText + '</span>';
+        ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceHtml + '</span>';
     }
     
-    // ---- AFFICHAGE DES PLACES PAR TYPE ----
+    // ---- AFFICHAGE DES PLACES PAR TYPE (FORMAT "STD: X/Y VIP: X/Y") ----
     var seatsDisplay = '';
     if (hasStandard) {
         var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
         var standardTotal = event.standardSeats || 0;
-        seatsDisplay += '<span class="seats-type standard-seats">STD: <span class="seats-count">' + standardLeft + '/' + standardTotal + '</span></span>';
+        seatsDisplay += '<span class="seats-type standard-seats">' +
+            '<span class="seats-label">STD:</span> ' +
+            '<span class="seats-count">' + standardLeft + '/' + standardTotal + '</span>' +
+        '</span>';
     }
     if (hasVip) {
         var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
         var vipTotal = event.vipSeats || 0;
-        seatsDisplay += '<span class="seats-type vip-seats">VIP: <span class="seats-count">' + vipLeft + '/' + vipTotal + '</span></span>';
+        seatsDisplay += '<span class="seats-type vip-seats">' +
+            '<span class="seats-label">VIP:</span> ' +
+            '<span class="seats-count">' + vipLeft + '/' + vipTotal + '</span>' +
+        '</span>';
     }
     if (!seatsDisplay) {
         seatsDisplay = '<span class="seats-type">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>';
@@ -2097,7 +2113,6 @@ function renderEventCard(event) {
         '</div>' +
     '</div>';
 }
-
 // ============================================================
 // ===== RENDER CHAT MESSAGES =====
 // ============================================================
