@@ -2079,15 +2079,15 @@ function renderEventCard(event) {
         '</div>';
     }
     
-    // ---- DURÉE ----
+    // ---- DURÉE EN MAJUSCULES ----
     var durationText = '';
     if (event.durationValue && event.durationUnit) {
         var unitLabels = {
-            'hours': 'h',
-            'days': 'd',
-            'weeks': 'w',
-            'months': 'm',
-            'years': 'y'
+            'hours': 'H',
+            'days': 'D',
+            'weeks': 'W',
+            'months': 'M',
+            'years': 'Y'
         };
         var unitLabel = unitLabels[event.durationUnit] || event.durationUnit;
         durationText = event.durationValue + ' ' + unitLabel;
@@ -3486,7 +3486,14 @@ function openPublishConfirm(eventData) {
     
     if (confirmDuration) {
         if (eventData.durationValue && eventData.durationUnit) {
-            confirmDuration.textContent = eventData.durationValue + ' ' + eventData.durationUnit;
+            var unitLabels = {
+                'hours': 'H',
+                'days': 'D',
+                'weeks': 'W',
+                'months': 'M',
+                'years': 'Y'
+            };
+            confirmDuration.textContent = eventData.durationValue + ' ' + (unitLabels[eventData.durationUnit] || eventData.durationUnit);
             confirmDuration.style.display = 'block';
         } else {
             confirmDuration.style.display = 'none';
@@ -3499,6 +3506,10 @@ function openPublishConfirm(eventData) {
             var img = document.createElement('img');
             img.src = eventData.images[i];
             img.alt = 'Event image ' + (i + 1);
+            img.style.objectFit = 'contain';
+            img.style.width = '70px';
+            img.style.height = '70px';
+            img.style.background = '#1a1a2e';
             confirmImages.appendChild(img);
         }
     }
@@ -4819,7 +4830,14 @@ function renderMyEventCardModern(event) {
     
     var durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
-        durationDisplay = event.durationValue + ' ' + event.durationUnit;
+        var unitLabels = {
+            'hours': 'H',
+            'days': 'D',
+            'weeks': 'W',
+            'months': 'M',
+            'years': 'Y'
+        };
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
     
     var typesDisplay = '';
@@ -6412,7 +6430,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== SCROLL TO TOP BUTTON =====
 // ============================================================
 
-// Afficher/cacher le bouton selon le scroll
 var scrollBtn = document.getElementById('scrollTopBtn');
 if (scrollBtn) {
     window.addEventListener('scroll', function() {
