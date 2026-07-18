@@ -1226,65 +1226,6 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 }
 
 /* ============================================================
-   TICKETS LABEL - SEUL "Tickets" A UN FOND ROUGE
-   ============================================================ */
-.event-card-classic .event-tickets-label .tickets-label-badge {
-    background: #ef4444 !important;
-    color: #ffffff !important;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.6rem;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-    display: inline-block;
-}
-
-.event-card-classic .event-tickets-label .tickets-label-badge:hover {
-    background: #dc2626 !important;
-    transform: scale(1.03);
-    transition: all 0.2s ease;
-}
-
-.event-card-classic .event-tickets-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.65rem;
-    color: #1f2937;
-    font-weight: 500;
-    flex-wrap: wrap;
-    margin-top: 2px;
-}
-
-.event-card-classic .event-tickets-label .ticket-type {
-    color: #1f2937;
-    font-weight: 600;
-    font-size: 0.65rem;
-}
-
-.event-card-classic .event-tickets-label .ticket-sep {
-    color: #9ca3af;
-    margin: 0 2px;
-}
-
-body.dark-mode .event-card-classic .event-tickets-label {
-    color: #f3f4f6;
-}
-
-body.dark-mode .event-card-classic .event-tickets-label .ticket-type {
-    color: #f3f4f6;
-}
-
-body.dark-mode .event-card-classic .event-tickets-label .ticket-sep {
-    color: #6b7280;
-}
-
-body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
-    background: #ef4444 !important;
-    color: #ffffff !important;
-}
-/* ============================================================
    PAYS + DURÉE SUR LA CARTE
    ============================================================ */
 .event-country-duration {
@@ -1308,6 +1249,8 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 .event-country-duration .duration-text {
     color: #6b7280;
     font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .event-country-duration .duration-text i {
@@ -1315,15 +1258,18 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
     font-size: 0.6rem;
     margin-right: 2px;
 }
+
 /* ============================================================
-   AFFICHAGE DES IMAGES (STYLE RÉSEAUX SOCIAUX)
+   AFFICHAGE DES IMAGES (STYLE RÉSEAUX SOCIAUX) - VERSION CORRIGÉE
    ============================================================ */
 .event-card-classic .poster-wrapper-classic {
     position: relative;
     width: 100%;
     overflow: hidden;
     background: #f3f4f6;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: auto;
+    min-height: 200px;
+    max-height: 400px;
 }
 
 .event-card-classic .poster-grid {
@@ -1332,6 +1278,7 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
     height: 100%;
     gap: 3px;
     background: #1a1a2e;
+    min-height: 200px;
 }
 
 .event-card-classic .poster-grid .grid-item {
@@ -1343,29 +1290,44 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 .event-card-classic .poster-grid .grid-item img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: #1a1a2e;
 }
 
 .event-card-classic:hover .poster-grid .grid-item img {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
+/* Grilles pour différents nombres d'images */
 .event-card-classic .poster-grid.grid-1 {
     grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
 }
 
 .event-card-classic .poster-grid.grid-2 {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
 }
 
 .event-card-classic .poster-grid.grid-3 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr 1fr;
 }
 
 .event-card-classic .poster-grid.grid-3 .grid-item:first-child {
     grid-row: 1 / 3;
+    grid-column: 1 / 2;
+}
+
+.event-card-classic .poster-grid.grid-3 .grid-item:nth-child(2) {
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+}
+
+.event-card-classic .poster-grid.grid-3 .grid-item:nth-child(3) {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
 }
 
 .event-card-classic .poster-grid.grid-4 {
@@ -1373,16 +1335,22 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
     grid-template-rows: 1fr 1fr;
 }
 
+.event-card-classic .poster-grid .grid-item img {
+    object-fit: contain;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
 .event-card-classic .poster-grid .more-badge {
     position: absolute;
     bottom: 8px;
     right: 8px;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
     color: white;
-    padding: 2px 12px;
+    padding: 4px 14px;
     border-radius: 20px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 600;
     z-index: 3;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1420,25 +1388,6 @@ body.dark-mode .event-card-classic .poster-grid {
 
 body.dark-mode .event-card-classic .poster-grid .grid-item {
     background: #1f2937;
-}
-/* ============================================================
-   INDICATEUR CATEGORY BADGE
-   ============================================================ */
-.event-card-classic .category-badge-classic {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-    color: #fff;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    z-index: 2;
-    box-shadow: 0 4px 16px rgba(13, 71, 161, 0.25);
-    backdrop-filter: blur(4px);
 }
 
 /* ============================================================
@@ -2513,8 +2462,9 @@ body.dark-mode .ticket-card-professional.ticket-vip .btn-download-ticket {
 .preview-modern img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 12px;
+    background: #1a1a2e;
 }
 
 .remove-image-modern {
@@ -3164,9 +3114,10 @@ body.dark-mode .success-popup-content p {
 .publish-images-preview img {
     width: 70px;
     height: 70px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 10px;
     border: 2px solid #e5e7eb;
+    background: #1a1a2e;
     transition: transform 0.2s;
 }
 
@@ -4289,12 +4240,13 @@ body.dark-mode .seats-type.vip-seats {
 .my-event-card-modern .event-image-wrapper .event-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: #1a1a2e;
 }
 
 .my-event-card-modern:hover .event-image-wrapper .event-image {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 .my-event-card-modern .event-status-badge-modern {
@@ -5501,8 +5453,9 @@ body.dark-mode .event-detail-footer-simple {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 10px;
+    background: #1a1a2e;
 }
 
 .admin-upload-box.has-image {
@@ -5536,7 +5489,7 @@ body.dark-mode .event-detail-footer-simple {
     width: 70px;
     height: 45px;
     border-radius: 6px;
-    object-fit: cover;
+    object-fit: contain;
     flex-shrink: 0;
     background: #e5e7eb;
 }
