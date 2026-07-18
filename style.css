@@ -1046,29 +1046,65 @@ body.dark-mode .event-publish-date i {
 }
 
 /* ============================================================
-   BADGE PRIX VERT (REMPLACE "NEW")
+   BADGE PRIX VERT (REMPLACE "NEW") - VERSION AMÉLIORÉE
    ============================================================ */
 .price-badge-green {
     background: #10b981;
     color: #ffffff !important;
-    padding: 2px 12px;
+    padding: 3px 14px;
     border-radius: 12px;
-    font-size: 0.6rem;
+    font-size: 0.75rem !important;
     font-weight: 700;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     display: inline-block;
     white-space: nowrap;
+    line-height: 1.4;
+}
+
+.price-badge-green .price-label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.price-badge-green .price-value {
+    color: #ffd700;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-left: 2px;
+}
+
+.price-badge-green .price-value-range {
+    color: #ffd700;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.price-badge-green .price-separator {
+    color: #ffffff;
+    font-weight: 400;
+    margin: 0 2px;
+}
+
+.price-badge-green.range {
+    background: linear-gradient(135deg, #059669, #10b981);
+    padding: 3px 16px;
+}
+
+.price-badge-green .price-currency {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.65rem;
 }
 
 .price-badge-green:hover {
     background: #059669;
-    transform: scale(1.02);
+    transform: scale(1.03);
     transition: all 0.2s ease;
 }
 
-.price-badge-green.range {
-    background: linear-gradient(135deg, #10b981, #059669);
-    padding: 2px 14px;
+.price-badge-green.range:hover {
+    background: linear-gradient(135deg, #047857, #059669);
 }
 
 /* ============================================================
@@ -1387,6 +1423,97 @@ body.dark-mode .event-country-duration .duration-text {
 }
 
 /* ============================================================
+   SEATS DISPLAY - FORMAT "STD: X/Y VIP: X/Y"
+   ============================================================ */
+.seats-types-display {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 500;
+}
+
+.seats-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f3f4f6;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.seats-type.standard-seats {
+    background: rgba(13, 71, 161, 0.1);
+    color: #0D47A1;
+}
+
+.seats-type.standard-seats .seats-count {
+    color: #0D47A1;
+    font-weight: 700;
+}
+
+.seats-type.standard-seats .seats-label {
+    color: #0D47A1;
+    font-weight: 600;
+}
+
+.seats-type.vip-seats {
+    background: rgba(212, 145, 30, 0.12);
+    color: #d4911e;
+}
+
+.seats-type.vip-seats .seats-count {
+    color: #d4911e;
+    font-weight: 700;
+}
+
+.seats-type.vip-seats .seats-label {
+    color: #d4911e;
+    font-weight: 600;
+}
+
+.seats-type .seats-count {
+    font-weight: 700;
+}
+
+.seats-type .seats-count.sold-out {
+    color: #ef4444;
+}
+
+body.dark-mode .seats-type {
+    background: #374151;
+}
+
+body.dark-mode .seats-type.standard-seats {
+    background: rgba(13, 71, 161, 0.25);
+    color: #60a5fa;
+}
+
+body.dark-mode .seats-type.standard-seats .seats-count {
+    color: #60a5fa;
+}
+
+body.dark-mode .seats-type.standard-seats .seats-label {
+    color: #60a5fa;
+}
+
+body.dark-mode .seats-type.vip-seats {
+    background: rgba(212, 145, 30, 0.2);
+    color: #fbbf24;
+}
+
+body.dark-mode .seats-type.vip-seats .seats-count {
+    color: #fbbf24;
+}
+
+body.dark-mode .seats-type.vip-seats .seats-label {
+    color: #fbbf24;
+}
+
+/* ============================================================
    CARROUSEL D'IMAGES - VERSION AMÉLIORÉE
    ============================================================ */
 .event-detail-image-carousel {
@@ -1603,8 +1730,13 @@ body.dark-mode .event-country-duration .duration-text {
     }
     
     .event-card-classic .event-rating-classic .price-badge-green {
-        font-size: 0.55rem;
-        padding: 1px 10px;
+        font-size: 0.65rem !important;
+        padding: 2px 10px;
+    }
+    
+    .event-card-classic .event-rating-classic .price-badge-green .price-value,
+    .event-card-classic .event-rating-classic .price-badge-green .price-value-range {
+        font-size: 0.75rem !important;
     }
     
     .event-country-duration {
@@ -1614,6 +1746,11 @@ body.dark-mode .event-country-duration .duration-text {
     
     .event-card-classic .card-content-classic {
         padding: 10px 12px 12px;
+    }
+    
+    .seats-type {
+        font-size: 0.6rem;
+        padding: 1px 8px;
     }
 }
 
