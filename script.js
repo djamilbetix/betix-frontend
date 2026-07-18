@@ -2079,15 +2079,15 @@ function renderEventCard(event) {
         '</div>';
     }
     
-    // ---- DURÉE EN MAJUSCULES ----
+    // ---- DURÉE EN TOUTES LETTRES ----
     var durationText = '';
     if (event.durationValue && event.durationUnit) {
         var unitLabels = {
-            'hours': 'H',
-            'days': 'D',
-            'weeks': 'W',
-            'months': 'M',
-            'years': 'Y'
+            'hours': 'Hour',
+            'days': 'Day',
+            'weeks': 'Week',
+            'months': 'Month',
+            'years': 'Year'
         };
         var unitLabel = unitLabels[event.durationUnit] || event.durationUnit;
         durationText = event.durationValue + ' ' + unitLabel;
@@ -3487,11 +3487,11 @@ function openPublishConfirm(eventData) {
     if (confirmDuration) {
         if (eventData.durationValue && eventData.durationUnit) {
             var unitLabels = {
-                'hours': 'H',
-                'days': 'D',
-                'weeks': 'W',
-                'months': 'M',
-                'years': 'Y'
+                'hours': 'Hour',
+                'days': 'Day',
+                'weeks': 'Week',
+                'months': 'Month',
+                'years': 'Year'
             };
             confirmDuration.textContent = eventData.durationValue + ' ' + (unitLabels[eventData.durationUnit] || eventData.durationUnit);
             confirmDuration.style.display = 'block';
@@ -4831,11 +4831,11 @@ function renderMyEventCardModern(event) {
     var durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
         var unitLabels = {
-            'hours': 'H',
-            'days': 'D',
-            'weeks': 'W',
-            'months': 'M',
-            'years': 'Y'
+            'hours': 'Hour',
+            'days': 'Day',
+            'weeks': 'Week',
+            'months': 'Month',
+            'years': 'Year'
         };
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
