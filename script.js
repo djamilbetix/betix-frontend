@@ -1892,7 +1892,7 @@ async function loadAllFromSupabase() {
 }
 
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - PRICE BLEU + TICKETS ROUGE + IMAGES) =====
+// ===== RENDER EVENT CARD =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -1906,7 +1906,7 @@ function renderEventCard(event) {
     
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     
-    // ---- GESTION DES IMAGES (STYLE RÉSEAUX SOCIAUX) ----
+    // ---- GESTION DES IMAGES ----
     var images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     var imageCount = images.length;
     var posterHtml = '';
@@ -2012,7 +2012,7 @@ function renderEventCard(event) {
         }
     }
     
-    // ---- BADGE PRICE - SEUL "Price" A UN FOND BLEU ----
+    // ---- BADGE PRICE ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
@@ -2056,7 +2056,7 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceHtml + '</span>';
     }
     
-    // ---- TICKETS LABEL - SEUL "Tickets" A UN FOND ROUGE ----
+    // ---- TICKETS LABEL ----
     var ticketsLabelHtml = '';
     var stdText = '';
     var vipText = '';
@@ -3375,8 +3375,8 @@ async function createEvent(e) {
     }
     
     var images = getUploadedImages();
-    if (images.length < 2) { 
-        alert('2 images required'); 
+    if (images.length < 1) { 
+        alert('At least 1 image required'); 
         return; 
     }
     
@@ -3875,8 +3875,7 @@ async function saveEventEdits() {
         standard_seats: updates.standardSeats,
         vip_seats: updates.vipSeats,
         standard_sold: updates.standardSold,
-        vip_sold: updates.vipSold
-    });
+        vip_sold: updates.vipSold    });
     
     addNotification(
         'Edit Event "' + event.title + '"',
@@ -4975,7 +4974,7 @@ function openEventDetails(eventId) {
     var fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     var images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // ---- CONSTRUCTION DU CARROUSEL D'IMAGES ----
+    // ---- CARROUSEL D'IMAGES AVEC object-fit: contain ----
     var carouselHtml = '';
     var imageCount = images.length;
     var trackId = 'carousel-track-' + event.id;
@@ -5006,6 +5005,7 @@ function openEventDetails(eventId) {
         carouselHtml += '</div>';
     }
     
+    // ---- CONDITIONS ----
     var conditionsHtml = '';
     if (event.conditions) {
         var conditionsList = event.conditions.split('\n').filter(function(line) { return line.trim() !== ''; });
@@ -5022,6 +5022,7 @@ function openEventDetails(eventId) {
         conditionsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">No conditions specified</p>';
     }
     
+    // ---- AVIS ----
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
     var reviewsHtml = '';
     if (eventRatings.length > 0) {
@@ -5040,6 +5041,7 @@ function openEventDetails(eventId) {
         reviewsHtml = '<p style="color: var(--gray); font-size: 0.85rem;">No reviews yet</p>';
     }
     
+    // ---- NOTE MOYENNE ----
     var avgRating = 0;
     if (eventRatings.length > 0) {
         avgRating = eventRatings.reduce(function(a, r) { return a + r.rating; }, 0) / eventRatings.length;
@@ -5050,11 +5052,26 @@ function openEventDetails(eventId) {
     for (var i = fullStars; i < 5; i++) ratingStars += '☆';
     var ratingDisplay = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' reviews)' : 'Not yet rated';
     
+    // ---- ORGANISATEUR ----
     var organizerDisplay = event.organizerName || event.organizer || 'Unknown';
     if (!organizerDisplay.startsWith('@')) {
         organizerDisplay = '@' + organizerDisplay;
     }
     
+    // ---- DURÉE EN TOUTES LETTRES ----
+    var durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        var unitLabels = {
+            'hours': 'Hour',
+            'days': 'Day',
+            'weeks': 'Week',
+            'months': 'Month',
+            'years': 'Year'
+        };
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
+    }
+    
+    // ---- CONSTRUCTION DU CONTENU AVEC DESIGN X/TWITTER ----
     content.innerHTML = 
         '<div class="event-detail-header-simple">' +
             '<button class="back-btn-detail" onclick="closeEventDetailModal()">' +
@@ -5072,7 +5089,7 @@ function openEventDetails(eventId) {
                 '<div class="info-item"><i class="fas fa-clock"></i> <span class="info-label">Event Time</span> <span class="info-value">' + timeFormatted + '</span></div>' +
                 '<div class="info-item"><i class="fas fa-map-marker-alt"></i> <span class="info-label">Location</span> <span class="info-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
                 '<div class="info-item"><i class="fas fa-flag"></i> <span class="info-label">Country</span> <span class="info-value">' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</span></div>' +
-                (event.durationValue && event.durationUnit ? '<div class="info-item full-width"><i class="fas fa-hourglass-half"></i> <span class="info-label">Duration</span> <span class="info-value">' + event.durationValue + ' ' + event.durationUnit + '</span></div>' : '') +
+                (durationDisplay ? '<div class="info-item full-width"><i class="fas fa-hourglass-half"></i> <span class="info-label">Duration</span> <span class="info-value">' + durationDisplay + '</span></div>' : '') +
             '</div>' +
             
             '<div class="event-detail-price-seats-simple">' +
@@ -5130,6 +5147,14 @@ function openEventDetails(eventId) {
     
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
+    
+    // Forcer le scroll vers le haut
+    setTimeout(function() {
+        var body = document.querySelector('.event-detail-body-simple');
+        if (body) {
+            body.scrollTop = 0;
+        }
+    }, 100);
     
     if (images.length > 1) {
         var carouselData = {
