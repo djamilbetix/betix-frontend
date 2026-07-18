@@ -1086,83 +1086,6 @@ body.dark-mode .event-publish-date i {
 }
 
 /* ============================================================
-   BADGE PRICE AVEC FOND JAUNE (comme Tickets)
-   ============================================================ */
-.price-badge-green {
-    background: #f5a623 !important;
-    color: #ffffff !important;
-    padding: 2px 12px;
-    border-radius: 12px;
-    font-size: 0.7rem !important;
-    font-weight: 700;
-    box-shadow: 0 2px 8px rgba(245, 166, 35, 0.25);
-    display: inline-block;
-    white-space: nowrap;
-    line-height: 1.4;
-}
-
-.price-badge-green .price-label {
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 0.65rem;
-}
-
-.price-badge-green .price-value {
-    color: #10b981;
-    font-weight: 800;
-    font-size: 0.8rem;
-    margin-left: 2px;
-}
-
-.price-badge-green .price-value-range {
-    color: #10b981;
-    font-weight: 800;
-    font-size: 0.8rem;
-}
-
-.price-badge-green .price-separator {
-    color: #ffffff;
-    font-weight: 400;
-    margin: 0 2px;
-}
-
-.price-badge-green.range {
-    background: linear-gradient(135deg, #f5a623, #d4911e) !important;
-    padding: 2px 14px;
-}
-
-.price-badge-green .price-currency {
-    color: #ffffff;
-    font-weight: 500;
-    font-size: 0.6rem;
-}
-
-.price-badge-green:hover {
-    background: #d4911e !important;
-    transform: scale(1.03);
-    transition: all 0.2s ease;
-}
-
-.price-badge-green.range:hover {
-    background: linear-gradient(135deg, #d4911e, #b8860b) !important;
-}
-
-body.dark-mode .price-badge-green {
-    background: #f5a623 !important;
-}
-
-body.dark-mode .price-badge-green .price-label {
-    color: #ffffff;
-}
-
-body.dark-mode .price-badge-green .price-separator {
-    color: #ffffff;
-}
-
-body.dark-mode .price-badge-green .price-currency {
-    color: #ffffff;
-}
-/* ============================================================
    BADGE PRICE - SEUL "Price" A UN FOND BLEU
    ============================================================ */
 .price-badge-green {
@@ -1240,6 +1163,66 @@ body.dark-mode .price-badge-green .price-separator {
 
 body.dark-mode .price-badge-green .price-currency {
     color: #d1d5db;
+}
+
+/* ============================================================
+   TICKETS LABEL - SEUL "Tickets" A UN FOND ROUGE
+   ============================================================ */
+.event-card-classic .event-tickets-label .tickets-label-badge {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.6rem;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+    display: inline-block;
+}
+
+.event-card-classic .event-tickets-label .tickets-label-badge:hover {
+    background: #dc2626 !important;
+    transform: scale(1.03);
+    transition: all 0.2s ease;
+}
+
+.event-card-classic .event-tickets-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    color: #1f2937;
+    font-weight: 500;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.event-card-classic .event-tickets-label .ticket-type {
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.65rem;
+}
+
+.event-card-classic .event-tickets-label .ticket-sep {
+    color: #9ca3af;
+    margin: 0 2px;
+}
+
+body.dark-mode .event-card-classic .event-tickets-label {
+    color: #f3f4f6;
+}
+
+body.dark-mode .event-card-classic .event-tickets-label .ticket-type {
+    color: #f3f4f6;
+}
+
+body.dark-mode .event-card-classic .event-tickets-label .ticket-sep {
+    color: #6b7280;
+}
+
+body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
+    background: #ef4444 !important;
+    color: #ffffff !important;
 }
 
 /* ============================================================
