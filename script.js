@@ -1891,7 +1891,7 @@ async function loadAllFromSupabase() {
     }
 }
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - SANS FOND VERT + TICKETS LABEL) =====
+// ===== RENDER EVENT CARD (MODIFIÉ - IMAGES STYLE X/TWITTER) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -1904,7 +1904,40 @@ function renderEventCard(event) {
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     var fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
-    var posterImage = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    
+    // ---- GESTION DES IMAGES (STYLE X/TWITTER) ----
+    var images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
+    var imageCount = images.length;
+    var posterHtml = '';
+    
+    if (imageCount === 1) {
+        posterHtml = '<div class="poster-grid grid-1">' +
+            '<div class="grid-item"><img src="' + images[0] + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'"></div>' +
+        '</div>';
+    } else if (imageCount === 2) {
+        posterHtml = '<div class="poster-grid grid-2">';
+        for (var i = 0; i < Math.min(images.length, 2); i++) {
+            posterHtml += '<div class="grid-item"><img src="' + images[i] + '" alt="Image ' + (i+1) + '" onerror="this.src=\'' + fallbackImage + '\'"></div>';
+        }
+        posterHtml += '</div>';
+    } else if (imageCount === 3) {
+        posterHtml = '<div class="poster-grid grid-3">' +
+            '<div class="grid-item"><img src="' + images[0] + '" alt="Image 1" onerror="this.src=\'' + fallbackImage + '\'"></div>' +
+            '<div class="grid-item"><img src="' + images[1] + '" alt="Image 2" onerror="this.src=\'' + fallbackImage + '\'"></div>' +
+            '<div class="grid-item"><img src="' + images[2] + '" alt="Image 3" onerror="this.src=\'' + fallbackImage + '\'"></div>' +
+        '</div>';
+    } else if (imageCount >= 4) {
+        posterHtml = '<div class="poster-grid grid-4">';
+        for (var i = 0; i < Math.min(images.length, 4); i++) {
+            posterHtml += '<div class="grid-item"><img src="' + images[i] + '" alt="Image ' + (i+1) + '" onerror="this.src=\'' + fallbackImage + '\'"></div>';
+        }
+        posterHtml += '</div>';
+        if (imageCount > 4) {
+            posterHtml += '<span class="more-badge"><i class="fas fa-plus"></i> ' + (imageCount - 4) + '</span>';
+        }
+    } else {
+        posterHtml = '<div class="poster-grid grid-1"><div class="grid-item"><img src="' + fallbackImage + '" alt="' + escapeHtml(event.title) + '"></div></div>';
+    }
     
     // ---- DRAPEAU PAYS ----
     var flagEmojis = {
@@ -1978,7 +2011,7 @@ function renderEventCard(event) {
         }
     }
     
-    // ---- BADGE PRIX SANS FOND VERT ----
+    // ---- BADGE PRICE AVEC FOND JAUNE ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
@@ -1990,27 +2023,27 @@ function renderEventCard(event) {
     if (hasStandard && hasVip) {
         var minPrice = Math.min(standardPrice, vipPrice);
         var maxPrice = Math.max(standardPrice, vipPrice);
-        priceHtml = '<span class="price-label">Price: </span>' +
+        priceHtml = '<span class="price-label">Price</span> ' +
                     '<span class="price-value-range">' + minPrice.toFixed(6) + '</span>' +
-                    '<span class="price-separator"> – </span>' +
+                    '<span class="price-separator">–</span>' +
                     '<span class="price-value-range">' + maxPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
         priceBadgeClass = 'price-badge-green range';
     } else if (hasStandard) {
-        priceHtml = '<span class="price-label">Price: </span>' +
+        priceHtml = '<span class="price-label">Price</span> ' +
                     '<span class="price-value">' + standardPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else if (hasVip) {
-        priceHtml = '<span class="price-label">Price: </span>' +
+        priceHtml = '<span class="price-label">Price</span> ' +
                     '<span class="price-value">' + vipPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else {
-        priceHtml = '<span class="price-label">Price: </span>' +
+        priceHtml = '<span class="price-label">Price</span> ' +
                     '<span class="price-value">' + (event.price || 0).toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     }
     
-    // ---- RATING DISPLAY AVEC BADGE PRIX ----
+    // ---- RATING DISPLAY ----
     var ratingDisplay = '';
     if (eventRatings.length > 0) {
         var stars = '';
@@ -2022,7 +2055,7 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceHtml + '</span>';
     }
     
-    // ---- TICKETS LABEL "Tickets: STD 10/10 VIP 12/10" ----
+    // ---- TICKETS LABEL ----
     var ticketsLabelHtml = '';
     var stdText = '';
     var vipText = '';
@@ -2075,9 +2108,8 @@ function renderEventCard(event) {
     
     return '<div class="event-card-classic" onclick="openEventDetails(\'' + event.id + '\')">' +
         '<div class="poster-wrapper-classic">' +
-            '<img src="' + posterImage + '" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
-            (event.images && event.images.length > 1 ? '<span class="image-count-badge-card"><i class="fas fa-images"></i> ' + event.images.length + '</span>' : '') +
+            posterHtml +
         '</div>' +
         '<div class="card-content-classic">' +
             '<div class="event-title-classic">' + escapeHtml(event.title) + '</div>' +
