@@ -1891,7 +1891,7 @@ async function loadAllFromSupabase() {
     }
 }
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - IMAGES STYLE X/TWITTER) =====
+// ===== RENDER EVENT CARD (MODIFIÉ - PRICE BLEU + TICKETS ROUGE) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -2011,7 +2011,7 @@ function renderEventCard(event) {
         }
     }
     
-    // ---- BADGE PRICE AVEC FOND JAUNE ----
+    // ---- BADGE PRICE - SEUL "Price" A UN FOND BLEU ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
@@ -2023,22 +2023,22 @@ function renderEventCard(event) {
     if (hasStandard && hasVip) {
         var minPrice = Math.min(standardPrice, vipPrice);
         var maxPrice = Math.max(standardPrice, vipPrice);
-        priceHtml = '<span class="price-label">Price</span> ' +
+        priceHtml = '<span class="price-label">Price</span>' +
                     '<span class="price-value-range">' + minPrice.toFixed(6) + '</span>' +
                     '<span class="price-separator">–</span>' +
                     '<span class="price-value-range">' + maxPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
         priceBadgeClass = 'price-badge-green range';
     } else if (hasStandard) {
-        priceHtml = '<span class="price-label">Price</span> ' +
+        priceHtml = '<span class="price-label">Price</span>' +
                     '<span class="price-value">' + standardPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else if (hasVip) {
-        priceHtml = '<span class="price-label">Price</span> ' +
+        priceHtml = '<span class="price-label">Price</span>' +
                     '<span class="price-value">' + vipPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else {
-        priceHtml = '<span class="price-label">Price</span> ' +
+        priceHtml = '<span class="price-label">Price</span>' +
                     '<span class="price-value">' + (event.price || 0).toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     }
@@ -2055,7 +2055,7 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceHtml + '</span>';
     }
     
-    // ---- TICKETS LABEL ----
+    // ---- TICKETS LABEL - SEUL "Tickets" A UN FOND ROUGE ----
     var ticketsLabelHtml = '';
     var stdText = '';
     var vipText = '';
