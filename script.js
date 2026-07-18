@@ -1891,7 +1891,7 @@ async function loadAllFromSupabase() {
     }
 }
 // ============================================================
-// ===== RENDER EVENT CARD (MODIFIÉ - PRIX AMÉLIORÉ + SEATS) =====
+// ===== RENDER EVENT CARD (MODIFIÉ - SANS FOND VERT + TICKETS LABEL) =====
 // ============================================================
 
 function renderEventCard(event) {
@@ -1962,23 +1962,23 @@ function renderEventCard(event) {
         var diffYears = Math.floor(diffDays / 365);
         
         if (diffMins < 1) {
-            publishDateDisplay = 'À l\'instant';
+            publishDateDisplay = 'Just now';
         } else if (diffMins < 60) {
-            publishDateDisplay = 'Il y a ' + diffMins + ' min';
+            publishDateDisplay = diffMins + ' min ago';
         } else if (diffHours < 24) {
-            publishDateDisplay = 'Il y a ' + diffHours + ' h';
+            publishDateDisplay = diffHours + ' h ago';
         } else if (diffDays < 7) {
-            publishDateDisplay = 'Il y a ' + diffDays + ' j';
+            publishDateDisplay = diffDays + ' d ago';
         } else if (diffWeeks < 4) {
-            publishDateDisplay = 'Il y a ' + diffWeeks + ' sem';
+            publishDateDisplay = diffWeeks + ' w ago';
         } else if (diffMonths < 12) {
-            publishDateDisplay = 'Il y a ' + diffMonths + ' mois';
+            publishDateDisplay = diffMonths + ' month ago';
         } else {
-            publishDateDisplay = 'Le ' + pd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+            publishDateDisplay = pd.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
         }
     }
     
-    // ---- BADGE PRIX VERT (REMPLACE "NEW") AVEC COULEURS AMÉLIORÉES ----
+    // ---- BADGE PRIX SANS FOND VERT ----
     var hasStandard = event.ticketTypes && event.ticketTypes.standard && event.ticketTypes.standard.enabled;
     var hasVip = event.ticketTypes && event.ticketTypes.vip && event.ticketTypes.vip.enabled;
     var standardPrice = hasStandard ? event.ticketTypes.standard.price : 0;
@@ -1990,27 +1990,27 @@ function renderEventCard(event) {
     if (hasStandard && hasVip) {
         var minPrice = Math.min(standardPrice, vipPrice);
         var maxPrice = Math.max(standardPrice, vipPrice);
-        priceHtml = '<span class="price-label">Prix : </span>' +
+        priceHtml = '<span class="price-label">Price: </span>' +
                     '<span class="price-value-range">' + minPrice.toFixed(6) + '</span>' +
                     '<span class="price-separator"> – </span>' +
                     '<span class="price-value-range">' + maxPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
         priceBadgeClass = 'price-badge-green range';
     } else if (hasStandard) {
-        priceHtml = '<span class="price-label">Prix : </span>' +
+        priceHtml = '<span class="price-label">Price: </span>' +
                     '<span class="price-value">' + standardPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else if (hasVip) {
-        priceHtml = '<span class="price-label">Prix : </span>' +
+        priceHtml = '<span class="price-label">Price: </span>' +
                     '<span class="price-value">' + vipPrice.toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     } else {
-        priceHtml = '<span class="price-label">Prix : </span>' +
+        priceHtml = '<span class="price-label">Price: </span>' +
                     '<span class="price-value">' + (event.price || 0).toFixed(6) + '</span>' +
                     '<span class="price-currency"> Pi</span>';
     }
     
-    // ---- RATING DISPLAY AVEC BADGE PRIX VERT ----
+    // ---- RATING DISPLAY AVEC BADGE PRIX ----
     var ratingDisplay = '';
     if (eventRatings.length > 0) {
         var stars = '';
@@ -2022,39 +2022,27 @@ function renderEventCard(event) {
         ratingDisplay = '<span class="' + priceBadgeClass + '">' + priceHtml + '</span>';
     }
     
-    // ---- AFFICHAGE DES PLACES PAR TYPE (FORMAT "STD: X/Y VIP: X/Y") ----
-    var seatsDisplay = '';
+    // ---- TICKETS LABEL "Tickets: STD 10/10 VIP 12/10" ----
+    var ticketsLabelHtml = '';
+    var stdText = '';
+    var vipText = '';
     if (hasStandard) {
         var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
         var standardTotal = event.standardSeats || 0;
-        seatsDisplay += '<span class="seats-type standard-seats">' +
-            '<span class="seats-label">STD:</span> ' +
-            '<span class="seats-count">' + standardLeft + '/' + standardTotal + '</span>' +
-        '</span>';
+        stdText = 'STD ' + standardLeft + '/' + standardTotal;
     }
     if (hasVip) {
         var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
         var vipTotal = event.vipSeats || 0;
-        seatsDisplay += '<span class="seats-type vip-seats">' +
-            '<span class="seats-label">VIP:</span> ' +
-            '<span class="seats-count">' + vipLeft + '/' + vipTotal + '</span>' +
-        '</span>';
+        vipText = 'VIP ' + vipLeft + '/' + vipTotal;
     }
-    if (!seatsDisplay) {
-        seatsDisplay = '<span class="seats-type">' + event.seatsLeft + '/' + event.seatsTotal + ' ' + t('tickets') + '</span>';
-    }
-    
-    // ---- PRIX AFFICHÉ DANS LE FOOTER ----
-    var priceDisplay = '';
-    if (hasStandard) {
-        priceDisplay += t('standard') + ': ' + standardPrice.toFixed(6) + ' Pi';
-    }
-    if (hasVip) {
-        if (priceDisplay) priceDisplay += ' | ';
-        priceDisplay += t('vip') + ': ' + vipPrice.toFixed(6) + ' Pi';
-    }
-    if (!priceDisplay) {
-        priceDisplay = (event.price || 0).toFixed(6) + ' Pi';
+    if (stdText || vipText) {
+        ticketsLabelHtml = '<div class="event-tickets-label">' +
+            '<span class="tickets-label-badge">Tickets</span>' +
+            (stdText ? '<span class="ticket-type">' + stdText + '</span>' : '') +
+            (stdText && vipText ? '<span class="ticket-sep">|</span>' : '') +
+            (vipText ? '<span class="ticket-type">' + vipText + '</span>' : '') +
+        '</div>';
     }
     
     // ---- DURÉE ----
@@ -2062,16 +2050,16 @@ function renderEventCard(event) {
     if (event.durationValue && event.durationUnit) {
         var unitLabels = {
             'hours': 'h',
-            'days': 'j',
-            'weeks': 'sem',
-            'months': 'mois',
-            'years': 'ans'
+            'days': 'd',
+            'weeks': 'w',
+            'months': 'm',
+            'years': 'y'
         };
         var unitLabel = unitLabels[event.durationUnit] || event.durationUnit;
         durationText = event.durationValue + ' ' + unitLabel;
     }
     
-    // ---- PAYS + DURÉE SUR UNE LIGNE ----
+    // ---- PAYS + DURÉE ----
     var countryDurationHtml = '';
     if (countryFlag || durationText) {
         countryDurationHtml = '<div class="event-country-duration">';
@@ -2103,11 +2091,11 @@ function renderEventCard(event) {
             '</div>' +
             '<div class="card-footer-classic">' +
                 '<span class="event-rating-classic">' + ratingDisplay + '</span>' +
-                '<span class="event-seats-classic seats-types-display">' + seatsDisplay + '</span>' +
+                ticketsLabelHtml +
             '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">Buy Ticket</button>' +
             '<div class="event-organizer-classic">' +
-                '<span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) +
+                '<span class="org-icon"><i class="fas fa-user"></i></span> By ' + escapeHtml(organizerFormatted) +
             '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
