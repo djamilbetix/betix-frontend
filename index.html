@@ -53,7 +53,7 @@
 
 <header class="header" id="mainHeader">
     <div class="header-left">
-        <!-- BOUTON BACK - Visible sur toutes les pages sauf home -->
+        <!-- BOUTON BACK -->
         <button class="back-btn hidden" id="backBtn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -117,7 +117,11 @@
             <i class="fas fa-qrcode"></i> Scan Ticket
         </button>
         
-        <button class="sidebar-item" data-page="whitepaper"><i class="fas fa-file-alt"></i> Whitepaper</button>
+        <!-- LIEN WHITEPAPER VERS LA PAGE SÉPARÉE -->
+        <button class="sidebar-item" onclick="window.location.href='whitepaper.html'">
+            <i class="fas fa-file-alt"></i> Whitepaper
+        </button>
+        
         <button class="sidebar-item" data-page="faq"><i class="fas fa-question-circle"></i> FAQ</button>
         
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #0D47A1); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
@@ -137,7 +141,7 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- BOTTOM NAVIGATION BAR WITH ICONS -->
+<!-- BOTTOM NAVIGATION BAR -->
 <nav class="bottom-nav" id="bottomNav">
     <button class="nav-item active" id="navHome" onclick="showPage('home')">
         <i class="fas fa-home"></i>
@@ -572,145 +576,7 @@
     </div>
 </div>
 
-<!-- PAGE WHITEPAPER DÉDIÉE -->
-<div id="whitepaperPage" class="hidden-page">
-    <div class="whitepaper-container" style="max-width:900px;margin:30px auto;padding:40px;background:#ffffff;border-radius:24px;box-shadow:0 4px 40px rgba(0,0,0,0.06);">
-        <div class="whitepaper-header" style="text-align:center;padding-bottom:30px;border-bottom:2px solid #f0f0f0;margin-bottom:30px;">
-            <img src="logo.png" alt="Betix Logo" style="height:60px;margin-bottom:16px;" onerror="this.style.display='none'">
-            <h1 style="font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#0D47A1,#f5a623);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;">Whitepaper</h1>
-            <p style="color:#6b7280;font-size:1.1rem;margin-top:8px;">The first decentralized ticketing platform on Pi Network</p>
-        </div>
-
-        <!-- Our Founders -->
-        <div class="whitepaper-section" style="margin-bottom:32px;">
-            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-users" style="color:#f5a623;font-size:1.4rem;"></i> Our Founders
-            </h2>
-            <div class="founders-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:16px;">
-                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
-                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">JD</div>
-                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Jean Dupont</h4>
-                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CEO & Co-Founder</p>
-                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Blockchain Architect</p>
-                </div>
-                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
-                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">MK</div>
-                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Marie Kouyaté</h4>
-                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CTO & Co-Founder</p>
-                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Full Stack Developer</p>
-                </div>
-                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
-                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">AT</div>
-                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Amadou Traoré</h4>
-                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">COO & Co-Founder</p>
-                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Operations & Strategy</p>
-                </div>
-                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
-                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">SN</div>
-                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Sophie Ndiaye</h4>
-                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CMO & Co-Founder</p>
-                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Marketing & Community</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Introduction -->
-        <div class="whitepaper-section" style="margin-bottom:32px;">
-            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-rocket" style="color:#f5a623;font-size:1.4rem;"></i> Introduction
-            </h2>
-            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;">
-                Betix is the first decentralized event ticketing platform built on the Pi Network blockchain. 
-                Our mission is to democratize access to cultural and sporting events by providing a secure, 
-                transparent, and accessible platform for everyone.
-            </p>
-            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;margin-top:12px;">
-                By leveraging the power of the Pi Network, Betix eliminates intermediaries, reduces costs, 
-                and guarantees the authenticity of tickets through blockchain technology.
-            </p>
-        </div>
-
-        <!-- Objectives -->
-        <div class="whitepaper-section" style="margin-bottom:32px;">
-            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-bullseye" style="color:#f5a623;font-size:1.4rem;"></i> Objectives
-            </h2>
-            <ul style="padding-left:24px;font-size:1.05rem;line-height:1.8;color:#1f2937;">
-                <li><strong>Accessibility:</strong> Make event ticketing accessible to everyone, everywhere, using Pi cryptocurrency.</li>
-                <li><strong>Security:</strong> Guarantee secure and transparent transactions through blockchain technology.</li>
-                <li><strong>Decentralization:</strong> Eliminate intermediaries to offer fair prices to buyers and organizers.</li>
-                <li><strong>Community:</strong> Build a vibrant community of event enthusiasts and organizers.</li>
-                <li><strong>Innovation:</strong> Continuously improve the platform with new features and technologies.</li>
-            </ul>
-        </div>
-
-        <!-- Pi Network -->
-        <div class="whitepaper-section" style="margin-bottom:32px;">
-            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-link" style="color:#f5a623;font-size:1.4rem;"></i> Pi Network Integration
-            </h2>
-            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;">
-                Betix is built on the Pi Network ecosystem, using Pi cryptocurrency for all transactions. 
-                This integration allows:
-            </p>
-            <ul style="padding-left:24px;font-size:1.05rem;line-height:1.8;color:#1f2937;">
-                <li><strong>Fast transactions:</strong> Payments are processed in seconds with minimal fees.</li>
-                <li><strong>Global accessibility:</strong> Anyone with a Pi wallet can buy or sell tickets worldwide.</li>
-                <li><strong>Security:</strong> Transactions are recorded on the blockchain, ensuring transparency and traceability.</li>
-                <li><strong>Escrow system:</strong> Funds are secured until event validation, protecting both buyers and sellers.</li>
-            </ul>
-        </div>
-
-        <!-- Roadmap -->
-        <div class="whitepaper-section" style="margin-bottom:32px;">
-            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-road" style="color:#f5a623;font-size:1.4rem;"></i> Roadmap
-            </h2>
-            <div class="roadmap-timeline" style="position:relative;padding-left:30px;border-left:3px solid #f5a623;">
-                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
-                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
-                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 1 - Q2 2026</div>
-                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Launch of Betix platform on Pi Network with basic ticketing features.</div>
-                </div>
-                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
-                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
-                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 2 - Q3 2026</div>
-                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Mobile application release. Integration of QR code verification and ticket scanning.</div>
-                </div>
-                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
-                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
-                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 3 - Q4 2026</div>
-                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Introduction of NFT tickets, advanced analytics for organizers, and community features.</div>
-                </div>
-                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
-                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
-                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 4 - Q1 2027</div>
-                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Multi-currency support, integration with other blockchains, and global expansion.</div>
-                </div>
-                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
-                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
-                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 5 - 2027+</div>
-                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Establishment of Betix as the leading decentralized ticketing platform worldwide.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Download PDF -->
-        <div class="whitepaper-section" style="text-align:center;padding-top:16px;border-top:2px solid #f0f0f0;">
-            <h2 style="justify-content:center;font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                <i class="fas fa-file-pdf" style="color:#f5a623;font-size:1.4rem;"></i> Download Whitepaper
-            </h2>
-            <p style="font-size:1rem;color:#6b7280;margin-bottom:16px;">
-                Download the complete Betix Whitepaper in PDF format.
-            </p>
-            <a href="#" class="btn-download-pdf" onclick="alert('PDF download will be available soon!')" style="display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);color:white;border:none;border-radius:40px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:all 0.3s ease;text-decoration:none;margin-top:8px;box-shadow:0 4px 20px rgba(13,71,161,0.3);">
-                <i class="fas fa-download"></i> Download PDF (Coming Soon)
-            </a>
-            <br>
-            <button class="btn-back" onclick="showPage('home')" style="margin-top:20px;">Back to Home</button>
-        </div>
-    </div>
-</div>
+<!-- WHITEPAPER PAGE SUPPRIMÉE - Maintenant dans whitepaper.html séparé -->
 
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
@@ -899,7 +765,8 @@
         <div class="footer-col">
             <h4>Partners</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('whitepaper')">Whitepaper</a></li>
+                <!-- LIEN WHITEPAPER VERS LA PAGE SÉPARÉE -->
+                <li><a href="whitepaper.html">Whitepaper</a></li>
                 <li><a href="#" onclick="event.preventDefault(); showPage('home')">Join the Betix community</a></li>
                 <li><a href="#" onclick="event.preventDefault()">Pi Network</a></li>
                 <li><a href="#" onclick="event.preventDefault()">Secure</a></li>
@@ -952,7 +819,7 @@
     </div>
 </div>
 
-<!-- MODALE DE DÉTAIL D'ÉVÉNEMENT - SIMPLIFIÉE -->
+<!-- MODALE DE DÉTAIL D'ÉVÉNEMENT -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <div id="eventDetailContent"></div>
