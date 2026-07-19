@@ -2531,9 +2531,29 @@ function showPage(pageName) {
 // ============================================================
 
 function goBack() {
+    console.log('goBack() called - pageHistory:', pageHistory);
+    
+    // Si une modale est ouverte, la fermer d'abord
+    var detailModal = document.getElementById('eventDetailModal');
+    if (detailModal && detailModal.classList.contains('show')) {
+        closeEventDetailModal();
+        // Après avoir fermé la modale, revenir à la page précédente
+        setTimeout(function() {
+            if (pageHistory.length > 1) {
+                pageHistory.pop();
+                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
+                showPage(previousPage);
+            } else {
+                showPage('home');
+            }
+        }, 100);
+        return;
+    }
+    
+    // Navigation normale
     if (pageHistory.length > 1) {
         pageHistory.pop();
-        var previousPage = pageHistory[pageHistory.length - 1];
+        var previousPage = pageHistory[pageHistory.length - 1] || 'home';
         showPage(previousPage);
     } else {
         showPage('home');
@@ -4946,6 +4966,12 @@ function openEventDetails(eventId) {
     var closeBtn = document.getElementById('eventDetailClose');
     var content = document.getElementById('eventDetailContent');
     
+    // Ajouter la page actuelle dans l'historique si nécessaire
+    var currentPage = pageHistory[pageHistory.length - 1] || 'home';
+    if (currentPage !== 'eventDetail') {
+        pageHistory.push('eventDetail');
+    }
+    
     var dateEvent = new Date(event.date);
     var dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     var timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -5083,7 +5109,7 @@ function openEventDetails(eventId) {
     // ---- CONSTRUCTION DU CONTENU AVEC DESIGN X/TWITTER ----
     content.innerHTML = 
         '<div class="event-detail-header-simple">' +
-            '<button class="back-btn-detail" onclick="closeEventDetailModal()">' +
+            '<button class="back-btn-detail" onclick="closeEventDetailModal(); setTimeout(function(){ if(pageHistory.length > 1){ pageHistory.pop(); var prevPage = pageHistory[pageHistory.length-1] || 'home'; showPage(prevPage); } else { showPage('home'); } }, 50);">' +
                 '<i class="fas fa-arrow-left"></i>' +
             '</button>' +
             '<span class="detail-title-header">' + escapeHtml(event.title) + '</span>' +
@@ -5140,22 +5166,54 @@ function openEventDetails(eventId) {
     
     document.getElementById('detailBuyBtnSimple').onclick = function() {
         modal.classList.remove('show');
+        modal.style.display = 'none';
         document.body.style.overflow = '';
+        // Revenir à la page précédente
+        setTimeout(function() {
+            if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
+                pageHistory.pop();
+                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
+                showPage(previousPage);
+            } else {
+                showPage('home');
+            }
+        }, 50);
         openQuantityPopup(event.id);
     };
     
     // La flèche de retour ferme la modale
     closeBtn.onclick = function() { 
         closeEventDetailModal();
+        // Revenir à la page précédente après fermeture
+        setTimeout(function() {
+            if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
+                pageHistory.pop();
+                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
+                showPage(previousPage);
+            } else {
+                showPage('home');
+            }
+        }, 50);
     };
     
     window.onclick = function(e) { 
         if (e.target === modal) {
             closeEventDetailModal();
+            // Revenir à la page précédente après fermeture
+            setTimeout(function() {
+                if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
+                    pageHistory.pop();
+                    var previousPage = pageHistory[pageHistory.length - 1] || 'home';
+                    showPage(previousPage);
+                } else {
+                    showPage('home');
+                }
+            }, 50);
         }
     };
     
     modal.classList.add('show');
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
     // Forcer le scroll vers le haut
@@ -5222,10 +5280,15 @@ function carouselNext(eventId) {
     carouselGoTo(eventId, carousel.currentIndex + 1);
 }
 
+// ============================================================
+// ===== FERMETURE DE LA MODALE DE DÉTAIL =====
+// ============================================================
+
 function closeEventDetailModal() {
     var modal = document.getElementById('eventDetailModal');
     if (modal) {
         modal.classList.remove('show');
+        modal.style.display = 'none';
         document.body.style.overflow = '';
     }
     if (window._carousels) {
@@ -6263,7 +6326,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Par défaut, le bouton est caché sur la page d'accueil
-            if (document.getElementById('homePage').style.display !== 'none') {
+            var homePage = document.getElementById('homePage');
+            if (homePage && homePage.style.display !== 'none') {
                 backBtn.classList.add('hidden');
                 backBtn.style.display = 'none';
             } else {
