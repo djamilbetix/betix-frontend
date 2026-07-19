@@ -53,12 +53,6 @@
 
 <header class="header" id="mainHeader">
     <div class="header-left">
-        <button class="back-btn" id="backBtn" style="display: none;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            <span class="back-btn-label">Back</span>
-        </button>
         <div class="logo" id="mainLogo" onclick="handleLogoClick()">
             <img src="logo.png" alt="Betix Logo" style="height: 40px; width: auto; border-radius: 8px; display: inline-block;" onerror="this.style.display='none'">
             <span>Betix</span>
@@ -784,7 +778,7 @@
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
-        <h2 style="margin-bottom: 16px; color: var(--dark);">Edit Event</h2>
+        <h2 style="margin-bottom: 8px; color: var(--dark);">Edit Event</h2>
         <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 16px;">Modify the fields below to update your event</p>
         
         <div class="form-group">
@@ -842,6 +836,8 @@
             <button class="btn-secondary-modal" onclick="closeEditEventModal()">Cancel</button>
             <button class="btn-primary" onclick="saveEventEdits()">Save Changes</button>
         </div>
+        
+        <button class="btn-back" onclick="closeEditEventModal(); showPage('myevents')" style="margin-top: 12px;">Back to My Events</button>
     </div>
 </div>
 
