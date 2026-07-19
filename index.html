@@ -53,9 +53,16 @@
 
 <header class="header" id="mainHeader">
     <div class="header-left">
+        <!-- BOUTON BACK - Visible sur toutes les pages sauf home -->
+        <button class="back-btn" id="backBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span class="back-btn-label">Back</span>
+        </button>
         <div class="logo" id="mainLogo" onclick="handleLogoClick()">
-            <img src="logo.png" alt="Betix Logo" style="height: 40px; width: auto; border-radius: 8px; display: inline-block;" onerror="this.style.display='none'">
-            <span>Betix</span>
+            <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'">
+            <span class="logo-text">Betix</span>
         </div>
     </div>
     <div class="header-right" id="headerRight"></div>
