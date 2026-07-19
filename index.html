@@ -232,7 +232,11 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
-            <div class="form-group"><label>Title</label><input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required></div>
+            <div class="form-group">
+                <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 100 characters)</span></label>
+                <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="100">
+                <span id="titleCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">100 characters remaining</span>
+            </div>
             
             <div class="form-group"><label>Category</label>
                 <select id="eventCategory">
@@ -277,11 +281,16 @@
             
             <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
             
-            <div class="form-group"><label>Description</label><textarea id="eventDescription" rows="3" placeholder="Describe your event..."></textarea></div>
+            <div class="form-group">
+                <label>Description <span style="color:#ef4444;font-size:0.7rem;">(max 500 characters)</span></label>
+                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="500"></textarea>
+                <span id="descCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">500 characters remaining</span>
+            </div>
             
             <div class="form-group">
-                <label>Conditions</label>
+                <label>Conditions <span style="color:#ef4444;font-size:0.7rem;">(max 1500 characters)</span></label>
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
+                <span id="condCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">1500 characters remaining</span>
             </div>
             
             <div class="form-group">
@@ -563,12 +572,143 @@
     </div>
 </div>
 
+<!-- PAGE WHITEPAPER DÉDIÉE -->
 <div id="whitepaperPage" class="hidden-page">
-    <div class="page-content">
-        <h2>Whitepaper</h2>
-        <p>Betix</p>
-        <p><strong>English Version:</strong> In progress.</p>
-        <p><strong>French Version:</strong> In progress.</p>
+    <div class="whitepaper-container" style="max-width:900px;margin:30px auto;padding:40px;background:#ffffff;border-radius:24px;box-shadow:0 4px 40px rgba(0,0,0,0.06);">
+        <div class="whitepaper-header" style="text-align:center;padding-bottom:30px;border-bottom:2px solid #f0f0f0;margin-bottom:30px;">
+            <img src="logo.png" alt="Betix Logo" style="height:60px;margin-bottom:16px;" onerror="this.style.display='none'">
+            <h1 style="font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#0D47A1,#f5a623);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;">Whitepaper</h1>
+            <p style="color:#6b7280;font-size:1.1rem;margin-top:8px;">The first decentralized ticketing platform on Pi Network</p>
+        </div>
+
+        <!-- Our Founders -->
+        <div class="whitepaper-section" style="margin-bottom:32px;">
+            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-users" style="color:#f5a623;font-size:1.4rem;"></i> Our Founders
+            </h2>
+            <div class="founders-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:16px;">
+                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
+                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">JD</div>
+                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Jean Dupont</h4>
+                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CEO & Co-Founder</p>
+                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Blockchain Architect</p>
+                </div>
+                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
+                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">MK</div>
+                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Marie Kouyaté</h4>
+                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CTO & Co-Founder</p>
+                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Full Stack Developer</p>
+                </div>
+                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
+                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">AT</div>
+                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Amadou Traoré</h4>
+                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">COO & Co-Founder</p>
+                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Operations & Strategy</p>
+                </div>
+                <div class="founder-card" style="text-align:center;background:#f8fafc;border-radius:16px;padding:20px 16px;transition:all 0.3s ease;border:1px solid #e5e7eb;">
+                    <div class="founder-avatar" style="width:100px;height:100px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;font-weight:700;overflow:hidden;border:3px solid #f5a623;">SN</div>
+                    <h4 style="font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:4px 0 2px;">Sophie Ndiaye</h4>
+                    <p style="font-size:0.85rem;color:#6b7280;margin:0;">CMO & Co-Founder</p>
+                    <p style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">Marketing & Community</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="whitepaper-section" style="margin-bottom:32px;">
+            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-rocket" style="color:#f5a623;font-size:1.4rem;"></i> Introduction
+            </h2>
+            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;">
+                Betix is the first decentralized event ticketing platform built on the Pi Network blockchain. 
+                Our mission is to democratize access to cultural and sporting events by providing a secure, 
+                transparent, and accessible platform for everyone.
+            </p>
+            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;margin-top:12px;">
+                By leveraging the power of the Pi Network, Betix eliminates intermediaries, reduces costs, 
+                and guarantees the authenticity of tickets through blockchain technology.
+            </p>
+        </div>
+
+        <!-- Objectives -->
+        <div class="whitepaper-section" style="margin-bottom:32px;">
+            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-bullseye" style="color:#f5a623;font-size:1.4rem;"></i> Objectives
+            </h2>
+            <ul style="padding-left:24px;font-size:1.05rem;line-height:1.8;color:#1f2937;">
+                <li><strong>Accessibility:</strong> Make event ticketing accessible to everyone, everywhere, using Pi cryptocurrency.</li>
+                <li><strong>Security:</strong> Guarantee secure and transparent transactions through blockchain technology.</li>
+                <li><strong>Decentralization:</strong> Eliminate intermediaries to offer fair prices to buyers and organizers.</li>
+                <li><strong>Community:</strong> Build a vibrant community of event enthusiasts and organizers.</li>
+                <li><strong>Innovation:</strong> Continuously improve the platform with new features and technologies.</li>
+            </ul>
+        </div>
+
+        <!-- Pi Network -->
+        <div class="whitepaper-section" style="margin-bottom:32px;">
+            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-link" style="color:#f5a623;font-size:1.4rem;"></i> Pi Network Integration
+            </h2>
+            <p style="font-size:1.05rem;line-height:1.8;color:#1f2937;">
+                Betix is built on the Pi Network ecosystem, using Pi cryptocurrency for all transactions. 
+                This integration allows:
+            </p>
+            <ul style="padding-left:24px;font-size:1.05rem;line-height:1.8;color:#1f2937;">
+                <li><strong>Fast transactions:</strong> Payments are processed in seconds with minimal fees.</li>
+                <li><strong>Global accessibility:</strong> Anyone with a Pi wallet can buy or sell tickets worldwide.</li>
+                <li><strong>Security:</strong> Transactions are recorded on the blockchain, ensuring transparency and traceability.</li>
+                <li><strong>Escrow system:</strong> Funds are secured until event validation, protecting both buyers and sellers.</li>
+            </ul>
+        </div>
+
+        <!-- Roadmap -->
+        <div class="whitepaper-section" style="margin-bottom:32px;">
+            <h2 style="font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-road" style="color:#f5a623;font-size:1.4rem;"></i> Roadmap
+            </h2>
+            <div class="roadmap-timeline" style="position:relative;padding-left:30px;border-left:3px solid #f5a623;">
+                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
+                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
+                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 1 - Q2 2026</div>
+                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Launch of Betix platform on Pi Network with basic ticketing features.</div>
+                </div>
+                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
+                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
+                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 2 - Q3 2026</div>
+                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Mobile application release. Integration of QR code verification and ticket scanning.</div>
+                </div>
+                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
+                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
+                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 3 - Q4 2026</div>
+                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Introduction of NFT tickets, advanced analytics for organizers, and community features.</div>
+                </div>
+                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
+                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
+                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 4 - Q1 2027</div>
+                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Multi-currency support, integration with other blockchains, and global expansion.</div>
+                </div>
+                <div class="roadmap-item" style="margin-bottom:24px;padding-left:16px;position:relative;">
+                    <div style="position:absolute;left:-34px;top:8px;width:12px;height:12px;border-radius:50%;background:#f5a623;border:3px solid white;box-shadow:0 0 0 3px #f5a623;"></div>
+                    <div class="phase" style="font-weight:700;color:#0D47A1;font-size:1.1rem;">Phase 5 - 2027+</div>
+                    <div class="desc" style="color:#1f2937;font-size:1rem;margin-top:4px;">Establishment of Betix as the leading decentralized ticketing platform worldwide.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download PDF -->
+        <div class="whitepaper-section" style="text-align:center;padding-top:16px;border-top:2px solid #f0f0f0;">
+            <h2 style="justify-content:center;font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-file-pdf" style="color:#f5a623;font-size:1.4rem;"></i> Download Whitepaper
+            </h2>
+            <p style="font-size:1rem;color:#6b7280;margin-bottom:16px;">
+                Download the complete Betix Whitepaper in PDF format.
+            </p>
+            <a href="#" class="btn-download-pdf" onclick="alert('PDF download will be available soon!')" style="display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:linear-gradient(135deg,#0D47A1,#1a1a2e);color:white;border:none;border-radius:40px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:all 0.3s ease;text-decoration:none;margin-top:8px;box-shadow:0 4px 20px rgba(13,71,161,0.3);">
+                <i class="fas fa-download"></i> Download PDF (Coming Soon)
+            </a>
+            <br>
+            <button class="btn-back" onclick="showPage('home')" style="margin-top:20px;">Back to Home</button>
+        </div>
     </div>
 </div>
 
@@ -714,16 +854,22 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- NOUVEAU FOOTER AMÉLIORÉ AVEC SÉLECTEUR DE LANGUE              -->
+<!-- ============================================================ -->
 <footer class="betix-footer">
     <div class="footer-container">
+        <!-- Colonne 1 : Logo + Infos -->
         <div class="footer-col">
             <div class="footer-logo">Betix</div>
-            <p class="footer-slogan">Decentralized Event Ticketing on Pi Network</p>
+            <p class="footer-slogan">The first decentralized ticketing platform on Pi Network</p>
             <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
             <div class="footer-contact">
                 <div><i class="fas fa-envelope"></i> betixservices@gmail.com</div>
             </div>
         </div>
+        
+        <!-- Colonne 2 : INFO -->
         <div class="footer-col">
             <h4>Info</h4>
             <ul>
@@ -737,6 +883,8 @@
                 <li><a href="#" onclick="showLegal('cookies')">Cookie preferences</a></li>
             </ul>
         </div>
+        
+        <!-- Colonne 3 : BETIX -->
         <div class="footer-col">
             <h4>Betix</h4>
             <ul>
@@ -746,24 +894,53 @@
                 <li><a href="#" onclick="event.preventDefault(); showPage('faq')">Help</a></li>
             </ul>
         </div>
+        
+        <!-- Colonne 4 : PARTNERS + Whitepaper + Logo + Réseaux -->
         <div class="footer-col">
             <h4>Partners</h4>
-            <div class="footer-social">
+            <ul>
+                <li><a href="#" onclick="event.preventDefault(); showPage('whitepaper')">Whitepaper</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')">Join the Betix community</a></li>
+                <li><a href="#" onclick="event.preventDefault()">Pi Network</a></li>
+                <li><a href="#" onclick="event.preventDefault()">Secure</a></li>
+            </ul>
+            
+            <!-- Logo Betix -->
+            <div style="margin-top: 12px;">
+                <img src="logo.png" alt="Betix" style="height: 32px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
+            </div>
+            
+            <!-- Réseaux sociaux -->
+            <div class="footer-social" style="margin-top: 10px;">
                 <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
                 <a href="https://discord.gg/MqhdmPCH" target="_blank"><i class="fab fa-discord"></i></a>
                 <a href="https://facebook.com/betix_app" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <p class="footer-join">Join the Betix community</p>
-            <div style="margin-top: 12px;">
-                <span class="footer-badge"><i class="fas fa-check-circle"></i> Pi Network</span>
-                <span class="footer-badge"><i class="fas fa-lock"></i> Secure</span>
-            </div>
         </div>
     </div>
+    
+    <!-- Bas du footer avec sélecteur de langue -->
     <div class="footer-bottom">
-        <span>2026 Betix. All rights reserved.</span>
+        <span>© 2026 Betix. All rights reserved.</span>
+        <div class="footer-lang-selector">
+            <select id="footerLangSelect" onchange="changeLanguage(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="id">🇮🇩 Indonesia</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+            </select>
+        </div>
         <span>Built on Pi Network | Secured by Blockchain</span>
     </div>
 </footer>
