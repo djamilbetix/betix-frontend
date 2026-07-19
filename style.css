@@ -110,7 +110,7 @@ body {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .header-right {
@@ -120,27 +120,113 @@ body {
 }
 
 /* ============================================================
-   BOUTON RETOUR - SUPPRIMÉ
+   LOGO - AGRANDI
    ============================================================ */
-/* Le bouton back a été supprimé du header */
-
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: bold;
     cursor: pointer;
     color: white;
     padding: 4px 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-.logo img {
-    height: 40px;
+.logo .logo-img {
+    height: 44px;
     width: auto;
     border-radius: 8px;
     filter: brightness(0) invert(1);
+}
+
+.logo .logo-text {
+    font-size: 1.7rem;
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.3rem;
+        gap: 6px;
+    }
+    .logo .logo-img {
+        height: 34px;
+    }
+    .logo .logo-text {
+        font-size: 1.3rem;
+    }
+}
+
+/* ============================================================
+   BOUTON RETOUR - VISIBLE ET MODERNE
+   ============================================================ */
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    cursor: pointer;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 99999;
+    position: relative;
+    pointer-events: auto !important;
+    min-width: 80px;
+    height: 44px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 500;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    flex-shrink: 0;
+}
+
+.back-btn .back-btn-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+/* Le bouton est toujours présent, on cache uniquement sur la page d'accueil */
+.back-btn.hidden {
+    display: none !important;
+}
+
+@media (max-width: 480px) {
+    .back-btn {
+        min-width: 56px;
+        height: 36px;
+        padding: 4px 12px;
+        gap: 4px;
+    }
+    .back-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .back-btn .back-btn-label {
+        font-size: 0.7rem;
+    }
 }
 
 /* ============================================================
@@ -2963,7 +3049,6 @@ body.dark-mode .ticket-card-professional.ticket-vip .btn-download-ticket {
     border-color: #d1d5db;
 }
 
-/* ---- BOUTON RETOUR DANS LA MODALE D'ÉDITION ---- */
 .modal-edit-event .btn-back {
     margin-top: 12px;
     padding: 10px;
@@ -5832,6 +5917,14 @@ body.dark-mode .header .logo {
     color: white;
 }
 
+body.dark-mode .header .back-btn {
+    background: rgba(255,255,255,0.15);
+}
+
+body.dark-mode .header .back-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
 body.dark-mode .sidebar,
 body.dark-mode .event-card-classic,
 body.dark-mode .event-card,
@@ -6746,10 +6839,27 @@ body {
         margin-bottom: 0.6rem;
     }
     .logo {
-        font-size: 1rem;
+        font-size: 1.3rem;
+        gap: 6px;
     }
-    .logo img {
-        height: 32px;
+    .logo .logo-img {
+        height: 34px;
+    }
+    .logo .logo-text {
+        font-size: 1.3rem;
+    }
+    .back-btn {
+        min-width: 56px;
+        height: 36px;
+        padding: 4px 12px;
+        gap: 4px;
+    }
+    .back-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .back-btn .back-btn-label {
+        font-size: 0.7rem;
     }
     .sidebar-avatar {
         width: 56px;
