@@ -1,547 +1,878 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whitepaper - Betix</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Livre Blanc - Betix</title>
     <style>
         /* ============================================================
-           PAGE WHITEPAPER - STYLES DÉDIÉS
+           STYLES LIVRE BLANC - DESIGN ÉPURÉ 2 COULEURS
            ============================================================ */
-        .whitepaper-page {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px 20px 60px;
-            min-height: 100vh;
-            background: #f5f7fa;
+        
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .whitepaper-card {
+        body {
             background: #ffffff;
-            border-radius: 24px;
-            padding: 40px 45px;
-            box-shadow: 0 4px 40px rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.04);
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            color: #000000;
+            line-height: 1.5;
+            padding: 30px 20px 60px;
         }
 
-        /* ===== HEADER ===== */
-        .whitepaper-header {
+        /* ===== CONTENEUR PRINCIPAL ===== */
+        .whitepaper-container {
+            max-width: 210mm; /* Format A4 */
+            margin: 0 auto;
+            padding: 30px 35px 40px;
+            background: #ffffff;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f0;
+        }
+
+        /* ===== COULEURS ===== */
+        .color-blue {
+            color: #0D47A1;
+        }
+        .border-blue {
+            border-color: #0D47A1;
+        }
+        .bg-blue {
+            background-color: #0D47A1;
+        }
+
+        /* ===== TYPOGRAPHIE ===== */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            color: #0D47A1;
+        }
+
+        h1 {
+            font-size: 28px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid #0D47A1;
+        }
+
+        h3 {
+            font-size: 15px;
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+
+        h4 {
+            font-size: 14px;
+            margin-top: 12px;
+            margin-bottom: 3px;
+        }
+
+        p {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 6px;
+            color: #000000;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 6px;
+        }
+
+        ul li, ol li {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 3px;
+            color: #000000;
+        }
+
+        /* ===== EN-TÊTE ===== */
+        .header-whitepaper {
             text-align: center;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
-            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0D47A1;
+            margin-bottom: 20px;
         }
 
-        .whitepaper-header .logo-container {
+        .header-whitepaper .logo-container {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
         }
 
-        .whitepaper-header .logo-container img {
-            height: 50px;
+        .header-whitepaper .logo-container img {
+            height: 40px;
             width: auto;
         }
 
-        .whitepaper-header .logo-container h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #0D47A1, #f5a623);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .header-whitepaper h1 {
+            font-size: 26px;
+            letter-spacing: 2px;
             margin: 0;
         }
 
-        .whitepaper-header .subtitle {
-            font-size: 1.1rem;
+        .header-whitepaper .subtitle {
+            font-size: 14px;
+            color: #0D47A1;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .header-whitepaper .version {
+            font-size: 11px;
             color: #6b7280;
-            margin-top: 4px;
+            margin-top: 2px;
+        }
+
+        /* ===== NUMÉRO DE PAGE ===== */
+        .page-number {
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
         }
 
         /* ===== SECTIONS ===== */
-        .wp-section {
-            margin-bottom: 36px;
+        .section {
+            margin-bottom: 4px;
         }
 
-        .wp-section:last-child {
-            margin-bottom: 0;
+        /* ===== LISTES AVEC PUCE PERSONNALISÉE ===== */
+        .custom-list {
+            list-style: none;
+            padding-left: 0;
         }
 
-        .wp-section h2 {
-            font-size: 1.6rem;
+        .custom-list li {
+            padding-left: 18px;
+            position: relative;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 3px;
+        }
+
+        .custom-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #0D47A1;
             font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
-        .wp-section h2 i {
-            color: #f5a623;
-            font-size: 1.4rem;
-            width: 32px;
-            text-align: center;
-        }
-
-        .wp-section p, 
-        .wp-section li {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            color: #1f2937;
-        }
-
-        .wp-section ul {
-            padding-left: 24px;
-        }
-
-        .wp-section ul li {
-            margin-bottom: 8px;
-        }
-
-        /* ===== FOUNDERS ===== */
-        .founders-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-top: 16px;
-        }
-
-        .founder-card {
-            text-align: center;
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 24px 16px 20px;
-            transition: all 0.3s ease;
-            border: 1px solid #e5e7eb;
-        }
-
-        .founder-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            border-color: #f5a623;
-        }
-
-        .founder-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
-            font-weight: 700;
-            border: 3px solid #f5a623;
-            overflow: hidden;
-        }
-
-        .founder-avatar img {
+        /* ===== TABLEAU COMPARATIF ===== */
+        .comparison-table {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin: 8px 0 4px;
         }
 
-        .founder-card h4 {
-            font-size: 1.1rem;
+        .comparison-table th {
+            background: #0D47A1;
+            color: #ffffff;
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .comparison-table .highlight {
+            color: #0D47A1;
             font-weight: 700;
-            color: #1a1a2e;
-            margin: 2px 0 0 0;
         }
 
-        .founder-card .founder-role {
-            font-size: 0.85rem;
-            color: #6b7280;
-            margin: 2px 0 0 0;
-            font-weight: 500;
+        /* ===== TABLEAU AVANTAGES ===== */
+        .advantage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 20px;
+            margin: 6px 0 4px;
         }
 
-        .founder-card .founder-specialty {
-            font-size: 0.75rem;
-            color: #9ca3af;
-            margin-top: 4px;
+        .advantage-item {
+            font-size: 12px;
+            padding: 3px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .advantage-item strong {
+            color: #0D47A1;
         }
 
         /* ===== ROADMAP ===== */
-        .roadmap-timeline {
-            position: relative;
-            padding-left: 30px;
-            border-left: 3px solid #f5a623;
-        }
-
         .roadmap-item {
-            margin-bottom: 24px;
-            padding-left: 16px;
-            position: relative;
-        }
-
-        .roadmap-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .roadmap-item::before {
-            content: '';
-            position: absolute;
-            left: -34px;
-            top: 8px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #f5a623;
-            border: 3px solid white;
-            box-shadow: 0 0 0 3px #f5a623;
+            padding: 4px 0 4px 16px;
+            border-left: 2.5px solid #0D47A1;
+            margin-bottom: 6px;
+            padding-left: 14px;
         }
 
         .roadmap-item .phase {
             font-weight: 700;
             color: #0D47A1;
-            font-size: 1.1rem;
+            font-size: 12px;
         }
 
         .roadmap-item .desc {
-            color: #1f2937;
-            font-size: 1rem;
-            margin-top: 4px;
+            font-size: 11.5px;
+            color: #000000;
+            margin-top: 1px;
         }
 
-        /* ===== DOWNLOAD BUTTON ===== */
-        .btn-download-pdf {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 36px;
-            background: linear-gradient(135deg, #0D47A1, #1a1a2e);
-            color: white;
-            border: none;
-            border-radius: 40px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.3);
-        }
-
-        .btn-download-pdf:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 35px rgba(13, 71, 161, 0.4);
-        }
-
-        .btn-download-pdf i {
-            font-size: 1.2rem;
-        }
-
-        /* ===== BACK BUTTON ===== */
-        .btn-back-whitepaper {
-            display: inline-block;
+        /* ===== SIGNATURE EN BAS ===== */
+        .footer-signature {
             margin-top: 24px;
-            padding: 10px 28px;
-            border: 2px solid #e5e7eb;
-            border-radius: 40px;
-            color: #1f2937;
-            text-decoration: none;
+            padding-top: 12px;
+            border-top: 1.5px solid #0D47A1;
+            text-align: center;
+            font-size: 8.5px !important;
+            color: #0D47A1;
+            letter-spacing: 0.3px;
             font-weight: 500;
-            transition: all 0.3s ease;
-            background: #ffffff;
         }
 
-        .btn-back-whitepaper:hover {
-            background: #f3f4f6;
-            border-color: #d1d5db;
-        }
-
-        .btn-back-whitepaper i {
-            margin-right: 8px;
-        }
-
-        /* ===== DARK MODE ===== */
-        body.dark-mode .whitepaper-page {
-            background: #111827;
-        }
-
-        body.dark-mode .whitepaper-card {
-            background: #1f2937;
-            border-color: #374151;
-        }
-
-        body.dark-mode .wp-section h2 {
-            color: #f3f4f6;
-        }
-
-        body.dark-mode .wp-section p,
-        body.dark-mode .wp-section li {
-            color: #d1d5db;
-        }
-
-        body.dark-mode .founder-card {
-            background: #2d3748;
-            border-color: #374151;
-        }
-
-        body.dark-mode .founder-card h4 {
-            color: #f3f4f6;
-        }
-
-        body.dark-mode .founder-card .founder-role {
-            color: #9ca3af;
-        }
-
-        body.dark-mode .founder-card .founder-specialty {
-            color: #6b7280;
-        }
-
-        body.dark-mode .roadmap-item .desc {
-            color: #d1d5db;
-        }
-
-        body.dark-mode .btn-back-whitepaper {
-            border-color: #374151;
-            color: #d1d5db;
-            background: #1f2937;
-        }
-
-        body.dark-mode .btn-back-whitepaper:hover {
-            background: #374151;
-        }
-
-        body.dark-mode .whitepaper-header {
-            border-bottom-color: #374151;
+        .footer-signature span {
+            font-size: 8.5px !important;
+            color: #0D47A1;
         }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 992px) {
-            .founders-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .whitepaper-card {
-                padding: 30px 24px;
-            }
-        }
-
         @media (max-width: 768px) {
-            .whitepaper-page {
-                padding: 16px 12px 40px;
+            .whitepaper-container {
+                padding: 16px 14px 30px;
+                max-width: 100%;
             }
-            .whitepaper-card {
-                padding: 20px 16px;
-                border-radius: 16px;
+
+            h1 { font-size: 22px; }
+            h2 { font-size: 16px; }
+            h3 { font-size: 14px; }
+            p, ul li, ol li { font-size: 11px; }
+
+            .advantage-grid {
+                grid-template-columns: 1fr;
+                gap: 2px;
             }
-            .whitepaper-header .logo-container h1 {
-                font-size: 1.6rem;
+
+            .comparison-table {
+                font-size: 9px;
             }
-            .whitepaper-header .subtitle {
-                font-size: 0.9rem;
+            .comparison-table th,
+            .comparison-table td {
+                padding: 3px 6px;
             }
-            .wp-section h2 {
-                font-size: 1.3rem;
+
+            .header-whitepaper .logo-container img {
+                height: 30px;
             }
-            .wp-section p,
-            .wp-section li {
-                font-size: 0.95rem;
+            .header-whitepaper h1 {
+                font-size: 20px;
             }
-            .founders-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            .founder-avatar {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
-            }
-            .founder-card {
-                padding: 16px 12px;
-            }
-            .btn-download-pdf {
-                width: 100%;
-                justify-content: center;
-                padding: 12px 20px;
-                font-size: 1rem;
-            }
-            .btn-back-whitepaper {
-                width: 100%;
-                text-align: center;
+            .header-whitepaper .subtitle {
+                font-size: 12px;
             }
         }
 
-        @media (max-width: 480px) {
-            .founders-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
+        @media print {
+            body {
+                padding: 0;
+                background: #ffffff;
             }
-            .founder-avatar {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
+            .whitepaper-container {
+                box-shadow: none;
+                border: none;
+                padding: 20px 25px 30px;
+                max-width: 100%;
             }
-            .founder-card h4 {
-                font-size: 0.9rem;
-            }
-            .founder-card .founder-role {
-                font-size: 0.75rem;
-            }
-            .whitepaper-header .logo-container img {
-                height: 36px;
-            }
-            .whitepaper-header .logo-container h1 {
-                font-size: 1.3rem;
+            .page-number {
+                border-top-color: #ddd;
             }
         }
+
+        /* ===== UTILITAIRES ===== */
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 4px; }
+        .mt-8 { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mb-4 { margin-bottom: 4px; }
+        .mb-8 { margin-bottom: 8px; }
+        .fw-600 { font-weight: 600; }
+        .fs-11 { font-size: 11px; }
+        .fs-12 { font-size: 12px; }
+        .text-muted { color: #6b7280; }
+        .text-blue { color: #0D47A1; }
     </style>
 </head>
 <body>
 
-<!-- ============================================================
-     PAGE WHITEPAPER
-     ============================================================ -->
-<div class="whitepaper-page">
-    <div class="whitepaper-card">
+<div class="whitepaper-container">
 
-        <!-- ===== HEADER ===== -->
-        <div class="whitepaper-header">
-            <div class="logo-container">
-                <img src="logo.png" alt="Betix Logo" onerror="this.style.display='none'">
-                <h1>Whitepaper</h1>
-            </div>
-            <p class="subtitle">The first decentralized ticketing platform on Pi Network</p>
+    <!-- ============================================================
+         EN-TÊTE
+         ============================================================ -->
+    <div class="header-whitepaper">
+        <div class="logo-container">
+            <img src="logo.png" alt="Betix Logo" onerror="this.style.display='none'">
+            <h1>LIVRE BLANC BETIX</h1>
         </div>
-
-        <!-- ===== OUR FOUNDERS ===== -->
-        <div class="wp-section">
-            <h2><i class="fas fa-users"></i> Our Founders</h2>
-            <div class="founders-grid">
-                <div class="founder-card">
-                    <div class="founder-avatar">JD</div>
-                    <h4>Jean Dupont</h4>
-                    <p class="founder-role">CEO & Co-Founder</p>
-                    <p class="founder-specialty">Blockchain Architect</p>
-                </div>
-                <div class="founder-card">
-                    <div class="founder-avatar">MK</div>
-                    <h4>Marie Kouyaté</h4>
-                    <p class="founder-role">CTO & Co-Founder</p>
-                    <p class="founder-specialty">Full Stack Developer</p>
-                </div>
-                <div class="founder-card">
-                    <div class="founder-avatar">AT</div>
-                    <h4>Amadou Traoré</h4>
-                    <p class="founder-role">COO & Co-Founder</p>
-                    <p class="founder-specialty">Operations &amp; Strategy</p>
-                </div>
-                <div class="founder-card">
-                    <div class="founder-avatar">SN</div>
-                    <h4>Sophie Ndiaye</h4>
-                    <p class="founder-role">CMO & Co-Founder</p>
-                    <p class="founder-specialty">Marketing &amp; Community</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== INTRODUCTION ===== -->
-        <div class="wp-section">
-            <h2><i class="fas fa-rocket"></i> Introduction</h2>
-            <p>
-                Betix is the first decentralized event ticketing platform built on the Pi Network blockchain.
-                Our mission is to democratize access to cultural and sporting events by providing a secure,
-                transparent, and accessible platform for everyone.
-            </p>
-            <p style="margin-top: 12px;">
-                By leveraging the power of the Pi Network, Betix eliminates intermediaries, reduces costs,
-                and guarantees the authenticity of tickets through blockchain technology.
-            </p>
-        </div>
-
-        <!-- ===== OBJECTIVES ===== -->
-        <div class="wp-section">
-            <h2><i class="fas fa-bullseye"></i> Objectives</h2>
-            <ul>
-                <li><strong>Accessibility:</strong> Make event ticketing accessible to everyone, everywhere, using Pi cryptocurrency.</li>
-                <li><strong>Security:</strong> Guarantee secure and transparent transactions through blockchain technology.</li>
-                <li><strong>Decentralization:</strong> Eliminate intermediaries to offer fair prices to buyers and organizers.</li>
-                <li><strong>Community:</strong> Build a vibrant community of event enthusiasts and organizers.</li>
-                <li><strong>Innovation:</strong> Continuously improve the platform with new features and technologies.</li>
-            </ul>
-        </div>
-
-        <!-- ===== PI NETWORK INTEGRATION ===== -->
-        <div class="wp-section">
-            <h2><i class="fas fa-link"></i> Pi Network Integration</h2>
-            <p>
-                Betix is built on the Pi Network ecosystem, using Pi cryptocurrency for all transactions.
-                This integration allows:
-            </p>
-            <ul>
-                <li><strong>Fast transactions:</strong> Payments are processed in seconds with minimal fees.</li>
-                <li><strong>Global accessibility:</strong> Anyone with a Pi wallet can buy or sell tickets worldwide.</li>
-                <li><strong>Security:</strong> Transactions are recorded on the blockchain, ensuring transparency and traceability.</li>
-                <li><strong>Escrow system:</strong> Funds are secured until event validation, protecting both buyers and sellers.</li>
-            </ul>
-        </div>
-
-        <!-- ===== ROADMAP ===== -->
-        <div class="wp-section">
-            <h2><i class="fas fa-road"></i> Roadmap</h2>
-            <div class="roadmap-timeline">
-                <div class="roadmap-item">
-                    <div class="phase">Phase 1 - Q2 2026</div>
-                    <div class="desc">Launch of Betix platform on Pi Network with basic ticketing features.</div>
-                </div>
-                <div class="roadmap-item">
-                    <div class="phase">Phase 2 - Q3 2026</div>
-                    <div class="desc">Mobile application release. Integration of QR code verification and ticket scanning.</div>
-                </div>
-                <div class="roadmap-item">
-                    <div class="phase">Phase 3 - Q4 2026</div>
-                    <div class="desc">Introduction of NFT tickets, advanced analytics for organizers, and community features.</div>
-                </div>
-                <div class="roadmap-item">
-                    <div class="phase">Phase 4 - Q1 2027</div>
-                    <div class="desc">Multi-currency support, integration with other blockchains, and global expansion.</div>
-                </div>
-                <div class="roadmap-item">
-                    <div class="phase">Phase 5 - 2027+</div>
-                    <div class="desc">Establishment of Betix as the leading decentralized ticketing platform worldwide.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== DOWNLOAD PDF ===== -->
-        <div class="wp-section" style="text-align:center; padding-top: 20px; border-top: 2px solid #f0f0f0; margin-top: 8px;">
-            <h2 style="justify-content:center;"><i class="fas fa-file-pdf"></i> Download Whitepaper</h2>
-            <p style="font-size: 1rem; color: #6b7280; margin-bottom: 16px;">
-                Download the complete Betix Whitepaper in PDF format.
-            </p>
-            <button class="btn-download-pdf" onclick="alert('PDF download will be available soon!')">
-                <i class="fas fa-download"></i> Download PDF (Coming Soon)
-            </button>
-            <br>
-            <a href="index.html" class="btn-back-whitepaper">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </a>
-        </div>
-
+        <p class="subtitle">Plateforme d'événements décentralisée sur Pi Network</p>
+        <p class="version">Version 1.0 – 2026</p>
     </div>
+
+    <!-- ============================================================
+         PAGE 1 : PRÉSENTATION ET VISION
+         ============================================================ -->
+
+    <!-- 1. INTRODUCTION -->
+    <div class="section">
+        <h2>1. Introduction</h2>
+        <p>
+            <strong>Betix</strong> est une plateforme innovante de réservation et de gestion d'événements
+            entièrement décentralisée, construite sur l'écosystème <strong>Pi Network</strong>.
+            Notre mission est de démocratiser l'accès aux événements culturels, sportifs, éducatifs
+            et festifs en utilisant la cryptomonnaie <strong>Pi</strong> comme moyen de paiement principal.
+        </p>
+    </div>
+
+    <!-- 1.1 Les fondateurs -->
+    <div class="section">
+        <h3>1.1 Les fondateurs</h3>
+        <p>
+            <strong>Djami Yakonga</strong>, de nationalité congolaise, est l'initiateur du projet.
+            Passionné par les nouvelles technologies et l'inclusion financière, il a imaginé
+            <strong>Betix</strong> pour répondre à un besoin réel : faciliter l'organisation
+            d'événements tout en utilisant une cryptomonnaie accessible à tous.
+        </p>
+        <p>
+            <strong>Symphorien Molembia</strong> est le développeur principal. Expert en
+            développement web et blockchain, il a conçu l'architecture technique de Betix
+            pour garantir sécurité, rapidité et simplicité d'utilisation.
+        </p>
+    </div>
+
+    <!-- 1.2 Notre vision -->
+    <div class="section">
+        <h3>1.2 Notre vision</h3>
+        <p>
+            Nous croyons en un monde où chacun peut organiser ou participer à des événements
+            sans barrières financières, sans commissions excessives et avec une transparence
+            totale. <strong>Betix</strong> ambitionne de devenir la référence des plateformes
+            événementielles décentralisées en Afrique et dans le monde.
+        </p>
+    </div>
+
+    <!-- ============================================================
+         PAGE 2 : PROBLÉMATIQUE ET SOLUTION
+         ============================================================ -->
+
+    <h2>2. Pourquoi construire sur Pi Network ?</h2>
+
+    <!-- 2.1 Les difficultés actuelles -->
+    <div class="section">
+        <h3>2.1 Les difficultés actuelles du marché</h3>
+        <p>
+            Aujourd'hui, organiser ou participer à un événement pose plusieurs problèmes majeurs.
+        </p>
+        <ul>
+            <li>
+                <strong>Frais de transaction excessifs :</strong> les plateformes traditionnelles
+                prélèvent jusqu'à <strong>20% de commission</strong>. Sur 100 €, l'organisateur
+                ne reçoit parfois que 80 €.
+            </li>
+            <li>
+                <strong>Délais de paiement très longs :</strong> les fonds mettent entre
+                <strong>3 et 7 jours</strong> avant d'être disponibles, ce qui complique
+                le paiement des artistes et des prestataires.
+            </li>
+            <li>
+                <strong>Exclusion financière :</strong> près de <strong>2 milliards de personnes</strong>
+                dans le monde n'ont pas de compte bancaire et ne peuvent donc pas acheter
+                de billets en ligne.
+            </li>
+            <li>
+                <strong>Manque de transparence :</strong> la vente de faux billets est
+                monnaie courante et le taux de fraude atteint parfois <strong>12%</strong>
+                pour certains événements.
+            </li>
+            <li>
+                <strong>Revente illégale :</strong> des billets sont revendus à des prix
+                <strong>3 fois plus élevés</strong>, ce qui exclut les véritables fans.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 2.2 Les limites des solutions existantes -->
+    <div class="section">
+        <h3>2.2 Les limites des solutions existantes</h3>
+        <p>
+            Les plateformes actuelles comme <strong>Ticketmaster</strong>, <strong>Eventbrite</strong>
+            ou <strong>Weezevent</strong> souffrent toutes de défauts majeurs :
+            frais trop élevés, paiements lents, interfaces complexes ou absence de
+            protection contre la fraude.
+        </p>
+    </div>
+
+    <!-- 2.3 Pourquoi Pi Network est la solution idéale -->
+    <div class="section">
+        <h3>2.3 Pourquoi Pi Network est la solution idéale</h3>
+        <p>
+            Pi Network résout ces problèmes grâce à plusieurs avantages uniques :
+        </p>
+        <ul>
+            <li>
+                <strong>Transactions sans frais :</strong> contrairement aux plateformes
+                traditionnelles, Pi Network ne prélève <strong>aucune commission</strong>.
+                L'organisateur reçoit la totalité du prix des billets.
+            </li>
+            <li>
+                <strong>Transactions instantanées :</strong> le paiement s'effectue en
+                <strong>quelques secondes</strong>, ce qui permet de payer les prestataires
+                le jour même.
+            </li>
+            <li>
+                <strong>Accessibilité universelle :</strong> avec plus de
+                <strong>60 millions d'utilisateurs</strong> dans le monde, Pi Network
+                est accessible même aux personnes sans compte bancaire.
+            </li>
+            <li>
+                <strong>Sécurité blockchain :</strong> chaque transaction est enregistrée,
+                ce qui assure une <strong>traçabilité et une transparence totales</strong>.
+            </li>
+            <li>
+                <strong>Écologique :</strong> contrairement au Bitcoin, Pi Network
+                consomme <strong>très peu d'énergie</strong>.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 2.4 La solution Betix -->
+    <div class="section">
+        <h3>2.4 La solution Betix</h3>
+        <p>
+            <strong>Betix</strong> combine la puissance de Pi Network avec une
+            interface simple et intuitive.
+        </p>
+        <ul>
+            <li>
+                <strong>Création d'événements</strong> en moins de <strong>2 minutes</strong>,
+                sans validation longue ou complexe.
+            </li>
+            <li>
+                <strong>Paiement sécurisé</strong> directement en Pi depuis le wallet
+                de l'utilisateur.
+            </li>
+            <li>
+                <strong>Billets infalsifiables</strong> grâce à un code QR unique
+                généré à chaque achat.
+            </li>
+            <li>
+                <strong>Historique automatique</strong> : tous les tickets sont
+                centralisés dans un espace unique.
+            </li>
+            <li>
+                <strong>Commission à 0%</strong> : la totalité des ventes est reversée
+                à l'organisateur.
+            </li>
+        </ul>
+    </div>
+
+    <!-- ============================================================
+         PAGE 3 : AVANTAGES ET FONCTIONNALITÉS
+         ============================================================ -->
+
+    <h2>3. Les avantages de Betix</h2>
+
+    <!-- 3.1 Pour les organisateurs -->
+    <div class="section">
+        <h3>3.1 Pour les organisateurs</h3>
+        <p>Betix offre six avantages majeurs aux organisateurs d'événements :</p>
+        <ul>
+            <li>
+                <strong>Aucune commission :</strong> vous recevez la totalité du prix
+                des billets vendus, sans aucun prélèvement.
+            </li>
+            <li>
+                <strong>Paiement instantané :</strong> les fonds sont disponibles
+                immédiatement sur votre wallet Pi Network.
+            </li>
+            <li>
+                <strong>Gestion simplifiée :</strong> un tableau de bord vous permet
+                de suivre vos ventes en temps réel.
+            </li>
+            <li>
+                <strong>Communication directe :</strong> contactez facilement les
+                acheteurs de vos billets.
+            </li>
+            <li>
+                <strong>Visibilité maximale :</strong> votre événement est visible
+                par toute la communauté Pi Network.
+            </li>
+            <li>
+                <strong>Aucun frais caché :</strong> ce que vous voyez est exactement
+                ce que vous payez.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 3.2 Pour les participants -->
+    <div class="section">
+        <h3>3.2 Pour les participants</h3>
+        <p>Betix offre également six avantages majeurs aux participants :</p>
+        <ul>
+            <li>
+                <strong>Achat simple :</strong> en quelques clics depuis votre
+                wallet Pi Network.
+            </li>
+            <li>
+                <strong>Billets sécurisés :</strong> code QR unique généré pour
+                chaque achat.
+            </li>
+            <li>
+                <strong>Historique centralisé :</strong> retrouvez tous vos billets
+                au même endroit.
+            </li>
+            <li>
+                <strong>Prix abordables :</strong> aucun frais supplémentaire n'est
+                ajouté au prix d'origine.
+            </li>
+            <li>
+                <strong>Annulation facile :</strong> politique claire de remboursement.
+            </li>
+            <li>
+                <strong>Support réactif :</strong> assistance disponible en cas de
+                problème.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 3.3 Fonctionnalités actuelles -->
+    <div class="section">
+        <h3>3.3 Fonctionnalités actuelles</h3>
+        <p>La plateforme Betix propose actuellement de nombreuses fonctionnalités :</p>
+        <ul>
+            <li>
+                <strong>Gestion des événements :</strong> création, modification
+                et suppression.
+            </li>
+            <li>
+                <strong>Recherche avancée :</strong> par titre, lieu, catégorie ou date.
+            </li>
+            <li>
+                <strong>Filtres par catégorie :</strong> concerts, sport, conférences,
+                formations, cinéma, festivals.
+            </li>
+            <li>
+                <strong>Billetterie complète :</strong> achat, téléchargement,
+                code QR et validation.
+            </li>
+            <li>
+                <strong>Compte utilisateur :</strong> profil personnel, historique
+                d'achat, tickets actifs.
+            </li>
+            <li>
+                <strong>Interface adaptable :</strong> mode clair ou sombre,
+                design responsif pour mobile.
+            </li>
+            <li>
+                <strong>Support multilingue :</strong> français et anglais disponibles.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 3.4 Types d'événements acceptés -->
+    <div class="section">
+        <h3>3.4 Types d'événements acceptés</h3>
+        <p>Betix accepte six grandes catégories d'événements :</p>
+        <ul>
+            <li>
+                <strong>Concerts :</strong> musique, jazz, rock, pop, classique, variétés.
+            </li>
+            <li>
+                <strong>Événements sportifs :</strong> football, tennis, basketball,
+                arts martiaux, compétitions.
+            </li>
+            <li>
+                <strong>Conférences :</strong> technologie, business, entrepreneuriat,
+                développement personnel.
+            </li>
+            <li>
+                <strong>Formations :</strong> ateliers pratiques, cours en ligne,
+                séminaires professionnels.
+            </li>
+            <li>
+                <strong>Cinémas :</strong> avant-premières, festivals de films,
+                projections spéciales.
+            </li>
+            <li>
+                <strong>Festivals :</strong> culturels, gastronomiques, musicaux,
+                artistiques.
+            </li>
+        </ul>
+    </div>
+
+    <!-- ============================================================
+         PAGE 4 : ÉVOLUTION ET IMPACT
+         ============================================================ -->
+
+    <h2>4. Améliorations continues et sécurité</h2>
+
+    <!-- 4.1 État actuel -->
+    <div class="section">
+        <h3>4.1 État actuel du projet</h3>
+        <p>
+            Betix est actuellement en phase active de développement. Il s'agit d'un
+            <strong>produit minimum viable</strong> fonctionnel et déjà utilisable
+            par les organisateurs et les participants.
+        </p>
+        <ul>
+            <li>Plateforme web accessible à tous.</li>
+            <li>Intégration avec le wallet Pi Network opérationnelle.</li>
+            <li>12 événements de démonstration présents.</li>
+            <li>6 catégories disponibles.</li>
+            <li>Système de tickets fonctionnel.</li>
+        </ul>
+    </div>
+
+    <!-- 4.2 Améliorations en cours -->
+    <div class="section">
+        <h3>4.2 Les améliorations en cours</h3>
+        <p>Notre équipe travaille activement sur plusieurs axes d'amélioration :</p>
+        <ul>
+            <li>
+                <strong>Interface plus intuitive :</strong> design épuré, navigation
+                plus fluide.
+            </li>
+            <li>
+                <strong>Système de messagerie intégré :</strong> communication
+                facilitée entre organisateurs et participants.
+            </li>
+            <li>
+                <strong>Système d'évaluation :</strong> notation des événements
+                et des organisateurs.
+            </li>
+            <li>
+                <strong>Nouvelles catégories :</strong> art, théâtre, événements
+                familiaux, business.
+            </li>
+            <li>
+                <strong>Support multilingue enrichi :</strong> 5 langues
+                supplémentaires progressivement.
+            </li>
+        </ul>
+        <p>
+            Notre objectif est d'<strong>écouter nos utilisateurs</strong> et
+            d'améliorer Betix en continu pour répondre au mieux à leurs besoins.
+        </p>
+    </div>
+
+    <!-- 4.3 Sécurité et confidentialité -->
+    <div class="section">
+        <h3>4.3 Sécurité et confidentialité</h3>
+        <p>
+            La sécurité des utilisateurs et de leurs données est notre
+            <strong>priorité absolue</strong>.
+        </p>
+        <ul>
+            <li>
+                Transactions protégées par la <strong>blockchain Pi Network</strong>.
+            </li>
+            <li>
+                Données personnelles <strong>chiffrées</strong>, jamais revendues
+                à des tiers.
+            </li>
+            <li>
+                Chaque billet possède un <strong>code QR unique</strong> avec
+                horodatage.
+            </li>
+            <li>
+                Connexion via votre <strong>wallet Pi Network</strong>.
+            </li>
+            <li>
+                <strong>Aucun intermédiaire</strong> ne manipule vos fonds
+                (paiements directs).
+            </li>
+        </ul>
+    </div>
+
+    <!-- 4.4 Impact attendu -->
+    <div class="section">
+        <h3>4.4 Impact attendu</h3>
+        <p>Nous visons des objectifs ambitieux mais réalistes :</p>
+        <ul>
+            <li>
+                <strong>+10 000 utilisateurs</strong> réguliers sur la plateforme.
+            </li>
+            <li>
+                <strong>+500 événements</strong> organisés via Betix.
+            </li>
+            <li>
+                <strong>+15 000 billets</strong> vendus.
+            </li>
+            <li>
+                Croissance continue du <strong>volume de transactions en Pi</strong>.
+            </li>
+            <li>
+                Présence dans <strong>5 pays d'Afrique</strong>.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 4.5 Une communauté au cœur du projet -->
+    <div class="section">
+        <h3>4.5 Une communauté au cœur du projet</h3>
+        <p>
+            Betix est avant tout une <strong>aventure collective</strong>. Nous croyons
+            fermement que les meilleures idées viennent de ceux qui utilisent la
+            plateforme au quotidien.
+        </p>
+        <p>Vous pouvez contribuer à l'aventure Betix de plusieurs manières :</p>
+        <ul>
+            <li>Proposer des <strong>suggestions d'amélioration</strong>.</li>
+            <li><strong>Signaler les bugs</strong> que vous rencontrez.</li>
+            <li>Devenir <strong>ambassadeur Betix</strong> dans votre ville.</li>
+            <li>Établir des <strong>partenariats</strong> avec des lieux événementiels.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================
+         PAGE 5 : CONCLUSION
+         ============================================================ -->
+
+    <h2>5. Conclusion</h2>
+
+    <!-- 5.1 Pourquoi choisir Betix -->
+    <div class="section">
+        <h3>5.1 Pourquoi choisir Betix</h3>
+        <p>Voici la différence entre Betix et les plateformes traditionnelles :</p>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>Betix</th>
+                    <th>Plateformes traditionnelles</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Commission</strong></td>
+                    <td class="highlight">0%</td>
+                    <td>10% à 20%</td>
+                </tr>
+                <tr>
+                    <td><strong>Délai de paiement</strong></td>
+                    <td class="highlight">Instantané</td>
+                    <td>3 à 7 jours</td>
+                </tr>
+                <tr>
+                    <td><strong>Accès</strong></td>
+                    <td class="highlight">Wallet Pi gratuit</td>
+                    <td>Compte bancaire requis</td>
+                </tr>
+                <tr>
+                    <td><strong>Technologie</strong></td>
+                    <td class="highlight">Blockchain décentralisée</td>
+                    <td>Plateforme centralisée</td>
+                </tr>
+                <tr>
+                    <td><strong>Faux billets</strong></td>
+                    <td class="highlight">Impossible (QR unique)</td>
+                    <td>Risque élevé</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5.2 Pourquoi nous soutenir -->
+    <div class="section">
+        <h3>5.2 Pourquoi nous soutenir</h3>
+        <p>
+            Betix répond à un <strong>besoin réel et urgent</strong>.
+        </p>
+        <p>
+            Chaque jour, des événements n'ont pas lieu faute de billetterie adaptée.
+            Des artistes, des conférenciers et des associations perdent des
+            opportunités précieuses. Les frais élevés et les délais de paiement
+            découragent de nombreux organisateurs.
+        </p>
+        <p>
+            <strong>Avec Betix, tout devient simple, rapide et accessible.</strong>
+        </p>
+    </div>
+
+    <!-- 5.3 Rejoignez l'aventure -->
+    <div class="section">
+        <h3>5.3 Rejoignez l'aventure</h3>
+        <ul>
+            <li>
+                <strong>Organisateur :</strong> créez votre premier événement
+                gratuitement dès maintenant.
+            </li>
+            <li>
+                <strong>Participant :</strong> découvrez des expériences uniques
+                près de chez vous.
+            </li>
+            <li>
+                <strong>Partenaire :</strong> contactez-nous pour intégrer Betix
+                dans votre structure.
+            </li>
+            <li>
+                <strong>Développeur :</strong> contribuez à notre code open source.
+            </li>
+            <li>
+                <strong>Ambassadeur :</strong> promouvez Betix dans votre communauté.
+            </li>
+        </ul>
+    </div>
+
+    <!-- 5.4 Contacts officiels -->
+    <div class="section">
+        <h3>5.4 Contacts officiels</h3>
+        <ul>
+            <li><strong>Email :</strong> <a href="mailto:support@betix.com" style="color:#0D47A1;text-decoration:none;">support@betix.com</a></li>
+            <li><strong>Site web :</strong> <a href="https://www.betix.com" target="_blank" style="color:#0D47A1;text-decoration:none;">www.betix.com</a></li>
+            <li><strong>Twitter :</strong> <a href="https://x.com/betix_app" target="_blank" style="color:#0D47A1;text-decoration:none;">@betix_app</a></li>
+            <li><strong>Telegram :</strong> <a href="https://t.me/betix_community" target="_blank" style="color:#0D47A1;text-decoration:none;">t.me/betix_community</a></li>
+        </ul>
+    </div>
+
+    <!-- ============================================================
+         SIGNATURE EN BAS (POLICE TRÈS PETITE, BLEU)
+         ============================================================ -->
+    <div class="footer-signature">
+        <span>
+            Betix | Plateforme d'événements décentralisée sur Pi Network |
+            Document confidentiel | Version 1.0 | 2026
+        </span>
+    </div>
+
+    <!-- NUMÉRO DE PAGE -->
+    <div class="page-number">
+        Page 5 / 5
+    </div>
+
 </div>
-
-<!-- ===== FOOTER LÉGER ===== -->
-<footer style="text-align:center; padding: 20px; color: #6b7280; font-size: 0.85rem; background: transparent;">
-    <p>© 2026 Betix. All rights reserved.</p>
-</footer>
-
-<!-- ===== SCRIPTS ===== -->
-<script src="script.js"></script>
-<script>
-    // Appliquer le dark mode si activé
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
-    }
-</script>
 
 </body>
 </html>
