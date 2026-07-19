@@ -5109,7 +5109,7 @@ function openEventDetails(eventId) {
     // ---- CONSTRUCTION DU CONTENU AVEC DESIGN X/TWITTER ----
     content.innerHTML = 
         '<div class="event-detail-header-simple">' +
-            '<button class="back-btn-detail" onclick="closeEventDetailModal(); setTimeout(function(){ if(pageHistory.length > 1){ pageHistory.pop(); var prevPage = pageHistory[pageHistory.length-1] || 'home'; showPage(prevPage); } else { showPage('home'); } }, 50);">' +
+            '<button class="back-btn-detail" onclick="closeEventDetailModal(); setTimeout(function(){ if(pageHistory.length > 1){ pageHistory.pop(); var prevPage = pageHistory[pageHistory.length-1] || "home"; showPage(prevPage); } else { showPage("home"); } }, 50);">' +
                 '<i class="fas fa-arrow-left"></i>' +
             '</button>' +
             '<span class="detail-title-header">' + escapeHtml(event.title) + '</span>' +
