@@ -208,12 +208,10 @@ body {
     letter-spacing: 0.3px;
 }
 
-/* Le bouton est masqué uniquement sur la page d'accueil */
 .back-btn.hidden {
     display: none !important;
 }
 
-/* Le bouton est toujours visible sur toutes les autres pages */
 .back-btn:not(.hidden) {
     display: flex !important;
 }
@@ -232,34 +230,6 @@ body {
     .back-btn .back-btn-label {
         font-size: 0.7rem;
     }
-}
-
-/* ============================================================
-   BOUTON RETOUR DANS LA MODALE DE DÉTAIL
-   ============================================================ */
-.event-detail-header-simple .back-btn-detail {
-    background: rgba(0, 0, 0, 0.06) !important;
-    border: none !important;
-    color: #1a1a2e !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    cursor: pointer !important;
-    font-size: 1.2rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.2s ease !important;
-    flex-shrink: 0 !important;
-}
-
-.event-detail-header-simple .back-btn-detail:hover {
-    background: rgba(0, 0, 0, 0.12) !important;
-    transform: scale(1.05) !important;
-}
-
-.event-detail-header-simple .back-btn-detail:active {
-    transform: scale(0.92) !important;
 }
 
 /* ============================================================
@@ -1654,7 +1624,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
 }
 
 /* ============================================================
-   EVENT DETAIL MODAL - STYLE X/TWITTER INSPIRÉ
+   EVENT DETAIL MODAL - STYLE X/TWITTER INSPIRÉ AVEC BOUTON RETOUR
    ============================================================ */
 .event-detail-modal .modal-content {
     max-width: 900px !important;
@@ -1667,8 +1637,21 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     flex-direction: column !important;
     position: relative !important;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35) !important;
+    animation: modalFadeIn 0.3s ease !important;
 }
 
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ---- HEADER DE LA MODALE AVEC BOUTON RETOUR ---- */
 .event-detail-header-simple {
     display: flex !important;
     align-items: center !important;
@@ -1679,10 +1662,12 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     gap: 12px !important;
     border-bottom: 1px solid #f0f0f0 !important;
     z-index: 10 !important;
+    position: sticky !important;
+    top: 0 !important;
 }
 
 .event-detail-header-simple .back-btn-detail {
-    background: rgba(0, 0, 0, 0.06) !important;
+    background: rgba(0, 0, 0, 0.08) !important;
     border: none !important;
     color: #1a1a2e !important;
     width: 40px !important;
@@ -1695,14 +1680,40 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     justify-content: center !important;
     transition: all 0.2s ease !important;
     flex-shrink: 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
 }
 
 .event-detail-header-simple .back-btn-detail:hover {
-    background: rgba(0, 0, 0, 0.12) !important;
-    transform: scale(1.05) !important;
+    background: rgba(0, 0, 0, 0.14) !important;
+    transform: scale(1.08) !important;
 }
 
 .event-detail-header-simple .back-btn-detail:active {
+    transform: scale(0.92) !important;
+}
+
+.event-detail-header-simple .modal-close-detail {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border: none !important;
+    color: #1a1a2e !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 1.1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.event-detail-header-simple .modal-close-detail:hover {
+    background: rgba(0, 0, 0, 0.14) !important;
+    transform: scale(1.08) !important;
+}
+
+.event-detail-header-simple .modal-close-detail:active {
     transform: scale(0.92) !important;
 }
 
@@ -1729,6 +1740,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     flex-shrink: 0 !important;
 }
 
+/* ---- CORPS DE LA MODALE ---- */
 .event-detail-body-simple {
     display: flex !important;
     flex-direction: column !important;
@@ -1740,7 +1752,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     background: #ffffff !important;
 }
 
-/* ---- CARROUSEL D'IMAGES - STYLE X/TWITTER ---- */
+/* ---- CARROUSEL D'IMAGES ---- */
 .event-detail-image-carousel {
     position: relative !important;
     width: 100% !important;
@@ -1868,7 +1880,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     font-size: 0.7rem !important;
 }
 
-/* ---- CONTENU DE L'ÉVÉNEMENT - STYLE X/TWITTER ---- */
+/* ---- CONTENU DE L'ÉVÉNEMENT ---- */
 .event-detail-info-grid {
     padding: 20px 24px 14px !important;
     display: grid !important;
@@ -2983,10 +2995,12 @@ body.dark-mode .ticket-card-professional.ticket-vip .btn-download-ticket {
     z-index: 2000;
     justify-content: center;
     align-items: center;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 }
 
 .modal.show {
-    display: flex;
+    display: flex !important;
 }
 
 .modal-content {
@@ -2996,6 +3010,9 @@ body.dark-mode .ticket-card-professional.ticket-vip .btn-download-ticket {
     width: 90%;
     padding: 24px;
     position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease;
 }
 
 .modal-close {
