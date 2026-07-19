@@ -208,9 +208,14 @@ body {
     letter-spacing: 0.3px;
 }
 
-/* Le bouton est toujours présent, on cache uniquement sur la page d'accueil */
+/* Le bouton est masqué uniquement sur la page d'accueil */
 .back-btn.hidden {
     display: none !important;
+}
+
+/* Le bouton est toujours visible sur toutes les autres pages */
+.back-btn:not(.hidden) {
+    display: flex !important;
 }
 
 @media (max-width: 480px) {
@@ -227,6 +232,34 @@ body {
     .back-btn .back-btn-label {
         font-size: 0.7rem;
     }
+}
+
+/* ============================================================
+   BOUTON RETOUR DANS LA MODALE DE DÉTAIL
+   ============================================================ */
+.event-detail-header-simple .back-btn-detail {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border: none !important;
+    color: #1a1a2e !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 1.2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.event-detail-header-simple .back-btn-detail:hover {
+    background: rgba(0, 0, 0, 0.12) !important;
+    transform: scale(1.05) !important;
+}
+
+.event-detail-header-simple .back-btn-detail:active {
+    transform: scale(0.92) !important;
 }
 
 /* ============================================================
@@ -1652,11 +1685,11 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     background: rgba(0, 0, 0, 0.06) !important;
     border: none !important;
     color: #1a1a2e !important;
-    width: 38px !important;
-    height: 38px !important;
+    width: 40px !important;
+    height: 40px !important;
     border-radius: 50% !important;
     cursor: pointer !important;
-    font-size: 1.1rem !important;
+    font-size: 1.2rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1667,6 +1700,10 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
 .event-detail-header-simple .back-btn-detail:hover {
     background: rgba(0, 0, 0, 0.12) !important;
     transform: scale(1.05) !important;
+}
+
+.event-detail-header-simple .back-btn-detail:active {
+    transform: scale(0.92) !important;
 }
 
 .event-detail-header-simple .detail-title-header {
