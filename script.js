@@ -2533,20 +2533,10 @@ function showPage(pageName) {
 function goBack() {
     console.log('goBack() called - pageHistory:', pageHistory);
     
-    // Si une modale est ouverte, la fermer d'abord
+    // Si une modale est ouverte, la fermer et revenir
     var detailModal = document.getElementById('eventDetailModal');
     if (detailModal && detailModal.classList.contains('show')) {
-        closeEventDetailModal();
-        // Après avoir fermé la modale, revenir à la page précédente
-        setTimeout(function() {
-            if (pageHistory.length > 1) {
-                pageHistory.pop();
-                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
-                showPage(previousPage);
-            } else {
-                showPage('home');
-            }
-        }, 100);
+        closeEventDetailModalAndGoBack();
         return;
     }
     
@@ -4952,7 +4942,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// ===== EVENT DETAILS AVEC CARROUSEL D'IMAGES =====
+// ===== EVENT DETAILS AVEC CARROUSEL D'IMAGES ET BOUTON RETOUR =====
 // ============================================================
 
 function openEventDetails(eventId) {
@@ -4963,7 +4953,6 @@ function openEventDetails(eventId) {
     }
     
     var modal = document.getElementById('eventDetailModal');
-    var closeBtn = document.getElementById('eventDetailClose');
     var content = document.getElementById('eventDetailContent');
     
     // Ajouter la page actuelle dans l'historique si nécessaire
@@ -5109,11 +5098,14 @@ function openEventDetails(eventId) {
     // ---- CONSTRUCTION DU CONTENU AVEC DESIGN X/TWITTER ----
     content.innerHTML = 
         '<div class="event-detail-header-simple">' +
-            '<button class="back-btn-detail" onclick="closeEventDetailModal(); setTimeout(function(){ if(pageHistory.length > 1){ pageHistory.pop(); var prevPage = pageHistory[pageHistory.length-1] || "home"; showPage(prevPage); } else { showPage("home"); } }, 50);">' +
+            '<button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="Retour">' +
                 '<i class="fas fa-arrow-left"></i>' +
             '</button>' +
             '<span class="detail-title-header">' + escapeHtml(event.title) + '</span>' +
             '<span class="detail-category-tag-simple">' + escapeHtml(event.category) + '</span>' +
+            '<button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="Fermer">' +
+                '<i class="fas fa-times"></i>' +
+            '</button>' +
         '</div>' +
         
         '<div class="event-detail-body-simple">' +
@@ -5164,54 +5156,15 @@ function openEventDetails(eventId) {
             '</button>' +
         '</div>';
     
+    // Bouton "Buy Ticket"
     document.getElementById('detailBuyBtnSimple').onclick = function() {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        // Revenir à la page précédente
+        closeEventDetailModalAndGoBack();
         setTimeout(function() {
-            if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
-                pageHistory.pop();
-                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
-                showPage(previousPage);
-            } else {
-                showPage('home');
-            }
-        }, 50);
-        openQuantityPopup(event.id);
+            openQuantityPopup(event.id);
+        }, 300);
     };
     
-    // La flèche de retour ferme la modale
-    closeBtn.onclick = function() { 
-        closeEventDetailModal();
-        // Revenir à la page précédente après fermeture
-        setTimeout(function() {
-            if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
-                pageHistory.pop();
-                var previousPage = pageHistory[pageHistory.length - 1] || 'home';
-                showPage(previousPage);
-            } else {
-                showPage('home');
-            }
-        }, 50);
-    };
-    
-    window.onclick = function(e) { 
-        if (e.target === modal) {
-            closeEventDetailModal();
-            // Revenir à la page précédente après fermeture
-            setTimeout(function() {
-                if (pageHistory.length > 1 && pageHistory[pageHistory.length - 1] !== 'home') {
-                    pageHistory.pop();
-                    var previousPage = pageHistory[pageHistory.length - 1] || 'home';
-                    showPage(previousPage);
-                } else {
-                    showPage('home');
-                }
-            }, 50);
-        }
-    };
-    
+    // Affichage de la modale
     modal.classList.add('show');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -5237,6 +5190,54 @@ function openEventDetails(eventId) {
         
         var counter = document.getElementById('carousel-current-' + event.id);
         if (counter) counter.textContent = '1';
+    }
+}
+
+// ============================================================
+// ===== FERMETURE DE LA MODALE DE DÉTAIL + RETOUR =====
+// ============================================================
+
+function closeEventDetailModalAndGoBack() {
+    var modal = document.getElementById('eventDetailModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    if (window._carousels) {
+        for (var key in window._carousels) {
+            delete window._carousels[key];
+        }
+    }
+    
+    // Revenir à la page précédente
+    setTimeout(function() {
+        if (pageHistory.length > 1) {
+            pageHistory.pop();
+            var previousPage = pageHistory[pageHistory.length - 1] || 'home';
+            showPage(previousPage);
+        } else {
+            showPage('home');
+        }
+    }, 50);
+}
+
+// ============================================================
+// ===== FERMETURE DE LA MODALE DE DÉTAIL (sans retour) =====
+// ============================================================
+
+function closeEventDetailModal() {
+    var modal = document.getElementById('eventDetailModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    if (window._carousels) {
+        for (var key in window._carousels) {
+            delete window._carousels[key];
+        }
     }
 }
 
@@ -5278,24 +5279,6 @@ function carouselNext(eventId) {
     var carousel = window._carousels && window._carousels[eventId];
     if (!carousel) return;
     carouselGoTo(eventId, carousel.currentIndex + 1);
-}
-
-// ============================================================
-// ===== FERMETURE DE LA MODALE DE DÉTAIL =====
-// ============================================================
-
-function closeEventDetailModal() {
-    var modal = document.getElementById('eventDetailModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-    if (window._carousels) {
-        for (var key in window._carousels) {
-            delete window._carousels[key];
-        }
-    }
 }
 
 // ============================================================
@@ -6520,6 +6503,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Force full sync: forceFullSync()');
         console.log('Bouton Back visible sur toutes les pages sauf home');
         console.log('Logo Betix agrandi');
+        console.log('Bouton retour avec flèche et croix dans la modale de détail');
         
     } catch (error) {
         console.error('Error during application startup:', error);
