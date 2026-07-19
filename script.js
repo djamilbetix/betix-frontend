@@ -2472,7 +2472,7 @@ function startSessionMonitor() {
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
 // ============================================================
-// ===== FUNCTION SHOW PAGE (MODIFIÉE - BACK BUTTON SUPPRIMÉ) =====
+// ===== FUNCTION SHOW PAGE (MODIFIÉE - BOUTON BACK GÉRÉ) =====
 // ============================================================
 
 function showPage(pageName) {
@@ -2501,7 +2501,18 @@ function showPage(pageName) {
     if (pageHistory[pageHistory.length - 1] !== displayPage) {
         pageHistory.push(displayPage);
     }
-    // Le bouton Back a été supprimé, donc plus d'appel à updateBackButton()
+    
+    // GESTION DU BOUTON BACK - Visible sur toutes les pages sauf home
+    var backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        if (displayPage === 'home') {
+            backBtn.classList.add('hidden');
+            backBtn.style.display = 'none';
+        } else {
+            backBtn.classList.remove('hidden');
+            backBtn.style.display = 'flex';
+        }
+    }
     
     if (pageName === 'tickets') renderTickets();
     if (pageName === 'history') renderHistory();
@@ -6238,7 +6249,28 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Menu button not found in DOM');
         }
         
-        // Le bouton backBtn a été supprimé du HTML, donc plus besoin de le gérer
+        // GESTION DU BOUTON BACK
+        var backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            console.log('Back button found, adding click listener');
+            
+            backBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Back button clicked');
+                goBack();
+                return false;
+            });
+            
+            // Par défaut, le bouton est caché sur la page d'accueil
+            if (document.getElementById('homePage').style.display !== 'none') {
+                backBtn.classList.add('hidden');
+                backBtn.style.display = 'none';
+            } else {
+                backBtn.classList.remove('hidden');
+                backBtn.style.display = 'flex';
+            }
+        }
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
@@ -6393,6 +6425,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Supabase connected');
         console.log('Admin: 5 clicks on logo + password Betix@2026#');
         console.log('Menu button fix applied');
+        console.log('Back button fix applied - visible on all pages except home');
         console.log('Hero slider auto-play enabled');
         console.log('VIP tickets appear in My Tickets');
         console.log('Download ticket feature added');
@@ -6421,9 +6454,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Carousel improved with better dots, counter and progress bar!');
         console.log('Verify Supabase persistence: verifySupabasePersistence()');
         console.log('Force full sync: forceFullSync()');
-        console.log('Bouton Back supprimé du header - navigation via sidebar et bottom bar');
-        console.log('Bouton "Back to My Events" ajouté dans la modale d\'édition');
-        console.log('Flèche de retour dans la modale de détail d\'événement');
+        console.log('Bouton Back visible sur toutes les pages sauf home');
+        console.log('Logo Betix agrandi');
         
     } catch (error) {
         console.error('Error during application startup:', error);
