@@ -2471,27 +2471,9 @@ function startSessionMonitor() {
 
 function bindActivityListeners() { var events = ['click', 'scroll', 'keydown', 'touchstart']; for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], updateActivity); } }
 
-function updateBackButton(currentPage) {
-    var backBtn = document.getElementById('backBtn');
-    if (!backBtn) return;
-    if (currentPage !== 'home' && currentPage !== 'homePage') {
-        backBtn.style.display = 'flex';
-        backBtn.classList.add('visible');
-    } else {
-        backBtn.style.display = 'none';
-        backBtn.classList.remove('visible');
-    }
-}
-
-function goBack() {
-    if (pageHistory.length > 1) {
-        pageHistory.pop();
-        var previousPage = pageHistory[pageHistory.length - 1];
-        showPage(previousPage);
-    } else {
-        showPage('home');
-    }
-}
+// ============================================================
+// ===== FUNCTION SHOW PAGE (MODIFIÉE - BACK BUTTON SUPPRIMÉ) =====
+// ============================================================
 
 function showPage(pageName) {
     updateActivity();
@@ -2519,7 +2501,8 @@ function showPage(pageName) {
     if (pageHistory[pageHistory.length - 1] !== displayPage) {
         pageHistory.push(displayPage);
     }
-    updateBackButton(displayPage);
+    // Le bouton Back a été supprimé, donc plus d'appel à updateBackButton()
+    
     if (pageName === 'tickets') renderTickets();
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') updateProfilePage();
@@ -2530,6 +2513,20 @@ function showPage(pageName) {
     if (pageName === 'notifications') renderNotificationsPage();
     closeSidebar();
     window.scrollTo(0, 0);
+}
+
+// ============================================================
+// ===== FUNCTION GO BACK =====
+// ============================================================
+
+function goBack() {
+    if (pageHistory.length > 1) {
+        pageHistory.pop();
+        var previousPage = pageHistory[pageHistory.length - 1];
+        showPage(previousPage);
+    } else {
+        showPage('home');
+    }
 }
 
 // ============================================================
@@ -3875,7 +3872,8 @@ async function saveEventEdits() {
         standard_seats: updates.standardSeats,
         vip_seats: updates.vipSeats,
         standard_sold: updates.standardSold,
-        vip_sold: updates.vipSold    });
+        vip_sold: updates.vipSold
+    });
     
     addNotification(
         'Edit Event "' + event.title + '"',
@@ -5135,6 +5133,7 @@ function openEventDetails(eventId) {
         openQuantityPopup(event.id);
     };
     
+    // La flèche de retour ferme la modale
     closeBtn.onclick = function() { 
         closeEventDetailModal();
     };
@@ -6239,23 +6238,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Menu button not found in DOM');
         }
         
-        var backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            console.log('Back button found, adding click listener');
-            
-            backBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important;';
-            
-            backBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Back button clicked');
-                goBack();
-                return false;
-            });
-            
-            backBtn.style.pointerEvents = 'auto';
-            backBtn.style.cursor = 'pointer';
-        }
+        // Le bouton backBtn a été supprimé du HTML, donc plus besoin de le gérer
         
         var closeSidebarBtn = document.getElementById('closeSidebarBtn');
         if (closeSidebarBtn) {
@@ -6410,7 +6393,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Supabase connected');
         console.log('Admin: 5 clicks on logo + password Betix@2026#');
         console.log('Menu button fix applied');
-        console.log('Back button fix applied');
         console.log('Hero slider auto-play enabled');
         console.log('VIP tickets appear in My Tickets');
         console.log('Download ticket feature added');
@@ -6439,6 +6421,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Carousel improved with better dots, counter and progress bar!');
         console.log('Verify Supabase persistence: verifySupabasePersistence()');
         console.log('Force full sync: forceFullSync()');
+        console.log('Bouton Back supprimé du header - navigation via sidebar et bottom bar');
+        console.log('Bouton "Back to My Events" ajouté dans la modale d\'édition');
+        console.log('Flèche de retour dans la modale de détail d\'événement');
         
     } catch (error) {
         console.error('Error during application startup:', error);
