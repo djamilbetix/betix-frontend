@@ -651,28 +651,6 @@ let adminTimerInterval = null;
 let adminLogs = [];
 
 // ============================================================
-// ===== LOADER MANAGEMENT =====
-// ============================================================
-
-function showLoader() {
-    var loader = document.getElementById('loader');
-    if (loader) {
-        loader.classList.remove('hidden');
-        loader.style.display = 'flex';
-    }
-}
-
-function hideLoader() {
-    var loader = document.getElementById('loader');
-    if (loader) {
-        loader.classList.add('hidden');
-        setTimeout(function() {
-            loader.style.display = 'none';
-        }, 600);
-    }
-}
-
-// ============================================================
 // ===== LIMITES CARACTÈRES FORMULAIRE =====
 // ============================================================
 
@@ -868,7 +846,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// ===== SAVE EVENT TO SUPABASE (CORRIGÉE) =====
+// ===== SAVE EVENT TO SUPABASE =====
 // ============================================================
 
 async function saveEventToSupabase(eventData) {
@@ -945,7 +923,7 @@ async function saveEventToSupabase(eventData) {
 }
 
 // ============================================================
-// ===== SAVE TICKET TO SUPABASE (CORRIGÉE) =====
+// ===== SAVE TICKET TO SUPABASE =====
 // ============================================================
 
 async function saveTicketToSupabase(ticketData) {
@@ -1545,7 +1523,7 @@ async function loadAllFromSupabase() {
 }
 
 // ============================================================
-// ===== RENDER TICKET CARD - DESIGN ORIGINAL RESTAURÉ =====
+// ===== RENDER TICKET CARD - STYLE ORIGINAL =====
 // ============================================================
 
 function generateAllQRCodes() {
@@ -5606,6 +5584,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loader && main) {
             console.log('Loader and main content found');
             
+            // Loader visible pendant 3 secondes
             setTimeout(function() {
                 loader.classList.add('hidden');
                 setTimeout(function() {
@@ -5620,7 +5599,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadAllFromSupabase();
                     
                 }, 600);
-            }, 1500);
+            }, 3000);
         } else {
             console.warn('Loader or main content not found');
         }
