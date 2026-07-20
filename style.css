@@ -52,7 +52,7 @@ body {
 }
 
 /* ============================================================
-   LOADER PROFESSIONNEL - 3 SECONDES
+   NOUVEAU LOADER - LOGO + 5 BOULETS
    ============================================================ */
 .loader-container {
     position: fixed;
@@ -94,41 +94,51 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-.loader-spinner-modern {
-    position: relative;
-    width: 70px;
-    height: 70px;
+/* 5 BOULETS */
+.loader-balls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
 }
 
-.loader-ring {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.loader-ball {
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    border: 3px solid transparent;
-    animation: ringSpin 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation: ballBounce 1.4s ease-in-out infinite;
 }
 
-.loader-ring:nth-child(1) {
-    border-top-color: #08143F;
+.loader-ball:nth-child(1) {
+    background: #08143F;
     animation-delay: 0s;
 }
-
-.loader-ring:nth-child(2) {
-    border-right-color: #f5a623;
-    animation-delay: 0.5s;
+.loader-ball:nth-child(2) {
+    background: #f5a623;
+    animation-delay: 0.16s;
+}
+.loader-ball:nth-child(3) {
+    background: #08143F;
+    animation-delay: 0.32s;
+}
+.loader-ball:nth-child(4) {
+    background: #f5a623;
+    animation-delay: 0.48s;
+}
+.loader-ball:nth-child(5) {
+    background: #08143F;
+    animation-delay: 0.64s;
 }
 
-.loader-ring:nth-child(3) {
-    border-bottom-color: #08143F;
-    animation-delay: 1s;
-}
-
-@keyframes ringSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes ballBounce {
+    0%, 80%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+    }
+    40% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
 }
 
 .loader-text {
@@ -145,8 +155,194 @@ body {
 }
 
 /* ============================================================
-   HEADER AVEC BARRE BLANCHE SOUS LE LOGO
+   COMPTEURS DE CARACTÈRES
    ============================================================ */
+.char-counter {
+    font-size: 0.7rem;
+    color: #6b7280;
+    display: block;
+    margin-top: 2px;
+    text-align: right;
+    transition: color 0.3s ease;
+}
+
+.char-counter.warning {
+    color: #ef4444;
+}
+
+.char-counter.good {
+    color: #10b981;
+}
+
+/* ============================================================
+   INTERFACE VIP / STANDARD AMÉLIORÉE
+   ============================================================ */
+.ticket-type-row.standard {
+    background: #ffffff;
+    border: 2px solid #08143F;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(8, 20, 63, 0.06);
+    transition: all 0.3s ease;
+}
+
+.ticket-type-row.standard:hover {
+    box-shadow: 0 4px 16px rgba(8, 20, 63, 0.12);
+    transform: translateY(-2px);
+}
+
+.ticket-type-row.standard .type-status-badge.active {
+    background: rgba(8, 20, 63, 0.12);
+    color: #08143F;
+    font-weight: 700;
+    border: 1px solid #08143F;
+}
+
+.ticket-type-row.vip {
+    background: #fefaf0;
+    border: 2px solid #d4911e;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(212, 145, 30, 0.06);
+    transition: all 0.3s ease;
+}
+
+.ticket-type-row.vip:hover {
+    box-shadow: 0 4px 16px rgba(212, 145, 30, 0.15);
+    transform: translateY(-2px);
+}
+
+.ticket-type-row.vip .type-status-badge.active {
+    background: rgba(212, 145, 30, 0.15);
+    color: #d4911e;
+    font-weight: 700;
+    border: 1px solid #d4911e;
+}
+
+.ticket-type-row.vip .type-status-badge.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.ticket-type-row.standard .type-status-badge.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Switch Standard */
+.standard-switch .slider {
+    background: #d1d5db;
+}
+
+.standard-switch input:checked + .slider {
+    background: #08143F;
+}
+
+/* Switch VIP */
+.vip-switch .slider {
+    background: #d1d5db;
+}
+
+.vip-switch input:checked + .slider {
+    background: #d4911e;
+}
+
+/* Message erreur prix VIP */
+.vip-price-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    color: #dc2626;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.vip-price-error i {
+    font-size: 1rem;
+    color: #dc2626;
+}
+
+.vip-price-error.show {
+    display: flex !important;
+}
+
+/* ============================================================
+   BADGES ACTIVE/INACTIVE AMÉLIORÉS
+   ============================================================ */
+.type-status-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.type-status-badge.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.type-status-badge.inactive {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+/* ============================================================
+   RESPONSIVE - COMPTEURS
+   ============================================================ */
+@media (max-width: 768px) {
+    .char-counter {
+        font-size: 0.6rem;
+    }
+    
+    .ticket-type-row {
+        padding: 8px 10px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .ticket-type-row .type-price-group input[type="number"] {
+        width: 80px;
+        font-size: 0.7rem;
+    }
+    
+    .type-status-badge {
+        font-size: 0.5rem;
+        padding: 2px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loader-logo {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .loader-ball {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .loader-balls {
+        gap: 8px;
+    }
+}
+
+/* ============================================================
+   SUITE DES STYLES EXISTANTS (CONSERVÉS INTÉGRALEMENT)
+   ============================================================ */
+
+/* HEADER AVEC BARRE BLANCHE SOUS LE LOGO */
 .header {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
     padding: 0.6rem 5%;
@@ -174,9 +370,7 @@ body {
     gap: 2px;
 }
 
-/* ============================================================
-   LOGO - AGRANDI
-   ============================================================ */
+/* LOGO - AGRANDI */
 .logo {
     font-size: 2rem;
     font-weight: bold;
@@ -213,9 +407,7 @@ body {
     }
 }
 
-/* ============================================================
-   BOUTON RETOUR
-   ============================================================ */
+/* BOUTON RETOUR */
 .back-btn {
     background: rgba(255, 255, 255, 0.15);
     border: none;
@@ -271,9 +463,7 @@ body {
     display: flex !important;
 }
 
-/* ============================================================
-   BOTTOM NAVIGATION
-   ============================================================ */
+/* BOTTOM NAVIGATION */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -345,9 +535,7 @@ body {
     transform: translateY(-2px) scale(1.05);
 }
 
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
+/* SIDEBAR */
 .sidebar {
     position: fixed;
     top: 0;
@@ -622,9 +810,7 @@ body {
     box-shadow: 0 4px 12px rgba(8, 20, 63, 0.3);
 }
 
-/* ============================================================
-   HERO
-   ============================================================ */
+/* HERO */
 .hero {
     width: 100%;
     background: #ffffff;
@@ -861,9 +1047,7 @@ body {
     color: #6b7280;
 }
 
-/* ============================================================
-   SEARCH & FILTERS
-   ============================================================ */
+/* SEARCH & FILTERS */
 .search-bar {
     padding: 1.2rem 5% 0.5rem;
 }
@@ -975,9 +1159,7 @@ body {
     box-shadow: 0 4px 10px rgba(8, 20, 63, 0.3);
 }
 
-/* ============================================================
-   EVENTS GRID
-   ============================================================ */
+/* EVENTS GRID */
 .events-container {
     padding: 0.5rem 5% 2rem;
     overflow: hidden;
@@ -1064,9 +1246,7 @@ body.dark-mode .event-publish-date i {
     color: #6b7280;
 }
 
-/* ============================================================
-   BADGE PRICE
-   ============================================================ */
+/* BADGE PRICE */
 .price-badge-green {
     background: transparent !important;
     color: #1f2937 !important;
@@ -1144,9 +1324,7 @@ body.dark-mode .price-badge-green .price-currency {
     color: #d1d5db;
 }
 
-/* ============================================================
-   TICKETS LABEL
-   ============================================================ */
+/* TICKETS LABEL */
 .event-card-classic .event-tickets-label .tickets-label-badge {
     background: #ef4444 !important;
     color: #ffffff !important;
@@ -1204,9 +1382,7 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
     color: #ffffff !important;
 }
 
-/* ============================================================
-   PAYS + DURÉE SUR LA CARTE
-   ============================================================ */
+/* PAYS + DURÉE SUR LA CARTE */
 .event-country-duration {
     display: flex;
     align-items: center;
@@ -1237,9 +1413,7 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
     margin-right: 2px;
 }
 
-/* ============================================================
-   AFFICHAGE DES IMAGES - STYLE RÉSEAUX SOCIAUX
-   ============================================================ */
+/* AFFICHAGE DES IMAGES - STYLE RÉSEAUX SOCIAUX */
 .event-card-classic .poster-wrapper-classic {
     position: relative;
     width: 100%;
@@ -1374,9 +1548,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     background: #1f2937;
 }
 
-/* ============================================================
-   EVENT CARD CLASSIC
-   ============================================================ */
+/* EVENT CARD CLASSIC */
 .event-card-classic {
     background: #ffffff;
     border-radius: 16px;
@@ -1585,9 +1757,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     background: #1f2937;
 }
 
-/* ============================================================
-   TICKET CARD - STYLE ORIGINAL (COMME SUR L'IMAGE)
-   ============================================================ */
+/* TICKET CARD - STYLE ORIGINAL */
 .ticket-card {
     background: white;
     border-radius: 16px;
@@ -1739,9 +1909,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     height: 100% !important;
 }
 
-/* ============================================================
-   EVENT DETAIL MODAL
-   ============================================================ */
+/* EVENT DETAIL MODAL */
 .event-detail-modal .modal-content {
     max-width: 900px !important;
     padding: 0 !important;
@@ -2259,9 +2427,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     transform: scale(0.97) !important;
 }
 
-/* ============================================================
-   SCROLL TO TOP BUTTON
-   ============================================================ */
+/* SCROLL TO TOP BUTTON */
 .scroll-top-btn {
     position: fixed;
     bottom: 90px;
@@ -2300,9 +2466,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item {
     transform: scale(0.92);
 }
 
-/* ============================================================
-   SCROLLBAR PERSONNALISÉE
-   ============================================================ */
+/* SCROLLBAR PERSONNALISÉE */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -2330,9 +2494,7 @@ body.dark-mode ::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #08143F, #f5a623);
 }
 
-/* ============================================================
-   IMAGE UPLOAD, MODALS, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
-   ============================================================ */
+/* IMAGE UPLOAD, MODALS, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS */
 .image-upload-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2527,9 +2689,7 @@ body.dark-mode ::-webkit-scrollbar-thumb {
     font-size: 0.55rem;
 }
 
-/* ============================================================
-   MODALS
-   ============================================================ */
+/* MODALS */
 .modal {
     display: none;
     position: fixed;
@@ -2669,9 +2829,7 @@ body.dark-mode ::-webkit-scrollbar-thumb {
     border-color: #d1d5db;
 }
 
-/* ============================================================
-   QUANTITY POPUP
-   ============================================================ */
+/* QUANTITY POPUP */
 .quantity-popup {
     display: none;
     position: fixed;
@@ -2831,9 +2989,7 @@ body.dark-mode ::-webkit-scrollbar-thumb {
     margin-top: 14px;
 }
 
-/* ============================================================
-   SUCCESS POPUP
-   ============================================================ */
+/* SUCCESS POPUP */
 .success-popup {
     display: none;
     position: fixed;
@@ -2966,9 +3122,7 @@ body.dark-mode .success-popup-content p {
     color: #9ca3af;
 }
 
-/* ============================================================
-   PUBLISH CONFIRM
-   ============================================================ */
+/* PUBLISH CONFIRM */
 .publish-confirm {
     display: none;
     position: fixed;
@@ -3214,9 +3368,7 @@ body.dark-mode .success-popup-content p {
     animation: btn-spin 0.8s linear infinite;
 }
 
-/* ============================================================
-   BOUTONS GENERIQUES
-   ============================================================ */
+/* BOUTONS GENERIQUES */
 .btn-primary {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
     color: white;
@@ -3286,9 +3438,7 @@ body.dark-mode .success-popup-content p {
     opacity: 0.9;
 }
 
-/* ============================================================
-   FORMULAIRE DE CREATION
-   ============================================================ */
+/* FORMULAIRE DE CREATION */
 .create-form {
     background: white;
     padding: 1.8rem;
@@ -3375,26 +3525,6 @@ body.dark-mode .success-popup-content p {
 
 .ticket-type-row:last-child {
     margin-bottom: 0;
-}
-
-.ticket-type-row.standard {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-}
-
-.ticket-type-row.standard:hover {
-    border-color: #08143F;
-    box-shadow: 0 2px 8px rgba(8, 20, 63, 0.06);
-}
-
-.ticket-type-row.vip {
-    background: #fefaf0;
-    border: 1px solid #f5a62344;
-}
-
-.ticket-type-row.vip:hover {
-    border-color: #f5a623;
-    box-shadow: 0 2px 8px rgba(245, 166, 35, 0.08);
 }
 
 .ticket-type-row .type-toggle {
@@ -3609,9 +3739,7 @@ body.dark-mode .success-popup-content p {
     display: inline-block;
 }
 
-/* ============================================================
-   DURATION MODERN
-   ============================================================ */
+/* DURATION MODERN */
 .duration-row-modern {
     display: flex !important;
     align-items: center !important;
@@ -3702,9 +3830,7 @@ body.dark-mode .success-popup-content p {
     color: #f5a623 !important;
 }
 
-/* ============================================================
-   TICKET SEATS GRID
-   ============================================================ */
+/* TICKET SEATS GRID */
 .ticket-seats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3759,9 +3885,7 @@ body.dark-mode .success-popup-content p {
     color: #f5a623;
 }
 
-/* ============================================================
-   AUTRES PAGES
-   ============================================================ */
+/* AUTRES PAGES */
 .hidden-page {
     display: none;
 }
@@ -3784,9 +3908,7 @@ body.dark-mode .success-popup-content p {
     margin: 1.5rem auto !important;
 }
 
-/* ============================================================
-   PROFIL
-   ============================================================ */
+/* PROFIL */
 .profile-header-card {
     background: linear-gradient(145deg, #08143F, #1a1a2e);
     border-radius: 24px;
@@ -4054,9 +4176,7 @@ body.dark-mode .success-popup-content p {
     transform: scale(0.97);
 }
 
-/* ============================================================
-   MY EVENTS
-   ============================================================ */
+/* MY EVENTS */
 .my-events-container {
     padding: 0.5rem 5% 2rem;
     max-width: 1400px;
@@ -4282,9 +4402,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     color: #9ca3af;
 }
 
-/* ============================================================
-   CHAT
-   ============================================================ */
+/* CHAT */
 .chat-float-btn {
     position: fixed;
     bottom: 80px;
@@ -4405,9 +4523,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     opacity: 0.9;
 }
 
-/* ============================================================
-   GALLERY
-   ============================================================ */
+/* GALLERY */
 .gallery-modal {
     position: fixed;
     top: 0;
@@ -4463,9 +4579,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     background: rgba(255,255,255,0.3);
 }
 
-/* ============================================================
-   ADMIN
-   ============================================================ */
+/* ADMIN */
 .admin-content {
     max-width: 1000px !important;
 }
@@ -4539,9 +4653,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     font-weight: bold;
 }
 
-/* ============================================================
-   INDICATEUR DE SYNCHRONISATION
-   ============================================================ */
+/* INDICATEUR DE SYNCHRONISATION */
 .sync-indicator-wrapper {
     display: flex;
     align-items: center;
@@ -4610,9 +4722,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     50% { transform: scale(1.5); opacity: 0.6; }
 }
 
-/* ============================================================
-   BOUTON RAFRAÎCHIR ADMIN
-   ============================================================ */
+/* BOUTON RAFRAÎCHIR ADMIN */
 .admin-refresh-btn {
     display: inline-flex;
     align-items: center;
@@ -4965,9 +5075,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     font-size: 0.85rem;
 }
 
-/* ============================================================
-   NOUVEAU FOOTER - AMÉLIORÉ
-   ============================================================ */
+/* NOUVEAU FOOTER - AMÉLIORÉ */
 .betix-footer {
     background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
     color: #c8d4e6;
@@ -5151,9 +5259,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     color: #c8d4e6;
 }
 
-/* ============================================================
-   PAGE WHITEPAPER - STYLES (pour whitepaper.html)
-   ============================================================ */
+/* PAGE WHITEPAPER - STYLES (pour whitepaper.html) */
 .whitepaper-page {
     max-width: 1000px;
     margin: 0 auto;
@@ -5452,9 +5558,7 @@ body.dark-mode .whitepaper-header {
     border-bottom-color: #374151;
 }
 
-/* ============================================================
-   RESPONSIVE FOOTER ET WHITEPAPER
-   ============================================================ */
+/* RESPONSIVE FOOTER ET WHITEPAPER */
 @media (max-width: 992px) {
     .footer-container {
         grid-template-columns: repeat(2, 1fr);
@@ -5586,9 +5690,7 @@ body.dark-mode .whitepaper-header {
     }
 }
 
-/* ============================================================
-   FAQ
-   ============================================================ */
+/* FAQ */
 .faq-page-content {
     max-width: 900px !important;
     padding: 24px !important;
@@ -5750,9 +5852,7 @@ body.dark-mode .whitepaper-header {
     background: #f7c35c;
 }
 
-/* ============================================================
-   NOTIFICATIONS
-   ============================================================ */
+/* NOTIFICATIONS */
 #notificationsList .notification-item {
     padding: 12px 16px;
     border-bottom: 1px solid #f0f0f0;
@@ -5804,9 +5904,7 @@ body.dark-mode .whitepaper-header {
     background: #fefaf0;
 }
 
-/* ============================================================
-   DARK MODE (suite)
-   ============================================================ */
+/* DARK MODE (suite) */
 body.dark-mode {
     background-color: #111827;
     color: #f3f4f6;
@@ -6337,9 +6435,7 @@ body.dark-mode .ticket-card .btn-download-ticket:hover {
     background: #0a1a4f;
 }
 
-/* ============================================================
-   GOOGLE TRANSLATE
-   ============================================================ */
+/* GOOGLE TRANSLATE */
 .goog-te-banner-frame {
     display: none !important;
     height: 0 !important;
@@ -6367,9 +6463,7 @@ body {
     position: relative !important;
 }
 
-/* ============================================================
-   RESPONSIVE GENERAL
-   ============================================================ */
+/* RESPONSIVE GENERAL */
 @media (max-width: 992px) {
     .admin-stats {
         grid-template-columns: repeat(2, 1fr);
