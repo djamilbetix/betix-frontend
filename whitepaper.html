@@ -95,7 +95,7 @@
             letter-spacing: 0px;
         }
 
-        /* ===== EN-TÊTE AVEC LOGO CENTRÉ ===== */
+        /* ===== EN-TÊTE AVEC LOGO CENTRÉ ET AGRANDI ===== */
         .header-whitepaper {
             text-align: center;
             padding-bottom: 14px;
@@ -108,31 +108,33 @@
             align-items: center;
             justify-content: center;
             gap: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .header-whitepaper .logo-container img {
-            height: 44px;
+            height: 80px;
             width: auto;
+            max-width: 200px;
+            object-fit: contain;
         }
 
         .header-whitepaper .logo-placeholder {
-            width: 44px;
-            height: 44px;
+            width: 80px;
+            height: 80px;
             background: #0D47A1;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
             font-weight: 800;
-            font-size: 18px;
+            font-size: 32px;
         }
 
         .header-whitepaper h1 {
-            font-size: 26px;
+            font-size: 28px;
             color: #0D47A1;
-            margin: 0;
+            margin: 4px 0 2px 0;
         }
 
         .header-whitepaper .subtitle {
@@ -279,28 +281,6 @@
             font-weight: 700;
         }
 
-        /* ===== ROADMAP ===== */
-        .roadmap-item {
-            padding: 3px 0 3px 12px;
-            border-left: 2.5px solid #0D47A1;
-            margin-bottom: 4px;
-            padding-left: 10px;
-        }
-
-        .roadmap-item .phase {
-            font-weight: 700;
-            color: #0D47A1;
-            font-size: 11.5px;
-            letter-spacing: 0px;
-        }
-
-        .roadmap-item .desc {
-            font-size: 11px;
-            color: #000000;
-            margin-top: 1px;
-            letter-spacing: 0px;
-        }
-
         /* ===== RÉSEAUX SOCIAUX ===== */
         .social-section {
             margin-top: 16px;
@@ -397,12 +377,12 @@
             }
 
             .header-whitepaper .logo-container img {
-                height: 32px;
+                height: 56px;
             }
             .header-whitepaper .logo-placeholder {
-                width: 32px;
-                height: 32px;
-                font-size: 14px;
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
             }
             .header-whitepaper h1 {
                 font-size: 18px;
@@ -464,12 +444,15 @@
 <div class="whitepaper-container">
 
     <!-- ============================================================
-         EN-TÊTE AVEC LOGO CENTRÉ
+         EN-TÊTE AVEC LOGO CENTRÉ ET AGRANDI
          ============================================================ -->
     <div class="header-whitepaper">
         <div class="logo-container">
-          <img src="Logo.jpg.jpeg" alt="Betix Logo" onerror="this.style.display='none';">
+            <img src="Logo.jpg.jpeg" alt="Betix Logo" onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
+            <div class="logo-placeholder" id="logoPlaceholder" style="display:none;">B</div>
+        </div>
         <h1>LIVRE BLANC BETIX</h1>
+        <p class="subtitle">Achat de tickets pour les événements sur Pi Network</p>
     </div>
 
     <!-- ============================================================
@@ -511,9 +494,10 @@
 
         <div class="founders-container">
 
+            <!-- Fondateur 1 : Djami Yakonga -->
             <div class="founder-card">
                 <div class="founder-photo">
-                    <img src="djami.jpg" alt="Djami Yakonga" onerror="this.style.display='none'; this.parentElement.textContent='DY';">
+                    <img src="Djami.jpeg" alt="Djami Yakonga" onerror="this.style.display='none'; this.parentElement.textContent='DY';">
                 </div>
                 <div class="founder-info">
                     <h4>Djami Yakonga</h4>
@@ -537,6 +521,7 @@
                 </div>
             </div>
 
+            <!-- Fondateur 2 : Symphorien Molembia -->
             <div class="founder-card">
                 <div class="founder-photo">
                     <img src="symphorien.jpg" alt="Symphorien Molembia" onerror="this.style.display='none'; this.parentElement.textContent='SM';">
