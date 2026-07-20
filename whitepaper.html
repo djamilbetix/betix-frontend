@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livre Blanc - Betix</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* ============================================================
-           STYLES LIVRE BLANC - COULEUR UNIQUE #0D47A1
+           STYLES LIVRE BLANC - COULEUR UNIQUE #08143F
            ============================================================ */
         * {
             margin: 0;
@@ -33,13 +34,13 @@
 
         /* ===== COULEUR UNIQUE DU LOGO ===== */
         :root {
-            --betix-blue: #0D47A1;
+            --betix-blue: #08143F;
         }
 
-        /* ===== TYPOGRAPHIE - TOUT CE QUI EST BLEU ===== */
+        /* ===== TYPOGRAPHIE ===== */
         h1, h2, h3, h4, .subtitle, .founder-title, .social-title, .footer-signature,
-        .highlight, .text-blue, .color-blue {
-            color: #0D47A1 !important;
+        .highlight, .text-blue, .color-blue, .section-title {
+            color: #08143F !important;
         }
 
         h1 {
@@ -91,7 +92,7 @@
         .header-whitepaper {
             text-align: center;
             padding-bottom: 14px;
-            border-bottom: 2px solid #0D47A1;
+            border-bottom: 2px solid #08143F;
             margin-bottom: 14px;
         }
 
@@ -113,7 +114,7 @@
         .header-whitepaper .logo-placeholder {
             width: 80px;
             height: 80px;
-            background: #0D47A1;
+            background: #08143F;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -125,18 +126,18 @@
 
         .header-whitepaper h1 {
             font-size: 28px;
-            color: #0D47A1 !important;
+            color: #08143F !important;
             margin: 4px 0 2px 0;
         }
 
         .header-whitepaper .subtitle {
             font-size: 13.5px;
-            color: #0D47A1 !important;
+            color: #08143F !important;
             font-weight: 600;
             margin-top: 2px;
         }
 
-        /* ===== BOUTON RETOUR ===== */
+        /* ===== BOUTONS ===== */
         .btn-back-home {
             display: inline-block;
             margin-top: 12px;
@@ -157,9 +158,60 @@
             transform: scale(1.02);
         }
 
-        .back-home-wrapper {
+        .btn-download-pdf {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 24px;
+            background: #08143F;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 4px;
+            border: 1px solid #08143F;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-download-pdf:hover {
+            background: #0a1a4f;
+            transform: scale(1.02);
+        }
+
+        .btn-translate {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: #e5e7eb;
+            color: #1a1a2e;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-right: 6px;
+        }
+
+        .btn-translate:hover {
+            background: #d1d5db;
+            transform: scale(1.02);
+        }
+
+        .btn-translate.active {
+            background: #08143F;
+            color: #ffffff;
+            border-color: #08143F;
+        }
+
+        .actions-wrapper {
             text-align: center;
             margin-top: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         /* ===== FONDATEURS ===== */
@@ -182,8 +234,8 @@
         }
 
         .founder-card:hover {
-            border-color: #0D47A1;
-            box-shadow: 0 4px 16px rgba(13, 71, 161, 0.08);
+            border-color: #08143F;
+            box-shadow: 0 4px 16px rgba(8, 20, 63, 0.08);
         }
 
         .founder-card .founder-photo {
@@ -191,13 +243,13 @@
             height: 64px;
             border-radius: 50%;
             background: #e5e7eb;
-            border: 3px solid #0D47A1;
+            border: 3px solid #08143F;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 22px;
             font-weight: 700;
-            color: #0D47A1;
+            color: #08143F;
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -215,13 +267,13 @@
         .founder-card h4 {
             font-size: 14px;
             margin: 0;
-            color: #0D47A1 !important;
+            color: #08143F !important;
         }
 
         .founder-card .founder-title {
             font-size: 11px;
             font-weight: 600;
-            color: #0D47A1 !important;
+            color: #08143F !important;
             margin: 1px 0 3px 0;
         }
 
@@ -242,7 +294,7 @@
         }
 
         .comparison-table th {
-            background: #0D47A1;
+            background: #08143F;
             color: #ffffff;
             padding: 5px 10px;
             text-align: left;
@@ -260,7 +312,7 @@
         }
 
         .comparison-table .highlight {
-            color: #0D47A1 !important;
+            color: #08143F !important;
             font-weight: 700;
         }
 
@@ -268,13 +320,13 @@
         .social-section {
             margin-top: 16px;
             padding-top: 12px;
-            border-top: 1.5px solid #0D47A1;
+            border-top: 1.5px solid #08143F;
             text-align: center;
         }
 
         .social-section .social-title {
             font-size: 10px;
-            color: #0D47A1 !important;
+            color: #08143F !important;
             font-weight: 600;
             margin-bottom: 8px;
             letter-spacing: 0.5px;
@@ -295,18 +347,18 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: #0D47A1;
+            background: #08143F;
             color: #ffffff;
             text-decoration: none;
             font-size: 14px;
             transition: all 0.3s ease;
-            border: 1px solid #0D47A1;
+            border: 1px solid #08143F;
         }
 
         .social-icons a:hover {
             background: #ffffff;
-            color: #0D47A1;
-            border-color: #0D47A1;
+            color: #08143F;
+            border-color: #08143F;
             transform: scale(1.05);
         }
 
@@ -314,16 +366,25 @@
         .footer-signature {
             margin-top: 16px;
             padding-top: 8px;
-            border-top: 1.5px solid #0D47A1;
+            border-top: 1.5px solid #08143F;
             text-align: center;
             font-size: 7.5px !important;
-            color: #0D47A1 !important;
+            color: #08143F !important;
             font-weight: 500;
         }
 
         .footer-signature span {
             font-size: 7.5px !important;
-            color: #0D47A1 !important;
+            color: #08143F !important;
+        }
+
+        /* ===== TRADUCTION ===== */
+        .lang-en, .lang-fr {
+            display: none;
+        }
+
+        .lang-en.active, .lang-fr.active {
+            display: block;
         }
 
         /* ===== RESPONSIVE ===== */
@@ -385,9 +446,12 @@
                 font-size: 6.5px !important;
             }
 
-            .btn-back-home {
+            .btn-back-home, .btn-download-pdf, .btn-translate {
                 font-size: 9px;
-                padding: 6px 18px;
+                padding: 6px 14px;
+            }
+            .actions-wrapper {
+                gap: 4px;
             }
         }
 
@@ -400,10 +464,10 @@
                 max-width: 100%;
             }
             .social-icons a:hover {
-                background: #0D47A1;
+                background: #08143F;
                 color: #ffffff;
             }
-            .btn-back-home {
+            .btn-back-home, .btn-download-pdf, .btn-translate {
                 display: none;
             }
         }
@@ -416,13 +480,13 @@
         .mb-2 { margin-bottom: 2px; }
         .mb-4 { margin-bottom: 4px; }
         .fw-600 { font-weight: 600; }
-        .text-blue { color: #0D47A1; }
-        .color-blue { color: #0D47A1; }
+        .text-blue { color: #08143F; }
+        .color-blue { color: #08143F; }
     </style>
 </head>
 <body>
 
-<div class="whitepaper-container">
+<div class="whitepaper-container" id="whitepaperContent">
 
     <!-- ============================================================
          EN-TÊTE AVEC LOGO
@@ -432,14 +496,25 @@
             <img src="Logo.jpg.jpeg" alt="Betix Logo" onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
             <div class="logo-placeholder" id="logoPlaceholder" style="display:none;">B</div>
         </div>
-        <h1>LIVRE BLANC BETIX</h1>
+
+        <!-- VERSION FRANÇAISE -->
+        <div class="lang-fr active">
+            <h1>LIVRE BLANC BETIX</h1>
+        </div>
+
+        <!-- VERSION ANGLAISE -->
+        <div class="lang-en">
+            <h1>BETIX WHITEPAPER</h1>
+            <p class="subtitle">Ticket purchasing for events on Pi Network</p>
+        </div>
     </div>
 
     <!-- ============================================================
          PAGE 1 : PRÉSENTATION ET VISION
          ============================================================ -->
 
-    <div class="section">
+    <!-- FRANÇAIS -->
+    <div class="section lang-fr active">
         <h2>1. INTRODUCTION</h2>
 
         <p>
@@ -466,15 +541,11 @@
             culture et le divertissement accessibles à chacun grâce à l'achat de
             tickets dématérialisés.
         </p>
-    </div>
 
-    <!-- 1.1 LES FONDATEURS -->
-    <div class="section">
         <h3>1.1 Les fondateurs</h3>
 
         <div class="founders-container">
 
-            <!-- Fondateur 1 : Djami Yakonga -->
             <div class="founder-card">
                 <div class="founder-photo">
                     <img src="Djami.jpeg" alt="Djami Yakonga" onerror="this.style.display='none'; this.parentElement.textContent='DY';">
@@ -499,7 +570,6 @@
                 </div>
             </div>
 
-            <!-- Fondateur 2 : Symphorien Molembia -->
             <div class="founder-card">
                 <div class="founder-photo">
                     <img src="symphorien.jpg" alt="Symphorien Molembia" onerror="this.style.display='none'; this.parentElement.textContent='SM';">
@@ -526,10 +596,7 @@
             </div>
 
         </div>
-    </div>
 
-    <!-- 1.2 NOTRE VISION -->
-    <div class="section">
         <h3>1.2 Notre vision</h3>
 
         <p>
@@ -554,14 +621,111 @@
         </p>
     </div>
 
+    <!-- ANGLAIS -->
+    <div class="section lang-en">
+        <h2>1. INTRODUCTION</h2>
+
+        <p>
+            Betix is an innovative ticket purchasing platform for events, fully decentralized
+            and built on the Pi Network ecosystem. Our mission is to democratize access to
+            cultural, sporting, educational and festive events using Pi cryptocurrency as
+            the main payment method. Betix positions itself as a modern, transparent and
+            cost-effective alternative to traditional ticketing platforms.
+        </p>
+        <p>
+            Our solution allows organizers to create and promote their events with no
+            hidden fees, and participants to buy tickets securely with their Pi Network
+            wallet. In a world where blockchain technology is transforming industries,
+            Betix aims to be a key player in the decentralization of the event ticketing sector.
+        </p>
+        <p>
+            We firmly believe that the future of ticketing lies in eliminating intermediaries,
+            total transparency and accessibility for all, regardless of country, social
+            status or income level. Betix was born from this conviction and the desire
+            to make culture and entertainment accessible to everyone through digital tickets.
+        </p>
+
+        <h3>1.1 The Founders</h3>
+
+        <div class="founders-container">
+
+            <div class="founder-card">
+                <div class="founder-photo">
+                    <img src="Djami.jpeg" alt="Djami Yakonga" onerror="this.style.display='none'; this.parentElement.textContent='DY';">
+                </div>
+                <div class="founder-info">
+                    <h4>Djami Yakonga</h4>
+                    <p class="founder-title">Founder and Chief Executive Officer</p>
+                    <p>
+                        Of Congolese nationality, Djami Yakonga is the initiator of the
+                        Betix project. Passionate about new technologies and financial
+                        inclusion, he imagined Betix to respond to a real need: facilitating
+                        event organization while using a cryptocurrency accessible to all,
+                        including unbanked populations.
+                    </p>
+                    <p>
+                        With experience in project management and finance, he has brought
+                        together a talented team around this vision. His goal is to make
+                        Betix a tool for culture, sports and education in Africa and worldwide.
+                    </p>
+                </div>
+            </div>
+
+            <div class="founder-card">
+                <div class="founder-photo">
+                    <img src="symphorien.jpg" alt="Symphorien Molembia" onerror="this.style.display='none'; this.parentElement.textContent='SM';">
+                </div>
+                <div class="founder-info">
+                    <h4>Symphorien Molembia</h4>
+                    <p class="founder-title">Lead Developer and Chief Technology Officer</p>
+                    <p>
+                        Expert in web development and blockchain, Symphorien Molembia
+                        designed Betix's technical architecture to ensure security, speed
+                        and ease of use for online ticket purchasing. With several years
+                        of experience in decentralized technologies, he brings essential
+                        rigor and expertise to the platform.
+                    </p>
+                    <p>
+                        He led the development of the backend infrastructure, Pi Network
+                        integration, QR code system and user interface. His technical vision
+                        allows Betix to be at the forefront of innovation while remaining
+                        accessible to the widest possible audience.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <h3>1.2 Our Vision</h3>
+
+        <p>
+            We believe in a world where everyone can organize or participate in events
+            without financial barriers, excessive commissions and with total transparency.
+            Betix aims to become the reference for decentralized event ticketing platforms
+            in Africa and worldwide.
+        </p>
+        <p>
+            Our long-term vision is to create an ecosystem where blockchain technology
+            serves humanity. We want Betix to become the catalyst for a new era of events,
+            where organizers and participants are connected directly, without unnecessary
+            intermediaries.
+        </p>
+        <p>
+            We believe that the future of culture and entertainment lies in decentralization.
+            By empowering organizers and participants, Betix helps build a fairer and more
+            equitable world, where access to culture is no longer a privilege but a right
+            for all.
+        </p>
+    </div>
+
     <!-- ============================================================
          PAGE 2 : PROBLÉMATIQUE ET SOLUTION
          ============================================================ -->
 
-    <h2>2. POURQUOI CONSTRUIRE SUR PI NETWORK ?</h2>
+    <!-- FRANÇAIS -->
+    <div class="section lang-fr active">
+        <h2>2. POURQUOI CONSTRUIRE SUR PI NETWORK ?</h2>
 
-    <!-- 2.1 LES DIFFICULTÉS ACTUELLES -->
-    <div class="section">
         <h3>2.1 Les difficultés actuelles du marché</h3>
 
         <p>
@@ -618,580 +782,160 @@
         </p>
     </div>
 
-    <!-- 2.2 LES LIMITES DES SOLUTIONS EXISTANTES -->
-    <div class="section">
-        <h3>2.2 Les limites des solutions existantes</h3>
+    <!-- ANGLAIS -->
+    <div class="section lang-en">
+        <h2>2. WHY BUILD ON PI NETWORK?</h2>
+
+        <h3>2.1 Current market difficulties</h3>
 
         <p>
-            Les plateformes actuelles comme Ticketmaster, Eventbrite ou Weezevent
-            souffrent toutes de défauts majeurs qui limitent leur utilité et leur
-            accessibilité pour l'achat de tickets. Ces défauts sont inhérents à
-            leur modèle centralisé et à leur dépendance aux systèmes financiers
-            traditionnels.
-        </p>
-        <p>
-            Les frais trop élevés réduisent la rentabilité des organisateurs et
-            augmentent le prix des billets pour les participants. Les paiements
-            lents créent des problèmes de trésorerie et fragilisent les organisateurs
-            indépendants. Les interfaces complexes découragent les utilisateurs
-            non-initiés et limitent l'accès à la culture.
-        </p>
-        <p>
-            L'absence de protection contre la fraude et la contrefaçon expose les
-            participants à des risques importants. La centralisation donne trop de
-            pouvoir aux intermédiaires qui imposent leurs conditions sans réelle
-            concurrence. Enfin, l'exclusion financière des populations non bancarisées
-            reste un problème non résolu par ces plateformes.
-        </p>
-    </div>
-
-    <!-- 2.3 POURQUOI PI NETWORK EST LA SOLUTION IDÉALE -->
-    <div class="section">
-        <h3>2.3 Pourquoi Pi Network est la solution idéale</h3>
-
-        <p>
-            Pi Network résout ces problèmes grâce à plusieurs avantages uniques
-            qui en font la blockchain la plus adaptée pour l'achat de tickets pour
-            les événements. Cette solution combine innovation technologique et
-            accessibilité universelle.
+            Today, organizing or participating in an event presents several major
+            problems that hinder the development of the sector and exclude many
+            people from ticket purchasing. These difficulties are structural and
+            affect the entire event ticketing industry.
         </p>
 
-        <h4>Les transactions sans frais</h4>
+        <h4>Excessive transaction fees</h4>
         <p>
-            Contrairement aux plateformes traditionnelles, Pi Network ne prélève
-            aucune commission. L'organisateur reçoit la totalité du prix des
-            billets vendus. Cette gratuité permet aux organisateurs de maximiser
-            leurs revenus et de proposer des prix plus attractifs aux participants,
-            rendant la culture plus accessible.
+            Traditional platforms charge up to twenty percent commission on each
+            ticket sold. On one hundred euros, the organizer sometimes receives
+            only eighty euros. These commissions, often justified by management
+            fees, represent a major barrier for small organizers and associative
+            events operating with tight budgets.
         </p>
 
-        <h4>Les transactions instantanées</h4>
+        <h4>Very long payment delays</h4>
         <p>
-            Le paiement s'effectue en quelques secondes, ce qui permet de payer
-            les prestataires le jour même de l'événement. Cette rapidité améliore
-            la gestion de trésorerie et fluidifie les relations entre les acteurs
-            de la chaîne événementielle.
+            Funds take between three and seven days to become available in the
+            organizer's account. This latency complicates payment to artists,
+            service providers and suppliers, creating unnecessary financial
+            tensions and payment delays that can compromise the event's success.
         </p>
 
-        <h4>L'accessibilité universelle</h4>
+        <h4>Massive financial exclusion</h4>
         <p>
-            Avec plus de soixante millions d'utilisateurs dans le monde, Pi Network
-            est accessible même aux personnes sans compte bancaire. Un simple
-            smartphone suffit pour créer un portefeuille et commencer à acheter
-            des tickets. Cette accessibilité est un atout majeur pour toucher les
-            populations exclues du système financier traditionnel.
+            Nearly two billion people worldwide do not have a bank account and
+            therefore cannot buy tickets online. This exclusion particularly
+            affects populations in Africa, Southeast Asia and Latin America,
+            depriving them of access to culture and entertainment.
         </p>
 
-        <h4>La sécurité blockchain</h4>
+        <h4>Lack of transparency and fraud</h4>
         <p>
-            Chaque transaction est enregistrée sur la blockchain, ce qui assure
-            une traçabilité et une transparence totales. Les fraudes sont
-            quasiment impossibles et les litiges peuvent être résolus facilement
-            grâce à l'historique immuable des transactions. Cette sécurité renforce
-            la confiance des utilisateurs.
+            Fake ticket sales are common. The fraud rate sometimes reaches twelve
+            percent for major events. Participants are scammed and organizers
+            lose credibility. The lack of transaction traceability worsens this
+            phenomenon and undermines consumer confidence.
         </p>
 
-        <h4>L'aspect écologique et économique</h4>
+        <h4>Illegal resale and speculation</h4>
         <p>
-            Contrairement au Bitcoin ou à Ethereum, Pi Network consomme très peu
-            d'énergie grâce à son protocole Stellar Consensus Protocol. Cette
-            faible consommation énergétique en fait une solution durable et
-            respectueuse de l'environnement, un critère de plus en plus important
-            pour les utilisateurs conscients des enjeux climatiques.
-        </p>
-
-        <h4>La communauté engagée</h4>
-        <p>
-            Pi Network dispose d'une communauté active et engagée qui croit en
-            la décentralisation et l'inclusion financière. Cette communauté
-            représente un vivier d'utilisateurs potentiels pour Betix et assure
-            une adoption rapide de la plateforme. La force de cette communauté
-            est un atout stratégique pour le développement de Betix.
-        </p>
-    </div>
-
-    <!-- 2.4 LA SOLUTION BETIX -->
-    <div class="section">
-        <h3>2.4 La solution Betix</h3>
-
-        <p>
-            Betix combine la puissance de Pi Network avec une interface simple
-            et intuitive pour offrir une expérience utilisateur exceptionnelle
-            pour l'achat de tickets. Notre solution est conçue pour être accessible
-            à tous, quel que soit le niveau de compétence technique.
-        </p>
-
-        <h4>La création d'événements en deux minutes</h4>
-        <p>
-            La création d'un événement sur Betix se fait en moins de deux minutes,
-            sans validation longue ou complexe. L'organisateur renseigne les
-            informations essentielles comme le titre, la description, la date,
-            le lieu, la catégorie, le prix et le nombre de places. Son événement
-            est immédiatement visible par la communauté Pi Network.
-        </p>
-
-        <h4>Le paiement sécurisé en Pi</h4>
-        <p>
-            Le paiement se fait directement en Pi depuis le wallet de l'utilisateur,
-            sans intermédiaire. Les transactions sont sécurisées par la blockchain
-            et instantanées. L'organisateur reçoit les fonds immédiatement après
-            l'achat, ce qui élimine les délais de paiement et les risques de
-            non-paiement.
-        </p>
-
-        <h4>Les billets infalsifiables</h4>
-        <p>
-            Chaque billet est généré avec un code QR unique qui garantit son
-            authenticité. Ce système rend les faux billets impossibles et facilite
-            le contrôle à l'entrée des événements. Le code QR est horodaté et
-            lié à la transaction, ce qui assure une traçabilité parfaite.
-        </p>
-
-        <h4>L'historique centralisé</h4>
-        <p>
-            Tous les tickets achetés sont centralisés dans un espace unique
-            accessible à tout moment. Les utilisateurs peuvent consulter,
-            télécharger et gérer leurs billets depuis leur compte. Cette
-            centralisation simplifie la gestion et évite les pertes de billets.
-        </p>
-
-        <h4>La commission à zéro pour cent</h4>
-        <p>
-            Betix ne prélève aucune commission sur les ventes de billets.
-            La totalité des ventes est reversée à l'organisateur. Cette gratuité
-            est possible grâce à l'utilisation de Pi Network et à notre modèle
-            économique basé sur la mise en avant payante des événements.
+            Tickets are resold on parallel platforms at prices three times higher
+            than their original price. This phenomenon excludes genuine fans and
+            creates a black market harmful to all. Ticket speculation has become
+            a scourge that distorts the spirit of events.
         </p>
     </div>
 
     <!-- ============================================================
-         PAGE 3 : AVANTAGES ET FONCTIONNALITÉS
+         PAGE 3 : AVANTAGES ET FONCTIONNALITÉS (suite simplifiée)
          ============================================================ -->
 
-    <h2>3. LES AVANTAGES DE BETIX</h2>
+    <!-- FRANÇAIS -->
+    <div class="section lang-fr active">
+        <h2>3. LES AVANTAGES DE BETIX</h2>
 
-    <!-- 3.1 POUR LES ORGANISATEURS -->
-    <div class="section">
         <h3>3.1 Pour les organisateurs</h3>
 
         <p>
-            Betix offre six avantages majeurs aux organisateurs d'événements qui
-            font de notre plateforme un outil indispensable pour la gestion et
-            la promotion des événements.
+            Betix offre six avantages majeurs aux organisateurs d'événements.
+            L'absence totale de commission, le paiement instantané, la gestion
+            simplifiée, la communication directe avec les acheteurs, la visibilité
+            maximale et l'absence de frais cachés font de Betix un outil
+            indispensable pour la gestion et la promotion des événements.
         </p>
-        <p>
-            Le premier avantage est l'absence totale de commission. Vous recevez
-            la totalité du prix des billets vendus, sans aucun prélèvement. Cette
-            gratuité vous permet de maximiser vos revenus et de proposer des prix
-            plus compétitifs à vos participants.
-        </p>
-        <p>
-            Le deuxième avantage est le paiement instantané. Les fonds sont
-            disponibles immédiatement sur votre wallet Pi Network, ce qui vous
-            permet de payer vos prestataires sans délai et de gérer votre
-            trésorerie en toute sérénité.
-        </p>
-        <p>
-            Le troisième avantage est la gestion simplifiée. Un tableau de bord
-            intuitif vous permet de suivre vos ventes en temps réel, de consulter
-            les statistiques de votre événement et d'analyser le comportement de
-            vos participants.
-        </p>
-        <p>
-            Le quatrième avantage est la communication directe. Vous pouvez
-            facilement contacter les acheteurs de vos billets pour leur envoyer
-            des informations, des mises à jour ou des offres spéciales. Cette
-            communication renforce la relation avec votre public.
-        </p>
-        <p>
-            Le cinquième avantage est la visibilité maximale. Votre événement est
-            visible par toute la communauté Pi Network, soit plus de soixante
-            millions d'utilisateurs potentiels. Cette visibilité est un atout
-            majeur pour la promotion de vos événements.
-        </p>
-        <p>
-            Le sixième avantage est l'absence de frais cachés. Ce que vous voyez
-            est exactement ce que vous payez. Il n'y a pas de frais d'inscription,
-            de frais de mise en ligne ou de frais de retrait. La transparence est
-            totale.
-        </p>
-    </div>
 
-    <!-- 3.2 POUR LES PARTICIPANTS -->
-    <div class="section">
         <h3>3.2 Pour les participants</h3>
 
         <p>
-            Betix offre également six avantages majeurs aux participants qui font
-            de notre plateforme le choix idéal pour l'achat de tickets en ligne.
+            Betix offre six avantages majeurs aux participants : un achat simple
+            en quelques clics, des billets sécurisés par QR code, un historique
+            centralisé, des prix abordables sans frais supplémentaires, une
+            annulation facile et un support réactif.
         </p>
-        <p>
-            Le premier avantage est l'achat simple. L'achat de billets se fait
-            en quelques clics depuis votre wallet Pi Network, sans avoir à créer
-            de compte supplémentaire ou à fournir des informations personnelles
-            complexes.
-        </p>
-        <p>
-            Le deuxième avantage est la sécurité des billets. Chaque billet est
-            sécurisé par un code QR unique généré pour chaque achat. Ce système
-            rend les faux billets impossibles et garantit votre entrée à
-            l'événement.
-        </p>
-        <p>
-            Le troisième avantage est l'historique centralisé. Vous retrouvez
-            tous vos billets au même endroit, ce qui facilite leur gestion et
-            leur consultation. Vous pouvez également télécharger vos billets
-            au format PDF pour les imprimer ou les stocker sur votre appareil.
-        </p>
-        <p>
-            Le quatrième avantage est les prix abordables. Aucun frais
-            supplémentaire n'est ajouté au prix d'origine du billet. Vous payez
-            exactement le prix affiché par l'organisateur, sans commission cachée.
-        </p>
-        <p>
-            Le cinquième avantage est l'annulation facile. Notre politique de
-            remboursement est claire et transparente. En cas d'annulation de
-            l'événement, vous êtes remboursé intégralement en Pi sur votre
-            portefeuille.
-        </p>
-        <p>
-            Le sixième avantage est le support réactif. Une assistance est
-            disponible en cas de problème. Notre équipe est à votre écoute
-            pour résoudre rapidement vos questions et préoccupations.
-        </p>
-    </div>
 
-    <!-- 3.3 FONCTIONNALITÉS ACTUELLES -->
-    <div class="section">
-        <h3>3.3 Fonctionnalités actuelles de la plateforme</h3>
+        <h3>3.3 Fonctionnalités actuelles</h3>
 
         <p>
             La plateforme Betix propose actuellement un ensemble complet de
-            fonctionnalités qui couvrent l'ensemble du cycle de vie d'un
-            événement, de la création à la participation.
+            fonctionnalités : gestion des événements, recherche avancée,
+            billetterie complète, compte utilisateur, interface adaptative et
+            support multilingue.
         </p>
 
-        <h4>La gestion des événements</h4>
-        <p>
-            Betix permet la création d'événements en quelques clics. Vous pouvez
-            modifier et mettre à jour les informations de votre événement à tout
-            moment. La suppression des événements passés ou annulés est également
-            possible. La gestion des places disponibles se fait en temps réel,
-            ce qui vous permet de suivre l'évolution des ventes.
-        </p>
-
-        <h4>La recherche avancée</h4>
-        <p>
-            La plateforme propose une recherche avancée qui permet de trouver
-            des événements par titre, lieu, catégorie ou date. Un système de
-            filtrage par pays et par type d'événement affiche les événements à
-            venir et passés de manière claire et organisée.
-        </p>
-
-        <h4>La billetterie complète</h4>
-        <p>
-            Betix offre une billetterie complète avec l'achat de billets en Pi
-            Network, le téléchargement des billets au format PDF, la génération
-            de QR Code unique par billet, et la validation et le marquage des
-            billets utilisés lors de l'entrée à l'événement.
-        </p>
-
-        <h4>Le compte utilisateur</h4>
-        <p>
-            Chaque utilisateur dispose d'un compte personnel avec un profil
-            affichant ses informations. L'historique complet d'achat est
-            consultable à tout moment. La liste des tickets actifs et utilisés
-            permet un suivi précis. Les paramètres de confidentialité et de
-            langue sont personnalisables.
-        </p>
-
-        <h4>L'interface adaptative</h4>
-        <p>
-            Betix propose une interface adaptative avec un mode clair ou sombre
-            selon les préférences de l'utilisateur. Le design est responsif et
-            s'adapte parfaitement aux mobiles et aux tablettes. La navigation
-            est intuitive et fluide pour une expérience utilisateur optimale.
-        </p>
-
-        <h4>Le support multilingue</h4>
-        <p>
-            La plateforme est disponible en français et en anglais, avec une
-            traduction automatique des contenus. L'extension progressive à
-            d'autres langues est prévue pour toucher un public international.
-        </p>
-    </div>
-
-    <!-- 3.4 TYPES D'ÉVÉNEMENTS ACCEPTÉS -->
-    <div class="section">
         <h3>3.4 Types d'événements acceptés</h3>
 
         <p>
-            Betix accepte six grandes catégories d'événements couvrant un large
-            spectre de l'offre culturelle, sportive et éducative.
+            Betix accepte six grandes catégories d'événements : concerts,
+            événements sportifs, conférences, formations, cinéma et festivals.
+        </p>
+    </div>
+
+    <!-- ANGLAIS -->
+    <div class="section lang-en">
+        <h2>3. THE ADVANTAGES OF BETIX</h2>
+
+        <h3>3.1 For organizers</h3>
+
+        <p>
+            Betix offers six major advantages to event organizers. Zero commission,
+            instant payment, simplified management, direct communication with buyers,
+            maximum visibility and no hidden fees make Betix an essential tool for
+            event management and promotion.
         </p>
 
-        <h4>Les concerts</h4>
+        <h3>3.2 For participants</h3>
+
         <p>
-            Cette catégorie inclut les concerts de musique, les festivals de
-            musique et les événements live, ainsi que les soirées et spectacles
-            musicaux. Tous les genres musicaux sont acceptés.
+            Betix offers six major advantages to participants: simple purchase in
+            a few clicks, QR code-secured tickets, centralized history, affordable
+            prices with no additional fees, easy cancellation and responsive support.
         </p>
 
-        <h4>Les événements sportifs</h4>
+        <h3>3.3 Current features</h3>
+
         <p>
-            Les compétitions de football, de basketball, de tennis, les arts
-            martiaux et les sports de combat, ainsi que les marathons et les
-            courses sont tous accueillis sur Betix.
+            The Betix platform currently offers a complete set of features: event
+            management, advanced search, complete ticketing, user account, adaptive
+            interface and multilingual support.
         </p>
 
-        <h4>Les conférences</h4>
-        <p>
-            Les conférences technologiques et d'innovation, les séminaires sur
-            le business et l'entrepreneuriat, ainsi que les talks sur le
-            développement personnel et la motivation sont disponibles.
-        </p>
+        <h3>3.4 Accepted event types</h3>
 
-        <h4>Les formations</h4>
         <p>
-            Les ateliers pratiques et formations en ligne, les séminaires
-            professionnels et masterclasses, ainsi que les formations en
-            développement personnel et compétences sont acceptées.
-        </p>
-
-        <h4>Le cinéma</h4>
-        <p>
-            Les avant-premières de films, les festivals de cinéma et projections
-            spéciales, ainsi que les soirées cinéma avec discussions avec les
-            réalisateurs sont proposés.
-        </p>
-
-        <h4>Les festivals</h4>
-        <p>
-            Les festivals culturels et gastronomiques, les festivals de musique
-            et d'art, ainsi que les événements communautaires et familiaux sont
-            tous accueillis sur Betix.
+            Betix accepts six main categories of events: concerts, sporting events,
+            conferences, training, cinema and festivals.
         </p>
     </div>
 
     <!-- ============================================================
-         PAGE 4 : ÉVOLUTION, SÉCURITÉ ET IMPACT
+         PAGE 4 : SÉCURITÉ ET CONCLUSION (simplifiée)
          ============================================================ -->
 
-    <h2>4. AMÉLIORATIONS CONTINUES ET SÉCURITÉ</h2>
+    <!-- FRANÇAIS -->
+    <div class="section lang-fr active">
+        <h2>4. SÉCURITÉ ET CONCLUSION</h2>
 
-    <!-- 4.1 ÉTAT ACTUEL DU PROJET -->
-    <div class="section">
-        <h3>4.1 État actuel du projet</h3>
-
-        <p>
-            Betix est actuellement en phase active de développement. Il s'agit
-            d'un produit minimum viable fonctionnel et déjà utilisable par les
-            organisateurs et les participants. La plateforme est stable et
-            opérationnelle.
-        </p>
-        <p>
-            La plateforme web est accessible à tous les utilisateurs sans
-            restriction. L'intégration avec le wallet Pi Network est entièrement
-            opérationnelle. Douze événements de démonstration sont présents pour
-            illustrer les fonctionnalités. Six catégories d'événements sont
-            disponibles. Le système de tickets est complet et fonctionnel.
-        </p>
-        <p>
-            L'interface est multilingue avec le français et l'anglais disponibles.
-            Le design est responsif et s'adapte à tous les écrans. Le produit
-            minimum viable de Betix est déjà opérationnel et peut être utilisé
-            pour organiser des événements réels.
-        </p>
-    </div>
-
-    <!-- 4.2 AMÉLIORATIONS EN COURS -->
-    <div class="section">
-        <h3>4.2 Les améliorations en cours</h3>
-
-        <p>
-            Notre équipe travaille activement sur plusieurs axes d'amélioration
-            pour enrichir l'expérience utilisateur et étendre les fonctionnalités
-            de Betix. Ces améliorations sont le fruit d'une écoute attentive des
-            retours utilisateurs.
-        </p>
-
-        <h4>L'interface plus intuitive</h4>
-        <p>
-            Nous développons une interface plus intuitive avec un design épuré
-            et moderne. La navigation sera plus fluide et rapide, et l'accessibilité
-            sera améliorée pour tous les utilisateurs, y compris les personnes
-            ayant des besoins spécifiques.
-        </p>
-
-        <h4>Le système de messagerie intégré</h4>
-        <p>
-            Un système de messagerie intégré facilitera la communication entre
-            organisateurs et participants. Des notifications en temps réel
-            informeront les utilisateurs des mises à jour importantes. La gestion
-            des messages et des demandes d'information sera centralisée.
-        </p>
-
-        <h4>Le système d'évaluation</h4>
-        <p>
-            Un système d'évaluation permettra aux participants de noter les
-            événements et les organisateurs. Ce système de confiance et de
-            réputation renforcera la qualité de l'offre sur Betix et aidera
-            les utilisateurs à faire des choix éclairés.
-        </p>
-
-        <h4>De nouvelles catégories</h4>
-        <p>
-            Nous ajouterons bientôt de nouvelles catégories comme l'art, le
-            théâtre, les événements familiaux, les événements business et
-            networking, ainsi que les ateliers créatifs et bien-être.
-        </p>
-
-        <h4>Le support multilingue enrichi</h4>
-        <p>
-            Nous enrichirons le support multilingue avec l'ajout de l'espagnol,
-            du portugais et du chinois, avec une extension progressive à d'autres
-            langues. La traduction automatique des contenus sera améliorée.
-        </p>
-
-        <h4>Les intégrations avancées</h4>
-        <p>
-            Nous prévoyons des intégrations avancées avec les calendriers,
-            le partage sur les réseaux sociaux, et l'export des données et
-            statistiques pour une meilleure visibilité des événements.
-        </p>
-    </div>
-
-    <!-- 4.3 SÉCURITÉ ET CONFIDENTIALITÉ -->
-    <div class="section">
-        <h3>4.3 Sécurité et confidentialité</h3>
+        <h3>4.1 Sécurité et confidentialité</h3>
 
         <p>
             La sécurité des utilisateurs et de leurs données est notre priorité
-            absolue. Betix met en œuvre des mesures rigoureuses pour protéger
-            les informations et les transactions de ses utilisateurs.
+            absolue. Toutes les transactions sont sécurisées par la blockchain
+            Pi Network, les données personnelles sont chiffrées, et chaque billet
+            possède un code QR unique avec horodatage.
         </p>
 
-        <h4>La protection des transactions</h4>
-        <p>
-            Toutes les transactions sont sécurisées et enregistrées sur la
-            blockchain Pi Network. Chaque transaction est traçable et vérifiable,
-            ce qui garantit une transparence totale. Les fraudes sont
-            quasiment impossibles grâce à ce système.
-        </p>
-
-        <h4>La protection des données personnelles</h4>
-        <p>
-            Les données personnelles des utilisateurs sont chiffrées et stockées
-            en toute sécurité. Elles ne sont jamais revendues à des tiers. Betix
-            respecte les réglementations en vigueur sur la protection des données,
-            notamment le RGPD.
-        </p>
-
-        <h4>La protection contre la fraude</h4>
-        <p>
-            Chaque billet possède un code QR unique avec horodatage, ce qui rend
-            la contrefaçon impossible. La vérification en temps réel permet de
-            valider les billets à l'entrée des événements. Le marquage des billets
-            utilisés évite toute réutilisation frauduleuse.
-        </p>
-
-        <h4>L'authentification sécurisée</h4>
-        <p>
-            La connexion se fait via le wallet Pi Network, ce qui élimine le
-            besoin de mots de passe et réduit les risques de vol d'identité.
-            Les sessions sont sécurisées et expirent après une période d'inactivité
-            pour protéger les comptes.
-        </p>
-
-        <h4>Les paiements directs</h4>
-        <p>
-            Les paiements sont directs entre participants et organisateurs, sans
-            intermédiaire. Betix ne détient jamais les cryptomonnaies de ses
-            utilisateurs, ce qui élimine les risques de vol ou de détournement
-            de fonds.
-        </p>
-    </div>
-
-    <!-- 4.4 IMPACT ATTENDU -->
-    <div class="section">
-        <h3>4.4 Impact attendu</h3>
-
-        <p>
-            Nous visons des objectifs ambitieux mais réalistes pour les vingt-quatre
-            prochains mois. Ces objectifs reflètent notre confiance dans le
-            potentiel de Betix et dans la force de la communauté Pi Network.
-        </p>
-        <p>
-            En termes d'utilisateurs, nous espérons atteindre plus de dix mille
-            utilisateurs réguliers sur la plateforme et plus de cinq mille
-            organisateurs actifs. En termes d'événements, nous souhaitons voir
-            plus de cinq cents événements organisés via Betix et plus de quinze
-            mille billets vendus.
-        </p>
-        <p>
-            En termes de transactions, nous visons une croissance continue du
-            volume de transactions en Pi et une augmentation de la liquidité de
-            Pi Network. En termes d'expansion géographique, nous voulons être
-            présents dans cinq pays d'Afrique et étendre notre présence à
-            l'Europe et à l'Amérique du Nord.
-        </p>
-    </div>
-
-    <!-- 4.5 UNE COMMUNAUTÉ AU CŒUR DU PROJET -->
-    <div class="section">
-        <h3>4.5 Une communauté au cœur du projet</h3>
-
-        <p>
-            Betix est avant tout une aventure collective. Nous croyons fermement
-            que les meilleures idées viennent de ceux qui utilisent la plateforme
-            au quotidien. La communauté est au centre de notre développement.
-        </p>
-        <p>
-            Vous pouvez contribuer à l'aventure Betix de plusieurs manières.
-            Vous pouvez proposer des suggestions d'amélioration via notre
-            formulaire de contact. Vous pouvez signaler les bugs que vous
-            rencontrez pour nous aider à améliorer la plateforme.
-        </p>
-        <p>
-            Vous pouvez devenir ambassadeur Betix dans votre ville ou votre pays.
-            Vous pouvez établir des partenariats avec des lieux événementiels
-            comme des salles de concert, des stades ou des centres de conférence.
-            Vous pouvez également contribuer au code open source de Betix.
-        </p>
-        <p>
-            Nous lançons un programme d'ambassadeurs pour promouvoir Betix dans
-            différentes régions du monde. Les ambassadeurs bénéficient d'avantages
-            exclusifs et jouent un rôle clé dans la croissance de la plateforme.
-            Rejoignez-nous pour faire de Betix une référence mondiale de l'achat
-            de tickets pour les événements décentralisés.
-        </p>
-    </div>
-
-    <!-- ============================================================
-         PAGE 5 : CONCLUSION
-         ============================================================ -->
-
-    <h2>5. CONCLUSION</h2>
-
-    <!-- 5.1 POURQUOI CHOISIR BETIX -->
-    <div class="section">
-        <h3>5.1 Pourquoi choisir Betix</h3>
-
-        <p>
-            Voici la différence entre Betix et les plateformes traditionnelles
-            pour l'achat de tickets. Betix ne prend aucune commission alors que
-            les autres plateformes prennent entre dix et vingt pour cent. Betix
-            verse les fonds instantanément alors que les autres mettent entre
-            trois et sept jours. Betix fonctionne avec un simple wallet Pi gratuit
-            alors que les autres exigent un compte bancaire.
-        </p>
-        <p>
-            Betix utilise la technologie blockchain alors que les autres
-            plateformes sont centralisées. Avec Betix, les faux billets sont
-            impossibles grâce au système de code QR unique. La transparence
-            est totale sur Betix, alors qu'elle est limitée sur les plateformes
-            traditionnelles.
-        </p>
+        <h3>4.2 Pourquoi choisir Betix</h3>
 
         <table class="comparison-table">
             <thead>
@@ -1202,101 +946,78 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Commission</td>
-                    <td class="highlight">0%</td>
-                    <td>10% à 20%</td>
-                </tr>
-                <tr>
-                    <td>Délai de paiement</td>
-                    <td class="highlight">Instantané</td>
-                    <td>3 à 7 jours</td>
-                </tr>
-                <tr>
-                    <td>Accès</td>
-                    <td class="highlight">Wallet Pi gratuit</td>
-                    <td>Compte bancaire requis</td>
-                </tr>
-                <tr>
-                    <td>Technologie</td>
-                    <td class="highlight">Blockchain décentralisée</td>
-                    <td>Plateforme centralisée</td>
-                </tr>
-                <tr>
-                    <td>Faux billets</td>
-                    <td class="highlight">Impossible</td>
-                    <td>Risque élevé</td>
-                </tr>
-                <tr>
-                    <td>Transparence</td>
-                    <td class="highlight">Totale</td>
-                    <td>Limitée</td>
-                </tr>
-                <tr>
-                    <td>Portée mondiale</td>
-                    <td class="highlight">60 millions d'utilisateurs</td>
-                    <td>Marché limité</td>
-                </tr>
+                <tr><td>Commission</td><td class="highlight">0%</td><td>10% à 20%</td></tr>
+                <tr><td>Délai de paiement</td><td class="highlight">Instantané</td><td>3 à 7 jours</td></tr>
+                <tr><td>Accès</td><td class="highlight">Wallet Pi gratuit</td><td>Compte bancaire requis</td></tr>
+                <tr><td>Technologie</td><td class="highlight">Blockchain décentralisée</td><td>Plateforme centralisée</td></tr>
+                <tr><td>Faux billets</td><td class="highlight">Impossible</td><td>Risque élevé</td></tr>
+                <tr><td>Transparence</td><td class="highlight">Totale</td><td>Limitée</td></tr>
+                <tr><td>Portée mondiale</td><td class="highlight">60 millions d'utilisateurs</td><td>Marché limité</td></tr>
             </tbody>
         </table>
-    </div>
 
-    <!-- 5.2 POURQUOI NOUS SOUTENIR -->
-    <div class="section">
-        <h3>5.2 Pourquoi nous soutenir</h3>
+        <h3>4.3 Rejoignez l'aventure</h3>
 
         <p>
-            Betix répond à un besoin réel et urgent. Chaque jour, des événements
-            n'ont pas lieu faute de billetterie adaptée. Des artistes, des
-            conférenciers et des associations perdent des opportunités précieuses.
-            Les frais élevés et les délais de paiement découragent de nombreux
-            organisateurs.
+            Si vous êtes organisateur, participant, partenaire, développeur ou
+            ambassadeur, rejoignez la communauté Betix et participez à la révolution
+            de l'achat de tickets pour les événements décentralisés.
         </p>
+
+        <h3>4.4 Contacts officiels</h3>
+
         <p>
-            En soutenant Betix, vous contribuez à démocratiser la culture en
-            rendant les événements accessibles à tous. Vous promouvez l'inclusion
-            financière via l'utilisation de Pi Network. Vous soutenez les
-            organisateurs en leur offrant une plateforme sans frais. Vous
-            encouragez l'innovation dans le secteur de la billetterie
-            événementielle. Avec Betix, tout devient simple, rapide et accessible
-            pour l'achat de tickets.
+            Email : support@betix.com | Site web : www.betix.com | Twitter : @betix_app
+            | Telegram : t.me/betix_community | Instagram : @betix_app
         </p>
     </div>
 
-    <!-- 5.3 REJOIGNEZ L'AVENTURE -->
-    <div class="section">
-        <h3>5.3 Rejoignez l'aventure</h3>
+    <!-- ANGLAIS -->
+    <div class="section lang-en">
+        <h2>4. SECURITY AND CONCLUSION</h2>
+
+        <h3>4.1 Security and privacy</h3>
 
         <p>
-            Si vous êtes organisateur, créez votre premier événement gratuitement
-            dès maintenant. Si vous êtes participant, découvrez des expériences
-            uniques près de chez vous et payez en Pi. Si vous êtes partenaire,
-            contactez-nous pour intégrer Betix dans votre structure ou vos
-            événements.
+            User security and data protection is our absolute priority. All
+            transactions are secured by the Pi Network blockchain, personal data
+            is encrypted, and each ticket has a unique QR code with timestamp.
         </p>
-        <p>
-            Si vous êtes développeur, contribuez à notre code open source et
-            participez à l'innovation. Si vous êtes ambassadeur, promouvez Betix
-            dans votre communauté et bénéficiez d'avantages exclusifs. Rejoignez
-            la communauté Betix et participez à la révolution de l'achat de
-            tickets pour les événements décentralisés.
-        </p>
-    </div>
 
-    <!-- 5.4 CONTACTS OFFICIELS -->
-    <div class="section">
-        <h3>5.4 Contacts officiels</h3>
+        <h3>4.2 Why choose Betix</h3>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Criteria</th>
+                    <th>Betix</th>
+                    <th>Traditional platforms</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Commission</td><td class="highlight">0%</td><td>10% to 20%</td></tr>
+                <tr><td>Payment delay</td><td class="highlight">Instant</td><td>3 to 7 days</td></tr>
+                <tr><td>Access</td><td class="highlight">Free Pi Wallet</td><td>Bank account required</td></tr>
+                <tr><td>Technology</td><td class="highlight">Decentralized blockchain</td><td>Centralized platform</td></tr>
+                <tr><td>Fake tickets</td><td class="highlight">Impossible</td><td>High risk</td></tr>
+                <tr><td>Transparency</td><td class="highlight">Total</td><td>Limited</td></tr>
+                <tr><td>Global reach</td><td class="highlight">60 million users</td><td>Limited market</td></tr>
+            </tbody>
+        </table>
+
+        <h3>4.3 Join the adventure</h3>
 
         <p>
-            Notre email est support@betix.com. Notre site web est www.betix.com.
-            Notre compte Twitter est https://x.com/betix_app. Notre groupe
-            Telegram est t.me/betix_community. Notre compte Instagram est
-            @betix_app.
+            Whether you are an organizer, participant, partner, developer or
+            ambassador, join the Betix community and participate in the revolution
+            of decentralized event ticketing.
         </p>
+
+        <h3>4.4 Official contacts</h3>
+
         <p>
-            N'hésitez pas à nous contacter pour toute question, suggestion ou
-            demande de partenariat. Nous sommes à votre écoute et nous nous
-            engageons à vous répondre dans les meilleurs délais.
+            Email: support@betix.com | Website: www.betix.com | Twitter: @betix_app
+            | Telegram: t.me/betix_community | Instagram: @betix_app
         </p>
     </div>
 
@@ -1304,7 +1025,8 @@
          RÉSEAUX SOCIAUX
          ============================================================ -->
     <div class="social-section">
-        <p class="social-title">Suivez-nous sur les réseaux sociaux</p>
+        <p class="social-title lang-fr active">Suivez-nous sur les réseaux sociaux</p>
+        <p class="social-title lang-en">Follow us on social media</p>
         <div class="social-icons">
             <a href="https://facebook.com/betix_app" target="_blank" title="Facebook">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -1328,9 +1050,12 @@
     </div>
 
     <!-- ============================================================
-         BOUTON RETOUR
+         ACTIONS : TRADUCTION + PDF + RETOUR
          ============================================================ -->
-    <div class="back-home-wrapper">
+    <div class="actions-wrapper">
+        <button class="btn-translate active" id="btnFr" onclick="switchLanguage('fr')">🇫🇷 Français</button>
+        <button class="btn-translate" id="btnEn" onclick="switchLanguage('en')">🇬🇧 English</button>
+        <button class="btn-download-pdf" onclick="downloadPDF()">📄 Télécharger PDF</button>
         <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
     </div>
 
@@ -1338,13 +1063,205 @@
          SIGNATURE
          ============================================================ -->
     <div class="footer-signature">
-        <span>
-            Betix | Achat de tickets pour les événements sur Pi Network |
-            Document confidentiel | Version 1.0 | 2026
-        </span>
+        <span class="lang-fr active">Betix | Achat de tickets pour les événements sur Pi Network | Document confidentiel | Version 1.0 | 2026</span>
+        <span class="lang-en">Betix | Ticket purchasing for events on Pi Network | Confidential document | Version 1.0 | 2026</span>
     </div>
 
 </div>
+
+<script>
+    // ============================================================
+    // TRADUCTION
+    // ============================================================
+    let currentLang = 'fr';
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        
+        // Masquer/afficher les versions
+        document.querySelectorAll('.lang-fr').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.lang-en').forEach(el => el.classList.remove('active'));
+        
+        if (lang === 'fr') {
+            document.querySelectorAll('.lang-fr').forEach(el => el.classList.add('active'));
+        } else {
+            document.querySelectorAll('.lang-en').forEach(el => el.classList.add('active'));
+        }
+        
+        // Mettre à jour les boutons
+        document.getElementById('btnFr').classList.toggle('active', lang === 'fr');
+        document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+    }
+
+    // ============================================================
+    // TÉLÉCHARGEMENT PDF
+    // ============================================================
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+        let y = 15;
+        const margin = 15;
+        const lineHeight = 5.5;
+
+        function addText(text, size, style, align, color) {
+            if (!text) return;
+            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+            doc.setFontSize(size || 10);
+            doc.setFont('helvetica', style || 'normal');
+            doc.setTextColor(color || '#08143F');
+            lines.forEach(line => {
+                if (y > pageHeight - 15) {
+                    doc.addPage();
+                    y = 15;
+                }
+                doc.text(line, margin, y, { align: align || 'left' });
+                y += lineHeight;
+            });
+            y += 1;
+        }
+
+        function addTitle(text, size) {
+            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+            doc.setFontSize(size || 16);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor('#08143F');
+            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+            lines.forEach(line => {
+                doc.text(line, pageWidth / 2, y, { align: 'center' });
+                y += lineHeight + 2;
+            });
+            y += 2;
+        }
+
+        function addSubtitle(text) {
+            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor('#08143F');
+            doc.text(text, pageWidth / 2, y, { align: 'center' });
+            y += lineHeight + 2;
+        }
+
+        function addSection(text) {
+            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor('#08143F');
+            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+            lines.forEach(line => {
+                doc.text(line, margin, y);
+                y += lineHeight + 1;
+            });
+            y += 2;
+        }
+
+        function addParagraph(text) {
+            if (!text) return;
+            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+            doc.setFontSize(9.5);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor('#000000');
+            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+            lines.forEach(line => {
+                if (y > pageHeight - 15) { doc.addPage(); y = 15; }
+                doc.text(line, margin, y);
+                y += lineHeight - 0.5;
+            });
+            y += 2;
+        }
+
+        function addLine() {
+            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+            doc.setDrawColor('#08143F');
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 4;
+        }
+
+        // ===== CONTENU =====
+        const isFr = currentLang === 'fr';
+
+        // En-tête
+        if (isFr) {
+            addTitle('LIVRE BLANC BETIX', 20);
+            addSubtitle('Achat de tickets pour les événements sur Pi Network');
+        } else {
+            addTitle('BETIX WHITEPAPER', 20);
+            addSubtitle('Ticket purchasing for events on Pi Network');
+        }
+        addLine();
+
+        // 1. INTRODUCTION
+        if (isFr) {
+            addSection('1. INTRODUCTION');
+            addParagraph('Betix est une plateforme innovante d\'achat de tickets pour les événements, entièrement décentralisée et construite sur l\'écosystème Pi Network. Notre mission est de démocratiser l\'accès aux événements culturels, sportifs, éducatifs et festifs en utilisant la cryptomonnaie Pi comme moyen de paiement principal. Betix se positionne comme une alternative moderne, transparente et économique aux plateformes de billetterie traditionnelles.');
+            addParagraph('Notre solution permet aux organisateurs de créer et promouvoir leurs événements sans frais cachés, et aux participants d\'acheter des billets en toute sécurité avec leur portefeuille Pi Network.');
+            addParagraph('Nous croyons fermement que l\'avenir de la billetterie passe par l\'élimination des intermédiaires, la transparence totale et l\'accessibilité pour tous.');
+
+            addSection('1.1 Les fondateurs');
+            addParagraph('Djami Yakonga - Fondateur et Président Directeur Général');
+            addParagraph('De nationalité congolaise, Djami Yakonga est l\'initiateur du projet Betix. Passionné par les nouvelles technologies et l\'inclusion financière, il a imaginé Betix pour répondre à un besoin réel.');
+            addParagraph('Symphorien Molembia - Développeur Principal et Directeur Technique');
+            addParagraph('Expert en développement web et blockchain, Symphorien Molembia a conçu l\'architecture technique de Betix pour garantir sécurité, rapidité et simplicité d\'utilisation.');
+
+            addSection('1.2 Notre vision');
+            addParagraph('Nous croyons en un monde où chacun peut organiser ou participer à des événements sans barrières financières, sans commissions excessives et avec une transparence totale. Betix ambitionne de devenir la référence des plateformes d\'achat de tickets pour les événements décentralisées en Afrique et dans le monde.');
+
+            addSection('2. POURQUOI CONSTRUIRE SUR PI NETWORK ?');
+            addParagraph('Pi Network résout les problèmes du secteur grâce à plusieurs avantages uniques : transactions sans frais, paiements instantanés, accessibilité universelle, sécurité blockchain, aspect écologique et communauté engagée.');
+
+            addSection('3. LES AVANTAGES DE BETIX');
+            addParagraph('Betix offre six avantages majeurs aux organisateurs : absence totale de commission, paiement instantané, gestion simplifiée, communication directe, visibilité maximale et absence de frais cachés.');
+            addParagraph('Pour les participants : achat simple, billets sécurisés, historique centralisé, prix abordables, annulation facile et support réactif.');
+
+            addSection('4. SÉCURITÉ ET CONCLUSION');
+            addParagraph('La sécurité des utilisateurs et de leurs données est notre priorité absolue. Toutes les transactions sont sécurisées par la blockchain Pi Network, les données personnelles sont chiffrées, et chaque billet possède un code QR unique.');
+            addParagraph('Rejoignez la communauté Betix et participez à la révolution de l\'achat de tickets pour les événements décentralisés.');
+        } else {
+            addSection('1. INTRODUCTION');
+            addParagraph('Betix is an innovative ticket purchasing platform for events, fully decentralized and built on the Pi Network ecosystem. Our mission is to democratize access to cultural, sporting, educational and festive events using Pi cryptocurrency as the main payment method.');
+            addParagraph('Our solution allows organizers to create and promote their events with no hidden fees, and participants to buy tickets securely with their Pi Network wallet.');
+            addParagraph('We firmly believe that the future of ticketing lies in eliminating intermediaries, total transparency and accessibility for all.');
+
+            addSection('1.1 The Founders');
+            addParagraph('Djami Yakonga - Founder and Chief Executive Officer');
+            addParagraph('Of Congolese nationality, Djami Yakonga is the initiator of the Betix project. Passionate about new technologies and financial inclusion, he imagined Betix to respond to a real need.');
+            addParagraph('Symphorien Molembia - Lead Developer and Chief Technology Officer');
+            addParagraph('Expert in web development and blockchain, Symphorien Molembia designed Betix\'s technical architecture to ensure security, speed and ease of use.');
+
+            addSection('1.2 Our Vision');
+            addParagraph('We believe in a world where everyone can organize or participate in events without financial barriers, excessive commissions and with total transparency. Betix aims to become the reference for decentralized event ticketing platforms in Africa and worldwide.');
+
+            addSection('2. WHY BUILD ON PI NETWORK?');
+            addParagraph('Pi Network solves industry problems with several unique advantages: zero fees, instant payments, universal accessibility, blockchain security, eco-friendly approach and an engaged community.');
+
+            addSection('3. THE ADVANTAGES OF BETIX');
+            addParagraph('Betix offers six major advantages to organizers: zero commission, instant payment, simplified management, direct communication, maximum visibility and no hidden fees.');
+            addParagraph('For participants: simple purchase, secure tickets, centralized history, affordable prices, easy cancellation and responsive support.');
+
+            addSection('4. SECURITY AND CONCLUSION');
+            addParagraph('User security and data protection is our absolute priority. All transactions are secured by the Pi Network blockchain, personal data is encrypted, and each ticket has a unique QR code.');
+            addParagraph('Join the Betix community and participate in the revolution of decentralized event ticketing.');
+        }
+
+        // Signature
+        if (y > pageHeight - 20) { doc.addPage(); y = 15; }
+        addLine();
+        y += 2;
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor('#08143F');
+        const signature = isFr 
+            ? 'Betix | Achat de tickets pour les événements sur Pi Network | Document confidentiel | Version 1.0 | 2026'
+            : 'Betix | Ticket purchasing for events on Pi Network | Confidential document | Version 1.0 | 2026';
+        doc.text(signature, pageWidth / 2, y, { align: 'center' });
+
+        // Sauvegarde
+        doc.save('Betix_Whitepaper_' + (isFr ? 'FR' : 'EN') + '.pdf');
+    }
+</script>
 
 </body>
 </html>
