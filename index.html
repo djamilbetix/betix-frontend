@@ -44,16 +44,28 @@
 </head>
 <body>
 
+<!-- ============================================================ -->
+<!-- LOADER PROFESSIONNEL AVEC LOGO                                -->
+<!-- ============================================================ -->
 <div id="loader" class="loader-container">
-    <div class="loader-spinner"></div>
-    <p class="loader-text">Loading...</p>
+    <div class="loader-content">
+        <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
+        <div class="loader-spinner-modern">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+        </div>
+        <p class="loader-text">Loading...</p>
+    </div>
 </div>
 
 <div id="main-content" style="display: none;">
 
+<!-- ============================================================ -->
+<!-- HEADER                                                        -->
+<!-- ============================================================ -->
 <header class="header" id="mainHeader">
     <div class="header-left">
-        <!-- BOUTON BACK -->
         <button class="back-btn hidden" id="backBtn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -68,6 +80,9 @@
     <div class="header-right" id="headerRight"></div>
 </header>
 
+<!-- ============================================================ -->
+<!-- SIDEBAR                                                       -->
+<!-- ============================================================ -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -140,7 +155,9 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- BOTTOM NAVIGATION BAR -->
+<!-- ============================================================ -->
+<!-- BOTTOM NAVIGATION                                            -->
+<!-- ============================================================ -->
 <nav class="bottom-nav" id="bottomNav">
     <button class="nav-item active" id="navHome" onclick="showPage('home')">
         <i class="fas fa-home"></i>
@@ -156,6 +173,9 @@
     </button>
 </nav>
 
+<!-- ============================================================ -->
+<!-- NOTIFICATIONS PAGE                                           -->
+<!-- ============================================================ -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
@@ -168,6 +188,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- CHAT                                                          -->
+<!-- ============================================================ -->
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 
 <div id="chatWidget" class="chat-widget">
@@ -182,6 +205,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- HOME PAGE                                                    -->
+<!-- ============================================================ -->
 <div id="homePage">
     <section class="hero">
         <div class="hero-slider-container">
@@ -208,8 +234,7 @@
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
-            <select id="countrySelect" onchange="filterByCountry(this.value)">
-            </select>
+            <select id="countrySelect" onchange="filterByCountry(this.value)"></select>
         </div>
     </div>
     
@@ -222,6 +247,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- MY EVENTS PAGE                                               -->
+<!-- ============================================================ -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
@@ -231,10 +259,14 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- CREATE EVENT PAGE                                            -->
+<!-- ============================================================ -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
+            <!-- Formulaire complet ici -->
             <div class="form-group">
                 <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 100 characters)</span></label>
                 <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="100">
@@ -300,26 +332,19 @@
                 <label>Tickets per type</label>
                 <div class="ticket-seats-grid">
                     <div class="ticket-seats-item">
-                        <label class="ticket-seats-label">
-                            <i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard
-                        </label>
+                        <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard</label>
                         <input type="number" id="eventStandardSeats" placeholder="Ex: 100" min="0" value="100" required>
                     </div>
                     <div class="ticket-seats-item">
-                        <label class="ticket-seats-label">
-                            <i class="fas fa-star" style="color:#d4911e;"></i> VIP
-                        </label>
+                        <label class="ticket-seats-label"><i class="fas fa-star" style="color:#d4911e;"></i> VIP</label>
                         <input type="number" id="eventVipSeats" placeholder="Ex: 20" min="0" value="10">
                     </div>
                 </div>
-                <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Set 0 to disable a ticket type</p>
             </div>
             
             <div class="form-group">
                 <div class="ticket-types-container">
-                    <div class="ticket-types-title">
-                        <i class="fas fa-ticket-alt"></i> Ticket Types
-                    </div>
+                    <div class="ticket-types-title"><i class="fas fa-ticket-alt"></i> Ticket Types</div>
                     <p class="ticket-types-subtitle">Enable at least one ticket type and set its price</p>
                     
                     <div class="ticket-type-row standard">
@@ -356,7 +381,6 @@
                         <span class="type-status-badge inactive" id="vipStatusBadge">Inactive</span>
                     </div>
                 </div>
-                <p id="ticketTypesError" style="color: #ef4444; font-size: 0.8rem; margin-top: 6px; display: none;">Please enable at least one ticket type and set its price.</p>
             </div>
             
             <div class="form-group">
@@ -364,9 +388,7 @@
                 <div id="imageUploadContainer" class="image-upload-container">
                     <div class="upload-box-modern" id="uploadBox1">
                         <div class="upload-box-inner" id="uploadInner1">
-                            <div class="upload-icon-modern">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
+                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
                             <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
                             <div class="upload-progress" id="progress1" style="display:none;">
                                 <div class="progress-bar"><div class="progress-fill" id="progressFill1" style="width:0%"></div></div>
@@ -383,9 +405,7 @@
                     
                     <div class="upload-box-modern" id="uploadBox2">
                         <div class="upload-box-inner" id="uploadInner2">
-                            <div class="upload-icon-modern">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </div>
+                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
                             <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
                             <div class="upload-progress" id="progress2" style="display:none;">
                                 <div class="progress-bar"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div>
@@ -400,7 +420,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
             </div>
             
             <div class="btn-publish-wrapper">
@@ -414,85 +434,42 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- PUBLISH CONFIRM                                              -->
+<!-- ============================================================ -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
-            <div class="publish-confirm-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
+            <div class="publish-confirm-icon"><i class="fas fa-check-circle"></i></div>
             <h2>Confirm Publication</h2>
             <p class="publish-confirm-sub">Please review all information before publishing your event</p>
             <button class="publish-confirm-close" onclick="closePublishConfirmPopup()"><i class="fas fa-times"></i></button>
         </div>
-        
         <div class="publish-confirm-body">
             <div class="publish-summary">
                 <div class="publish-summary-grid">
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Title</span>
-                        <span class="publish-value" id="confirmTitle">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Category</span>
-                        <span class="publish-value" id="confirmCategory">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Country</span>
-                        <span class="publish-value" id="confirmCountry">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Date & Time</span>
-                        <span class="publish-value" id="confirmDate">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Duration</span>
-                        <span class="publish-value" id="confirmDuration">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Location</span>
-                        <span class="publish-value" id="confirmLocation">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Ticket Types</span>
-                        <span class="publish-value" id="confirmTicketTypes">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Price</span>
-                        <span class="publish-value" id="confirmPrice">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Seats</span>
-                        <span class="publish-value" id="confirmSeats">-</span>
-                    </div>
-                    <div class="publish-summary-item">
-                        <span class="publish-label">Organizer</span>
-                        <span class="publish-value" id="confirmOrganizer">-</span>
-                    </div>
+                    <div class="publish-summary-item"><span class="publish-label">Title</span><span class="publish-value" id="confirmTitle">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Category</span><span class="publish-value" id="confirmCategory">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Country</span><span class="publish-value" id="confirmCountry">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Date & Time</span><span class="publish-value" id="confirmDate">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Duration</span><span class="publish-value" id="confirmDuration">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Location</span><span class="publish-value" id="confirmLocation">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Ticket Types</span><span class="publish-value" id="confirmTicketTypes">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Price</span><span class="publish-value" id="confirmPrice">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Seats</span><span class="publish-value" id="confirmSeats">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Organizer</span><span class="publish-value" id="confirmOrganizer">-</span></div>
                 </div>
-                
                 <div class="publish-summary-full">
-                    <div class="publish-summary-item full">
-                        <span class="publish-label">Description</span>
-                        <span class="publish-value" id="confirmDescription">-</span>
-                    </div>
+                    <div class="publish-summary-item full"><span class="publish-label">Description</span><span class="publish-value" id="confirmDescription">-</span></div>
                 </div>
-                
                 <div class="publish-summary-full">
-                    <div class="publish-summary-item full">
-                        <span class="publish-label">Conditions</span>
-                        <span class="publish-value" id="confirmConditions">-</span>
-                    </div>
+                    <div class="publish-summary-item full"><span class="publish-label">Conditions</span><span class="publish-value" id="confirmConditions">-</span></div>
                 </div>
-                
                 <div class="publish-summary-full">
-                    <div class="publish-summary-item full">
-                        <span class="publish-label">Images</span>
-                        <div class="publish-images-preview" id="confirmImages"></div>
-                    </div>
+                    <div class="publish-summary-item full"><span class="publish-label">Images</span><div class="publish-images-preview" id="confirmImages"></div></div>
                 </div>
             </div>
         </div>
-        
         <div class="publish-confirm-footer">
             <button class="publish-btn cancel" onclick="closePublishConfirmPopup()">Cancel</button>
             <button class="publish-btn confirm" id="confirmPublishBtn">Publish Event</button>
@@ -500,6 +477,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- TICKETS PAGE                                                 -->
+<!-- ============================================================ -->
 <div id="ticketsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Active Tickets</h2>
@@ -509,6 +489,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- HISTORY PAGE                                                 -->
+<!-- ============================================================ -->
 <div id="historyPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">Ticket History</h2>
@@ -518,10 +501,21 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- RATINGS PAGE                                                 -->
+<!-- ============================================================ -->
 <div id="ratingsPage" class="hidden-page">
-    <div class="events-container"><h2 class="events-title">My Ratings</h2><p class="events-sub">Events you rated</p><div id="myRatingsList"></div><button class="btn-back" onclick="showPage('home')">Back</button></div>
+    <div class="events-container">
+        <h2 class="events-title">My Ratings</h2>
+        <p class="events-sub">Events you rated</p>
+        <div id="myRatingsList"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- PROFILE PAGE                                                 -->
+<!-- ============================================================ -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -565,16 +559,15 @@
         </div>
         
         <div class="profile-actions">
-            <button class="btn-primary" id="profileConnectBtnPage">
-                <i class="fas fa-plug"></i> Connect Pi
-            </button>
-            <button class="btn-secondary" onclick="showPage('settings')">
-                <i class="fas fa-cog"></i> Settings
-            </button>
+            <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
+            <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
         </div>
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- FAQ PAGE                                                     -->
+<!-- ============================================================ -->
 <div id="faqPage" class="hidden-page">
     <div class="page-content faq-page-content">
         <div class="faq-header">
@@ -594,6 +587,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- SETTINGS PAGE                                                -->
+<!-- ============================================================ -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -608,6 +604,9 @@
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- ADMIN PAGE                                                   -->
+<!-- ============================================================ -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -625,7 +624,7 @@
             <div class="stat-card"><h3>Users</h3><p id="adminUserCount">0</p></div>
         </div>
 
-        <!-- ===== INDICATEUR DE SYNCHRONISATION ET BOUTON RAFRAÎCHIR ===== -->
+        <!-- INDICATEUR DE SYNCHRONISATION -->
         <div class="sync-indicator-wrapper">
             <div id="syncStatusIndicator" class="sync-indicator">
                 <i class="sync-icon fas fa-cloud"></i>
@@ -730,11 +729,10 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- NOUVEAU FOOTER AMÉLIORÉ AVEC SÉLECTEUR DE LANGUE              -->
+<!-- FOOTER                                                       -->
 <!-- ============================================================ -->
 <footer class="betix-footer">
     <div class="footer-container">
-        <!-- Colonne 1 : Logo + Infos -->
         <div class="footer-col">
             <div class="footer-logo">Betix</div>
             <p class="footer-slogan">The first decentralized ticketing platform on Pi Network</p>
@@ -744,7 +742,6 @@
             </div>
         </div>
         
-        <!-- Colonne 2 : INFO -->
         <div class="footer-col">
             <h4>Info</h4>
             <ul>
@@ -759,7 +756,6 @@
             </ul>
         </div>
         
-        <!-- Colonne 3 : BETIX -->
         <div class="footer-col">
             <h4>Betix</h4>
             <ul>
@@ -770,7 +766,6 @@
             </ul>
         </div>
         
-        <!-- Colonne 4 : PARTNERS + Whitepaper + Logo + Réseaux -->
         <div class="footer-col">
             <h4>Partners</h4>
             <ul>
@@ -780,12 +775,10 @@
                 <li><a href="#" onclick="event.preventDefault()">Secure</a></li>
             </ul>
             
-            <!-- Logo Betix -->
             <div style="margin-top: 12px;">
                 <img src="logo.png" alt="Betix" style="height: 32px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
             </div>
             
-            <!-- Réseaux sociaux -->
             <div class="footer-social" style="margin-top: 10px;">
                 <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
@@ -796,7 +789,6 @@
         </div>
     </div>
     
-    <!-- Bas du footer avec sélecteur de langue -->
     <div class="footer-bottom">
         <span>© 2026 Betix. All rights reserved.</span>
         <div class="footer-lang-selector">
@@ -820,6 +812,9 @@
     </div>
 </footer>
 
+<!-- ============================================================ -->
+<!-- MODALS                                                       -->
+<!-- ============================================================ -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
@@ -827,7 +822,6 @@
     </div>
 </div>
 
-<!-- MODALE DE DÉTAIL D'ÉVÉNEMENT -->
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <div id="eventDetailContent"></div>
@@ -877,15 +871,11 @@
             <label>Tickets per type</label>
             <div class="ticket-seats-grid">
                 <div class="ticket-seats-item">
-                    <label class="ticket-seats-label">
-                        <i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard
-                    </label>
+                    <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard</label>
                     <input type="number" id="editEventStandardSeats" placeholder="Ex: 100" min="0">
                 </div>
                 <div class="ticket-seats-item">
-                    <label class="ticket-seats-label">
-                        <i class="fas fa-star" style="color:#d4911e;"></i> VIP
-                    </label>
+                    <label class="ticket-seats-label"><i class="fas fa-star" style="color:#d4911e;"></i> VIP</label>
                     <input type="number" id="editEventVipSeats" placeholder="Ex: 20" min="0">
                 </div>
             </div>
@@ -909,8 +899,7 @@
         
         <div style="margin: 12px 0;">
             <label style="font-size: 0.8rem; font-weight: 600; color: var(--dark); display: block; margin-bottom: 4px;">Ticket Type:</label>
-            <select id="ticketTypeSelect" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; background: white;">
-            </select>
+            <select id="ticketTypeSelect" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; background: white;"></select>
         </div>
         
         <div class="quantity-selector">
