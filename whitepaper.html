@@ -45,26 +45,31 @@
         h1 {
             font-size: 28px;
             margin-bottom: 4px;
-            letter-spacing: 1px;
+            color: #0D47A1;
         }
+
         h2 {
             font-size: 18px;
             margin-top: 18px;
             margin-bottom: 6px;
             padding-bottom: 4px;
-            border-bottom: 1.5px solid #0D47A1;
-            letter-spacing: 0px;
+            color: #0D47A1;
+            border-bottom: none;
         }
+
         h3 {
             font-size: 15px;
             margin-top: 12px;
             margin-bottom: 3px;
+            color: #0D47A1;
             letter-spacing: 0px;
         }
+
         h4 {
             font-size: 13.5px;
             margin-top: 8px;
             margin-bottom: 2px;
+            color: #0D47A1;
             letter-spacing: 0px;
         }
 
@@ -90,7 +95,7 @@
             letter-spacing: 0px;
         }
 
-        /* ===== EN-TÊTE AVEC LOGO ===== */
+        /* ===== EN-TÊTE AVEC LOGO CENTRÉ ===== */
         .header-whitepaper {
             text-align: center;
             padding-bottom: 14px;
@@ -126,7 +131,7 @@
 
         .header-whitepaper h1 {
             font-size: 26px;
-            letter-spacing: 1px;
+            color: #0D47A1;
             margin: 0;
         }
 
@@ -134,13 +139,6 @@
             font-size: 13.5px;
             color: #0D47A1;
             font-weight: 600;
-            margin-top: 2px;
-            letter-spacing: 0px;
-        }
-
-        .header-whitepaper .version {
-            font-size: 10.5px;
-            color: #6b7280;
             margin-top: 2px;
             letter-spacing: 0px;
         }
@@ -156,26 +154,26 @@
             letter-spacing: 0px;
         }
 
-        /* ===== BOUTON RETOUR ===== */
+        /* ===== BOUTON RETOUR AVEC FOND JAUNE ===== */
         .btn-back-home {
             display: inline-block;
             margin-top: 12px;
             padding: 8px 24px;
-            background: #0D47A1;
-            color: #ffffff;
+            background: #F5A623;
+            color: #1a1a2e;
             text-decoration: none;
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             border-radius: 4px;
-            border: 1px solid #0D47A1;
+            border: 1px solid #F5A623;
             transition: all 0.3s ease;
             letter-spacing: 0px;
         }
 
         .btn-back-home:hover {
-            background: #ffffff;
-            color: #0D47A1;
-            border-color: #0D47A1;
+            background: #d4911e;
+            border-color: #d4911e;
+            transform: scale(1.02);
         }
 
         .back-home-wrapper {
@@ -466,15 +464,15 @@
 <div class="whitepaper-container">
 
     <!-- ============================================================
-         EN-TÊTE AVEC LOGO
+         EN-TÊTE AVEC LOGO CENTRÉ
          ============================================================ -->
     <div class="header-whitepaper">
         <div class="logo-container">
             <img src="logo.png" alt="Betix Logo" onerror="this.style.display='none';">
             <div class="logo-placeholder" id="logoPlaceholder">B</div>
-            <h1>LIVRE BLANC BETIX</h1>
         </div>
-        <p class="version">Version 1.0 – 2026</p>
+        <h1>LIVRE BLANC BETIX</h1>
+        <p class="subtitle">Achat de tickets pour les événements sur Pi Network</p>
     </div>
 
     <!-- ============================================================
@@ -527,9 +525,9 @@
                         De nationalité congolaise, Djami Yakonga est l'initiateur du
                         projet Betix. Passionné par les nouvelles technologies et
                         l'inclusion financière, il a imaginé Betix pour répondre à
-                        un besoin réel : celui de faciliter l'achat de tickets pour
-                        les événements tout en utilisant une cryptomonnaie accessible
-                        à tous, y compris aux populations non bancarisées.
+                        un besoin réel : celui de faciliter l'organisation d'événements
+                        tout en utilisant une cryptomonnaie accessible à tous, y compris
+                        aux populations non bancarisées.
                     </p>
                     <p>
                         Fort d'une expérience dans la gestion de projets et la finance,
@@ -1371,7 +1369,7 @@
     </div>
 
     <!-- ============================================================
-         BOUTON RETOUR VERS LA PAGE D'ACCUEIL
+         BOUTON RETOUR VERS LA PAGE D'ACCUEIL (FOND JAUNE)
          ============================================================ -->
     <div class="back-home-wrapper">
         <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
