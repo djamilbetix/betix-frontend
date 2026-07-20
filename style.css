@@ -52,7 +52,7 @@ body {
 }
 
 /* ============================================================
-   LOADER
+   LOADER PROFESSIONNEL AVEC LOGO
    ============================================================ */
 .loader-container {
     position: fixed;
@@ -66,31 +66,86 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    transition: opacity 0.6s ease;
 }
 
-.loader-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid #e5e7eb;
-    border-top: 4px solid #08143F;
+.loader-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+}
+
+.loader-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    animation: logoPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+.loader-spinner-modern {
+    position: relative;
+    width: 56px;
+    height: 56px;
+}
+
+.loader-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    border: 3px solid transparent;
+    animation: ringSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
-@keyframes spin {
+.loader-ring:nth-child(1) {
+    border-top-color: #08143F;
+    animation-delay: 0s;
+}
+
+.loader-ring:nth-child(2) {
+    border-right-color: #f5a623;
+    animation-delay: 0.4s;
+}
+
+.loader-ring:nth-child(3) {
+    border-bottom-color: #08143F;
+    animation-delay: 0.8s;
+}
+
+@keyframes ringSpin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
 .loader-text {
     color: #6b7280;
-    margin-top: 20px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
+    letter-spacing: 1.5px;
+    animation: textPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 /* ============================================================
-   HEADER
+   HEADER AVEC BARRE BLANCHE SOUS LE LOGO
    ============================================================ */
 .header {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
@@ -102,7 +157,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 9999;
-    border-bottom: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
     gap: 10px;
     flex-wrap: wrap;
 }
@@ -120,7 +175,7 @@ body {
 }
 
 /* ============================================================
-   LOGO - AGRANDI
+   LOGO
    ============================================================ */
 .logo {
     font-size: 1.7rem;
@@ -145,24 +200,11 @@ body {
     font-size: 1.7rem;
 }
 
-@media (max-width: 480px) {
-    .logo {
-        font-size: 1.3rem;
-        gap: 6px;
-    }
-    .logo .logo-img {
-        height: 34px;
-    }
-    .logo .logo-text {
-        font-size: 1.3rem;
-    }
-}
-
 /* ============================================================
    BOUTON RETOUR
    ============================================================ */
 .back-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     border: none;
     cursor: pointer;
     color: white;
@@ -179,12 +221,12 @@ body {
     min-width: 80px;
     height: 44px;
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     font-weight: 500;
 }
 
 .back-btn:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.3);
     transform: scale(1.05);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
@@ -687,6 +729,17 @@ body {
     overflow: hidden;
     position: relative;
     background: #0F172A;
+}
+
+.hero-slider-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    z-index: 3;
 }
 
 .hero-slider {
@@ -2225,299 +2278,157 @@ body.dark-mode ::-webkit-scrollbar-thumb {
 }
 
 /* ============================================================
-   TICKET CARD PROFESSIONNELLE
+   TICKET CARD - DESIGN ORIGINAL RESTAURÉ
    ============================================================ */
-.ticket-card-professional {
-    position: relative;
-    background: #ffffff;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.ticket-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-left: 4px solid #f5a623;
 }
 
-.ticket-card-professional:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
-}
-
-.ticket-card-professional.ticket-vip {
-    border-color: #d4911e;
-    border-width: 2px;
-    box-shadow: 0 8px 32px rgba(212, 145, 30, 0.12);
-}
-
-.ticket-card-professional.ticket-vip:hover {
-    box-shadow: 0 16px 48px rgba(212, 145, 30, 0.18);
-}
-
-.ticket-watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-28deg);
-    font-size: 8rem;
-    font-weight: 900;
-    color: rgba(8, 20, 63, 0.04);
-    pointer-events: none;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    letter-spacing: 14px;
-    user-select: none;
-    text-transform: uppercase;
-    z-index: 0;
-    white-space: nowrap;
-}
-
-.ticket-card-professional.ticket-vip .ticket-watermark {
-    color: rgba(212, 145, 30, 0.05);
-}
-
-.ticket-card-professional .ticket-header {
+.ticket-card .ticket-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #08143F, #1a1a2e);
-    position: relative;
-    z-index: 1;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+.ticket-card .ticket-header .ticket-status {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ticket-card .ticket-header .ticket-id {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: var(--gray);
+}
+
+.ticket-card .ticket-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 2px;
+}
+
+.ticket-card .ticket-subtitle {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+.ticket-card .ticket-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    font-size: 0.75rem;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.ticket-card .ticket-info-grid .info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.ticket-card .ticket-info-grid .info-item:last-child {
+    border-bottom: none;
+}
+
+.ticket-card .ticket-info-grid .info-item .label {
+    color: var(--gray);
+    font-weight: 400;
+}
+
+.ticket-card .ticket-info-grid .info-item .value {
+    color: var(--dark);
+    font-weight: 600;
+    text-align: right;
+}
+
+.ticket-card .ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-.ticket-card-professional .ticket-header.vip-header {
-    background: linear-gradient(135deg, #8B7500, #b8860b);
+.ticket-card .ticket-footer .ticket-participant {
+    font-size: 0.7rem;
+    color: var(--gray);
 }
 
-.ticket-card-professional .ticket-status {
+.ticket-card .ticket-footer .ticket-participant strong {
+    color: #08143F;
+}
+
+.ticket-card .ticket-footer .ticket-purchase-date {
     font-size: 0.65rem;
-    font-weight: 700;
+    color: var(--gray);
+}
+
+.ticket-card .btn-download-ticket {
     padding: 4px 14px;
-    border-radius: 40px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
-}
-
-.ticket-card-professional .ticket-status.valid {
-    background: rgba(16, 185, 129, 0.25);
-    border-color: rgba(16, 185, 129, 0.2);
-    color: #6ee7b7;
-}
-
-.ticket-card-professional .ticket-status.past {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-}
-
-.ticket-card-professional .ticket-status.vip-badge {
-    background: rgba(255, 215, 0, 0.2);
-    border-color: rgba(255, 215, 0, 0.15);
-    color: #ffd700;
-}
-
-.ticket-card-professional .ticket-number {
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.6);
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.5px;
-}
-
-.ticket-card-professional .ticket-body {
-    padding: 18px 20px 16px;
-    position: relative;
-    z-index: 1;
-}
-
-.ticket-card-professional .ticket-event-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin-bottom: 2px;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.2px;
-}
-
-.ticket-card-professional .ticket-category {
-    font-size: 0.75rem;
-    color: #8892b0;
-    margin-bottom: 14px;
-    display: block;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
-
-.ticket-card-professional .ticket-category.vip-category {
-    color: #d4911e;
-}
-
-.ticket-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 14px;
-}
-
-.ticket-col-left {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.ticket-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(26, 42, 68, 0.06);
-    font-size: 0.8rem;
-}
-
-.ticket-info-row .ticket-label {
-    color: #8892b0;
-    font-weight: 400;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.ticket-info-row .ticket-value {
-    color: #1a1a2e;
-    font-weight: 600;
-    text-align: right;
-    font-size: 0.8rem;
-}
-
-.ticket-col-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-}
-
-.ticket-qr-box {
-    text-align: center;
-    background: #f8fafc;
-    padding: 10px 14px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    width: 100%;
-    max-width: 160px;
-}
-
-.ticket-qr-code {
-    margin: 0 auto 4px;
-}
-
-.ticket-qr-code .qr-code-container {
-    width: 90px;
-    height: 90px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 8px;
-    padding: 4px;
-}
-
-.ticket-qr-code .qr-code-container img {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-
-.ticket-code {
-    font-size: 0.5rem;
-    color: #6b7280;
-    font-family: 'Courier New', monospace;
-    word-break: break-all;
-    margin-top: 4px;
-}
-
-.ticket-participant-box {
-    text-align: center;
-    background: #f8fafc;
-    padding: 6px 14px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    width: 100%;
-    max-width: 160px;
-}
-
-.ticket-participant-label {
-    font-size: 0.5rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    display: block;
-}
-
-.ticket-participant-name {
-    font-weight: 700;
-    color: #08143F;
-    font-size: 0.9rem;
-}
-
-.ticket-card-professional.ticket-vip .ticket-participant-name {
-    color: #b8860b;
-}
-
-.ticket-purchase-date {
-    text-align: right;
-    margin-top: 10px;
-    padding: 5px 14px;
-    background: rgba(248, 250, 252, 0.8);
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    font-size: 0.75rem;
-}
-
-.ticket-purchase-date .purchase-label {
-    color: #6b7280;
-    font-weight: 400;
-}
-
-.ticket-purchase-date .purchase-value {
-    color: #08143F;
-    font-weight: 600;
-}
-
-.ticket-card-professional.ticket-vip .ticket-purchase-date .purchase-value {
-    color: #b8860b;
-}
-
-.ticket-card-professional .btn-download-ticket {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 18px;
-    background: linear-gradient(135deg, #08143F, #1a1a2e);
-    color: #fff;
+    background: #08143F;
+    color: white;
     border: none;
-    border-radius: 40px;
-    font-weight: 600;
-    font-size: 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.2s;
-    margin-top: 10px;
-    width: 100%;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.ticket-card-professional .btn-download-ticket:hover {
+.ticket-card .btn-download-ticket:hover {
+    background: #0a1a4f;
     transform: scale(1.02);
-    box-shadow: 0 4px 20px rgba(8, 20, 63, 0.3);
 }
 
-.ticket-card-professional.ticket-vip .btn-download-ticket {
-    background: linear-gradient(135deg, #8B7500, #b8860b);
+.ticket-card.vip {
+    border-left-color: #d4911e;
+    background: #fefaf0;
 }
 
-.ticket-card-professional.ticket-vip .btn-download-ticket:hover {
-    box-shadow: 0 4px 20px rgba(184, 134, 11, 0.3);
+.ticket-card.vip .ticket-title {
+    color: #8B7500;
+}
+
+.ticket-card .ticket-qr {
+    text-align: center;
+    margin: 6px 0;
+}
+
+.ticket-card .ticket-qr .qr-code-container {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    background: white;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.ticket-card .ticket-qr .qr-code-container img {
+    width: 100% !important;
+    height: 100% !important;
 }
 
 /* ============================================================
@@ -4739,7 +4650,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
 }
 
 /* ============================================================
-   INDICATEUR DE SYNCHRONISATION (NOUVEAU)
+   INDICATEUR DE SYNCHRONISATION
    ============================================================ */
 .sync-indicator-wrapper {
     display: flex;
@@ -4810,7 +4721,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
 }
 
 /* ============================================================
-   BOUTON RAFRAÎCHIR ADMIN (NOUVEAU)
+   BOUTON RAFRAÎCHIR ADMIN
    ============================================================ */
 .admin-refresh-btn {
     display: inline-flex;
