@@ -651,49 +651,42 @@ let adminTimerInterval = null;
 let adminLogs = [];
 
 // ============================================================
-// ===== LIMITES CARACTÈRES FORMULAIRE =====
+// ===== LIMITES CARACTÈRES FORMULAIRE - INITIALISATION =====
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    var titleInput = document.getElementById('eventTitle');
-    if (titleInput) {
-        titleInput.addEventListener('input', function() {
-            var remaining = 100 - this.value.length;
-            var counter = document.getElementById('titleCharCounter');
-            if (counter) {
-                counter.textContent = remaining + ' characters remaining';
-                if (remaining < 10) counter.style.color = '#ef4444';
-                else counter.style.color = '#6b7280';
-            }
-        });
-    }
+function initCharCounters() {
+    var fields = [
+        { id: 'eventTitle', counterId: 'titleCharCounter', max: 25 },
+        { id: 'eventLocation', counterId: 'locationCharCounter', max: 30 },
+        { id: 'eventDescription', counterId: 'descCharCounter', max: 150 },
+        { id: 'eventConditions', counterId: 'condCharCounter', max: 80 }
+    ];
     
-    var descInput = document.getElementById('eventDescription');
-    if (descInput) {
-        descInput.addEventListener('input', function() {
-            var remaining = 500 - this.value.length;
-            var counter = document.getElementById('descCharCounter');
-            if (counter) {
+    fields.forEach(function(field) {
+        var input = document.getElementById(field.id);
+        var counter = document.getElementById(field.counterId);
+        if (input && counter) {
+            input.addEventListener('input', function() {
+                var remaining = field.max - this.value.length;
                 counter.textContent = remaining + ' characters remaining';
-                if (remaining < 50) counter.style.color = '#ef4444';
-                else counter.style.color = '#6b7280';
+                counter.className = 'char-counter';
+                if (remaining < 5) {
+                    counter.classList.add('warning');
+                } else if (remaining > field.max * 0.7) {
+                    counter.classList.add('good');
+                }
+            });
+            // Initialisation
+            var remaining = field.max - input.value.length;
+            counter.textContent = remaining + ' characters remaining';
+            if (remaining < 5) {
+                counter.classList.add('warning');
+            } else if (remaining > field.max * 0.7) {
+                counter.classList.add('good');
             }
-        });
-    }
-    
-    var condInput = document.getElementById('eventConditions');
-    if (condInput) {
-        condInput.addEventListener('input', function() {
-            var remaining = 1500 - this.value.length;
-            var counter = document.getElementById('condCharCounter');
-            if (counter) {
-                counter.textContent = remaining + ' characters remaining';
-                if (remaining < 100) counter.style.color = '#ef4444';
-                else counter.style.color = '#6b7280';
-            }
-        });
-    }
-});
+        }
+    });
+}
 
 // ============================================================
 // ===== HERO SLIDES =====
@@ -846,7 +839,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// ===== SAVE EVENT TO SUPABASE =====
+// ===== SAVE EVENT TO SUPABASE (CORRIGÉ) =====
 // ============================================================
 
 async function saveEventToSupabase(eventData) {
@@ -901,12 +894,16 @@ async function saveEventToSupabase(eventData) {
             standard_seats: standardSeats,
             vip_seats: vipSeats,
             standard_sold: standardSold,
-            vip_sold: vipSold
+            vip_sold: vipSold,
+            updated_at: new Date().toISOString()
         };
         
         const { data, error } = await supabaseClient
             .from('events')
-            .upsert(dbEvent, { onConflict: 'id' });
+            .upsert(dbEvent, { 
+                onConflict: 'id',
+                ignoreDuplicates: false 
+            });
         
         if (error) {
             console.error('❌ Supabase error saving event:', error);
@@ -923,7 +920,7 @@ async function saveEventToSupabase(eventData) {
 }
 
 // ============================================================
-// ===== SAVE TICKET TO SUPABASE =====
+// ===== SAVE TICKET TO SUPABASE (CORRIGÉ) =====
 // ============================================================
 
 async function saveTicketToSupabase(ticketData) {
@@ -966,7 +963,8 @@ async function saveTicketToSupabase(ticketData) {
             event_title: eventTitle,
             event_location: eventLocation,
             pays: ticketData.pays || eventPays || 'France',
-            transaction_id: ticketData.transactionId || ''
+            transaction_id: ticketData.transactionId || '',
+            updated_at: new Date().toISOString()
         };
         
         const { data, error } = await supabaseClient
@@ -1243,7 +1241,7 @@ async function syncNotificationsToSupabase() {
 }
 
 // ============================================================
-// ===== SYNC ALL TO SUPABASE WITH RETRY =====
+// ===== SYNC ALL TO SUPABASE WITH RETRY (CORRIGÉ) =====
 // ============================================================
 
 async function syncAllToSupabase(retryCount = 0) {
@@ -1254,8 +1252,25 @@ async function syncAllToSupabase(retryCount = 0) {
         updateSyncStatus('syncing');
         
         await syncUserToSupabase();
-        await syncEventsToSupabase();
-        await syncTicketsToSupabase();
+        
+        console.log('📤 Syncing events...');
+        var eventSuccess = 0;
+        for (var i = 0; i < events.length; i++) {
+            var saved = await saveEventToSupabase(events[i]);
+            if (saved) eventSuccess++;
+            if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        console.log('✅ Events synced:', eventSuccess + '/' + events.length);
+        
+        console.log('📤 Syncing tickets...');
+        var ticketSuccess = 0;
+        for (var i = 0; i < tickets.length; i++) {
+            var saved = await saveTicketToSupabase(tickets[i]);
+            if (saved) ticketSuccess++;
+            if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        console.log('✅ Tickets synced:', ticketSuccess + '/' + tickets.length);
+        
         await syncNotificationsToSupabase();
         
         console.log('✅ SYNC COMPLETED');
@@ -1371,7 +1386,7 @@ async function forceRefreshData() {
 }
 
 // ============================================================
-// ===== LOAD ALL FROM SUPABASE =====
+// ===== LOAD ALL FROM SUPABASE (CORRIGÉ) =====
 // ============================================================
 
 async function loadAllFromSupabase() {
@@ -1433,8 +1448,12 @@ async function loadAllFromSupabase() {
             console.log('ℹ️ No events in Supabase, using localStorage');
             var localEvents = localStorage.getItem('betix_events');
             if (localEvents) {
-                events = JSON.parse(localEvents);
-                console.log('📦 Loaded', events.length, 'events from localStorage');
+                try {
+                    events = JSON.parse(localEvents);
+                    console.log('📦 Loaded', events.length, 'events from localStorage');
+                } catch (e) {
+                    events = [];
+                }
             }
         }
         
@@ -1472,8 +1491,12 @@ async function loadAllFromSupabase() {
                 console.log('ℹ️ No tickets in Supabase for this user');
                 var localTickets = localStorage.getItem('betix_tickets');
                 if (localTickets) {
-                    tickets = JSON.parse(localTickets);
-                    console.log('📦 Loaded', tickets.length, 'tickets from localStorage');
+                    try {
+                        tickets = JSON.parse(localTickets);
+                        console.log('📦 Loaded', tickets.length, 'tickets from localStorage');
+                    } catch (e) {
+                        tickets = [];
+                    }
                 }
             }
         }
@@ -3316,7 +3339,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT =====
+// ===== CREATE EVENT (AVEC VÉRIFICATION PRIX VIP) =====
 // ============================================================
 
 async function createEvent(e) {
@@ -3380,6 +3403,29 @@ async function createEvent(e) {
     if (vipEnabled && (!vipPrice || vipPrice <= 0)) {
         alert(t('vip') + ' ' + t('price') + ' must be greater than 0');
         return;
+    }
+    
+    // ============================================================
+    // VÉRIFICATION PRIX VIP > STANDARD
+    // ============================================================
+    if (standardEnabled && vipEnabled && standardPrice > 0 && vipPrice > 0) {
+        if (vipPrice <= standardPrice) {
+            var errorEl = document.getElementById('vipPriceError');
+            if (errorEl) {
+                errorEl.style.display = 'flex';
+                errorEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Le prix VIP (' + vipPrice.toFixed(6) + ' Pi) doit être supérieur au prix Standard (' + standardPrice.toFixed(6) + ' Pi)';
+                errorEl.classList.add('show');
+            }
+            alert('Le prix VIP (' + vipPrice.toFixed(6) + ' Pi) doit être supérieur au prix Standard (' + standardPrice.toFixed(6) + ' Pi)');
+            return;
+        }
+    }
+    
+    // Cacher l'erreur si elle était affichée
+    var errorEl = document.getElementById('vipPriceError');
+    if (errorEl) {
+        errorEl.style.display = 'none';
+        errorEl.classList.remove('show');
     }
     
     var images = getUploadedImages();
@@ -3589,6 +3635,9 @@ async function confirmPublishEvent() {
         if (standardCheckbox) standardCheckbox.checked = true;
         if (vipCheckbox) vipCheckbox.checked = false;
         setupTicketTypesUI();
+        
+        // Réinitialiser les compteurs
+        initCharCounters();
         
         addNotification(
             t('eventPublished') + ' "' + newEvent.title + '"',
@@ -5584,7 +5633,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loader && main) {
             console.log('Loader and main content found');
             
-            // Loader visible pendant 3 secondes
             setTimeout(function() {
                 loader.classList.add('hidden');
                 setTimeout(function() {
@@ -5634,6 +5682,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initFaq();
         renderAdminLogs();
         setupTicketTypesUI();
+        
+        // ============================================================
+        // INITIALISATION DES COMPTEURS DE CARACTÈRES
+        // ============================================================
+        initCharCounters();
         
         var storedPassword = localStorage.getItem('betix_admin_password');
         if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
@@ -5914,7 +5967,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Bouton retour avec flèche et croix dans la modale de détail');
         console.log('FOOTER AMÉLIORÉ - 4 colonnes, polices 18-24px, fond sombre, sélecteur de langue');
         console.log('TRADUCTION COMPLÈTE - Tous les textes traduits automatiquement');
-        console.log('LIMITE CARACTÈRES - Titre 100, Description 500, Conditions 1500 caractères');
+        console.log('LIMITE CARACTÈRES - Titre 25, Lieu 30, Description 150, Conditions 80 caractères');
+        console.log('COMPTEURS DYNAMIQUES - Affichage en temps réel du nombre de caractères restants');
         console.log('PAGE WHITEPAPER - Nouvelle page dédiée avec logo, fondateurs, contenu, bouton PDF');
         
     } catch (error) {
