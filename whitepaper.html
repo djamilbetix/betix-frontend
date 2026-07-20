@@ -6,7 +6,8 @@
     <title>Livre Blanc - Betix</title>
     <style>
         /* ============================================================
-           STYLES LIVRE BLANC - DESIGN ÉPURÉ 2 COULEURS
+           STYLES LIVRE BLANC - DESIGN ÉPURÉ
+           COULEUR UNIQUE : #0D47A1 (identique au logo Betix)
            ============================================================ */
         * {
             margin: 0;
@@ -31,11 +32,14 @@
             border: 1px solid #f0f0f0;
         }
 
-        /* ===== COULEURS ===== */
-        .color-blue { color: #0D47A1; }
+        /* ===== COULEUR UNIQUE DU LOGO ===== */
+        :root {
+            --betix-blue: #0D47A1;
+        }
+
+        .color-blue, .text-blue { color: #0D47A1; }
         .border-blue { border-color: #0D47A1; }
         .bg-blue { background-color: #0D47A1; }
-        .text-muted { color: #6b7280; }
 
         /* ===== TYPOGRAPHIE ===== */
         h1, h2, h3, h4, p, ul, ol, li, .footer-signature {
@@ -45,7 +49,7 @@
         h1 {
             font-size: 28px;
             margin-bottom: 4px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
         }
 
         h2 {
@@ -53,7 +57,7 @@
             margin-top: 18px;
             margin-bottom: 6px;
             padding-bottom: 4px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             border-bottom: none;
         }
 
@@ -61,21 +65,21 @@
             font-size: 15px;
             margin-top: 12px;
             margin-bottom: 3px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
         }
 
         h4 {
             font-size: 13.5px;
             margin-top: 8px;
             margin-bottom: 2px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
         }
 
         p {
             font-size: 11.5px;
             line-height: 1.6;
             margin-bottom: 3px;
-            color: #000000;
+            color: #000000 !important;
             text-align: justify;
         }
 
@@ -88,10 +92,10 @@
             font-size: 11.5px;
             line-height: 1.6;
             margin-bottom: 1.5px;
-            color: #000000;
+            color: #000000 !important;
         }
 
-        /* ===== EN-TÊTE AVEC LOGO ===== */
+        /* ===== EN-TÊTE ===== */
         .header-whitepaper {
             text-align: center;
             padding-bottom: 14px;
@@ -129,18 +133,18 @@
 
         .header-whitepaper h1 {
             font-size: 28px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             margin: 4px 0 2px 0;
         }
 
         .header-whitepaper .subtitle {
             font-size: 13.5px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             font-weight: 600;
             margin-top: 2px;
         }
 
-        /* ===== BOUTON RETOUR AVEC FOND JAUNE ===== */
+        /* ===== BOUTON RETOUR ===== */
         .btn-back-home {
             display: inline-block;
             margin-top: 12px;
@@ -166,7 +170,7 @@
             margin-top: 8px;
         }
 
-        /* ===== FONDATEURS - CARTES SIMPLES ET PROFESSIONNELLES ===== */
+        /* ===== FONDATEURS ===== */
         .founders-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -219,13 +223,13 @@
         .founder-card h4 {
             font-size: 14px;
             margin: 0;
-            color: #0D47A1;
+            color: #0D47A1 !important;
         }
 
         .founder-card .founder-title {
             font-size: 11px;
             font-weight: 600;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             margin: 1px 0 3px 0;
         }
 
@@ -234,9 +238,10 @@
             margin-bottom: 0;
             text-align: justify;
             line-height: 1.5;
+            color: #000000 !important;
         }
 
-        /* ===== TABLEAU COMPARATIF ===== */
+        /* ===== TABLEAU ===== */
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
@@ -255,6 +260,7 @@
         .comparison-table td {
             padding: 4px 10px;
             border-bottom: 1px solid #e5e7eb;
+            color: #000000;
         }
 
         .comparison-table tr:nth-child(even) td {
@@ -276,7 +282,7 @@
 
         .social-section .social-title {
             font-size: 10px;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             font-weight: 600;
             margin-bottom: 8px;
             letter-spacing: 0.5px;
@@ -319,13 +325,13 @@
             border-top: 1.5px solid #0D47A1;
             text-align: center;
             font-size: 7.5px !important;
-            color: #0D47A1;
+            color: #0D47A1 !important;
             font-weight: 500;
         }
 
         .footer-signature span {
             font-size: 7.5px !important;
-            color: #0D47A1;
+            color: #0D47A1 !important;
         }
 
         /* ===== RESPONSIVE ===== */
@@ -418,7 +424,6 @@
         .mb-2 { margin-bottom: 2px; }
         .mb-4 { margin-bottom: 4px; }
         .fw-600 { font-weight: 600; }
-        .text-blue { color: #0D47A1; }
     </style>
 </head>
 <body>
@@ -884,7 +889,8 @@
         <h4>La recherche avancée</h4>
         <p>
             La plateforme propose une recherche avancée qui permet de trouver
-            des événements par titre, lieu, catégorie ou date. Un système de            filtrage par pays et par type d'événement affiche les événements à
+            des événements par titre, lieu, catégorie ou date. Un système de
+            filtrage par pays et par type d'événement affiche les événements à
             venir et passés de manière claire et organisée.
         </p>
 
@@ -1301,7 +1307,7 @@
     </div>
 
     <!-- ============================================================
-         RÉSEAUX SOCIAUX - CENTRÉ
+         RÉSEAUX SOCIAUX
          ============================================================ -->
     <div class="social-section">
         <p class="social-title">Suivez-nous sur les réseaux sociaux</p>
@@ -1328,14 +1334,14 @@
     </div>
 
     <!-- ============================================================
-         BOUTON RETOUR VERS LA PAGE D'ACCUEIL (FOND JAUNE)
+         BOUTON RETOUR
          ============================================================ -->
     <div class="back-home-wrapper">
         <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
     </div>
 
     <!-- ============================================================
-         SIGNATURE (POLICE TRÈS PETITE, BLEU)
+         SIGNATURE
          ============================================================ -->
     <div class="footer-signature">
         <span>
