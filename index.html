@@ -45,15 +45,17 @@
 <body>
 
 <!-- ============================================================ -->
-<!-- LOADER PROFESSIONNEL AVEC LOGO - 3 SECONDES                  -->
+<!-- LOADER AVEC LOGO + 5 BOULETS - 3 SECONDES                   -->
 <!-- ============================================================ -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
         <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
-        <div class="loader-spinner-modern">
-            <div class="loader-ring"></div>
-            <div class="loader-ring"></div>
-            <div class="loader-ring"></div>
+        <div class="loader-balls">
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
         </div>
         <p class="loader-text">Loading...</p>
     </div>
@@ -260,16 +262,16 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- CREATE EVENT PAGE                                            -->
+<!-- CREATE EVENT PAGE - AVEC LIMITES CARACTÈRES ET VIP CHECK    -->
 <!-- ============================================================ -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
             <div class="form-group">
-                <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 100 characters)</span></label>
-                <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="100">
-                <span id="titleCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">100 characters remaining</span>
+                <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 25 characters)</span></label>
+                <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="25">
+                <span id="titleCharCounter" class="char-counter">25 characters remaining</span>
             </div>
             
             <div class="form-group"><label>Category</label>
@@ -313,18 +315,22 @@
                 <p class="duration-help-text"><i class="fas fa-info-circle"></i> Estimated event duration</p>
             </div>
             
-            <div class="form-group"><label>Location</label><input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required></div>
-            
             <div class="form-group">
-                <label>Description <span style="color:#ef4444;font-size:0.7rem;">(max 500 characters)</span></label>
-                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="500"></textarea>
-                <span id="descCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">500 characters remaining</span>
+                <label>Location <span style="color:#ef4444;font-size:0.7rem;">(max 30 characters)</span></label>
+                <input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required maxlength="30">
+                <span id="locationCharCounter" class="char-counter">30 characters remaining</span>
             </div>
             
             <div class="form-group">
-                <label>Conditions <span style="color:#ef4444;font-size:0.7rem;">(max 1500 characters)</span></label>
-                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="1500"></textarea>
-                <span id="condCharCounter" style="font-size:0.7rem;color:#6b7280;display:block;margin-top:2px;text-align:right;">1500 characters remaining</span>
+                <label>Description <span style="color:#ef4444;font-size:0.7rem;">(max 150 characters)</span></label>
+                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="150"></textarea>
+                <span id="descCharCounter" class="char-counter">150 characters remaining</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Conditions <span style="color:#ef4444;font-size:0.7rem;">(max 80 characters)</span></label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="80"></textarea>
+                <span id="condCharCounter" class="char-counter">80 characters remaining</span>
             </div>
             
             <div class="form-group">
@@ -347,11 +353,12 @@
                     <div class="ticket-types-title"><i class="fas fa-ticket-alt"></i> Ticket Types</div>
                     <p class="ticket-types-subtitle">Enable at least one ticket type and set its price</p>
                     
+                    <!-- STANDARD - Bordure Bleue #08143F -->
                     <div class="ticket-type-row standard">
                         <div class="type-toggle">
                             <span class="type-icon"><i class="fas fa-ticket-alt"></i></span>
                             <span class="type-name">Standard</span>
-                            <label class="switch">
+                            <label class="switch standard-switch">
                                 <input type="checkbox" id="ticketStandardEnabled" checked>
                                 <span class="slider"></span>
                             </label>
@@ -364,6 +371,7 @@
                         <span class="type-status-badge active" id="standardStatusBadge">Active</span>
                     </div>
                     
+                    <!-- VIP - Bordure Dorée #d4911e -->
                     <div class="ticket-type-row vip">
                         <div class="type-toggle">
                             <span class="type-icon"><i class="fas fa-star"></i></span>
@@ -379,6 +387,12 @@
                             <span class="price-suffix">Pi</span>
                         </div>
                         <span class="type-status-badge inactive" id="vipStatusBadge">Inactive</span>
+                    </div>
+                    
+                    <!-- MESSAGE ERREUR PRIX VIP -->
+                    <div id="vipPriceError" class="vip-price-error" style="display:none;">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Le prix VIP doit être supérieur au prix Standard
                     </div>
                 </div>
             </div>
