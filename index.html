@@ -45,7 +45,7 @@
 <body>
 
 <!-- ============================================================ -->
-<!-- LOADER PROFESSIONNEL AVEC LOGO                                -->
+<!-- LOADER PROFESSIONNEL AVEC LOGO - 3 SECONDES                  -->
 <!-- ============================================================ -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
@@ -266,7 +266,6 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
-            <!-- Formulaire complet ici -->
             <div class="form-group">
                 <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 100 characters)</span></label>
                 <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="100">
@@ -340,6 +339,7 @@
                         <input type="number" id="eventVipSeats" placeholder="Ex: 20" min="0" value="10">
                     </div>
                 </div>
+                <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Set 0 to disable a ticket type</p>
             </div>
             
             <div class="form-group">
@@ -420,7 +420,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
             </div>
             
             <div class="btn-publish-wrapper">
