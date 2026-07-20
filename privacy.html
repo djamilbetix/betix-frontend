@@ -1,55 +1,694 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - Betix</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Politique de confidentialité - Betix</title>
+    <style>
+        /* ============================================================
+           STYLES PRIVACY - COULEUR UNIQUE #08143F (comme livre blanc)
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ffffff;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            color: #000000;
+            line-height: 1.5;
+            padding: 20px 15px 40px;
+        }
+
+        .privacy-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 25px 30px 35px;
+            background: #ffffff;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f0;
+        }
+
+        /* ===== COULEUR UNIQUE ===== */
+        :root {
+            --betix-blue: #08143F;
+        }
+
+        .text-blue, .color-blue {
+            color: #08143F !important;
+        }
+        .border-blue {
+            border-color: #08143F !important;
+        }
+        .bg-blue {
+            background-color: #08143F !important;
+        }
+
+        /* ===== TYPOGRAPHIE ===== */
+        h1, h2, h3, h4 {
+            color: #08143F !important;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 22px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #08143F;
+        }
+
+        h3 {
+            font-size: 15px;
+            margin-top: 14px;
+            margin-bottom: 4px;
+        }
+
+        h4 {
+            font-size: 13.5px;
+            margin-top: 10px;
+            margin-bottom: 3px;
+        }
+
+        p {
+            font-size: 11.5px;
+            line-height: 1.7;
+            margin-bottom: 4px;
+            color: #000000 !important;
+            text-align: justify;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 4px;
+        }
+
+        ul li, ol li {
+            font-size: 11.5px;
+            line-height: 1.7;
+            margin-bottom: 2px;
+            color: #000000 !important;
+        }
+
+        /* ===== EN-TÊTE ===== */
+        .header-privacy {
+            text-align: center;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #08143F;
+            margin-bottom: 18px;
+        }
+
+        .header-privacy .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 6px;
+        }
+
+        .header-privacy .logo-container img {
+            height: 60px;
+            width: auto;
+            max-width: 180px;
+            object-fit: contain;
+        }
+
+        .header-privacy .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            background: #08143F;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 26px;
+        }
+
+        .header-privacy h1 {
+            font-size: 26px;
+            color: #08143F !important;
+            margin: 4px 0 2px 0;
+            letter-spacing: 1px;
+        }
+
+        .header-privacy .subtitle {
+            font-size: 13px;
+            color: #08143F !important;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .header-privacy .last-updated {
+            font-size: 10.5px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        /* ===== BOUTON RETOUR ===== */
+        .btn-back-home {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 24px;
+            background: #F5A623;
+            color: #1a1a2e;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 4px;
+            border: 1px solid #F5A623;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back-home:hover {
+            background: #d4911e;
+            border-color: #d4911e;
+            transform: scale(1.02);
+        }
+
+        .actions-wrapper {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            margin-bottom: 2px;
+        }
+
+        /* ===== TABLEAU ===== */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            margin: 6px 0 3px;
+        }
+
+        .comparison-table th {
+            background: #08143F;
+            color: #ffffff;
+            padding: 5px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 4px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #000000;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .comparison-table .highlight {
+            color: #08143F;
+            font-weight: 700;
+        }
+
+        /* ===== FOOTER ===== */
+        .betix-footer {
+            max-width: 210mm;
+            margin: 20px auto 0;
+            padding: 20px 30px 12px;
+            background: #ffffff;
+            border-top: 2px solid #08143F;
+            color: #08143F;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .footer-col h4 {
+            font-size: 16px;
+            color: #08143F !important;
+            margin-bottom: 8px;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 4px;
+        }
+
+        .footer-col ul li a {
+            color: #08143F;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #0a1a4f;
+            text-decoration: underline;
+        }
+
+        .footer-logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #08143F;
+            margin-bottom: 4px;
+        }
+
+        .footer-slogan {
+            font-size: 13px;
+            color: #08143F;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .footer-desc {
+            font-size: 11px;
+            color: #08143F;
+            margin-bottom: 6px;
+            max-width: 240px;
+        }
+
+        .footer-bottom {
+            max-width: 210mm;
+            margin: 12px auto 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(8, 20, 63, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            font-size: 10px;
+            color: #08143F;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .privacy-container {
+                padding: 12px 10px 20px;
+                max-width: 100%;
+            }
+
+            h1 { font-size: 20px; }
+            h2 { font-size: 15px; margin-top: 14px; }
+            h3 { font-size: 13px; margin-top: 10px; }
+            p, ul li, ol li { font-size: 10.5px; }
+
+            .header-privacy .logo-container img {
+                height: 40px;
+            }
+            .header-privacy .logo-placeholder {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            .header-privacy h1 {
+                font-size: 18px;
+            }
+            .header-privacy .subtitle {
+                font-size: 11px;
+            }
+
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                font-size: 9px;
+            }
+            .betix-footer {
+                padding: 16px 14px 10px;
+            }
+            .btn-back-home {
+                font-size: 9px;
+                padding: 6px 18px;
+            }
+        }
+
+        @media print {
+            body { padding: 0; background: #ffffff; }
+            .privacy-container {
+                box-shadow: none;
+                border: none;
+                padding: 15px 20px 20px;
+                max-width: 100%;
+            }
+            .btn-back-home {
+                display: none;
+            }
+        }
+
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 2px; }
+        .mt-4 { margin-top: 4px; }
+        .mt-8 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 2px; }
+        .mb-4 { margin-bottom: 4px; }
+        .fw-600 { font-weight: 600; }
+    </style>
 </head>
 <body>
 
-<header class="header">
-    <div class="logo" onclick="window.location.href='/'">Betix</div>
-</header>
+<div class="privacy-container">
 
-<div class="page-content">
-    <h1>Privacy Policy</h1>
-    <p><strong>Last updated: June 2026</strong></p>
+    <!-- ============================================================
+         EN-TÊTE AVEC LOGO
+         ============================================================ -->
+    <div class="header-privacy">
+        <div class="logo-container">
+            <img src="Logo.jpg.jpeg" alt="Betix Logo" onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
+            <div class="logo-placeholder" id="logoPlaceholder" style="display:none;">B</div>
+        </div>
+        <h1>POLITIQUE DE CONFIDENTIALITÉ</h1>
+        <p class="subtitle">Protection de vos données personnelles sur Betix</p>
+        <p class="last-updated">Dernière mise à jour : Juillet 2026</p>
+    </div>
 
-    <h2>1. Information We Collect</h2>
-    <p>Betix collects your Pi Network username, your Pi wallet address, the events you create, and the tickets you purchase. We do not collect your confidential information. We never ask for your Pi password, passphrases, email address, or any other sensitive personal information. Login to our platform is done exclusively through Pi Network without us having access to your credentials.</p>
+    <!-- ============================================================
+         CONTENU
+         ============================================================ -->
 
-    <h2>2. How We Use Your Information</h2>
-    <p>Your information is used to create and manage events, process your ticket purchases, send you transaction confirmations, and improve our platform services. We may also use your data to communicate important updates about your account or events you are participating in.</p>
+    <div class="section">
+        <h2>1. INFORMATIONS QUE NOUS COLLECTONS</h2>
+        <p>
+            Betix collecte les informations suivantes dans le cadre de son
+            fonctionnement :
+        </p>
+        <ul>
+            <li>
+                <strong>Identifiant Pi Network :</strong> Votre nom d'utilisateur
+                Pi Network qui vous identifie sur la plateforme.
+            </li>
+            <li>
+                <strong>Adresse du portefeuille Pi :</strong> Votre adresse de
+                portefeuille Pi pour les transactions.
+            </li>
+            <li>
+                <strong>Événements créés :</strong> Les événements que vous
+                organisez sur la plateforme.
+            </li>
+            <li>
+                <strong>Tickets achetés :</strong> Les billets que vous achetez
+                via Betix.
+            </li>
+            <li>
+                <strong>Historique d'activité :</strong> Vos interactions avec
+                la plateforme.
+            </li>
+        </ul>
+        <p>
+            <strong>Nous ne collectons pas vos informations confidentielles.</strong>
+            Nous ne demandons jamais votre mot de passe Pi, vos passphrases,
+            votre adresse email ou toute autre information personnelle sensible.
+            La connexion à notre plateforme s'effectue exclusivement via Pi Network
+            sans que nous ayons accès à vos identifiants.
+        </p>
+    </div>
 
-    <h2>3. Data Storage</h2>
-    <p>Your data is stored locally on your device and on our secure servers. All transactions are permanently recorded on the Pi Network blockchain, which provides transparency and security. We use industry-standard encryption to protect your information.</p>
+    <div class="section">
+        <h2>2. UTILISATION DE VOS INFORMATIONS</h2>
+        <p>
+            Les informations que nous collectons sont utilisées pour :
+        </p>
+        <ul>
+            <li>
+                <strong>Créer et gérer les événements :</strong> Vous permettre
+                d'organiser et de promouvoir vos événements.
+            </li>
+            <li>
+                <strong>Traiter vos achats de billets :</strong> Valider vos
+                transactions et générer vos billets.
+            </li>
+            <li>
+                <strong>Vous envoyer des confirmations :</strong> Vous informer
+                de l'état de vos transactions et de vos événements.
+            </li>
+            <li>
+                <strong>Améliorer nos services :</strong> Analyser l'utilisation
+                de la plateforme pour l'améliorer.
+            </li>
+            <li>
+                <strong>Communication :</strong> Vous informer des mises à jour
+                importantes concernant votre compte ou les événements auxquels
+                vous participez.
+            </li>
+        </ul>
+        <p>
+            Nous ne traitons vos données que pour les finalités décrites dans
+            la présente politique et conformément à la législation applicable.
+        </p>
+    </div>
 
-    <h2>4. Information Sharing</h2>
-    <p>We do not sell, trade, or rent your personal information to third parties. Your data is shared only with Pi Network for payment processing and with event organizers for ticket validation and attendance tracking. We require all third parties to maintain the confidentiality of your information.</p>
+    <div class="section">
+        <h2>3. STOCKAGE DES DONNÉES</h2>
+        <p>
+            Vos données sont stockées localement sur votre appareil et sur nos
+            serveurs sécurisés. Toutes les transactions sont enregistrées de
+            manière permanente sur la blockchain Pi Network, ce qui assure une
+            transparence et une sécurité totale.
+        </p>
+        <p>
+            Nous utilisons un chiffrement de niveau industriel pour protéger
+            vos informations contre tout accès non autorisé. Vos données sont
+            conservées aussi longtemps que nécessaire pour fournir nos services
+            ou conformément aux obligations légales.
+        </p>
+        <p>
+            Les données stockées sur la blockchain sont publiquement accessibles
+            mais ne contiennent aucune information personnelle vous identifiant
+            directement.
+        </p>
+    </div>
 
-    <h2>5. Your Rights</h2>
-    <p>You have the right to access, modify, or delete your personal data at any time through your Betix profile settings. You may also request a copy of your data or ask us to restrict processing. For any data-related requests, please contact us directly.</p>
+    <div class="section">
+        <h2>4. PARTAGE DES INFORMATIONS</h2>
+        <p>
+            Betix ne vend, n'échange et ne loue jamais vos informations
+            personnelles à des tiers. Vos données sont partagées uniquement dans
+            les cas suivants :
+        </p>
+        <ul>
+            <li>
+                <strong>Pi Network :</strong> Pour le traitement des paiements
+                et la vérification des transactions.
+            </li>
+            <li>
+                <strong>Organisateurs d'événements :</strong> Pour la validation
+                des billets et le suivi des participants.
+            </li>
+            <li>
+                <strong>Obligations légales :</strong> Si la loi nous y oblige,
+                nous pouvons divulguer vos informations aux autorités compétentes.
+            </li>
+        </ul>
+        <p>
+            Nous exigeons de tous nos partenaires qu'ils maintiennent la
+            confidentialité de vos informations et qu'ils les utilisent
+            uniquement dans le cadre des services fournis.
+        </p>
+    </div>
 
-    <h2>6. Security Measures</h2>
-    <p>We use the Pi Network blockchain technology to secure your transactions. Your Pi wallet is protected by your own private key, which we never access or store. We have no knowledge of your passwords or passphrases. We regularly review our security practices to ensure your data remains protected against unauthorized access.</p>
+    <div class="section">
+        <h2>5. VOS DROITS</h2>
+        <p>
+            Conformément au Règlement Général sur la Protection des Données
+            (RGPD), vous disposez des droits suivants :
+        </p>
+        <ul>
+            <li>
+                <strong>Droit d'accès :</strong> Vous pouvez consulter toutes
+                les données personnelles que nous détenons sur vous.
+            </li>
+            <li>
+                <strong>Droit de rectification :</strong> Vous pouvez modifier
+                vos données personnelles à tout moment.
+            </li>
+            <li>
+                <strong>Droit à l'effacement :</strong> Vous pouvez demander la
+                suppression de vos données personnelles.
+            </li>
+            <li>
+                <strong>Droit à la limitation :</strong> Vous pouvez demander
+                la limitation du traitement de vos données.
+            </li>
+            <li>
+                <strong>Droit à la portabilité :</strong> Vous pouvez recevoir
+                vos données dans un format structuré et lisible.
+            </li>
+        </ul>
+        <p>
+            Pour exercer ces droits, contactez-nous à l'adresse email indiquée
+            ci-dessous. Nous répondrons à votre demande dans un délai de 30 jours.
+        </p>
+    </div>
 
-    <h2>7. Contact Us</h2>
-    <p>For any questions regarding this privacy policy or your personal data, please contact us at betixservices@gmail.com. You may also reach us through our official social media channels at @betix_app.</p>
+    <div class="section">
+        <h2>6. MESURES DE SÉCURITÉ</h2>
+        <p>
+            La sécurité de vos données est notre priorité absolue. Nous mettons
+            en œuvre les mesures suivantes :
+        </p>
+        <ul>
+            <li>
+                <strong>Blockchain Pi Network :</strong> Toutes les transactions
+                sont sécurisées par la technologie blockchain.
+            </li>
+            <li>
+                <strong>Protection du portefeuille :</strong> Votre portefeuille
+                Pi est protégé par votre propre clé privée, que nous n'avons
+                jamais accès et ne stockons pas.
+            </li>
+            <li>
+                <strong>Confidentialité totale :</strong> Nous n'avons aucune
+                connaissance de vos mots de passe ou passphrases.
+            </li>
+            <li>
+                <strong>Audits réguliers :</strong> Nous examinons régulièrement
+                nos pratiques de sécurité pour garantir la protection de vos
+                données.
+            </li>
+            <li>
+                <strong>Chiffrement :</strong> Toutes les données sensibles sont
+                chiffrées lors de leur transmission et de leur stockage.
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. COOKIES ET TECHNOLOGIES SIMILAIRES</h2>
+        <p>
+            Betix utilise des cookies pour améliorer votre expérience utilisateur.
+            Ces cookies nous aident à :
+        </p>
+        <ul>
+            <li>
+                Mémoriser vos préférences de langue et vos paramètres.
+            </li>
+            <li>
+                Analyser l'utilisation de la plateforme pour l'améliorer.
+            </li>
+            <li>
+                Maintenir votre session active pendant votre navigation.
+            </li>
+        </ul>
+        <p>
+            Vous pouvez contrôler l'utilisation des cookies via les paramètres
+            de votre navigateur. La désactivation des cookies peut affecter
+            certaines fonctionnalités de la plateforme.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>8. MODIFICATIONS DE LA POLITIQUE</h2>
+        <p>
+            Nous nous réservons le droit de modifier la présente politique de
+            confidentialité à tout moment. Les modifications entrent en vigueur
+            dès leur publication sur la plateforme.
+        </p>
+        <p>
+            Nous vous informerons des changements significatifs par une
+            notification sur la plateforme ou par email. Nous vous encourageons
+            à consulter régulièrement cette page pour rester informé de la
+            manière dont nous protégeons vos données.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>9. CONSERVATION DES DONNÉES</h2>
+        <p>
+            Nous conservons vos données personnelles aussi longtemps que
+            nécessaire pour fournir nos services et remplir nos obligations
+            légales. Les données sont généralement conservées pendant une
+            période de 5 ans après votre dernière activité sur la plateforme.
+        </p>
+        <p>
+            Les données liées aux transactions sont conservées indéfiniment sur
+            la blockchain Pi Network à des fins de transparence et de sécurité.
+        </p>
+        <p>
+            Vous pouvez demander la suppression de vos données personnelles à
+            tout moment, à l'exception des données nécessaires à des fins
+            légales ou de sécurité.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>10. PROTECTION DES MINEURS</h2>
+        <p>
+            Betix ne s'adresse pas aux mineurs de moins de 18 ans. Nous ne
+            collectons pas intentionnellement des données personnelles auprès
+            de mineurs. Si vous êtes parent ou tuteur et que vous pensez que
+            votre enfant nous a fourni des données personnelles, veuillez nous
+            contacter immédiatement.
+        </p>
+        <p>
+            Nous nous engageons à supprimer rapidement toute information
+            concernant des mineurs qui nous serait signalée.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>11. CONTACT</h2>
+        <p>
+            Pour toute question concernant la présente politique de
+            confidentialité ou vos données personnelles, vous pouvez nous
+            contacter :
+        </p>
+        <p>
+            <strong>📧 Email :</strong> betixservices@gmail.com
+        </p>
+        <p>
+            <strong>🌐 Site web :</strong> www.betix.com
+        </p>
+        <p>
+            <strong>🐦 Twitter :</strong> @betix_app
+        </p>
+        <p>
+            Nous nous engageons à répondre à vos demandes dans les meilleurs
+            délais et à traiter vos préoccupations avec professionnalisme.
+        </p>
+    </div>
+
+    <!-- ============================================================
+         BOUTON RETOUR
+         ============================================================ -->
+    <div class="actions-wrapper">
+        <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
+    </div>
+
 </div>
 
+<!-- ============================================================
+         FOOTER LÉGER
+         ============================================================ -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
             <div class="footer-logo">Betix</div>
-            <p class="footer-slogan">Decentralized Event Ticketing on Pi Network</p>
-            <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+            <p class="footer-slogan">Achat de tickets pour les événements sur Pi Network</p>
+            <p class="footer-desc">Plateforme sécurisée pour acheter et vendre des billets avec paiement en Pi.</p>
         </div>
         <div class="footer-col">
-            <h4>Legal</h4>
+            <h4>Informations légales</h4>
             <ul>
-                <li><a href="#" onclick="window.location.href='terms.html'">Terms of Service</a></li>
-                <li><a href="#" onclick="window.location.href='privacy.html'">Privacy Policy</a></li>
+                <li><a href="terms.html">Conditions Générales</a></li>
+                <li><a href="privacy.html">Politique de confidentialité</a></li>
             </ul>
         </div>
         <div class="footer-col">
@@ -60,8 +699,8 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <span>© 2026 Betix. All rights reserved.</span>
-        <span>Built on Pi Network | Secured by Blockchain</span>
+        <span>© 2026 Betix. Tous droits réservés.</span>
+        <span>Construit sur Pi Network | Sécurisé par Blockchain</span>
     </div>
 </footer>
 
