@@ -231,7 +231,8 @@ const translations = {
         sport: 'Sport', conference: 'Conference', training: 'Training',
         cinema: 'Cinema', festival: 'Festival', theatre: 'Theatre',
         dance: 'Dance', exhibition: 'Exhibition', gala: 'Gala',
-        seminar: 'Seminar', fullDescription: 'Full description',
+        seminar: 'Seminar', formation: 'Formation',
+        fullDescription: 'Full description',
         information: 'Information', organizer: 'Organizer',
         createdOn: 'Created on', seatsLeft: 'Seats left',
         rating: 'Rating', notYetRated: 'Not yet rated',
@@ -322,7 +323,8 @@ const translations = {
         sport: 'Sport', conference: 'Conférence', training: 'Formation',
         cinema: 'Cinéma', festival: 'Festival', theatre: 'Théâtre',
         dance: 'Danse', exhibition: 'Exposition', gala: 'Gala',
-        seminar: 'Séminaire', fullDescription: 'Description complète',
+        seminar: 'Séminaire', formation: 'Formation',
+        fullDescription: 'Description complète',
         information: 'Informations', organizer: 'Organisateur',
         createdOn: 'Créé le', seatsLeft: 'Places restantes',
         rating: 'Évaluation', notYetRated: 'Pas encore évalué',
@@ -411,7 +413,8 @@ const translations = {
         sport: 'Esporte', conference: 'Conferência', training: 'Treinamento',
         cinema: 'Cinema', festival: 'Festival', theatre: 'Teatro',
         dance: 'Dança', exhibition: 'Exposição', gala: 'Gala',
-        seminar: 'Seminário', fullDescription: 'Descrição completa',
+        seminar: 'Seminário', formation: 'Formação',
+        fullDescription: 'Descrição completa',
         information: 'Informações', organizer: 'Organizador',
         createdOn: 'Criado em', seatsLeft: 'Lugares restantes',
         rating: 'Avaliação', notYetRated: 'Ainda não avaliado',
@@ -499,7 +502,8 @@ const translations = {
         sport: 'Deporte', conference: 'Conferencia', training: 'Entrenamiento',
         cinema: 'Cine', festival: 'Festival', theatre: 'Teatro',
         dance: 'Baile', exhibition: 'Exposición', gala: 'Gala',
-        seminar: 'Seminario', fullDescription: 'Descripción completa',
+        seminar: 'Seminario', formation: 'Formación',
+        fullDescription: 'Descripción completa',
         information: 'Información', organizer: 'Organizador',
         createdOn: 'Creado el', seatsLeft: 'Asientos restantes',
         rating: 'Valoración', notYetRated: 'Aún no valorado',
@@ -580,7 +584,8 @@ const translations = {
         sport: '体育', conference: '会议', training: '培训',
         cinema: '电影院', festival: '节日', theatre: '剧院',
         dance: '舞蹈', exhibition: '展览', gala: '晚会',
-        seminar: '研讨会', fullDescription: '完整描述',
+        seminar: '研讨会', formation: '培训',
+        fullDescription: '完整描述',
         information: '信息', organizer: '组织者',
         createdOn: '创建于', seatsLeft: '剩余座位',
         rating: '评分', notYetRated: '尚未评分',
@@ -736,7 +741,7 @@ if (heroSlides.length === 0) {
 }
 
 // ============================================================
-// ===== EVENT IMAGES =====
+// ===== EVENT IMAGES (ajout de Formation) =====
 // ============================================================
 
 const eventImagesList = {
@@ -751,7 +756,8 @@ const eventImagesList = {
     Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
     Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
     Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
-    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
+    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
+    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
 };
 
 // ============================================================
@@ -1499,17 +1505,27 @@ function renderTicketCard(ticket, status) {
 function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
-    var active = tickets.filter(function(t) {
-        var isUsed = usedTickets.indexOf(t.id) !== -1;
-        var isExpired = new Date(t.eventDate) <= new Date();
-        return !isUsed && !isExpired && t.status !== 'Used';
+    
+    // On prend tous les tickets, sans filtrer sur la date
+    var allTickets = tickets.filter(function(t) {
+        return usedTickets.indexOf(t.id) === -1 && t.status !== 'Used';
     });
-    active.sort(function(a, b) { return new Date(b.purchaseDate) - new Date(a.purchaseDate); });
-    if (!active.length) { 
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>'; 
-        return; 
+    
+    allTickets.sort(function(a, b) {
+        return new Date(b.purchaseDate) - new Date(a.purchaseDate);
+    });
+    
+    if (!allTickets.length) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>';
+        return;
     }
-    container.innerHTML = active.map(function(t) { return renderTicketCard(t, 'valid'); }).join('');
+    
+    container.innerHTML = allTickets.map(function(t) {
+        var isExpired = new Date(t.eventDate) <= new Date();
+        var status = isExpired ? 'past' : 'valid';
+        return renderTicketCard(t, status);
+    }).join('');
+    
     setTimeout(generateAllQRCodes, 200);
 }
 
@@ -2596,6 +2612,17 @@ async function confirmPurchaseFromPopup() {
 async function confirmPurchase(eventId, quantity, ticketType) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) { alert(t('eventNotFound')); return; }
+
+    // ============================================================
+    // VÉRIFICATION DE LA DATE DE L'ÉVÉNEMENT (PASSÉE)
+    // ============================================================
+    var eventDate = new Date(event.date);
+    var now = new Date();
+    if (eventDate < now) {
+        alert("❌ Cet événement a déjà eu lieu. Vous ne pouvez pas acheter de tickets pour un événement passé.");
+        return;
+    }
+
     var price = (event.ticketTypes && event.ticketTypes[ticketType] && event.ticketTypes[ticketType].price) || event.price || 0;
     var availableSeats = 0;
     if (ticketType === 'standard') {
@@ -3722,7 +3749,7 @@ function renderMyEventCardModern(event) {
 }
 
 // ============================================================
-// ===== RENDER EVENTS =====
+// ===== RENDER EVENTS (avec catégorie Formation) =====
 // ============================================================
 
 function renderEventsByCategory() {
@@ -3738,7 +3765,7 @@ function renderEventsByCategory() {
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>'; 
         return; 
     }
-    var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
+    var cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
     var html = '';
     if (currentFilter !== 'All') {
         html = '<div class="category-section"><div class="events-grid-centered">';
@@ -3973,8 +4000,12 @@ function openGallery(eventId, startIndex) {
     modal.classList.add('show');
 }
 
+// ============================================================
+// ===== INIT FILTERS (avec catégorie Formation) =====
+// ============================================================
+
 function initFilters() {
-    var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar'];
+    var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
     var container = document.getElementById('filtersContainer');
     if (!container) return;
     container.innerHTML = cats.map(function(c) { 
@@ -4737,6 +4768,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('SÉLECTEUR DE LANGUE déplacé dans Settings');
         console.log('BARRE SUPÉRIEURE FIXE - sticky, visible en permanence');
         console.log('ÉMOJIS NETTOYÉS - Seuls les drapeaux et 👤 conservés');
+        console.log('CATÉGORIE "Formation" ajoutée dans les filtres et événements');
+        console.log('VÉRIFICATION DATE PASSÉE lors de l\'achat d\'un ticket');
+        console.log('ICÔNE 👤 en noir sur les cartes d\'événements');
     } catch (error) {
         console.error('Error during application startup:', error);
         var loader = document.getElementById('loader');
@@ -4774,10 +4808,5 @@ window.loadEventsFromSupabase = loadEventsFromSupabase;
 window.loadTicketsFromSupabase = loadTicketsFromSupabase;
 window.verifySupabasePersistence = verifySupabasePersistence;
 window.forceFullSync = forceFullSync;
-window.forceSyncTickets = forceSyncTickets;
-window.checkSupabaseData = checkSupabaseData;
-window.showTickets = showTickets;
-window.showSupabaseTickets = showSupabaseTickets;
-window.reloadTicketsFromSupabase = reloadTicketsFromSupabase;
 
 console.log('✅ All functions exposed globally');
