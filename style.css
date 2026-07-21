@@ -24,6 +24,7 @@ body {
     overflow-x: hidden;
     max-width: 100vw;
     padding-bottom: 80px;
+    padding-top: 70px; /* Pour compenser le header fixe */
 }
 
 :root {
@@ -52,6 +53,140 @@ body {
 }
 
 /* ============================================================
+   HEADER FIXE (sticky)
+   ============================================================ */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #08143F, #1a1a2e);
+    padding: 0.6rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(8, 20, 63, 0.3);
+    z-index: 99999;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+    gap: 10px;
+    flex-wrap: wrap;
+    height: 70px;
+    min-height: 70px;
+    transition: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+/* ============================================================
+   LOGO - AGRANDI
+   ============================================================ */
+.logo {
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.logo .logo-img {
+    height: 52px;
+    width: auto;
+    border-radius: 8px;
+    filter: brightness(0) invert(1);
+}
+
+.logo .logo-text {
+    font-size: 2rem;
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.5rem;
+        gap: 8px;
+    }
+    .logo .logo-img {
+        height: 40px;
+    }
+    .logo .logo-text {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================================
+   BOUTON RETOUR
+   ============================================================ */
+.back-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    cursor: pointer;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 99999;
+    position: relative;
+    pointer-events: auto !important;
+    min-width: 80px;
+    height: 44px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 500;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    flex-shrink: 0;
+}
+
+.back-btn .back-btn-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.back-btn.hidden {
+    display: none !important;
+}
+
+.back-btn:not(.hidden) {
+    display: flex !important;
+}
+
+/* ============================================================
    NOUVEAU LOADER - LOGO + 5 BOULETS
    ============================================================ */
 .loader-container {
@@ -65,7 +200,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 999999;
     transition: opacity 0.8s ease;
 }
 
@@ -94,7 +229,6 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-/* 5 BOULETS */
 .loader-balls {
     display: flex;
     gap: 12px;
@@ -271,9 +405,7 @@ body {
     display: flex !important;
 }
 
-/* ============================================================
-   BADGES ACTIVE/INACTIVE AMÉLIORÉS
-   ============================================================ */
+/* BADGES ACTIVE/INACTIVE AMÉLIORÉS */
 .type-status-badge {
     font-size: 0.6rem;
     font-weight: 700;
@@ -298,170 +430,79 @@ body {
 }
 
 /* ============================================================
-   RESPONSIVE - COMPTEURS
+   SIDEBAR - Sélecteur de langue supprimé
    ============================================================ */
-@media (max-width: 768px) {
-    .char-counter {
-        font-size: 0.6rem;
-    }
-    
-    .ticket-type-row {
-        padding: 8px 10px;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .ticket-type-row .type-price-group input[type="number"] {
-        width: 80px;
-        font-size: 0.7rem;
-    }
-    
-    .type-status-badge {
-        font-size: 0.5rem;
-        padding: 2px 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .loader-logo {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .loader-ball {
-        width: 10px;
-        height: 10px;
-    }
-    
-    .loader-balls {
-        gap: 8px;
-    }
-}
-
-/* ============================================================
-   SUITE DES STYLES EXISTANTS (CONSERVÉS INTÉGRALEMENT)
-   ============================================================ */
-
-/* HEADER AVEC BARRE BLANCHE SOUS LE LOGO */
-.header {
-    background: linear-gradient(135deg, #08143F, #1a1a2e);
-    padding: 0.6rem 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 20px rgba(8, 20, 63, 0.3);
-    position: sticky;
-    top: 0;
-    z-index: 9999;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-/* LOGO - AGRANDI */
-.logo {
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
-    padding: 4px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.logo .logo-img {
-    height: 52px;
-    width: auto;
-    border-radius: 8px;
-    filter: brightness(0) invert(1);
-}
-
-.logo .logo-text {
-    font-size: 2rem;
-}
-
-@media (max-width: 480px) {
-    .logo {
-        font-size: 1.5rem;
-        gap: 8px;
-    }
-    .logo .logo-img {
-        height: 40px;
-    }
-    .logo .logo-text {
-        font-size: 1.5rem;
-    }
-}
-
-/* BOUTON RETOUR */
-.back-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    cursor: pointer;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 30px;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    z-index: 99999;
-    position: relative;
-    pointer-events: auto !important;
-    min-width: 80px;
-    height: 44px;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-weight: 500;
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-}
-
-.back-btn:active {
-    transform: scale(0.95);
-}
-
-.back-btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: white;
+.sidebar-header {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
     flex-shrink: 0;
+    position: relative;
 }
 
-.back-btn .back-btn-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: white;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-
-.back-btn.hidden {
+.sidebar-language-selector {
     display: none !important;
 }
 
-.back-btn:not(.hidden) {
-    display: flex !important;
+/* ============================================================
+   SETTINGS - Sélecteur de langue
+   ============================================================ */
+.settings-lang-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--dark);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
 }
+
+.settings-lang-select:focus {
+    outline: none;
+    border-color: #f5a623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+.settings-group {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.settings-group p {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--dark);
+}
+
+.settings-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--dark);
+    cursor: pointer;
+}
+
+.settings-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #08143F;
+    cursor: pointer;
+}
+
+/* ============================================================
+   RESTE DES STYLES (conservés intégralement)
+   ============================================================ */
 
 /* BOTTOM NAVIGATION */
 .bottom-nav {
@@ -568,14 +609,6 @@ body {
 
 .overlay.active {
     display: block;
-}
-
-.sidebar-header {
-    padding: 1.5rem;
-    text-align: center;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
-    position: relative;
 }
 
 .close-sidebar {
@@ -6651,10 +6684,6 @@ body {
     .sidebar {
         width: 260px;
         right: -260px;
-    }
-    .sidebar-language-selector {
-        flex-direction: column;
-        gap: 4px;
     }
     .my-events-grid {
         grid-template-columns: 1fr;
