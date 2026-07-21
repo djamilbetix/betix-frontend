@@ -662,7 +662,13 @@ let adminTimerInterval = null;
 let adminLogs = [];
 
 // ============================================================
-// ===== LIMITES CARACTÈRES FORMULAIRE - INITIALISATION =====
+// ===== HERO SLIDES (chargés depuis Supabase) =====
+// ============================================================
+
+let heroSlides = [];
+
+// ============================================================
+// ===== LIMITES CARACTÈRES FORMULAIRE =====
 // ============================================================
 
 function initCharCounters() {
@@ -699,49 +705,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// ===== HERO SLIDES =====
-// ============================================================
-
-let heroSlides = JSON.parse(localStorage.getItem('betix_hero_slides')) || [];
-
-if (heroSlides.length === 0) {
-    heroSlides = [
-        {
-            image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop',
-            badge: 'Music Festival',
-            title: 'Summer Music Festival 2026',
-            description: '3 days of electrifying performances by top artists'
-        },
-        {
-            image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop',
-            badge: 'Football',
-            title: 'Champions League Final',
-            description: 'The biggest football event of the year live'
-        },
-        {
-            image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop',
-            badge: 'Conference',
-            title: 'Web3 Summit 2026',
-            description: 'The future of decentralized technology unveiled'
-        },
-        {
-            image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop',
-            badge: 'Cinema',
-            title: 'International Film Festival',
-            description: 'Premieres and exclusive screenings'
-        },
-        {
-            image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop',
-            badge: 'Concert',
-            title: 'World Tour Concert',
-            description: 'An unforgettable night with global superstars'
-        }
-    ];
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-}
-
-// ============================================================
-// ===== EVENT IMAGES (ajout de Formation) =====
+// ===== EVENT IMAGES =====
 // ============================================================
 
 const eventImagesList = {
@@ -792,6 +756,182 @@ async function uploadEventImage(eventId, base64Data, index) {
     } catch (error) {
         console.error('Error uploading to Supabase storage:', error);
         return null;
+    }
+}
+
+// ============================================================
+// ===== HERO SLIDES SUPABASE FUNCTIONS =====
+// ============================================================
+
+async function saveHeroSlideToSupabase(slideData, index) {
+    try {
+        var dbSlide = {
+            image_url: slideData.image,
+            badge: slideData.badge || '',
+            title: slideData.title,
+            description: slideData.description || '',
+            sort_order: index !== undefined ? index : 0,
+            updated_at: new Date().toISOString()
+        };
+
+        if (slideData.id) {
+            // Mise à jour
+            const { error } = await supabaseClient
+                .from('hero_slides')
+                .update(dbSlide)
+                .eq('id', slideData.id);
+            if (error) throw error;
+            console.log('✅ Hero slide updated:', slideData.id);
+        } else {
+            // Insertion
+            dbSlide.created_at = new Date().toISOString();
+            const { error } = await supabaseClient
+                .from('hero_slides')
+                .insert(dbSlide);
+            if (error) throw error;
+            console.log('✅ Hero slide inserted');
+        }
+        return true;
+    } catch (error) {
+        console.error('❌ Error saving hero slide:', error);
+        return false;
+    }
+}
+
+async function deleteHeroSlideFromSupabase(id) {
+    try {
+        const { error } = await supabaseClient
+            .from('hero_slides')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        console.log('✅ Hero slide deleted:', id);
+        return true;
+    } catch (error) {
+        console.error('❌ Error deleting hero slide:', error);
+        return false;
+    }
+}
+
+async function migrateHeroSlides(slides) {
+    for (var i = 0; i < slides.length; i++) {
+        await saveHeroSlideToSupabase(slides[i], i);
+    }
+    console.log('✅ Hero slides migrated:', slides.length);
+}
+
+async function uploadHeroImage(base64Data, filename) {
+    try {
+        const response = await fetch(base64Data);
+        const blob = await response.blob();
+        const filePath = 'hero/' + filename.replace(/\s+/g, '_') + '_' + Date.now() + '.webp';
+        const { data, error } = await supabaseClient.storage
+            .from('events-images')
+            .upload(filePath, blob, {
+                contentType: blob.type,
+                cacheControl: '3600',
+                upsert: true
+            });
+        if (error) throw error;
+        const { data: publicUrlData } = supabaseClient.storage
+            .from('events-images')
+            .getPublicUrl(filePath);
+        return publicUrlData.publicUrl;
+    } catch (error) {
+        console.error('Error uploading hero image:', error);
+        return null;
+    }
+}
+
+async function loadHeroSlides() {
+    console.log('📥 Loading hero slides from Supabase...');
+    try {
+        const { data, error } = await supabaseClient
+            .from('hero_slides')
+            .select('*')
+            .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            heroSlides = data.map(function(slide) {
+                return {
+                    id: slide.id,
+                    image: slide.image_url,
+                    badge: slide.badge || '',
+                    title: slide.title,
+                    description: slide.description || ''
+                };
+            });
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+            console.log('✅ Loaded', heroSlides.length, 'hero slides from Supabase');
+        } else {
+            console.log('ℹ️ No hero slides in Supabase, using localStorage');
+            var local = localStorage.getItem('betix_hero_slides');
+            if (local) {
+                try {
+                    heroSlides = JSON.parse(local);
+                    // Migrer vers Supabase
+                    await migrateHeroSlides(heroSlides);
+                } catch (e) {
+                    heroSlides = [];
+                }
+            } else {
+                // Slides par défaut
+                heroSlides = [
+                    {
+                        image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop',
+                        badge: 'Music Festival',
+                        title: 'Summer Music Festival 2026',
+                        description: '3 days of electrifying performances by top artists'
+                    },
+                    {
+                        image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop',
+                        badge: 'Football',
+                        title: 'Champions League Final',
+                        description: 'The biggest football event of the year live'
+                    },
+                    {
+                        image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop',
+                        badge: 'Conference',
+                        title: 'Web3 Summit 2026',
+                        description: 'The future of decentralized technology unveiled'
+                    },
+                    {
+                        image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop',
+                        badge: 'Cinema',
+                        title: 'International Film Festival',
+                        description: 'Premieres and exclusive screenings'
+                    },
+                    {
+                        image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop',
+                        badge: 'Concert',
+                        title: 'World Tour Concert',
+                        description: 'An unforgettable night with global superstars'
+                    }
+                ];
+                await migrateHeroSlides(heroSlides);
+            }
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        }
+
+        initHeroSlider();
+        renderAdminSlides();
+        return heroSlides;
+    } catch (error) {
+        console.error('❌ Error loading hero slides:', error);
+        // Fallback sur localStorage
+        var local = localStorage.getItem('betix_hero_slides');
+        if (local) {
+            try {
+                heroSlides = JSON.parse(local);
+                initHeroSlider();
+                renderAdminSlides();
+            } catch (e) {
+                heroSlides = [];
+            }
+        }
+        return heroSlides;
     }
 }
 
@@ -850,6 +990,12 @@ async function saveEventToSupabase(eventData) {
         var vipEnabled = eventData.ticketTypes?.vip?.enabled || false;
         var standardPrice = standardEnabled ? (eventData.ticketTypes.standard.price || 0) : 0;
         var vipPrice = vipEnabled ? (eventData.ticketTypes.vip.price || 0) : 0;
+        
+        // Stocker toutes les URLs des images
+        var imageUrls = eventData.images && eventData.images.length > 0 
+            ? JSON.stringify(eventData.images) 
+            : null;
+        
         var dbEvent = {
             id: eventData.id,
             organizer_pi_uid: eventData.organizerPiUid || eventData.organizer || currentUser.wallet || 'unknown',
@@ -857,6 +1003,7 @@ async function saveEventToSupabase(eventData) {
             title: eventData.title || 'Untitled',
             description: eventData.description || '',
             image_url: eventData.coverImage || (eventData.images && eventData.images[0]) || '',
+            image_urls: imageUrls,
             location: eventData.location || '',
             pays: eventData.pays || eventData.country || 'France',
             event_date: eventData.date || new Date().toISOString(),
@@ -965,6 +1112,24 @@ async function loadEventsFromSupabase() {
             var vipSeats = e.vip_seats || 0;
             var standardSold = e.standard_sold || 0;
             var vipSold = e.vip_sold || 0;
+            
+            // Reconstruire le tableau des images
+            var imagesArray = [];
+            if (e.image_urls) {
+                try {
+                    var parsed = JSON.parse(e.image_urls);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        imagesArray = parsed;
+                    }
+                } catch (parseErr) {
+                    console.warn('Could not parse image_urls for event', e.id);
+                }
+            }
+            // Fallback sur image_url si image_urls est vide
+            if (imagesArray.length === 0 && e.image_url) {
+                imagesArray = [e.image_url];
+            }
+            
             return {
                 id: e.id,
                 title: e.title || 'Untitled',
@@ -978,8 +1143,8 @@ async function loadEventsFromSupabase() {
                 price: e.ticket_price_standard || 0,
                 seatsTotal: e.max_tickets || 0,
                 seatsLeft: (e.max_tickets || 0) - standardSold - vipSold,
-                images: e.image_url ? [e.image_url] : [],
-                coverImage: e.image_url || '',
+                images: imagesArray,
+                coverImage: (imagesArray.length > 0) ? imagesArray[0] : (e.image_url || ''),
                 organizer: e.organizer_pi_uid || '',
                 organizerName: e.organizer_name || '',
                 organizerPiUid: e.organizer_pi_uid || '',
@@ -1308,6 +1473,7 @@ async function forceRefreshData() {
     }
     try {
         await loadAllFromSupabase();
+        await loadHeroSlides();
         await syncAllToSupabase();
         renderEventsByCategory();
         renderTickets();
@@ -1395,6 +1561,7 @@ async function loadAllFromSupabase() {
                 console.log('✅ Loaded', notifications.length, 'notifications from Supabase');
             }
         }
+        await loadHeroSlides();
         renderEventsByCategory();
         renderTickets();
         renderHistory();
@@ -1506,7 +1673,6 @@ function renderTickets() {
     var container = document.getElementById('ticketsList');
     if (!container) return;
     
-    // On prend tous les tickets, sans filtrer sur la date
     var allTickets = tickets.filter(function(t) {
         return usedTickets.indexOf(t.id) === -1 && t.status !== 'Used';
     });
@@ -1893,7 +2059,7 @@ function renderEventCard(event) {
             '</div>' +
             '<div class="card-footer-classic"><span class="event-rating-classic">' + ratingDisplay + '</span>' + ticketsLabelHtml + '</div>' +
             '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
-            '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) + '</div>' +
+            '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user" style="color:#1a1a2e !important;"></i></span> ' + t('by') + ' ' + escapeHtml(organizerFormatted) + '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' : '') +
         '</div>' +
     '</div>';
@@ -2613,9 +2779,7 @@ async function confirmPurchase(eventId, quantity, ticketType) {
     var event = events.find(function(e) { return e.id === eventId; });
     if (!event) { alert(t('eventNotFound')); return; }
 
-    // ============================================================
     // VÉRIFICATION DE LA DATE DE L'ÉVÉNEMENT (PASSÉE)
-    // ============================================================
     var eventDate = new Date(event.date);
     var now = new Date();
     if (eventDate < now) {
@@ -2862,7 +3026,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// ===== CREATE EVENT (AVEC VÉRIFICATION PRIX VIP) =====
+// ===== CREATE EVENT =====
 // ============================================================
 
 async function createEvent(e) {
@@ -3550,6 +3714,10 @@ function adminDeleteAllEvents() {
     }
 }
 
+// ============================================================
+// ===== ADMIN SLIDES (avec Supabase) =====
+// ============================================================
+
 function renderAdminSlides() {
     var container = document.getElementById('adminSlidesList');
     if (!container) return;
@@ -3594,52 +3762,61 @@ function adminShowSlideForm(index) {
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
-function adminSaveSlide() {
+async function adminSaveSlide() {
     var imageInput = document.getElementById('adminSlideImageInput');
     var badgeInput = document.getElementById('adminSlideBadge');
     var titleInput = document.getElementById('adminSlideTitle');
     var descInput = document.getElementById('adminSlideDesc');
     var editIndex = document.getElementById('adminEditSlideIndex');
-    var preview = document.getElementById('adminSlidePreview');
     var badge = badgeInput.value.trim();
     var title = titleInput.value.trim();
     var description = descInput.value.trim();
     if (!title) { alert('Please enter a title'); return; }
+
     var imageData = null;
     if (imageInput.files && imageInput.files[0]) {
         var file = imageInput.files[0];
         if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
         if (file.size > 5 * 1024 * 1024) { alert('Image is too large (max 5MB)'); return; }
-        var reader = new FileReader();
-        reader.onload = function(e) { imageData = e.target.result; saveSlideData(imageData, badge, title, description, parseInt(editIndex.value)); };
-        reader.readAsDataURL(file);
+        var compressedData = await compressImage(file);
+        var url = await uploadHeroImage(compressedData, title.replace(/\s+/g, '_'));
+        if (!url) { alert('Error uploading image'); return; }
+        imageData = url;
     } else {
         var index = parseInt(editIndex.value);
-        if (index >= 0 && index < heroSlides.length) { imageData = heroSlides[index].image; saveSlideData(imageData, badge, title, description, index); }
-        else { alert('Please select an image'); return; }
+        if (index >= 0 && index < heroSlides.length) {
+            imageData = heroSlides[index].image;
+        } else {
+            alert('Please select an image');
+            return;
+        }
     }
-}
 
-function saveSlideData(image, badge, title, description, index) {
-    var slideData = { image: image, badge: badge, title: title, description: description };
-    if (index >= 0 && index < heroSlides.length) { heroSlides[index] = slideData; }
-    else { heroSlides.push(slideData); }
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+    var slideData = {
+        image: imageData,
+        badge: badge,
+        title: title,
+        description: description
+    };
+
+    var saved = await saveHeroSlideToSupabase(slideData, parseInt(editIndex.value));
+    if (!saved) { alert('Error saving slide'); return; }
+
+    await loadHeroSlides();
     adminCancelSlideForm();
-    renderAdminSlides();
-    initHeroSlider();
-    addAdminLog('Slide modified', 'Title: ' + title);
-    alert('Image saved successfully!');
+    alert('Slide saved successfully!');
 }
 
-function adminDeleteSlide(index) {
+async function adminDeleteSlide(index) {
     if (!confirm('Delete this carousel image?')) return;
-    var title = heroSlides[index] ? heroSlides[index].title : 'Untitled';
-    heroSlides.splice(index, 1);
-    localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-    renderAdminSlides();
-    initHeroSlider();
-    addAdminLog('Slide deleted', 'Title: ' + title);
+    var slide = heroSlides[index];
+    if (!slide) return;
+
+    var deleted = await deleteHeroSlideFromSupabase(slide.id);
+    if (!deleted) { alert('Error deleting slide'); return; }
+
+    await loadHeroSlides();
+    addAdminLog('Slide deleted', 'Title: ' + slide.title);
 }
 
 function adminEditSlide(index) { adminShowSlideForm(index); }
@@ -3749,7 +3926,7 @@ function renderMyEventCardModern(event) {
 }
 
 // ============================================================
-// ===== RENDER EVENTS (avec catégorie Formation) =====
+// ===== RENDER EVENTS =====
 // ============================================================
 
 function renderEventsByCategory() {
@@ -3999,10 +4176,6 @@ function openGallery(eventId, startIndex) {
     nextBtn.onclick = function() { updateImage(currentIndex + 1); };
     modal.classList.add('show');
 }
-
-// ============================================================
-// ===== INIT FILTERS (avec catégorie Formation) =====
-// ============================================================
 
 function initFilters() {
     var cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
@@ -4535,7 +4708,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('dark-mode'); 
         }
         if (dark) dark.addEventListener('change', toggleDarkMode);
-        initHeroSlider();
+        loadHeroSlides(); // Charger les slides depuis Supabase
         initFaq();
         renderAdminLogs();
         setupTicketTypesUI();
@@ -4771,6 +4944,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('CATÉGORIE "Formation" ajoutée dans les filtres et événements');
         console.log('VÉRIFICATION DATE PASSÉE lors de l\'achat d\'un ticket');
         console.log('ICÔNE 👤 en noir sur les cartes d\'événements');
+        console.log('✅ IMAGES DU CARROUSEL SAUVEGARDÉES DANS SUPABASE');
     } catch (error) {
         console.error('Error during application startup:', error);
         var loader = document.getElementById('loader');
@@ -4808,5 +4982,9 @@ window.loadEventsFromSupabase = loadEventsFromSupabase;
 window.loadTicketsFromSupabase = loadTicketsFromSupabase;
 window.verifySupabasePersistence = verifySupabasePersistence;
 window.forceFullSync = forceFullSync;
+window.loadHeroSlides = loadHeroSlides;
+window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
+window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
+window.uploadHeroImage = uploadHeroImage;
 
 console.log('✅ All functions exposed globally');
