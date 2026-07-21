@@ -64,7 +64,7 @@
 <div id="main-content" style="display: none;">
 
 <!-- ============================================================ -->
-<!-- HEADER                                                        -->
+<!-- HEADER FIXE (sticky)                                         -->
 <!-- ============================================================ -->
 <header class="header" id="mainHeader">
     <div class="header-left">
@@ -102,24 +102,6 @@
         <h3 id="sidebarName">Guest</h3>
         <p id="sidebarWallet">Not connected</p>
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
-        
-        <div class="sidebar-language-selector">
-            <select id="nativeLangSelect" class="lang-select-native-sidebar" onchange="changeLanguage(this.value)">
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="es">Español</option>
-                <option value="pt">Português</option>
-                <option value="zh">中文</option>
-                <option value="id">Indonesia</option>
-                <option value="ar">العربية</option>
-                <option value="hi">हिन्दी</option>
-                <option value="ru">Русский</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="de">Deutsch</option>
-                <option value="it">Italiano</option>
-            </select>
-        </div>
     </div>
     
     <div class="sidebar-nav">
@@ -262,7 +244,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- CREATE EVENT PAGE - AVEC LIMITES CARACTÈRES ET VIP CHECK    -->
+<!-- CREATE EVENT PAGE                                            -->
 <!-- ============================================================ -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
@@ -353,7 +335,6 @@
                     <div class="ticket-types-title"><i class="fas fa-ticket-alt"></i> Ticket Types</div>
                     <p class="ticket-types-subtitle">Enable at least one ticket type and set its price</p>
                     
-                    <!-- STANDARD - Bordure Bleue #08143F -->
                     <div class="ticket-type-row standard">
                         <div class="type-toggle">
                             <span class="type-icon"><i class="fas fa-ticket-alt"></i></span>
@@ -371,7 +352,6 @@
                         <span class="type-status-badge active" id="standardStatusBadge">Active</span>
                     </div>
                     
-                    <!-- VIP - Bordure Dorée #d4911e -->
                     <div class="ticket-type-row vip">
                         <div class="type-toggle">
                             <span class="type-icon"><i class="fas fa-star"></i></span>
@@ -389,10 +369,9 @@
                         <span class="type-status-badge inactive" id="vipStatusBadge">Inactive</span>
                     </div>
                     
-                    <!-- MESSAGE ERREUR PRIX VIP -->
                     <div id="vipPriceError" class="vip-price-error" style="display:none;">
                         <i class="fas fa-exclamation-circle"></i> 
-                        Le prix VIP doit être supérieur au prix Standard
+                        VIP price must be greater than Standard price
                     </div>
                 </div>
             </div>
@@ -434,7 +413,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format for better performance</p>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
             </div>
             
             <div class="btn-publish-wrapper">
@@ -602,11 +581,29 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- SETTINGS PAGE                                                -->
+<!-- SETTINGS PAGE (avec sélecteur de langue)                    -->
 <!-- ============================================================ -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
+        <div class="settings-group">
+            <p><strong>Language</strong></p>
+            <select id="settingsLangSelect" class="settings-lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="zh">中文</option>
+                <option value="id">Indonesia</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+            </select>
+        </div>
         <div class="settings-group">
             <p><strong>Theme</strong></p>
             <label><input type="checkbox" id="darkModeToggle"> Dark mode</label>
@@ -638,7 +635,6 @@
             <div class="stat-card"><h3>Users</h3><p id="adminUserCount">0</p></div>
         </div>
 
-        <!-- INDICATEUR DE SYNCHRONISATION -->
         <div class="sync-indicator-wrapper">
             <div id="syncStatusIndicator" class="sync-indicator">
                 <i class="sync-icon fas fa-cloud"></i>
@@ -807,19 +803,19 @@
         <span>© 2026 Betix. All rights reserved.</span>
         <div class="footer-lang-selector">
             <select id="footerLangSelect" onchange="changeLanguage(this.value)">
-                <option value="en">🇬🇧 English</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="es">🇪🇸 Español</option>
-                <option value="pt">🇵🇹 Português</option>
-                <option value="zh">🇨🇳 中文</option>
-                <option value="id">🇮🇩 Indonesia</option>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="it">🇮🇹 Italiano</option>
-                <option value="ja">🇯🇵 日本語</option>
-                <option value="ko">🇰🇷 한국어</option>
-                <option value="ru">🇷🇺 Русский</option>
-                <option value="ar">🇸🇦 العربية</option>
-                <option value="hi">🇮🇳 हिन्दी</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="zh">中文</option>
+                <option value="id">Indonesia</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="ru">Русский</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
             </select>
         </div>
         <span>Built on Pi Network | Secured by Blockchain</span>
