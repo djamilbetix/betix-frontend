@@ -5,6 +5,7 @@
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
 
+// Client Supabase avec timeout
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
         persistSession: false,
@@ -13,6 +14,12 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
     },
     db: {
         schema: 'public'
+    },
+    fetch: (url, options) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        return fetch(url, { ...options, signal: controller.signal })
+            .finally(() => clearTimeout(timeoutId));
     }
 });
 
@@ -851,25 +858,11 @@ async function saveEventToSupabase(eventData) {
         
         console.log('💾 Saving event to Supabase:', eventData.id);
         
-        var standardPrice = 0;
-        var vipPrice = 0;
-        var standardEnabled = false;
-        var vipEnabled = false;
-        
-        if (eventData.ticketTypes) {
-            standardEnabled = eventData.ticketTypes.standard && eventData.ticketTypes.standard.enabled || false;
-            vipEnabled = eventData.ticketTypes.vip && eventData.ticketTypes.vip.enabled || false;
-            standardPrice = standardEnabled ? (eventData.ticketTypes.standard.price || 0) : 0;
-            vipPrice = vipEnabled ? (eventData.ticketTypes.vip.price || 0) : 0;
-        } else if (eventData.price !== undefined) {
-            standardPrice = eventData.price || 0;
-            standardEnabled = true;
-        }
-        
-        var standardSeats = eventData.standardSeats || 0;
-        var vipSeats = eventData.vipSeats || 0;
-        var standardSold = eventData.standardSold || 0;
-        var vipSold = eventData.vipSold || 0;
+        // Extraire les données des ticketTypes
+        var standardEnabled = eventData.ticketTypes?.standard?.enabled || false;
+        var vipEnabled = eventData.ticketTypes?.vip?.enabled || false;
+        var standardPrice = standardEnabled ? (eventData.ticketTypes.standard.price || 0) : 0;
+        var vipPrice = vipEnabled ? (eventData.ticketTypes.vip.price || 0) : 0;
         
         var dbEvent = {
             id: eventData.id,
@@ -886,15 +879,16 @@ async function saveEventToSupabase(eventData) {
             ticket_price_vip: vipPrice,
             ticket_standard_enabled: standardEnabled,
             ticket_vip_enabled: vipEnabled,
-            max_tickets: eventData.seatsTotal || (standardSeats + vipSeats) || 0,
+            max_tickets: eventData.seatsTotal || 0,
             created_at: eventData.createdAt || new Date().toISOString(),
             conditions: eventData.conditions || '',
             duration_value: eventData.durationValue || null,
             duration_unit: eventData.durationUnit || null,
-            standard_seats: standardSeats,
-            vip_seats: vipSeats,
-            standard_sold: standardSold,
-            vip_sold: vipSold,
+            // NOUVELLES COLONNES (ajoutées en SQL)
+            standard_seats: eventData.standardSeats || 0,
+            vip_seats: eventData.vipSeats || 0,
+            standard_sold: eventData.standardSold || 0,
+            vip_sold: eventData.vipSold || 0,
             updated_at: new Date().toISOString()
         };
         
@@ -1007,7 +1001,48 @@ async function loadEventsFromSupabase() {
         }
         
         console.log('Events loaded:', data ? data.length : 0);
-        return data || [];
+        
+        // Transformer les données pour correspondre au format attendu
+        return (data || []).map(e => {
+            var standardSeats = e.standard_seats || 0;
+            var vipSeats = e.vip_seats || 0;
+            var standardSold = e.standard_sold || 0;
+            var vipSold = e.vip_sold || 0;
+            
+            return {
+                id: e.id,
+                title: e.title || 'Untitled',
+                category: e.category || '',
+                pays: e.pays || 'France',
+                country: e.pays || 'France',
+                date: e.event_date || new Date().toISOString(),
+                location: e.location || '',
+                description: e.description || '',
+                conditions: e.conditions || '',
+                price: e.ticket_price_standard || 0,
+                seatsTotal: e.max_tickets || 0,
+                seatsLeft: (e.max_tickets || 0) - standardSold - vipSold,
+                images: e.image_url ? [e.image_url] : [],
+                coverImage: e.image_url || '',
+                organizer: e.organizer_pi_uid || '',
+                organizerName: e.organizer_name || '',
+                organizerPiUid: e.organizer_pi_uid || '',
+                createdAt: e.created_at || new Date().toISOString(),
+                durationValue: e.duration_value || null,
+                durationUnit: e.duration_unit || null,
+                standardSeats: standardSeats,
+                vipSeats: vipSeats,
+                standardSold: standardSold,
+                vipSold: vipSold,
+                standardLeft: standardSeats - standardSold,
+                vipLeft: vipSeats - vipSold,
+                ticketTypes: {
+                    standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
+                    vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
+                }
+            };
+        });
+        
     } catch (error) {
         console.error('Error loading events from Supabase:', error);
         return [];
@@ -1214,6 +1249,7 @@ async function syncEventsToSupabase() {
     for (var i = 0; i < events.length; i++) {
         var saved = await saveEventToSupabase(events[i]);
         if (saved) success++;
+        if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 100));
     }
     console.log('Events synced:', success + '/' + events.length);
 }
@@ -1224,6 +1260,7 @@ async function syncTicketsToSupabase() {
     for (var i = 0; i < tickets.length; i++) {
         var saved = await saveTicketToSupabase(tickets[i]);
         if (saved) success++;
+        if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 100));
     }
     console.log('Tickets synced:', success + '/' + tickets.length);
 }
@@ -1400,48 +1437,7 @@ async function loadAllFromSupabase() {
         var supabaseEvents = await loadEventsFromSupabase();
         
         if (supabaseEvents && supabaseEvents.length > 0) {
-            events = supabaseEvents.map(function(e) {
-                var ticketTypes = {
-                    standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 },
-                    vip: { enabled: e.ticket_vip_enabled || false, price: e.ticket_price_vip || 0 }
-                };
-                
-                var standardSeats = e.standard_seats || 0;
-                var vipSeats = e.vip_seats || 0;
-                var standardSold = e.standard_sold || 0;
-                var vipSold = e.vip_sold || 0;
-                
-                return {
-                    id: e.id,
-                    title: e.title || 'Untitled',
-                    category: e.category || '',
-                    pays: e.pays || 'France',
-                    country: e.pays || 'France',
-                    date: e.event_date || new Date().toISOString(),
-                    location: e.location || '',
-                    description: e.description || '',
-                    conditions: e.conditions || 'Active Pi Network wallet\nPayment in Pi (indicated amount)',
-                    price: e.ticket_price_standard || 0.0003,
-                    seatsTotal: e.max_tickets || 100,
-                    seatsLeft: (e.max_tickets || 100) - (standardSold + vipSold),
-                    images: e.image_url ? [e.image_url] : [],
-                    coverImage: e.image_url || '',
-                    organizer: e.organizer_pi_uid || '',
-                    organizerName: e.organizer_name || '',
-                    organizerPiUid: e.organizer_pi_uid || '',
-                    createdAt: e.created_at || new Date().toISOString(),
-                    boosts: 0,
-                    durationValue: e.duration_value || null,
-                    durationUnit: e.duration_unit || null,
-                    standardSeats: standardSeats,
-                    vipSeats: vipSeats,
-                    standardSold: standardSold,
-                    vipSold: vipSold,
-                    standardLeft: standardSeats - standardSold,
-                    vipLeft: vipSeats - vipSold,
-                    ticketTypes: ticketTypes
-                };
-            });
+            events = supabaseEvents;
             localStorage.setItem('betix_events', JSON.stringify(events));
             console.log('✅ Loaded', events.length, 'events from Supabase');
         } else {
