@@ -760,17 +760,18 @@ async function uploadEventImage(eventId, base64Data, index) {
 }
 
 // ============================================================
-// ===== HERO SLIDES SUPABASE FUNCTIONS =====
+// ===== HERO SLIDES SUPABASE FUNCTIONS (CORRIGÉES) =====
 // ============================================================
 
 async function saveHeroSlideToSupabase(slideData, index) {
     try {
+        console.log('💾 Saving hero slide:', slideData);
         var dbSlide = {
             image_url: slideData.image,
             badge: slideData.badge || '',
             title: slideData.title,
             description: slideData.description || '',
-            sort_order: index !== undefined ? index : 0,
+            sort_order: (index !== undefined && index >= 0) ? index : 0,
             updated_at: new Date().toISOString()
         };
 
@@ -783,13 +784,14 @@ async function saveHeroSlideToSupabase(slideData, index) {
             if (error) throw error;
             console.log('✅ Hero slide updated:', slideData.id);
         } else {
-            // Insertion
+            // Insertion : on ajoute created_at et on récupère l'ID généré
             dbSlide.created_at = new Date().toISOString();
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('hero_slides')
-                .insert(dbSlide);
+                .insert(dbSlide)
+                .select(); // Récupère l'ID généré
             if (error) throw error;
-            console.log('✅ Hero slide inserted');
+            console.log('✅ Hero slide inserted:', data);
         }
         return true;
     } catch (error) {
@@ -871,7 +873,6 @@ async function loadHeroSlides() {
             if (local) {
                 try {
                     heroSlides = JSON.parse(local);
-                    // Migrer vers Supabase
                     await migrateHeroSlides(heroSlides);
                 } catch (e) {
                     heroSlides = [];
@@ -920,7 +921,6 @@ async function loadHeroSlides() {
         return heroSlides;
     } catch (error) {
         console.error('❌ Error loading hero slides:', error);
-        // Fallback sur localStorage
         var local = localStorage.getItem('betix_hero_slides');
         if (local) {
             try {
@@ -991,7 +991,6 @@ async function saveEventToSupabase(eventData) {
         var standardPrice = standardEnabled ? (eventData.ticketTypes.standard.price || 0) : 0;
         var vipPrice = vipEnabled ? (eventData.ticketTypes.vip.price || 0) : 0;
         
-        // Stocker toutes les URLs des images
         var imageUrls = eventData.images && eventData.images.length > 0 
             ? JSON.stringify(eventData.images) 
             : null;
@@ -1113,7 +1112,6 @@ async function loadEventsFromSupabase() {
             var standardSold = e.standard_sold || 0;
             var vipSold = e.vip_sold || 0;
             
-            // Reconstruire le tableau des images
             var imagesArray = [];
             if (e.image_urls) {
                 try {
@@ -1125,7 +1123,6 @@ async function loadEventsFromSupabase() {
                     console.warn('Could not parse image_urls for event', e.id);
                 }
             }
-            // Fallback sur image_url si image_urls est vide
             if (imagesArray.length === 0 && e.image_url) {
                 imagesArray = [e.image_url];
             }
@@ -3715,7 +3712,7 @@ function adminDeleteAllEvents() {
 }
 
 // ============================================================
-// ===== ADMIN SLIDES (avec Supabase) =====
+// ===== ADMIN SLIDES (avec Supabase - CORRIGÉ) =====
 // ============================================================
 
 function renderAdminSlides() {
@@ -3771,6 +3768,7 @@ async function adminSaveSlide() {
     var badge = badgeInput.value.trim();
     var title = titleInput.value.trim();
     var description = descInput.value.trim();
+
     if (!title) { alert('Please enter a title'); return; }
 
     var imageData = null;
@@ -3799,8 +3797,17 @@ async function adminSaveSlide() {
         description: description
     };
 
-    var saved = await saveHeroSlideToSupabase(slideData, parseInt(editIndex.value));
-    if (!saved) { alert('Error saving slide'); return; }
+    // Récupérer l'id existant si on édite
+    var indexToSave = parseInt(editIndex.value);
+    if (indexToSave >= 0 && indexToSave < heroSlides.length) {
+        slideData.id = heroSlides[indexToSave].id;
+    }
+
+    var saved = await saveHeroSlideToSupabase(slideData, indexToSave);
+    if (!saved) {
+        alert('Error saving slide (see console for details)');
+        return;
+    }
 
     await loadHeroSlides();
     adminCancelSlideForm();
@@ -4708,7 +4715,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('dark-mode'); 
         }
         if (dark) dark.addEventListener('change', toggleDarkMode);
-        loadHeroSlides(); // Charger les slides depuis Supabase
+        loadHeroSlides();
         initFaq();
         renderAdminLogs();
         setupTicketTypesUI();
@@ -4945,6 +4952,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('VÉRIFICATION DATE PASSÉE lors de l\'achat d\'un ticket');
         console.log('ICÔNE 👤 en noir sur les cartes d\'événements');
         console.log('✅ IMAGES DU CARROUSEL SAUVEGARDÉES DANS SUPABASE');
+        console.log('✅ ERREUR "Error saving slide" CORRIGÉE');
     } catch (error) {
         console.error('Error during application startup:', error);
         var loader = document.getElementById('loader');
