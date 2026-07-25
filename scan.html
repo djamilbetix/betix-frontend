@@ -1,727 +1,979 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Scanner un billet - Betix</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0a0e1a;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            color: #fff;
-            overflow-x: hidden;
-        }
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background: #131a2e;
-            border-radius: 24px;
-            padding: 24px 20px 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-            border: 1px solid #1e2a44;
-            position: relative;
-        }
-        h1 {
-            font-size: 1.6rem;
-            text-align: center;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        h1 span {
-            background: linear-gradient(135deg, #1a73e8, #4fc3f7);
-            padding: 4px 14px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #fff;
-        }
-        .subtitle {
-            text-align: center;
-            color: #8892b0;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        #reader {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            max-width: 400px;
-            margin: 0 auto 20px;
-            background: #0d1424;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 2px dashed #2a3a5e;
-            position: relative;
-        }
-        #reader video {
-            border-radius: 14px;
-        }
-        #result {
-            margin-top: 16px;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            text-align: center;
-            font-size: 0.95rem;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0d1424;
-            border: 1px solid #1e2a44;
-            color: #8892b0;
-            transition: all 0.3s;
-        }
-        #result.success {
-            background: #0a2e1a;
-            border-color: #10b981;
-            color: #6ee7b7;
-        }
-        #result.error {
-            background: #2e0a0a;
-            border-color: #ef4444;
-            color: #fca5a5;
-        }
-        #result.loading {
-            background: #1a1a2e;
-            border-color: #f59e0b;
-            color: #fcd34d;
-        }
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            flex: 1;
-            padding: 14px 18px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-            text-decoration: none;
-            min-width: 120px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #1a73e8, #0d47a1);
-            color: #fff;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.4);
-        }
-        .btn-secondary {
-            background: #1e2a44;
-            color: #8892b0;
-        }
-        .btn-secondary:hover {
-            background: #2a3a5e;
-        }
-        .btn-danger {
-            background: #2e0a0a;
-            color: #fca5a5;
-            border: 1px solid #ef4444;
-        }
-        .btn-danger:hover {
-            background: #3f0f0f;
-        }
-
-        /* ============================================================
-           TICKET INFO CARD (AGGRANDIE)
-           ============================================================ */
-        .ticket-info {
-            margin-top: 20px;
-            padding: 20px 24px;
-            background: linear-gradient(145deg, #1a2438, #0f1a2e);
-            border-radius: 20px;
-            border: 1px solid #2a3a5e;
-            text-align: left;
-            font-size: 1rem;
-            color: #ccd6f6;
-            display: none;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s ease;
-            transform: scale(0.95);
-            opacity: 0;
-        }
-        .ticket-info.show {
-            display: block;
-            transform: scale(1);
-            opacity: 1;
-        }
-        .ticket-info .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #1a2a44;
-        }
-        .ticket-info .row:last-child {
-            border-bottom: none;
-        }
-        .ticket-info .label {
-            color: #8892b0;
-            font-weight: 400;
-            font-size: 0.85rem;
-        }
-        .ticket-info .value {
-            font-weight: 600;
-            color: #fff;
-            text-align: right;
-            max-width: 65%;
-            word-break: break-all;
-            font-size: 1rem;
-        }
-        .ticket-info .value-highlight {
-            color: #4fc3f7;
-            font-size: 1.1rem;
-        }
-        .ticket-info .purchase-date {
-            color: #6ee7b7;
-            font-size: 0.85rem;
-        }
-
-        /* ============================================================
-           VALIDATION OVERLAY (ANIMATION SUCCES)
-           ============================================================ */
-        #validationOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.5);
-            animation: fadeInOverlay 0.3s ease;
-        }
-        #validationOverlay.active {
-            display: flex;
-        }
-
-        .validation-circle {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulseCircle 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            border: 4px solid #10b981;
-            box-shadow: 0 0 60px rgba(16, 185, 129, 0.3);
-        }
-        .validation-circle .check {
-            font-size: 5rem;
-            color: #10b981;
-            animation: popCheck 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
-            opacity: 0;
-            transform: scale(0);
-        }
-
-        /* Particules / Confettis */
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10000;
-            overflow: hidden;
-        }
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            top: -10px;
-            border-radius: 2px;
-            animation: confettiFall linear forwards;
-        }
-
-        /* ============================================================
-           ANIMATIONS
-           ============================================================ */
-        @keyframes fadeInOverlay {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes pulseCircle {
-            0% { transform: scale(0.3); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes popCheck {
-            0% { opacity: 0; transform: scale(0) rotate(-30deg); }
-            100% { opacity: 1; transform: scale(1) rotate(0deg); }
-        }
-        @keyframes confettiFall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-
-        /* ============================================================
-           OVERLAY SCANNER
-           ============================================================ */
-        .scanner-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 70%;
-            height: 70%;
-            border: 2px solid rgba(26, 115, 232, 0.5);
-            border-radius: 12px;
-            pointer-events: none;
-            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
-            display: none;
-        }
-        .scanner-overlay.active {
-            display: block;
-        }
-
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
-        @media (max-width: 480px) {
-            .container {
-                padding: 16px;
+    <title>Betix - Event Ticketing Platform on Pi Network</title>
+    <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
+    <script>
+        (function initPiSDK() {
+            if (typeof Pi !== 'undefined') {
+                try {
+                    Pi.init({ version: "2.0", sandbox: true });
+                    console.log("Pi SDK initialized");
+                    window.piSDKReady = true;
+                } catch (e) {
+                    console.log("Pi SDK init error:", e);
+                    window.piSDKReady = false;
+                }
+            } else {
+                console.log("Waiting for Pi SDK...");
+                setTimeout(initPiSDK, 200);
+                setTimeout(initPiSDK, 500);
+                setTimeout(initPiSDK, 1000);
+                setTimeout(initPiSDK, 2000);
+                setTimeout(initPiSDK, 3000);
             }
-            h1 {
-                font-size: 1.3rem;
-            }
-            .btn {
-                font-size: 0.85rem;
-                padding: 12px 14px;
-                min-width: 100px;
-            }
-            .ticket-info {
-                padding: 16px 18px;
-                font-size: 0.9rem;
-            }
-            .validation-circle {
-                width: 140px;
-                height: 140px;
-            }
-            .validation-circle .check {
-                font-size: 4rem;
-            }
-        }
-    </style>
+        })();
+    </script>
+    
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
-<div class="container">
-    <h1>
-        Scanner
-        <span>BETA</span>
-    </h1>
-    <p class="subtitle">Placez le QR code devant la camera</p>
-
-    <div id="reader">
-        <div class="scanner-overlay" id="scannerOverlay"></div>
-    </div>
-
-    <div id="result">En attente de scan...</div>
-
-    <!-- ============================================================
-         CARTE TICKET (AGGRANDIE AVEC DATE)
-         ============================================================ -->
-    <div class="ticket-info" id="ticketInfo">
-        <div class="row">
-            <span class="label">Evenement</span>
-            <span class="value value-highlight" id="infoEvent">-</span>
+<!-- ============================================================ -->
+<!-- LOADER AVEC LOGO + 5 BOULETS - 3 SECONDES                   -->
+<!-- ============================================================ -->
+<div id="loader" class="loader-container">
+    <div class="loader-content">
+        <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
+        <div class="loader-balls">
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
+            <div class="loader-ball"></div>
         </div>
-        <div class="row">
-            <span class="label">Type</span>
-            <span class="value" id="infoType">-</span>
-        </div>
-        <div class="row">
-            <span class="label">Acheteur</span>
-            <span class="value" id="infoBuyer">-</span>
-        </div>
-        <div class="row">
-            <span class="label">Date d achat</span>
-            <span class="value purchase-date" id="infoPurchaseDate">-</span>
-        </div>
-        <div class="row">
-            <span class="label">ID</span>
-            <span class="value" style="font-size:0.75rem;font-family:monospace;" id="infoId">-</span>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         BOUTONS
-         ============================================================ -->
-    <div class="btn-group">
-        <button class="btn btn-primary" id="scanBtn">Activer la camera</button>
-        <button class="btn btn-secondary" onclick="window.location.href='index.html'">Accueil</button>
-    </div>
-    <div class="btn-group">
-        <button class="btn btn-danger" id="stopBtn" style="display:none;">Arreter le scan</button>
-    </div>
-
-    <div class="footer">
-        <p>Securise via Pi Network  <a href="#" onclick="window.location.href='index.html'">Retour a Betix</a></p>
+        <p class="loader-text">Loading...</p>
     </div>
 </div>
 
-<!-- ============================================================
-     VALIDATION OVERLAY (ANIMATION DE SUCCES)
-     ============================================================ -->
-<div id="validationOverlay">
-    <div class="validation-circle">
-        <span class="check">✓</span>
+<div id="main-content" style="display: none;">
+
+<!-- ============================================================ -->
+<!-- HEADER FIXE (sticky)                                         -->
+<!-- ============================================================ -->
+<header class="header" id="mainHeader">
+    <div class="header-left">
+        <button class="back-btn hidden" id="backBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span class="back-btn-label">Back</span>
+        </button>
+        <div class="logo" id="mainLogo" onclick="handleLogoClick()">
+            <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'">
+            <span class="logo-text">Betix</span>
+        </div>
+    </div>
+    <div class="header-right" id="headerRight"></div>
+</header>
+
+<!-- ============================================================ -->
+<!-- SIDEBAR                                                       -->
+<!-- ============================================================ -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+        
+        <button class="sidebar-notif-icon-top" onclick="showPage('notifications')" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
+        </button>
+        
+        <div class="sidebar-avatar-wrapper">
+            <div class="sidebar-avatar" id="sidebarAvatar">
+                <span id="sidebarAvatarText">U</span>
+            </div>
+        </div>
+        <h3 id="sidebarName">Guest</h3>
+        <p id="sidebarWallet">Not connected</p>
+        <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
+    </div>
+    
+    <div class="sidebar-nav">
+        <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
+        <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
+        <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
+        <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
+        <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
+        <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
+        
+        <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #08143F; color: white; border-radius: 8px;">
+            <i class="fas fa-qrcode"></i> Scan Ticket
+        </button>
+        
+        <button class="sidebar-item" onclick="window.location.href='whitepaper.html'">
+            <i class="fas fa-file-alt"></i> Whitepaper
+        </button>
+        
+        <button class="sidebar-item" data-page="faq"><i class="fas fa-question-circle"></i> FAQ</button>
+        
+        <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
+        
+        <div class="sidebar-social">
+            <div class="sidebar-social-title">Follow us</div>
+            <div class="sidebar-social-icons">
+                <a href="https://x.com/betix_app" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                <a href="https://t.me/betix" target="_blank" class="social-link"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank" class="social-link"><i class="fab fa-discord"></i></a>
+                <a href="https://instagram.com/betix_app" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank" class="social-link"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- ============================================================ -->
+<!-- BOTTOM NAVIGATION                                            -->
+<!-- ============================================================ -->
+<nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" id="navHome" onclick="showPage('home')">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </button>
+    <button class="nav-item" id="navCreate" onclick="showPage('create')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Create</span>
+    </button>
+    <button class="nav-item" id="navMenu" onclick="openSidebar()">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
+    </button>
+</nav>
+
+<!-- ============================================================ -->
+<!-- NOTIFICATIONS PAGE                                           -->
+<!-- ============================================================ -->
+<div id="notificationsPage" class="hidden-page">
+    <div class="page-content">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-bell" style="color:#f5a623;"></i> 
+            Notifications
+        </h2>
+        <p class="events-sub">All your notifications</p>
+        <div id="notificationsList" style="margin-top:20px;"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
-<!-- ============================================================
-     CONFETTIS CONTAINER
-     ============================================================ -->
-<div class="confetti-container" id="confettiContainer"></div>
+<!-- ============================================================ -->
+<!-- CHAT                                                          -->
+<!-- ============================================================ -->
+<button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 
-<!-- ============================================================
-     LIBRAIRIES & SCRIPTS
-     ============================================================ -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<div id="chatWidget" class="chat-widget">
+    <div class="chat-header">
+        <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
+        <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type your message..." maxlength="500">
+        <button id="chatSendBtn">Send</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HOME PAGE                                                    -->
+<!-- ============================================================ -->
+<div id="homePage">
+    <section class="hero">
+        <div class="hero-slider-container">
+            <div class="hero-slider">
+                <div class="hero-slides" id="heroSlides"></div>
+                <button class="hero-slider-btn prev" id="heroPrev">‹</button>
+                <button class="hero-slider-btn next" id="heroNext">›</button>
+                <div class="hero-dots" id="heroDots"></div>
+            </div>
+        </div>
+        
+        <div class="hero-divider"></div>
+        
+        <div class="hero-content-bottom">
+            <div class="hero-text">
+                <h1>The first ticketing platform powered by Pi Network</h1>
+                <p>Discover and book unique experiences. Pay with your Pi crypto.</p>
+            </div>
+        </div>
+    </section>
+    
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
+    
+    <div class="filter-country-wrapper">
+        <div class="filter-country-select">
+            <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
+            <select id="countrySelect" onchange="filterByCountry(this.value)"></select>
+        </div>
+    </div>
+    
+    <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
+    
+    <div class="events-container">
+        <h2 class="events-title">Upcoming Events</h2>
+        <p class="events-sub">Join the community and live unique experiences</p>
+        <div id="eventsByCategory" class="events-grid-centered"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MY EVENTS PAGE                                               -->
+<!-- ============================================================ -->
+<div id="myeventsPage" class="hidden-page">
+    <div class="events-container my-events-container">
+        <h2 class="events-title">My Events</h2>
+        <p class="events-sub">Events you have created</p>
+        <div id="myEventsList" class="my-events-grid"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CREATE EVENT PAGE                                            -->
+<!-- ============================================================ -->
+<div id="createPage" class="hidden-page">
+    <div class="events-container" style="max-width:700px">
+        <h2 class="events-title">Create Event</h2>
+        <form id="eventForm" class="create-form">
+            <div class="form-group">
+                <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 25 characters)</span></label>
+                <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="25">
+                <span id="titleCharCounter" class="char-counter">25 characters remaining</span>
+            </div>
+            
+            <div class="form-group"><label>Category</label>
+                <select id="eventCategory">
+                    <option>Concert</option>
+                    <option>Sport</option>
+                    <option>Conference</option>
+                    <option>Training</option>
+                    <option>Cinema</option>
+                    <option>Festival</option>
+                    <option>Theatre</option>
+                    <option>Dance</option>
+                    <option>Exhibition</option>
+                    <option>Gala</option>
+                    <option>Seminar</option>
+                    <option>Formation</option>
+                </select>
+            </div>
+            
+            <div class="form-group"><label>Country</label>
+                <select id="eventCountry"></select>
+            </div>
+            
+            <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
+            
+            <div class="form-group">
+                <label>Duration</label>
+                <div class="duration-row-modern">
+                    <div class="duration-input-group">
+                        <input type="number" id="eventDurationValue" placeholder="1" min="0" step="0.5" value="1" class="duration-number-input">
+                    </div>
+                    <div class="duration-select-group">
+                        <select id="eventDurationUnit" class="duration-unit-select">
+                            <option value="hours">Hour</option>
+                            <option value="days" selected>Day</option>
+                            <option value="weeks">Week</option>
+                            <option value="months">Month</option>
+                            <option value="years">Year</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="duration-help-text"><i class="fas fa-info-circle"></i> Estimated event duration</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Location <span style="color:#ef4444;font-size:0.7rem;">(max 30 characters)</span></label>
+                <input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required maxlength="30">
+                <span id="locationCharCounter" class="char-counter">30 characters remaining</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Description <span style="color:#ef4444;font-size:0.7rem;">(max 150 characters)</span></label>
+                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="150"></textarea>
+                <span id="descCharCounter" class="char-counter">150 characters remaining</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Conditions <span style="color:#ef4444;font-size:0.7rem;">(max 80 characters)</span></label>
+                <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="80"></textarea>
+                <span id="condCharCounter" class="char-counter">80 characters remaining</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Tickets per type</label>
+                <div class="ticket-seats-grid">
+                    <div class="ticket-seats-item">
+                        <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard</label>
+                        <input type="number" id="eventStandardSeats" placeholder="Ex: 100" min="0" value="100" required>
+                    </div>
+                    <div class="ticket-seats-item">
+                        <label class="ticket-seats-label"><i class="fas fa-star" style="color:#d4911e;"></i> VIP</label>
+                        <input type="number" id="eventVipSeats" placeholder="Ex: 20" min="0" value="10">
+                    </div>
+                </div>
+                <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Set 0 to disable a ticket type</p>
+            </div>
+            
+            <div class="form-group">
+                <div class="ticket-types-container">
+                    <div class="ticket-types-title"><i class="fas fa-ticket-alt"></i> Ticket Types</div>
+                    <p class="ticket-types-subtitle">Enable at least one ticket type and set its price</p>
+                    
+                    <div class="ticket-type-row standard">
+                        <div class="type-toggle">
+                            <span class="type-icon"><i class="fas fa-ticket-alt"></i></span>
+                            <span class="type-name">Standard</span>
+                            <label class="switch standard-switch">
+                                <input type="checkbox" id="ticketStandardEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="type-price-group" id="standardPriceGroup">
+                            <span class="price-label">Price (Pi)</span>
+                            <input type="number" id="ticketStandardPrice" step="0.000001" value="0.0003" min="0.000001">
+                            <span class="price-suffix">Pi</span>
+                        </div>
+                        <span class="type-status-badge active" id="standardStatusBadge">Active</span>
+                    </div>
+                    
+                    <div class="ticket-type-row vip">
+                        <div class="type-toggle">
+                            <span class="type-icon"><i class="fas fa-star"></i></span>
+                            <span class="type-name">VIP</span>
+                            <label class="switch vip-switch">
+                                <input type="checkbox" id="ticketVipEnabled">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="type-price-group hidden" id="vipPriceGroup">
+                            <span class="price-label">Price (Pi)</span>
+                            <input type="number" id="ticketVipPrice" step="0.000001" value="0.0005" min="0.000001">
+                            <span class="price-suffix">Pi</span>
+                        </div>
+                        <span class="type-status-badge inactive" id="vipStatusBadge">Inactive</span>
+                    </div>
+                    
+                    <div id="vipPriceError" class="vip-price-error" style="display:none;">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        VIP price must be greater than Standard price
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Photos (1 image minimum)</label>
+                <div id="imageUploadContainer" class="image-upload-container">
+                    <div class="upload-box-modern" id="uploadBox1">
+                        <div class="upload-box-inner" id="uploadInner1">
+                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress1" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill1" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText1">0%</span>
+                            </div>
+                        </div>
+                        <input type="file" class="image-input-modern" accept="image/*" data-index="0" id="imageInput0">
+                        <div class="preview-modern" id="previewContainer0" style="display:none;">
+                            <img id="previewImage0" src="#" alt="Preview">
+                            <button type="button" class="remove-image-modern" id="remove0" onclick="removeImageModern(0)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-box-modern" id="uploadBox2">
+                        <div class="upload-box-inner" id="uploadInner2">
+                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress2" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill2" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText2">0%</span>
+                            </div>
+                        </div>
+                        <input type="file" class="image-input-modern" accept="image/*" data-index="1" id="imageInput1">
+                        <div class="preview-modern" id="previewContainer1" style="display:none;">
+                            <img id="previewImage1" src="#" alt="Preview">
+                            <button type="button" class="remove-image-modern" id="remove1" onclick="removeImageModern(1)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
+            </div>
+            
+            <div class="btn-publish-wrapper">
+                <button type="submit" class="btn-primary" id="publishEventBtn">
+                    <span class="btn-icon"><i class="fas fa-rocket"></i></span>
+                    <span class="btn-text">Publish Event</span>
+                </button>
+            </div>
+        </form>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PUBLISH CONFIRM                                              -->
+<!-- ============================================================ -->
+<div id="publishConfirmPopup" class="publish-confirm">
+    <div class="publish-confirm-content publish-confirm-professional">
+        <div class="publish-confirm-header">
+            <div class="publish-confirm-icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Confirm Publication</h2>
+            <p class="publish-confirm-sub">Please review all information before publishing your event</p>
+            <button class="publish-confirm-close" onclick="closePublishConfirmPopup()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="publish-confirm-body">
+            <div class="publish-summary">
+                <div class="publish-summary-grid">
+                    <div class="publish-summary-item"><span class="publish-label">Title</span><span class="publish-value" id="confirmTitle">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Category</span><span class="publish-value" id="confirmCategory">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Country</span><span class="publish-value" id="confirmCountry">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Date & Time</span><span class="publish-value" id="confirmDate">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Duration</span><span class="publish-value" id="confirmDuration">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Location</span><span class="publish-value" id="confirmLocation">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Ticket Types</span><span class="publish-value" id="confirmTicketTypes">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Price</span><span class="publish-value" id="confirmPrice">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Seats</span><span class="publish-value" id="confirmSeats">-</span></div>
+                    <div class="publish-summary-item"><span class="publish-label">Organizer</span><span class="publish-value" id="confirmOrganizer">-</span></div>
+                </div>
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full"><span class="publish-label">Description</span><span class="publish-value" id="confirmDescription">-</span></div>
+                </div>
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full"><span class="publish-label">Conditions</span><span class="publish-value" id="confirmConditions">-</span></div>
+                </div>
+                <div class="publish-summary-full">
+                    <div class="publish-summary-item full"><span class="publish-label">Images</span><div class="publish-images-preview" id="confirmImages"></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="publish-confirm-footer">
+            <button class="publish-btn cancel" onclick="closePublishConfirmPopup()">Cancel</button>
+            <button class="publish-btn confirm" id="confirmPublishBtn">Publish Event</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TICKETS PAGE                                                 -->
+<!-- ============================================================ -->
+<div id="ticketsPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">My Active Tickets</h2>
+        <p class="events-sub">Your valid tickets</p>
+        <div id="ticketsList"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HISTORY PAGE                                                 -->
+<!-- ============================================================ -->
+<div id="historyPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">Ticket History</h2>
+        <p class="events-sub">All your purchased tickets</p>
+        <div id="historyList"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- RATINGS PAGE                                                 -->
+<!-- ============================================================ -->
+<div id="ratingsPage" class="hidden-page">
+    <div class="events-container">
+        <h2 class="events-title">My Ratings</h2>
+        <p class="events-sub">Events you rated</p>
+        <div id="myRatingsList"></div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PROFILE PAGE                                                 -->
+<!-- ============================================================ -->
+<div id="profilePage" class="hidden-page">
+    <div class="page-content profile-page-content">
+        <div class="profile-header-card">
+            <div class="profile-header-avatar">
+                <div id="profilePageAvatarPlaceholder" class="profile-avatar-placeholder-large">
+                    <span style="font-size: 2.8rem; font-weight: 600;">G</span>
+                </div>
+            </div>
+            <div class="profile-header-info">
+                <h2 id="profileNameDisplay">Guest</h2>
+                <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
+                <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
+                <div class="profile-badges">
+                    <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
+                    <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-stats-grid">
+            <div class="stat-card clickable" onclick="goToMyEvents()">
+                <span class="stat-number" id="myEventsCount">0</span>
+                <span class="stat-label"><i class="fas fa-calendar-plus"></i> My Events</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToTickets()">
+                <span class="stat-number" id="ticketCount">0</span>
+                <span class="stat-label"><i class="fas fa-ticket-alt"></i> My Tickets</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToHistory()">
+                <span class="stat-number" id="historyCount">0</span>
+                <span class="stat-label"><i class="fas fa-history"></i> History</span>
+                <span class="stat-link">View all →</span>
+            </div>
+            <div class="stat-card clickable" onclick="goToRatings()">
+                <span class="stat-number" id="ratedCount">0</span>
+                <span class="stat-label"><i class="fas fa-star"></i> Rated</span>
+                <span class="stat-link">View all →</span>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
+            <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FAQ PAGE                                                     -->
+<!-- ============================================================ -->
+<div id="faqPage" class="hidden-page">
+    <div class="page-content faq-page-content">
+        <div class="faq-header">
+            <h2>Frequently Asked Questions</h2>
+            <p class="faq-subtitle">Everything you need to know about Betix</p>
+        </div>
+        <div class="faq-page-indicator">
+            <span>Page</span> <span id="faqPageNumber">1</span> / <span id="faqTotalPages">6</span>
+        </div>
+        <div id="faqContainer" class="faq-container"></div>
+        <div class="faq-pagination">
+            <button class="faq-nav-btn" id="faqPrevBtn">Previous</button>
+            <span class="faq-page-dots" id="faqPageDots"></span>
+            <button class="faq-nav-btn" id="faqNextBtn">Next</button>
+        </div>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SETTINGS PAGE (avec sélecteur de langue)                    -->
+<!-- ============================================================ -->
+<div id="settingsPage" class="hidden-page">
+    <div class="page-content">
+        <h2>Settings</h2>
+        <div class="settings-group">
+            <p><strong>Language</strong></p>
+            <select id="settingsLangSelect" class="settings-lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="zh">中文</option>
+                <option value="id">Indonesia</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+            </select>
+        </div>
+        <div class="settings-group">
+            <p><strong>Theme</strong></p>
+            <label><input type="checkbox" id="darkModeToggle"> Dark mode</label>
+        </div>
+        <div class="settings-group">
+            <p><strong>Data</strong></p>
+            <button id="clearDataBtn" class="btn-danger">Clear my data</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ADMIN PAGE                                                   -->
+<!-- ============================================================ -->
+<div id="adminPage" class="hidden-page">
+    <div class="page-content admin-content">
+        <h2>Administration</h2>
+        <p class="admin-subtitle">Manage your Betix platform</p>
+        
+        <div class="admin-session-timer">
+            <span>Session active</span>
+            <span id="adminSessionTimer">30:00</span>
+            <button class="admin-logout-btn" onclick="adminLogout()">Logout</button>
+        </div>
+        
+        <div class="admin-stats">
+            <div class="stat-card"><h3>Events</h3><p id="adminEventCount">0</p></div>
+            <div class="stat-card"><h3>Tickets</h3><p id="adminTicketCount">0</p></div>
+            <div class="stat-card"><h3>Users</h3><p id="adminUserCount">0</p></div>
+        </div>
+
+        <div class="sync-indicator-wrapper">
+            <div id="syncStatusIndicator" class="sync-indicator">
+                <i class="sync-icon fas fa-cloud"></i>
+                <span class="sync-text">Prêt</span>
+                <span class="sync-dot"></span>
+            </div>
+            <button class="admin-refresh-btn" id="refreshDataBtn" onclick="forceRefreshData()">
+                <i class="fas fa-sync"></i> Rafraîchir les données
+            </button>
+        </div>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="events">Events</button>
+            <button class="admin-tab" data-tab="slides">Carousel</button>
+            <button class="admin-tab" data-tab="users">Users</button>
+            <button class="admin-tab" data-tab="logs">Logs</button>
+            <button class="admin-tab" data-tab="settings">Settings</button>
+        </div>
+        
+        <div id="adminTabEvents" class="admin-tab-content active">
+            <div class="admin-actions">
+                <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;">Delete all</button>
+            </div>
+            <div id="adminEventsList"></div>
+        </div>
+        
+        <div id="adminTabSlides" class="admin-tab-content">
+            <div class="admin-actions">
+                <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Add image</button>
+            </div>
+            <div id="adminSlideFormContainer" style="display:none; margin-top: 16px; padding: 20px; background: #f9fafb; border-radius: 16px;">
+                <h3 id="adminSlideFormTitle">Add carousel image</h3>
+                <div class="form-group">
+                    <label>Image</label>
+                    <div class="admin-upload-box" id="adminUploadBox">
+                        <span class="upload-icon"><i class="fas fa-image"></i></span>
+                        <p>Click to choose image</p>
+                        <input type="file" id="adminSlideImageInput" accept="image/*">
+                        <img class="preview-image" id="adminSlidePreview" style="display:none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Badge</label>
+                    <input type="text" id="adminSlideBadge" placeholder="Ex: Music Festival">
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="adminSlideTitle" placeholder="Ex: Summer Festival 2026">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="adminSlideDesc" placeholder="Short description...">
+                </div>
+                <div style="display:flex; gap:12px; margin-top:12px;">
+                    <button class="btn-primary" id="adminSaveSlideBtn" style="flex:1;">Save</button>
+                    <button class="btn-secondary" id="adminCancelSlideBtn" style="flex:1;">Cancel</button>
+                </div>
+                <input type="hidden" id="adminEditSlideIndex" value="-1">
+            </div>
+            <div id="adminSlidesList"></div>
+        </div>
+        
+        <div id="adminTabUsers" class="admin-tab-content">
+            <div class="admin-users-filters">
+                <input type="text" id="adminUserSearch" placeholder="Search user...">
+            </div>
+            <div id="adminUsersList"></div>
+        </div>
+        
+        <div id="adminTabLogs" class="admin-tab-content">
+            <div class="admin-actions">
+                <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;">Clear logs</button>
+            </div>
+            <div id="adminLogsList"></div>
+        </div>
+        
+        <div id="adminTabSettings" class="admin-tab-content">
+            <div class="admin-settings">
+                <h3>Change Password</h3>
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" id="adminNewPassword" placeholder="Enter new password...">
+                </div>
+                <div class="form-group">
+                    <label>Confirm</label>
+                    <input type="password" id="adminConfirmPassword" placeholder="Confirm...">
+                </div>
+                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;">Change</button>
+                <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+                
+                <hr style="margin: 30px 0; border-color: #e5e7eb;">
+                
+                <h3>Information</h3>
+                <p><strong>Current password :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
+                <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
+                <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
+            </div>
+        </div>
+        
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FOOTER MODERNISÉ - 2 colonnes avec liens fonctionnels       -->
+<!-- ============================================================ -->
+<footer class="betix-footer">
+    <div class="footer-container">
+        <div class="footer-col footer-brand">
+            <div class="footer-logo">Betix</div>
+            <p class="footer-slogan">The first decentralized ticketing platform on Pi Network</p>
+            <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+            <div class="footer-contact">
+                <i class="fas fa-envelope"></i> betixservices@gmail.com
+            </div>
+            <div class="footer-social">
+                <a href="https://x.com/betix_app" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://t.me/betix" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://instagram.com/betix_app" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-col footer-links">
+            <h4>Legal &amp; Resources</h4>
+            <ul>
+                <li><a href="#" onclick="showLegal('privacy')">Privacy Policy</a></li>
+                <li><a href="#" onclick="showLegal('terms')">Terms of Service</a></li>
+                <li><a href="#" onclick="showLegal('privacy')">Accessibility</a></li>
+                <li><a href="#" onclick="showLegal('privacy')">Privacy Choices</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">FAQ</a></li>
+                <li><a href="whitepaper.html">Whitepaper</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showPage('home')">About</a></li>
+                <li><a href="mailto:betixservices@gmail.com">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <span>© 2026 Betix. All rights reserved.</span>
+        <span>Built on Pi Network | Secured by Blockchain</span>
+    </div>
+</footer>
+
+<!-- ============================================================ -->
+<!-- MODALS                                                       -->
+<!-- ============================================================ -->
+<div id="legalModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<div id="eventDetailModal" class="modal">
+    <div class="modal-content event-detail-modal">
+        <div id="eventDetailContent"></div>
+    </div>
+</div>
+
+<div id="editEventModal" class="modal modal-edit-event">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
+        <h2 style="margin-bottom: 8px; color: var(--dark);">Edit Event</h2>
+        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 16px;">Modify the fields below to update your event</p>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="editEventDescription" rows="3" placeholder="Describe your event..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="editEventLocation" placeholder="Ex: Paris, Olympia">
+        </div>
+        
+        <div class="form-group">
+            <label>Conditions</label>
+            <textarea id="editEventConditions" rows="3" placeholder="Participation conditions..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Duration</label>
+            <div class="duration-row-modern">
+                <div class="duration-input-group">
+                    <input type="number" id="editEventDurationValue" placeholder="1" min="0" step="0.5" class="duration-number-input">
+                </div>
+                <div class="duration-select-group">
+                    <select id="editEventDurationUnit" class="duration-unit-select">
+                        <option value="hours">Hour</option>
+                        <option value="days">Day</option>
+                        <option value="weeks">Week</option>
+                        <option value="months">Month</option>
+                        <option value="years">Year</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Tickets per type</label>
+            <div class="ticket-seats-grid">
+                <div class="ticket-seats-item">
+                    <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard</label>
+                    <input type="number" id="editEventStandardSeats" placeholder="Ex: 100" min="0">
+                </div>
+                <div class="ticket-seats-item">
+                    <label class="ticket-seats-label"><i class="fas fa-star" style="color:#d4911e;"></i> VIP</label>
+                    <input type="number" id="editEventVipSeats" placeholder="Ex: 20" min="0">
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-secondary-modal" onclick="closeEditEventModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveEventEdits()">Save Changes</button>
+        </div>
+        
+        <button class="btn-back" onclick="closeEditEventModal(); showPage('myevents')" style="margin-top: 12px;">Back to My Events</button>
+    </div>
+</div>
+
+<div id="quantityPopup" class="quantity-popup">
+    <div class="quantity-popup-content">
+        <span class="close-popup" onclick="closeQuantityPopup()">&times;</span>
+        <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
+        <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
+        <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
+        
+        <div style="margin: 12px 0;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--dark); display: block; margin-bottom: 4px;">Ticket Type:</label>
+            <select id="ticketTypeSelect" style="width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; background: white;"></select>
+        </div>
+        
+        <div class="quantity-selector">
+            <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
+            <input type="number" id="ticketQuantity" value="1" min="1" max="10">
+            <button class="qty-btn" onclick="updateQuantity(1)">+</button>
+        </div>
+        <p style="font-size:0.85rem;color:var(--gray);">
+            Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
+        </p>
+        <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
+        <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
+    </div>
+</div>
+
+<div id="successPopup" class="success-popup">
+    <div class="success-popup-content success-blue">
+        <div class="success-icon success-icon-blue">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 id="successTitle">Purchase successful!</h3>
+        <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">
+            Thank you for purchasing your ticket for <strong id="successEventName">Blockchain Africa</strong>
+        </p>
+        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
+        <button class="btn-primary success-btn-blue" id="viewTicketBtn" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #08143F, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box; border:none; cursor:pointer;">
+            <i class="fas fa-eye"></i> View my ticket
+        </button>
+        <button class="btn-secondary" id="closeSuccessBtn" style="margin-top:10px; background:transparent; border:1px solid #e5e7eb; padding:10px; border-radius:40px; width:100%; cursor:pointer; font-weight:500; color:var(--gray);">Close</button>
+    </div>
+</div>
+
+<div id="paymentPendingModal" style="display: none;"></div>
+
+<!-- SCROLL TO TOP BUTTON -->
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+</div>
 
 <script>
-    // ============================================================
-    // CONFIGURATION
-    // ============================================================
-    const BACKEND_URL = "https://betix-backend.onrender.com";
-    let html5QrCode = null;
-    let isScanning = false;
-
-    // ============================================================
-    // DOM ELEMENTS
-    // ============================================================
-    const readerEl = document.getElementById('reader');
-    const resultEl = document.getElementById('result');
-    const scanBtn = document.getElementById('scanBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const ticketInfo = document.getElementById('ticketInfo');
-    const infoEvent = document.getElementById('infoEvent');
-    const infoType = document.getElementById('infoType');
-    const infoBuyer = document.getElementById('infoBuyer');
-    const infoPurchaseDate = document.getElementById('infoPurchaseDate');
-    const infoId = document.getElementById('infoId');
-    const overlay = document.getElementById('scannerOverlay');
-    const validationOverlay = document.getElementById('validationOverlay');
-    const confettiContainer = document.getElementById('confettiContainer');
-
-    // ============================================================
-    // FONCTIONS
-    // ============================================================
-
-    function setResult(message, type) {
-        resultEl.textContent = message;
-        resultEl.className = type || '';
-        if (type === 'success') {
-            resultEl.innerHTML = 'Succes: ' + message;
-        } else if (type === 'error') {
-            resultEl.innerHTML = 'Erreur: ' + message;
-        } else if (type === 'loading') {
-            resultEl.innerHTML = 'Chargement: ' + message;
-        } else {
-            resultEl.innerHTML = message;
-        }
-    }
-
-    function showTicketInfo(ticket) {
-        ticketInfo.classList.add('show');
-        infoEvent.textContent = ticket.event_title || 'Inconnu';
-        infoType.textContent = ticket.ticket_type || 'standard';
-        infoBuyer.textContent = ticket.buyer_name || 'Inconnu';
-        infoId.textContent = ticket.id || '-';
-
-        if (ticket.purchase_date) {
-            const date = new Date(ticket.purchase_date);
-            infoPurchaseDate.textContent = date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-        } else {
-            infoPurchaseDate.textContent = 'Non disponible';
-        }
-    }
-
-    function hideTicketInfo() {
-        ticketInfo.classList.remove('show');
-    }
-
-    // ============================================================
-    // ANIMATION DE SUCCES (CERCLE + CONFETTIS + SON + VIBRATION)
-    // ============================================================
-
-    function playSuccessAnimation() {
-        // 1. Afficher l'overlay avec animation du cercle
-        validationOverlay.classList.add('active');
-
-        // 2. Son de succès (via Web Audio API)
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Son mélodique (accord de succès)
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // Do, Mi, Sol, Do
-            notes.forEach((freq, index) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = freq;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + index * 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.08 + 0.4);
-                osc.start(audioCtx.currentTime + index * 0.08);
-                osc.stop(audioCtx.currentTime + index * 0.08 + 0.4);
-            });
-
-            // Un petit arpège en fond
-            const oscBg = audioCtx.createOscillator();
-            const gainBg = audioCtx.createGain();
-            oscBg.connect(gainBg);
-            gainBg.connect(audioCtx.destination);
-            oscBg.frequency.value = 880;
-            oscBg.type = 'sine';
-            gainBg.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.2);
-            gainBg.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-            oscBg.start(audioCtx.currentTime + 0.2);
-            oscBg.stop(audioCtx.currentTime + 0.8);
-        } catch (e) {
-            console.log('Audio non disponible');
-        }
-
-        // 3. Vibration (si disponible)
-        if (navigator.vibrate) {
-            navigator.vibrate([50, 50, 50, 50, 100]);
-        }
-
-        // 4. Confettis
-        launchConfetti();
-
-        // 5. Cacher l'overlay après 2.5 secondes
-        setTimeout(() => {
-            validationOverlay.classList.remove('active');
-        }, 2500);
-    }
-
-    // ============================================================
-    // CONFETTIS
-    // ============================================================
-
-    function launchConfetti() {
-        const colors = ['#10b981', '#4fc3f7', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#34d399'];
-        for (let i = 0; i < 60; i++) {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.width = (Math.random() * 8 + 4) + 'px';
-            confetti.style.height = (Math.random() * 8 + 4) + 'px';
-            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-            confetti.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
-            confetti.style.animationDelay = (Math.random() * 0.8) + 's';
-            confettiContainer.appendChild(confetti);
-
-            // Supprimer après animation
-            setTimeout(() => {
-                confetti.remove();
-            }, 3500);
-        }
-    }
-
-    // ============================================================
-    // VALIDATION DU TICKET (APPEL API)
-    // ============================================================
-
-    async function validateTicket(ticketId) {
-        setResult('Validation en cours...', 'loading');
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/api/tickets/validate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ticketId: ticketId })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                setResult('Ticket valide: ' + data.message, 'success');
-                if (data.ticket) {
-                    showTicketInfo(data.ticket);
-                }
-                // LANCER L'ANIMATION DE SUCCES
-                playSuccessAnimation();
-            } else {
-                setResult('Erreur: ' + data.message, 'error');
-                hideTicketInfo();
-                // Son d'erreur (optionnel)
-                try {
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.frequency.value = 220;
-                    osc.type = 'square';
-                    gain.gain.value = 0.1;
-                    osc.start();
-                    setTimeout(() => osc.stop(), 300);
-                } catch (e) { /* ignore */ }
-            }
-        } catch (error) {
-            console.error('Erreur validation:', error);
-            setResult('Erreur reseau: ' + error.message, 'error');
-            hideTicketInfo();
-        }
-    }
-
-    // ============================================================
-    // SCANNEUR
-    // ============================================================
-
-    function onScanSuccess(decodedText, decodedResult) {
-        console.log('QR scanne:', decodedText);
-
-        if (html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => {
-                isScanning = false;
-                stopBtn.style.display = 'none';
-                scanBtn.textContent = 'Scanner un autre ticket';
-                overlay.classList.remove('active');
-            }).catch(err => {
-                console.warn('Erreur arret scanner:', err);
-            });
-        }
-
-        let ticketId = decodedText;
-        if (ticketId.startsWith('BETIX-')) {
-            ticketId = ticketId.substring(6);
-            const parts = ticketId.split('-');
-            if (parts.length === 3) {
-                ticketId = parts[0] + '-' + parts[2];
-            }
-        }
-
-        console.log('ID nettoie:', ticketId);
-        validateTicket(ticketId);
-    }
-
-    function onScanError(error) {
-        // ignore les erreurs mineures
-    }
-
-    async function startScanner() {
-        if (isScanning) {
-            return;
-        }
-
-        if (!html5QrCode) {
-            try {
-                html5QrCode = new Html5Qrcode("reader");
-            } catch (e) {
-                setResult('Erreur initialisation: ' + e.message, 'error');
-                return;
-            }
-        }
-
-        setResult('Demande d acces a la camera...', 'loading');
-        overlay.classList.add('active');
-
-        try {
-            await html5QrCode.start(
-                { facingMode: "environment" },
-                {
-                    fps: 15,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
-                },
-                onScanSuccess,
-                onScanError
-            );
-            isScanning = true;
-            scanBtn.textContent = 'Scan en cours...';
-            stopBtn.style.display = 'block';
-            setResult('Camera active, scannez un QR code', '');
-            hideTicketInfo();
-        } catch (error) {
-            console.error('Erreur demarrage camera:', error);
-            overlay.classList.remove('active');
-            if (error.message && error.message.includes('NotAllowedError')) {
-                setResult('Acces a la camera refuse. Autorisez l acces et reessayez.', 'error');
-            } else if (error.message && error.message.includes('NotFoundError')) {
-                setResult('Aucune camera trouvee sur cet appareil.', 'error');
-            } else {
-                setResult('Erreur: ' + error.message, 'error');
-            }
-            scanBtn.textContent = 'Activer la camera';
-            stopBtn.style.display = 'none';
-            isScanning = false;
-        }
-    }
-
-    async function stopScanner() {
-        if (html5QrCode && isScanning) {
-            try {
-                await html5QrCode.stop();
-                isScanning = false;
-                stopBtn.style.display = 'none';
-                scanBtn.textContent = 'Scanner un autre ticket';
-                overlay.classList.remove('active');
-                setResult('Scan arrete', '');
-            } catch (error) {
-                console.warn('Erreur arret:', error);
-            }
-        } else {
-            stopBtn.style.display = 'none';
-            scanBtn.textContent = 'Activer la camera';
-            overlay.classList.remove('active');
-        }
-    }
-
-    // ============================================================
-    // EVENTS
-    // ============================================================
-
-    scanBtn.addEventListener('click', startScanner);
-    stopBtn.addEventListener('click', stopScanner);
-
-    window.addEventListener('beforeunload', function() {
-        if (html5QrCode && isScanning) {
-            html5QrCode.stop().catch(() => {});
-        }
-    });
-
-    // ============================================================
-    // AUTO START (mobile)
-    // ============================================================
-
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-        setTimeout(startScanner, 800);
-    }
-
-    console.log('Scan page loaded with animations');
-    console.log('Backend URL:', BACKEND_URL);
+    window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
 </script>
+
+<script>
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,fr,pt,zh-CN,id,es,de,it,ja,ko,ru,ar,hi',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+            multilanguagePage: true
+        }, 'google_translate_element');
+        
+        setTimeout(function() {
+            var banner = document.querySelector('.goog-te-banner-frame');
+            if (banner) {
+                banner.style.display = 'none';
+                banner.style.height = '0px';
+                banner.style.visibility = 'hidden';
+            }
+            
+            var gadget = document.querySelector('.goog-te-gadget');
+            if (gadget) {
+                var textNodes = gadget.childNodes;
+                for (var i = 0; i < textNodes.length; i++) {
+                    if (textNodes[i].nodeType === 3) {
+                        textNodes[i].textContent = '';
+                    }
+                }
+            }
+            
+            var select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.style.display = 'inline-block';
+                select.style.padding = '4px 8px';
+                select.style.borderRadius = '6px';
+                select.style.border = '1px solid #e5e7eb';
+                select.style.fontSize = '0.8rem';
+                select.style.background = 'white';
+                select.style.color = '#1f2937';
+                select.style.width = '100%';
+                select.style.maxWidth = '180px';
+            }
+            
+            var iframes = document.querySelectorAll('iframe');
+            for (var i = 0; i < iframes.length; i++) {
+                var iframe = iframes[i];
+                if (iframe.className === 'goog-te-banner-frame' || iframe.id === 'google_translate_frame') {
+                    iframe.style.display = 'none';
+                    iframe.style.visibility = 'hidden';
+                    iframe.style.height = '0px';
+                    iframe.style.width = '0px';
+                }
+            }
+            
+            document.body.style.top = '0px';
+            document.body.style.position = 'relative';
+        }, 500);
+    }
+</script>
+
+<script src="script.js"></script>
 
 </body>
 </html>
