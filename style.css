@@ -1060,17 +1060,16 @@ body {
         grid-template-columns: 1fr;
     }
 }
-
 /* ============================================================
-   CARTE MODERNISÉE - VERSION COLORÉE AVEC ICÔNES
+   CARTE ÉVÉNEMENT - STYLE PROFESSIONNEL
    ============================================================ */
 .event-card-modern {
     background: #ffffff;
-    border-radius: 24px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-                box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     border: 1px solid rgba(0, 0, 0, 0.04);
     cursor: pointer;
     display: flex;
@@ -1080,29 +1079,23 @@ body {
     opacity: 0;
 }
 
-@keyframes cardFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 .event-card-modern:hover {
-    transform: translateY(-10px) scale(1.01);
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
-    border-color: #f5a623;
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
+    border-color: rgba(245, 166, 35, 0.2);
 }
 
-/* Poster / images */
+/* Images */
 .poster-wrapper-modern {
     position: relative;
     width: 100%;
     overflow: hidden;
     background: #f3f4f6;
-    aspect-ratio: auto;
     min-height: 200px;
-    max-height: 320px;
+    max-height: 280px;
 }
 
-.poster-wrapper-modern .poster-grid {
+.poster-grid {
     display: grid;
     width: 100%;
     height: 100%;
@@ -1111,63 +1104,39 @@ body {
     min-height: 200px;
 }
 
-.poster-wrapper-modern .poster-grid .grid-item {
+.poster-grid .grid-item {
     overflow: hidden;
     position: relative;
     background: #2d3748;
 }
 
-.poster-wrapper-modern .poster-grid .grid-item img {
+.poster-grid .grid-item img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     background: #1a1a2e;
-}
-
-.event-card-modern:hover .poster-grid .grid-item img {
-    transform: scale(1.03);
-}
-
-.poster-wrapper-modern .poster-grid.grid-1 {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-}
-.poster-wrapper-modern .poster-grid.grid-2 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-}
-.poster-wrapper-modern .poster-grid.grid-3 {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-.poster-wrapper-modern .poster-grid.grid-3 .grid-item:first-child {
-    grid-row: 1 / 3;
-    grid-column: 1 / 2;
-}
-.poster-wrapper-modern .poster-grid.grid-3 .grid-item:nth-child(2) {
-    grid-row: 1 / 2;
-    grid-column: 2 / 3;
-}
-.poster-wrapper-modern .poster-grid.grid-3 .grid-item:nth-child(3) {
-    grid-row: 2 / 3;
-    grid-column: 2 / 3;
-}
-.poster-wrapper-modern .poster-grid.grid-4 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-}
-
-.poster-wrapper-modern .poster-grid .grid-item img {
     padding: 2px;
     box-sizing: border-box;
 }
 
-.poster-wrapper-modern .more-badge {
+.event-card-modern:hover .poster-grid .grid-item img {
+    transform: scale(1.02);
+}
+
+.poster-grid.grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.poster-grid.grid-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+.poster-grid.grid-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.poster-grid.grid-3 .grid-item:first-child { grid-row: 1 / 3; grid-column: 1 / 2; }
+.poster-grid.grid-3 .grid-item:nth-child(2) { grid-row: 1 / 2; grid-column: 2 / 3; }
+.poster-grid.grid-3 .grid-item:nth-child(3) { grid-row: 2 / 3; grid-column: 2 / 3; }
+.poster-grid.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+.more-badge {
     position: absolute;
     bottom: 8px;
     right: 8px;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(8px);
     color: white;
     padding: 4px 14px;
@@ -1175,27 +1144,27 @@ body {
     font-size: 0.7rem;
     font-weight: 600;
     z-index: 3;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Badge catégorie avec couleurs vives */
+/* Badge catégorie - couleurs vives */
 .category-badge-modern {
     position: absolute;
     top: 16px;
     left: 16px;
-    padding: 8px 20px;
-    border-radius: 40px;
+    padding: 6px 18px;
+    border-radius: 30px;
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     z-index: 5;
-    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     color: white;
 }
 
+/* Couleurs par catégorie */
 .category-badge-concert { background: linear-gradient(135deg, #e74c3c, #c0392b); }
 .category-badge-sport { background: linear-gradient(135deg, #3498db, #2980b9); }
 .category-badge-conference { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
@@ -1205,21 +1174,21 @@ body {
 .category-badge-theatre { background: linear-gradient(135deg, #1abc9c, #16a085); }
 .category-badge-dance { background: linear-gradient(135deg, #e91e63, #c2185b); }
 .category-badge-exhibition { background: linear-gradient(135deg, #795548, #5d4037); }
-.category-badge-gala { background: linear-gradient(135deg, #ffd700, #f57c00); }
+.category-badge-gala { background: linear-gradient(135deg, #f1c40f, #f39c12); }
 .category-badge-seminar { background: linear-gradient(135deg, #607d8b, #455a64); }
 .category-badge-formation { background: linear-gradient(135deg, #00bcd4, #0097a7); }
 
-/* Contenu de la carte */
+/* Contenu */
 .card-content-modern {
-    padding: 18px 20px 20px;
+    padding: 16px 18px 18px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
 }
 
 .event-title-modern {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #1a1a2e;
     line-height: 1.3;
@@ -1227,18 +1196,18 @@ body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.8rem;
+    min-height: 2.6rem;
 }
 
 .event-desc-modern {
     font-size: 0.85rem;
     color: #6b7280;
-    line-height: 1.6;
+    line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 3.8rem;
+    min-height: 3.6rem;
 }
 
 .event-desc-modern .see-more {
@@ -1247,50 +1216,48 @@ body {
     cursor: pointer;
     transition: color 0.2s;
 }
-
 .event-desc-modern .see-more:hover {
     color: #f5a623;
 }
 
-/* Capsules d'informations avec icônes Font Awesome */
+/* Capsules d'infos */
 .info-capsules {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 4px 0;
+    gap: 6px 10px;
+    margin: 2px 0;
 }
 
-.info-capsules .capsule {
+.capsule {
     background: #f1f5f9;
     border-radius: 30px;
-    padding: 6px 16px 6px 12px;
-    font-size: 0.8rem;
+    padding: 4px 14px 4px 10px;
+    font-size: 0.75rem;
     color: #1e293b;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     border: 1px solid #e2e8f0;
-    transition: all 0.2s;
+    transition: background 0.2s, transform 0.2s;
 }
 
-.info-capsules .capsule i {
+.capsule i {
     color: #f5a623;
-    font-size: 0.85rem;
-    width: 18px;
+    font-size: 0.8rem;
+    width: 16px;
     text-align: center;
 }
 
 .capsule:hover {
     background: #e2e8f0;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* Bloc prix - vert vif */
+/* Bloc prix - vert */
 .price-block {
     background: linear-gradient(135deg, #ecfdf5, #d1fae5);
     border-radius: 16px;
-    padding: 12px 18px;
+    padding: 10px 16px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1304,7 +1271,7 @@ body {
     color: white;
     padding: 4px 14px;
     border-radius: 30px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.3px;
 }
@@ -1313,7 +1280,7 @@ body {
 .price-block .price-value-range {
     color: #047857;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .price-block .price-separator {
@@ -1325,10 +1292,10 @@ body {
 .price-block .price-currency {
     color: #4b5563;
     font-weight: 500;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
-/* Badges tickets avec couleurs vives */
+/* Badges tickets */
 .tickets-block {
     display: flex;
     gap: 10px;
@@ -1337,21 +1304,21 @@ body {
 }
 
 .ticket-badge {
+    background: #f8fafc;
     border-radius: 30px;
-    padding: 6px 16px 6px 12px;
-    font-size: 0.75rem;
+    padding: 4px 14px 4px 10px;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #1e293b;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     border: 1px solid #e2e8f0;
     flex: 1 1 auto;
-    background: #f8fafc;
 }
 
 .ticket-badge i {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .ticket-badge .ticket-numbers {
@@ -1359,7 +1326,7 @@ body {
     border-radius: 20px;
     padding: 0 10px;
     font-weight: 700;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
 }
 
 .ticket-badge.standard-badge {
@@ -1374,10 +1341,10 @@ body {
 }
 .ticket-badge.vip-badge i { color: #d97706; }
 
-/* Bouton Buy avec dégradé */
+/* Bouton Buy Ticket - style comme sur la 3ème capture */
 .buy-btn-modern {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     border: none;
     border-radius: 50px;
     font-weight: 700;
@@ -1389,7 +1356,7 @@ body {
     text-align: center;
     letter-spacing: 0.5px;
     box-shadow: 0 6px 25px rgba(8, 20, 63, 0.25);
-    margin-top: 6px;
+    margin-top: 4px;
     position: relative;
     overflow: hidden;
 }
@@ -1420,16 +1387,16 @@ body {
     transform: scale(0.97);
 }
 
-/* Pied de carte : auteur + date avec icônes */
+/* Auteur et date */
 .event-footer-modern {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid #f0f0f0;
     margin-top: 4px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 .author-capsule {
@@ -1447,18 +1414,255 @@ body {
 }
 
 .publish-date-capsule {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #94a3b8;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .publish-date-capsule i {
     color: #94a3b8;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
 }
 
+/* Dark mode */
+body.dark-mode .event-card-modern {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .event-card-modern .card-content-modern {
+    background: #1f2937;
+}
+
+body.dark-mode .event-title-modern {
+    color: #f3f4f6;
+}
+
+body.dark-mode .event-desc-modern {
+    color: #9ca3af;
+}
+
+body.dark-mode .capsule {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+body.dark-mode .capsule i {
+    color: #f5a623;
+}
+
+body.dark-mode .price-block {
+    background: #1a2332;
+    border-color: #2d4a3a;
+}
+body.dark-mode .price-block .price-value,
+body.dark-mode .price-block .price-value-range {
+    color: #6ee7b7;
+}
+body.dark-mode .price-block .price-currency,
+body.dark-mode .price-block .price-separator {
+    color: #9ca3af;
+}
+
+body.dark-mode .ticket-badge {
+    background: #2d3748;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+body.dark-mode .ticket-badge.standard-badge {
+    background: #1a2332;
+    border-color: #4b6b8f;
+}
+body.dark-mode .ticket-badge.vip-badge {
+    background: #1a1a2e;
+    border-color: #8B7500;
+}
+
+body.dark-mode .author-capsule {
+    color: #d1d5db;
+}
+body.dark-mode .author-capsule i {
+    color: #d1d5db;
+}
+body.dark-mode .publish-date-capsule {
+    color: #6b7280;
+}
+
+body.dark-mode .event-footer-modern {
+    border-top-color: #374151;
+}
+
+/* ============================================================
+   FOOTER - 2 colonnes, liens fonctionnels
+   ============================================================ */
+.betix-footer {
+    background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
+    color: #c8d4e6;
+    padding: 40px 5% 20px;
+    border-top: 2px solid rgba(245, 166, 35, 0.15);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.footer-col h4 {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background: linear-gradient(90deg, #f5a623, #d4911e);
+    border-radius: 3px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    color: #a0b4cc;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s, transform 0.2s;
+    display: inline-block;
+}
+
+.footer-col ul li a:hover {
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+.footer-brand .footer-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+.footer-brand .footer-slogan {
+    font-size: 1rem;
+    color: #f5a623;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.footer-brand .footer-desc {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #a0b4cc;
+    max-width: 300px;
+}
+
+.footer-contact {
+    font-size: 0.85rem;
+    color: #a0b4cc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.footer-contact i {
+    color: #f5a623;
+}
+
+.footer-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.footer-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #a0b4cc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.footer-social a:hover {
+    background: #f5a623;
+    color: #0b1120;
+    border-color: #f5a623;
+    transform: translateY(-3px) scale(1.05);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 30px auto 0;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #6a7f9a;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        text-align: center;
+    }
+    .footer-col h4::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .footer-brand .footer-desc {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    .footer-contact {
+        justify-content: center;
+    }
+    .footer-social {
+        justify-content: center;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 6px;
+        font-size: 0.75rem;
+    }
+}
 /* ============================================================
    DARK MODE - CARTE
    ============================================================ */
