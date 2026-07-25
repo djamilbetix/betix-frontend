@@ -1886,11 +1886,6 @@ function markTicketAsUsed(ticketId) {
         alert(t('ticketMarkedUsed'));
     }
 }
-
-// ============================================================
-// ===== RENDER EVENT CARD - NOUVELLE VERSION MODERNISÉE =====
-// ============================================================
-
 function renderEventCard(event) {
     var avgRating = 0;
     var eventRatings = ratings.filter(function(r) { return r.eventId === event.id; });
@@ -1947,10 +1942,9 @@ function renderEventCard(event) {
         'Namibia': '🇳🇦', 'Lesotho': '🇱🇸', 'Eswatini': '🇸🇿', 'Malawi': '🇲🇼',
         'Spain': '🇪🇸', 'Portugal': '🇵🇹', 'Germany': '🇩🇪', 'Italy': '🇮🇹',
         'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Russia': '🇷🇺',
-        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'Iran': '🇮🇷', 'China': '🇨🇳',
-        'Japan': '🇯🇵', 'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺',
-        'Mexico': '🇲🇽', 'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰',
-        'Sweden': '🇸🇪', 'Austria': '🇦🇹'
+        'Ukraine': '🇺🇦', 'Turkey': '🇹🇷', 'China': '🇨🇳', 'Japan': '🇯🇵',
+        'India': '🇮🇳', 'Indonesia': '🇮🇩', 'Australia': '🇦🇺', 'Mexico': '🇲🇽',
+        'Argentina': '🇦🇷', 'Brazil': '🇧🇷', 'Denmark': '🇩🇰', 'Sweden': '🇸🇪'
     };
     var countryFlag = flagEmojis[event.pays || event.country] || '';
     var countryDisplay = event.pays || event.country || 'International';
@@ -1980,12 +1974,12 @@ function renderEventCard(event) {
     if (hasStandard) {
         var standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
         var standardTotal = event.standardSeats || 0;
-        ticketsHtml += '<div class="ticket-badge standard-badge"><span class="ticket-icon">🎫</span> Standard <span class="ticket-numbers">' + standardLeft + '/' + standardTotal + '</span></div>';
+        ticketsHtml += '<div class="ticket-badge standard-badge"><i class="fas fa-ticket-alt"></i> Standard <span class="ticket-numbers">' + standardLeft + '/' + standardTotal + '</span></div>';
     }
     if (hasVip) {
         var vipLeft = event.vipLeft !== undefined ? event.vipLeft : (event.vipSeats || 0);
         var vipTotal = event.vipSeats || 0;
-        ticketsHtml += '<div class="ticket-badge vip-badge"><span class="ticket-icon">⭐</span> VIP <span class="ticket-numbers">' + vipLeft + '/' + vipTotal + '</span></div>';
+        ticketsHtml += '<div class="ticket-badge vip-badge"><i class="fas fa-star"></i> VIP <span class="ticket-numbers">' + vipLeft + '/' + vipTotal + '</span></div>';
     }
 
     var organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
@@ -2013,20 +2007,22 @@ function renderEventCard(event) {
         else { publishDateDisplay = pd.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }); }
     }
 
+    var categoryClass = 'category-badge-' + event.category.toLowerCase();
+
     return '<div class="event-card-modern" onclick="openEventDetails(\'' + event.id + '\')">' +
         '<div class="poster-wrapper-modern">' +
-            '<span class="category-badge-modern">' + escapeHtml(event.category) + '</span>' +
+            '<span class="category-badge-modern ' + categoryClass + '">' + escapeHtml(event.category) + '</span>' +
             posterHtml +
         '</div>' +
         '<div class="card-content-modern">' +
             '<div class="event-title-modern">' + escapeHtml(event.title) + '</div>' +
             (descShort ? '<div class="event-desc-modern">' + escapeHtml(descShort) + (desc.length > 150 ? ' <span class="see-more">… Voir plus</span>' : '') + '</div>' : '') +
             '<div class="info-capsules">' +
-                '<div class="capsule"><span class="capsule-icon">📍</span> ' + escapeHtml(event.location || 'Online') + '</div>' +
-                '<div class="capsule"><span class="capsule-icon">📅</span> ' + dateFormatted + '</div>' +
-                '<div class="capsule"><span class="capsule-icon">🕒</span> ' + timeFormatted + '</div>' +
-                (event.durationValue && event.durationUnit ? '<div class="capsule"><span class="capsule-icon">⏳</span> ' + event.durationValue + ' ' + (event.durationUnit === 'hours' ? 'h' : event.durationUnit) + '</div>' : '') +
-                (countryFlag ? '<div class="capsule"><span class="capsule-icon">🌍</span> ' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</div>' : '') +
+                '<div class="capsule"><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(event.location || 'Online') + '</div>' +
+                '<div class="capsule"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+                '<div class="capsule"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+                (event.durationValue && event.durationUnit ? '<div class="capsule"><i class="fas fa-hourglass-half"></i> ' + event.durationValue + ' ' + (event.durationUnit === 'hours' ? 'h' : event.durationUnit) + '</div>' : '') +
+                (countryFlag ? '<div class="capsule"><i class="fas fa-globe-americas"></i> ' + countryFlag + ' ' + escapeHtml(countryDisplay) + '</div>' : '') +
             '</div>' +
             '<div class="price-block">' +
                 priceHtml +
@@ -2034,13 +2030,12 @@ function renderEventCard(event) {
             (ticketsHtml ? '<div class="tickets-block">' + ticketsHtml + '</div>' : '') +
             '<button class="buy-btn-modern" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
             '<div class="event-footer-modern">' +
-                '<div class="author-capsule"><span class="author-icon">👤</span> ' + escapeHtml(organizerFormatted) + '</div>' +
-                '<div class="publish-date-capsule"><span class="date-icon">🕒</span> ' + publishDateDisplay + '</div>' +
+                '<div class="author-capsule"><i class="fas fa-user-circle"></i> ' + escapeHtml(organizerFormatted) + '</div>' +
+                '<div class="publish-date-capsule"><i class="far fa-clock"></i> ' + publishDateDisplay + '</div>' +
             '</div>' +
         '</div>' +
     '</div>';
 }
-
 // ============================================================
 // ===== LANGUAGE MANAGEMENT =====
 // ============================================================
