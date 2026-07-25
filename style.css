@@ -296,7 +296,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
 }
 
 /* ============================================================
-   COMPTEURS DE CARACTÈRES
+   COMPTEURS DE CARACTÈRES (sans rouge)
    ============================================================ */
 .char-counter {
     font-size: 0.7rem;
@@ -308,72 +308,17 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon {
 }
 
 .char-counter.warning {
-    color: #ef4444;
+    color: #6b7280; /* on supprime le rouge */
 }
 
 .char-counter.good {
-    color: #10b981;
+    color: #6b7280;
 }
 
 /* ============================================================
    INTERFACE STANDARD (VIP SUPPRIMÉ)
    ============================================================ */
-.ticket-type-row.standard {
-    background: #ffffff;
-    border: 2px solid #08143F;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(8, 20, 63, 0.06);
-    transition: all 0.3s ease;
-}
-
-.ticket-type-row.standard:hover {
-    box-shadow: 0 4px 16px rgba(8, 20, 63, 0.12);
-    transform: translateY(-2px);
-}
-
-.ticket-type-row.standard .type-status-badge.active {
-    background: rgba(8, 20, 63, 0.12);
-    color: #08143F;
-    font-weight: 700;
-    border: 1px solid #08143F;
-}
-
-.ticket-type-row.standard .type-status-badge.inactive {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.switch .slider {
-    background: #d1d5db;
-}
-
-.switch input:checked + .slider {
-    background: #08143F;
-}
-
-.type-status-badge {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-}
-
-.type-status-badge.active {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.type-status-badge.inactive {
-    background: rgba(239, 68, 68, 0.08);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.15);
-}
+/* Les styles liés aux types de billets sont supprimés ou simplifiés */
 
 /* ============================================================
    SIDEBAR
@@ -3701,7 +3646,7 @@ body.dark-mode .success-popup-content p {
     color: #f5a623 !important;
 }
 
-/* TICKET SEATS GRID */
+/* TICKET SEATS GRID (simplifié) */
 .ticket-seats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -4960,7 +4905,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 30px 20px;
     width: 100%;
 }
@@ -5029,13 +4974,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     max-width: 260px;
 }
 
-.footer-social {
-    display: flex;
-    gap: 10px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-}
-
+/* RESEAUX SOCIAUX EN BLEU */
 .footer-social a {
     display: inline-flex;
     align-items: center;
@@ -5045,17 +4984,23 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     border-radius: 50%;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.08);
-    color: #a0b4cc;
     font-size: 16px;
     transition: all 0.3s ease;
     text-decoration: none;
+    color: #1DA1F2; /* fallback */
 }
 
+.footer-social a[href*="t.me"] { color: #0088cc; }
+.footer-social a[href*="twitter"] { color: #1DA1F2; }
+.footer-social a[href*="discord"] { color: #5865F2; }
+.footer-social a[href*="facebook"] { color: #1877F2; }
+.footer-social a[href*="whatsapp"] { color: #25D366; }
+
 .footer-social a:hover {
-    background: #f5a623;
-    color: #0b1120;
-    border-color: #f5a623;
+    background: rgba(255,255,255,0.15);
+    color: #ffffff !important;
     transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .footer-bottom {
@@ -5072,7 +5017,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     color: #6a7f9a;
 }
 
-/* Suppression du sélecteur de langue dans le footer */
 .footer-lang-selector {
     display: none !important;
 }
