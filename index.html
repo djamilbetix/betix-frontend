@@ -120,7 +120,9 @@
             <i class="fas fa-file-alt"></i> Whitepaper
         </button>
         
-        <button class="sidebar-item" data-page="faq"><i class="fas fa-question-circle"></i> FAQ</button>
+        <button class="sidebar-item" onclick="window.location.href='faq.html'">
+            <i class="fas fa-question-circle"></i> FAQ
+        </button>
         
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         
@@ -251,7 +253,7 @@
         <h2 class="events-title">Create Event</h2>
         <form id="eventForm" class="create-form">
             <div class="form-group">
-                <label>Title <span style="color:#ef4444;font-size:0.7rem;">(max 25 characters)</span></label>
+                <label>Title <span style="font-size:0.7rem; color:#6b7280;">(max 25 characters)</span></label>
                 <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="25">
                 <span id="titleCharCounter" class="char-counter">25 characters remaining</span>
             </div>
@@ -299,56 +301,27 @@
             </div>
             
             <div class="form-group">
-                <label>Location <span style="color:#ef4444;font-size:0.7rem;">(max 30 characters)</span></label>
+                <label>Location <span style="font-size:0.7rem; color:#6b7280;">(max 30 characters)</span></label>
                 <input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required maxlength="30">
                 <span id="locationCharCounter" class="char-counter">30 characters remaining</span>
             </div>
             
             <div class="form-group">
-                <label>Description <span style="color:#ef4444;font-size:0.7rem;">(max 150 characters)</span></label>
+                <label>Description <span style="font-size:0.7rem; color:#6b7280;">(max 150 characters)</span></label>
                 <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="150"></textarea>
                 <span id="descCharCounter" class="char-counter">150 characters remaining</span>
             </div>
             
             <div class="form-group">
-                <label>Conditions <span style="color:#ef4444;font-size:0.7rem;">(max 80 characters)</span></label>
+                <label>Conditions <span style="font-size:0.7rem; color:#6b7280;">(max 80 characters)</span></label>
                 <textarea id="eventConditions" rows="4" placeholder="Ex: Must have active Pi Network wallet, Payment in Pi..." maxlength="80"></textarea>
                 <span id="condCharCounter" class="char-counter">80 characters remaining</span>
             </div>
             
             <div class="form-group">
-                <label>Tickets</label>
-                <div class="ticket-seats-grid">
-                    <div class="ticket-seats-item">
-                        <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard seats</label>
-                        <input type="number" id="eventStandardSeats" placeholder="Ex: 100" min="1" value="100" required>
-                    </div>
-                </div>
-                <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Number of available seats</p>
-            </div>
-            
-            <div class="form-group">
-                <div class="ticket-types-container">
-                    <div class="ticket-types-title"><i class="fas fa-ticket-alt"></i> Ticket Type</div>
-                    <p class="ticket-types-subtitle">Enable the ticket type and set its price</p>
-                    
-                    <div class="ticket-type-row standard">
-                        <div class="type-toggle">
-                            <span class="type-icon"><i class="fas fa-ticket-alt"></i></span>
-                            <span class="type-name">Standard</span>
-                            <label class="switch standard-switch">
-                                <input type="checkbox" id="ticketStandardEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="type-price-group" id="standardPriceGroup">
-                            <span class="price-label">Price (Pi)</span>
-                            <input type="number" id="ticketStandardPrice" step="0.000001" value="0.0003" min="0.000001">
-                            <span class="price-suffix">Pi</span>
-                        </div>
-                        <span class="type-status-badge active" id="standardStatusBadge">Active</span>
-                    </div>
-                </div>
+                <label>Number of tickets</label>
+                <input type="number" id="eventSeats" placeholder="Ex: 100" min="1" value="100" required>
+                <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Total number of tickets available for this event</p>
             </div>
             
             <div class="form-group">
@@ -534,29 +507,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- FAQ PAGE                                                     -->
-<!-- ============================================================ -->
-<div id="faqPage" class="hidden-page">
-    <div class="page-content faq-page-content">
-        <div class="faq-header">
-            <h2>Frequently Asked Questions</h2>
-            <p class="faq-subtitle">Everything you need to know about Betix</p>
-        </div>
-        <div class="faq-page-indicator">
-            <span>Page</span> <span id="faqPageNumber">1</span> / <span id="faqTotalPages">6</span>
-        </div>
-        <div id="faqContainer" class="faq-container"></div>
-        <div class="faq-pagination">
-            <button class="faq-nav-btn" id="faqPrevBtn">Previous</button>
-            <span class="faq-page-dots" id="faqPageDots"></span>
-            <button class="faq-nav-btn" id="faqNextBtn">Next</button>
-        </div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SETTINGS PAGE (avec sélecteur de langue)                    -->
+<!-- SETTINGS PAGE                                                -->
 <!-- ============================================================ -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
@@ -714,7 +665,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- FOOTER                                                       -->
+<!-- FOOTER (MIS À JOUR)                                         -->
 <!-- ============================================================ -->
 <footer class="betix-footer">
     <div class="footer-container">
@@ -726,8 +677,9 @@
         <div class="footer-col">
             <h4>Quick Links</h4>
             <ul>
-                <li><a href="#" onclick="event.preventDefault(); showPage('faq')">FAQ</a></li>
-                <li><a href="#" onclick="showLegal('privacy')">Privacy Policy</a></li>
+                <li><a href="faq.html">FAQ</a></li>
+                <li><a href="privacy.html">Privacy Policy</a></li>
+                <li><a href="terms.html">Terms of Service</a></li>
                 <li><a href="whitepaper.html">Whitepaper</a></li>
             </ul>
         </div>
@@ -808,12 +760,7 @@
         
         <div class="form-group">
             <label>Tickets</label>
-            <div class="ticket-seats-grid">
-                <div class="ticket-seats-item">
-                    <label class="ticket-seats-label"><i class="fas fa-ticket-alt" style="color:#08143F;"></i> Standard seats</label>
-                    <input type="number" id="editEventStandardSeats" placeholder="Ex: 100" min="1">
-                </div>
-            </div>
+            <input type="number" id="editEventSeats" placeholder="Ex: 100" min="1">
         </div>
         
         <div class="modal-actions">
