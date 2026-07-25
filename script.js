@@ -609,10 +609,18 @@ async function forceRefreshData() {
 async function loadAllFromSupabase() {
     loadUsedTickets();
     updateSyncStatus('loading');
+    // Sauvegarde locale avant chargement
+    const localEventsBackup = localStorage.getItem('betix_events');
     try {
         const supabaseEvents = await loadEventsFromSupabase();
-        if (supabaseEvents && supabaseEvents.length > 0) { events = supabaseEvents; localStorage.setItem('betix_events', JSON.stringify(events)); }
-        else { const localEvents = localStorage.getItem('betix_events'); if (localEvents) try { events = JSON.parse(localEvents); } catch(e) { events = []; } }
+        if (supabaseEvents && supabaseEvents.length > 0) {
+            events = supabaseEvents;
+            localStorage.setItem('betix_events', JSON.stringify(events));
+        } else if (localEventsBackup) {
+            events = JSON.parse(localEventsBackup);
+        } else {
+            events = [];
+        }
         const userIdentifier = currentUser.piUid || currentUser.wallet;
         if (userIdentifier) {
             const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
@@ -645,12 +653,13 @@ async function loadAllFromSupabase() {
         updateSyncStatus('success');
     } catch (error) {
         updateSyncStatus('error');
-        try {
-            const localEvents = localStorage.getItem('betix_events');
-            if (localEvents) events = JSON.parse(localEvents);
-            const localTickets = localStorage.getItem('betix_tickets');
-            if (localTickets) tickets = JSON.parse(localTickets);
-        } catch(e) {}
+        // Restaurer depuis localStorage en cas d'erreur
+        if (localEventsBackup) {
+            try { events = JSON.parse(localEventsBackup); } catch(e) { events = []; }
+        }
+        // On essaie de récupérer les tickets locaux
+        const localTickets = localStorage.getItem('betix_tickets');
+        if (localTickets) try { tickets = JSON.parse(localTickets); } catch(e) { tickets = []; }
     }
 }
 
@@ -876,8 +885,8 @@ function renderEventCard(event) {
     const priceHtml = `<span class="price-label">Price</span><span class="price-value">${(event.price || 0).toFixed(6)}</span><span class="price-currency"> Pi</span>`;
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? `<span class="stars">${ratingStars}</span> ${avgRating.toFixed(1)} (${ratings.filter(r => r.eventId === event.id).length})` : `<span class="price-badge-green">${priceHtml}</span>`;
-    const stdText = `STD ${event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0)}/${event.standardSeats || 0}`;
-    const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${stdText}</span></div>`;
+    // Afficher simplement Tickets 100/100
+    const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
     let durationText = '';
     if (event.durationValue && event.durationUnit) {
         const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
@@ -1140,6 +1149,11 @@ async function connectToPi() {
             if (confirm("Pi Browser not detected. Use demo mode?")) {
                 currentUser.wallet = 'demo_user'; currentUser.piUid = 'demo_user'; currentUser.name = 'Demo User'; currentUser.memberSince = '2026'; currentUser.loyaltyPoints = 0;
                 saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
+                // Réinitialiser les filtres après chargement
+                currentFilter = 'All';
+                currentCountryFilter = 'All';
+                initFilters();
+                renderEventsByCategory();
                 alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); return;
             }
             alert("Please open this page in Pi Browser"); return;
@@ -1153,6 +1167,11 @@ async function connectToPi() {
             currentUser.name = piUser.username;
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
+            // Réinitialiser les filtres après chargement
+            currentFilter = 'All';
+            currentCountryFilter = 'All';
+            initFilters();
+            renderEventsByCategory();
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
