@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ - Betix</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body { padding-top: 70px; background: #f5f7fa; }
+        .faq-container-page {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        .faq-container-page h1 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            border-bottom: 2px solid #f5a623;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .faq-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #f5a623;
+            transition: all 0.2s;
+        }
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .faq-item .q {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .faq-item .q .q-icon {
+            color: #f5a623;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .faq-item .a {
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.6;
+            padding-left: 26px;
+        }
+        .btn-back-home {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.6rem 1.5rem;
+            background: #08143F;
+            color: white;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-back-home:hover {
+            background: #1a1a3e;
+        }
+        @media (max-width: 600px) {
+            .faq-container-page { margin: 1rem; padding: 1.2rem; }
+        }
+        body.dark-mode .faq-container-page {
+            background: #1f2937;
+        }
+        body.dark-mode .faq-container-page h1 {
+            color: #f3f4f6;
+        }
+        body.dark-mode .faq-item {
+            background: #2d3748;
+        }
+        body.dark-mode .faq-item .q {
+            color: #f3f4f6;
+        }
+        body.dark-mode .faq-item .a {
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <header class="header" id="mainHeader">
+        <div class="header-left">
+            <a href="/" class="back-btn" style="text-decoration:none; color:white;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span class="back-btn-label">Back</span>
+            </a>
+            <div class="logo" onclick="window.location.href='/'">
+                <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'">
+                <span class="logo-text">Betix</span>
+            </div>
+        </div>
+        <div class="header-right"></div>
+    </header>
+
+    <div class="faq-container-page">
+        <h1>Frequently Asked Questions</h1>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> What is Betix?</div>
+            <div class="a">Betix is the first decentralized event ticketing platform built on the Pi Network blockchain.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> How does Betix work?</div>
+            <div class="a">Betix uses the Pi Network blockchain to ensure secure and transparent transactions.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Is Betix free?</div>
+            <div class="a">Yes! Betix is completely free for users. No commission on sales.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Who can use Betix?</div>
+            <div class="a">Any Pi Network account holder can use Betix.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> How to buy a ticket?</div>
+            <div class="a">Connect, browse events, click 'Buy Ticket' and choose the quantity.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Are payments secure?</div>
+            <div class="a">Yes, via the Pi Network and Betix's escrow system.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Can I get a refund?</div>
+            <div class="a">Yes in case of cancellation, postponement or fraud.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Where are my tickets stored?</div>
+            <div class="a">In the 'My Tickets' section of your account.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> How to create an event?</div>
+            <div class="a">Connect, click 'Create Event' and fill out the form.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Conditions to be an organizer?</div>
+            <div class="a">Have an active Pi Network account and comply with the terms of use.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Can I modify an event?</div>
+            <div class="a">Yes, from the 'My Events' section.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> How to boost my event?</div>
+            <div class="a">By paying a small amount in Pi to increase visibility.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> How to connect my Pi account?</div>
+            <div class="a">Click 'Connect Pi' in the menu and authorize access.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> What is the escrow system?</div>
+            <div class="a">A mechanism that blocks funds until event validation.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Are transactions anonymous?</div>
+            <div class="a">Transactions are traceable on the blockchain, but your information remains private.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Other cryptocurrencies?</div>
+            <div class="a">Currently only Pi Network.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Buyer protection?</div>
+            <div class="a">Via escrow, organizer verification and a refund policy.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Report a problem?</div>
+            <div class="a">Via chat, email or social networks.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Contact support?</div>
+            <div class="a">Online chat, email or Telegram.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Available languages?</div>
+            <div class="a">English, French, Portuguese, Chinese, Indonesian.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Join the community?</div>
+            <div class="a">Follow us on Telegram, Twitter, Discord, Instagram and WhatsApp.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Become an ambassador?</div>
+            <div class="a">Contact us to apply for the ambassador program.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Become a partner?</div>
+            <div class="a">Contact us to discuss partnership opportunities.</div>
+        </div>
+        <div class="faq-item">
+            <div class="q"><span class="q-icon">Q</span> Future projects?</div>
+            <div class="a">Mobile app, new cryptocurrencies, social features.</div>
+        </div>
+
+        <a href="/" class="btn-back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
+
+    <footer class="betix-footer" style="margin-top:2rem;">
+        <div class="footer-container">
+            <div class="footer-col">
+                <div class="footer-logo">Betix</div>
+                <p class="footer-slogan">The first decentralized ticketing platform on Pi Network</p>
+                <p class="footer-desc">Secure platform to buy and sell event tickets with Pi payment.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:betixservices@gmail.com">betixservices@gmail.com</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 Betix. All rights reserved.</span>
+            <div class="footer-social">
+                <a href="https://t.me/betix" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://x.com/betix_app" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a href="https://discord.gg/MqhdmPCH" target="_blank"><i class="fab fa-discord"></i></a>
+                <a href="https://facebook.com/betix_app" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <span>Built on Pi Network | Secured by Blockchain</span>
+        </div>
+    </footer>
+</body>
+</html>
