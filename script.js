@@ -609,7 +609,6 @@ async function forceRefreshData() {
 async function loadAllFromSupabase() {
     loadUsedTickets();
     updateSyncStatus('loading');
-    // Sauvegarde locale avant chargement
     const localEventsBackup = localStorage.getItem('betix_events');
     try {
         const supabaseEvents = await loadEventsFromSupabase();
@@ -653,11 +652,9 @@ async function loadAllFromSupabase() {
         updateSyncStatus('success');
     } catch (error) {
         updateSyncStatus('error');
-        // Restaurer depuis localStorage en cas d'erreur
         if (localEventsBackup) {
             try { events = JSON.parse(localEventsBackup); } catch(e) { events = []; }
         }
-        // On essaie de récupérer les tickets locaux
         const localTickets = localStorage.getItem('betix_tickets');
         if (localTickets) try { tickets = JSON.parse(localTickets); } catch(e) { tickets = []; }
     }
@@ -863,6 +860,7 @@ function renderEventCard(event) {
     else if (images.length === 3) posterHtml = `<div class="poster-grid grid-3"><div class="grid-item"><img src="${images[0]}" alt="Image 1" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[1]}" alt="Image 2" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[2]}" alt="Image 3" onerror="this.src='${fallbackImage}'"></div></div>`;
     else if (images.length >= 4) posterHtml = `<div class="poster-grid grid-4">${images.slice(0,4).map(img => `<div class="grid-item"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`).join('')}</div>${images.length > 4 ? `<span class="more-badge"><i class="fas fa-plus"></i> ${images.length - 4}</span>` : ''}`;
     else posterHtml = `<div class="poster-grid grid-1"><div class="grid-item"><img src="${fallbackImage}" alt="${escapeHtml(event.title)}"></div></div>`;
+    
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
     let desc = event.description || '';
@@ -870,6 +868,7 @@ function renderEventCard(event) {
     let organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) organizerDisplay = organizerDisplay.substring(0, 18) + '...';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
+    
     let publishDateDisplay = '';
     if (event.createdAt) {
         const pd = new Date(event.createdAt), now = new Date();
@@ -882,11 +881,15 @@ function renderEventCard(event) {
         else if (diffMonths < 12) publishDateDisplay = diffMonths + ' month ago';
         else publishDateDisplay = pd.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
     }
+    
     const priceHtml = `<span class="price-label">Price</span><span class="price-value">${(event.price || 0).toFixed(6)}</span><span class="price-currency"> Pi</span>`;
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? `<span class="stars">${ratingStars}</span> ${avgRating.toFixed(1)} (${ratings.filter(r => r.eventId === event.id).length})` : `<span class="price-badge-green">${priceHtml}</span>`;
-    // Afficher simplement Tickets 100/100
+    
+    // Badge rouge "Tickets X/Y"
     const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
+    
+    // Ligne localisation + durée
     let durationText = '';
     if (event.durationValue && event.durationUnit) {
         const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
@@ -894,8 +897,9 @@ function renderEventCard(event) {
     }
     let countryDurationHtml = '';
     if (countryFlag || durationText) {
-        countryDurationHtml = `<div class="event-country-duration">${countryFlag ? `<span class="country-flag">${countryFlag} ${escapeHtml(countryDisplay)}</span>` : ''}${countryFlag && durationText ? ' • ' : ''}${durationText ? `<span class="duration-text"><i class="fas fa-hourglass-half"></i> ${durationText}</span>` : ''}</div>`;
+        countryDurationHtml = `<div class="event-country-duration">${countryFlag ? `<span class="country-flag">${countryFlag} ${escapeHtml(countryDisplay)}</span>` : ''}${countryFlag && durationText ? ' · ' : ''}${durationText ? `<span class="duration-text"><i class="fas fa-hourglass-half"></i> ${durationText}</span>` : ''}</div>`;
     }
+    
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
@@ -906,9 +910,11 @@ function renderEventCard(event) {
                 <div class="info-item-classic"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
                 <div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location || 'Online')}</div>
                 <div class="info-item-classic"><i class="fas fa-clock"></i> ${timeFormatted}</div>
-                <div class="info-item-classic"><i class="fas fa-ticket-alt"></i> ${event.seatsLeft}/${event.seatsTotal}</div>
             </div>
-            <div class="card-footer-classic"><span class="event-rating-classic">${ratingDisplay}</span>${ticketsLabelHtml}</div>
+            <div class="card-footer-classic">
+                <span class="event-rating-classic">${ratingDisplay}</span>
+                ${ticketsLabelHtml}
+            </div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
             <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user" style="color:#1a1a2e !important;"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)}</div>
             ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}</div>` : ''}
@@ -1149,7 +1155,6 @@ async function connectToPi() {
             if (confirm("Pi Browser not detected. Use demo mode?")) {
                 currentUser.wallet = 'demo_user'; currentUser.piUid = 'demo_user'; currentUser.name = 'Demo User'; currentUser.memberSince = '2026'; currentUser.loyaltyPoints = 0;
                 saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
-                // Réinitialiser les filtres après chargement
                 currentFilter = 'All';
                 currentCountryFilter = 'All';
                 initFilters();
@@ -1167,7 +1172,6 @@ async function connectToPi() {
             currentUser.name = piUser.username;
             if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
             saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
-            // Réinitialiser les filtres après chargement
             currentFilter = 'All';
             currentCountryFilter = 'All';
             initFilters();
