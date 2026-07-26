@@ -6,18 +6,12 @@
     <title>Betix - Event Ticketing Platform on Pi Network</title>
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
     <link rel="stylesheet" href="style.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -39,7 +33,6 @@
             }
         })();
     </script>
-    
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
@@ -88,12 +81,10 @@
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
-        
         <button class="sidebar-notif-icon-top" onclick="showPage('notifications')" title="Notifications">
             <i class="fas fa-bell"></i>
             <span class="sidebar-notif-badge" id="sidebarNotifBadge">0</span>
         </button>
-        
         <div class="sidebar-avatar-wrapper">
             <div class="sidebar-avatar" id="sidebarAvatar">
                 <span id="sidebarAvatarText">U</span>
@@ -103,7 +94,6 @@
         <p id="sidebarWallet">Not connected</p>
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
     </div>
-    
     <div class="sidebar-nav">
         <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
         <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
@@ -111,21 +101,16 @@
         <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
         <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
-        
         <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #08143F; color: white; border-radius: 8px;">
             <i class="fas fa-qrcode"></i> Scan Ticket
         </button>
-        
         <button class="sidebar-item" onclick="window.location.href='whitepaper.html'">
             <i class="fas fa-file-alt"></i> Whitepaper
         </button>
-        
         <button class="sidebar-item" onclick="window.location.href='faq.html'">
             <i class="fas fa-question-circle"></i> FAQ
         </button>
-        
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
-        
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
             <div class="sidebar-social-icons">
@@ -165,8 +150,7 @@
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
-            <i class="fas fa-bell" style="color:#f5a623;"></i> 
-            Notifications
+            <i class="fas fa-bell" style="color:#f5a623;"></i> Notifications
         </h2>
         <p class="events-sub">All your notifications</p>
         <div id="notificationsList" style="margin-top:20px;"></div>
@@ -178,7 +162,6 @@
 <!-- CHAT                                                          -->
 <!-- ============================================================ -->
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
-
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header">
         <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
@@ -204,9 +187,7 @@
                 <div class="hero-dots" id="heroDots"></div>
             </div>
         </div>
-        
         <div class="hero-divider"></div>
-        
         <div class="hero-content-bottom">
             <div class="hero-text">
                 <h1>The first ticketing platform powered by Pi Network</h1>
@@ -214,18 +195,14 @@
             </div>
         </div>
     </section>
-    
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
-    
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
             <select id="countrySelect" onchange="filterByCountry(this.value)"></select>
         </div>
     </div>
-    
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
-    
     <div class="events-container">
         <h2 class="events-title">Upcoming Events</h2>
         <p class="events-sub">Join the community and live unique experiences</p>
@@ -257,30 +234,18 @@
                 <input type="text" id="eventTitle" placeholder="Ex: Jazz Concert" required maxlength="25">
                 <span id="titleCharCounter" class="char-counter">25 characters remaining</span>
             </div>
-            
             <div class="form-group"><label>Category</label>
                 <select id="eventCategory">
-                    <option>Concert</option>
-                    <option>Sport</option>
-                    <option>Conference</option>
-                    <option>Training</option>
-                    <option>Cinema</option>
-                    <option>Festival</option>
-                    <option>Theatre</option>
-                    <option>Dance</option>
-                    <option>Exhibition</option>
-                    <option>Gala</option>
-                    <option>Seminar</option>
-                    <option>Formation</option>
+                    <option>Concert</option><option>Sport</option><option>Conference</option>
+                    <option>Training</option><option>Cinema</option><option>Festival</option>
+                    <option>Theatre</option><option>Dance</option><option>Exhibition</option>
+                    <option>Gala</option><option>Seminar</option><option>Formation</option>
                 </select>
             </div>
-            
             <div class="form-group"><label>Country</label>
                 <select id="eventCountry"></select>
             </div>
-            
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
-            
             <div class="form-group">
                 <label>Duration</label>
                 <div class="duration-row-modern">
@@ -299,32 +264,27 @@
                 </div>
                 <p class="duration-help-text"><i class="fas fa-info-circle"></i> Estimated event duration</p>
             </div>
-            
             <div class="form-group">
                 <label>Location <span style="font-size:0.7rem; color:#6b7280;">(max 30 characters)</span></label>
                 <input type="text" id="eventLocation" placeholder="Ex: Paris, Olympia" required maxlength="30">
                 <span id="locationCharCounter" class="char-counter">30 characters remaining</span>
             </div>
-            
             <div class="form-group">
                 <label>Description <span style="font-size:0.7rem; color:#6b7280;">(max 150 characters)</span></label>
                 <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="150"></textarea>
                 <span id="descCharCounter" class="char-counter">150 characters remaining</span>
             </div>
-            
             <!-- Conditions limitées à 40 caractères -->
             <div class="form-group">
                 <label>Conditions <span style="font-size:0.7rem; color:#6b7280;">(max 40 characters)</span></label>
                 <textarea id="eventConditions" rows="2" placeholder="Ex: Must have active Pi Network wallet..." maxlength="40"></textarea>
                 <span id="condCharCounter" class="char-counter">40 characters remaining</span>
             </div>
-            
             <div class="form-group">
                 <label>Number of tickets</label>
                 <input type="number" id="eventSeats" placeholder="Ex: 100" min="1" value="100" required>
                 <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Total number of tickets available for this event</p>
             </div>
-            
             <div class="form-group">
                 <label>Photos (1 image minimum)</label>
                 <div id="imageUploadContainer" class="image-upload-container">
@@ -344,7 +304,6 @@
                             <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
                         </div>
                     </div>
-                    
                     <div class="upload-box-modern" id="uploadBox2">
                         <div class="upload-box-inner" id="uploadInner2">
                             <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
@@ -364,7 +323,6 @@
                 </div>
                 <p class="upload-help"><i class="fas fa-info-circle"></i> Images automatically compressed to WebP format</p>
             </div>
-            
             <div class="btn-publish-wrapper">
                 <button type="submit" class="btn-primary" id="publishEventBtn">
                     <span class="btn-icon"><i class="fas fa-rocket"></i></span>
@@ -476,7 +434,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="profile-stats-grid">
             <div class="stat-card clickable" onclick="goToMyEvents()">
                 <span class="stat-number" id="myEventsCount">0</span>
@@ -499,7 +456,6 @@
                 <span class="stat-link">View all →</span>
             </div>
         </div>
-        
         <div class="profile-actions">
             <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
@@ -549,19 +505,16 @@
     <div class="page-content admin-content">
         <h2>Administration</h2>
         <p class="admin-subtitle">Manage your Betix platform</p>
-        
         <div class="admin-session-timer">
             <span>Session active</span>
             <span id="adminSessionTimer">30:00</span>
             <button class="admin-logout-btn" onclick="adminLogout()">Logout</button>
         </div>
-        
         <div class="admin-stats">
             <div class="stat-card"><h3>Events</h3><p id="adminEventCount">0</p></div>
             <div class="stat-card"><h3>Tickets</h3><p id="adminTicketCount">0</p></div>
             <div class="stat-card"><h3>Users</h3><p id="adminUserCount">0</p></div>
         </div>
-
         <div class="sync-indicator-wrapper">
             <div id="syncStatusIndicator" class="sync-indicator">
                 <i class="sync-icon fas fa-cloud"></i>
@@ -572,7 +525,6 @@
                 <i class="fas fa-sync"></i> Rafraîchir les données
             </button>
         </div>
-        
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="events">Events</button>
             <button class="admin-tab" data-tab="slides">Carousel</button>
@@ -580,14 +532,12 @@
             <button class="admin-tab" data-tab="logs">Logs</button>
             <button class="admin-tab" data-tab="settings">Settings</button>
         </div>
-        
         <div id="adminTabEvents" class="admin-tab-content active">
             <div class="admin-actions">
                 <button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444; color:white;">Delete all</button>
             </div>
             <div id="adminEventsList"></div>
         </div>
-        
         <div id="adminTabSlides" class="admin-tab-content">
             <div class="admin-actions">
                 <button class="btn-primary" id="adminAddSlideBtn" style="width:auto; padding:8px 20px;">Add image</button>
@@ -623,21 +573,18 @@
             </div>
             <div id="adminSlidesList"></div>
         </div>
-        
         <div id="adminTabUsers" class="admin-tab-content">
             <div class="admin-users-filters">
                 <input type="text" id="adminUserSearch" placeholder="Search user...">
             </div>
             <div id="adminUsersList"></div>
         </div>
-        
         <div id="adminTabLogs" class="admin-tab-content">
             <div class="admin-actions">
                 <button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444; color:white;">Clear logs</button>
             </div>
             <div id="adminLogsList"></div>
         </div>
-        
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
                 <h3>Change Password</h3>
@@ -651,16 +598,13 @@
                 </div>
                 <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;">Change</button>
                 <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
-                
                 <hr style="margin: 30px 0; border-color: #e5e7eb;">
-                
                 <h3>Information</h3>
                 <p><strong>Current password :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
                 <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
                 <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
             </div>
         </div>
-        
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
@@ -725,22 +669,18 @@
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
         <h2 style="margin-bottom: 8px; color: var(--dark);">Edit Event</h2>
         <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 16px;">Modify the fields below to update your event</p>
-        
         <div class="form-group">
             <label>Description</label>
             <textarea id="editEventDescription" rows="3" placeholder="Describe your event..."></textarea>
         </div>
-        
         <div class="form-group">
             <label>Location</label>
             <input type="text" id="editEventLocation" placeholder="Ex: Paris, Olympia">
         </div>
-        
         <div class="form-group">
             <label>Conditions</label>
             <textarea id="editEventConditions" rows="3" placeholder="Participation conditions..."></textarea>
         </div>
-        
         <div class="form-group">
             <label>Duration</label>
             <div class="duration-row-modern">
@@ -758,17 +698,14 @@
                 </div>
             </div>
         </div>
-        
         <div class="form-group">
             <label>Number of tickets</label>
             <input type="number" id="editEventSeats" placeholder="Ex: 100" min="1">
         </div>
-        
         <div class="modal-actions">
             <button class="btn-secondary-modal" onclick="closeEditEventModal()">Cancel</button>
             <button class="btn-primary" onclick="saveEventEdits()">Save Changes</button>
         </div>
-        
         <button class="btn-back" onclick="closeEditEventModal(); showPage('myevents')" style="margin-top: 12px;">Back to My Events</button>
     </div>
 </div>
@@ -779,7 +716,6 @@
         <h3><i class="fas fa-ticket-alt"></i> Choose quantity</h3>
         <p id="quantityEventTitle" style="font-weight:600;color:var(--primary);"></p>
         <p id="quantityEventInfo" style="font-size:0.85rem;color:var(--gray);"></p>
-        
         <div class="quantity-selector">
             <button class="qty-btn" onclick="updateQuantity(-1)">-</button>
             <input type="number" id="ticketQuantity" value="1" min="1" max="10">
@@ -832,7 +768,6 @@
             autoDisplay: false,
             multilanguagePage: true
         }, 'google_translate_element');
-        
         setTimeout(function() {
             var banner = document.querySelector('.goog-te-banner-frame');
             if (banner) {
@@ -840,7 +775,6 @@
                 banner.style.height = '0px';
                 banner.style.visibility = 'hidden';
             }
-            
             var gadget = document.querySelector('.goog-te-gadget');
             if (gadget) {
                 var textNodes = gadget.childNodes;
@@ -850,7 +784,6 @@
                     }
                 }
             }
-            
             var select = document.querySelector('.goog-te-combo');
             if (select) {
                 select.style.display = 'inline-block';
@@ -863,7 +796,6 @@
                 select.style.width = '100%';
                 select.style.maxWidth = '180px';
             }
-            
             var iframes = document.querySelectorAll('iframe');
             for (var i = 0; i < iframes.length; i++) {
                 var iframe = iframes[i];
@@ -874,7 +806,6 @@
                     iframe.style.width = '0px';
                 }
             }
-            
             document.body.style.top = '0px';
             document.body.style.position = 'relative';
         }, 500);
