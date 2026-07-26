@@ -853,6 +853,7 @@ function markTicketAsUsed(ticketId) {
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
+
 // ============================================================
 // FONCTION RENDER EVENT CARD - AVEC FOND GRIS ET DURÉE EN MAJUSCULE
 // ============================================================
@@ -944,7 +945,6 @@ function renderEventCard(event) {
         </div>
     </div>`;
 }
-// ============================================================
 // ============================================================
 
 function changeLanguage(lang) {
