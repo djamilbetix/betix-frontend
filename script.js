@@ -1510,6 +1510,9 @@ function renderEventCard(event) {
     </div>`;
 }
 
+// ============================================================
+// MODIFICATION : openEventDetails - Nouvelle version modernisée
+// ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
@@ -1526,30 +1529,40 @@ function openEventDetails(eventId) {
     const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
+    
+    // Carousel : uniquement des images, pas de texte
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
         const dotsId = 'carousel-dots-' + event.id;
-        carouselHtml = `<div class="event-detail-image-carousel" id="carousel-${event.id}"><div class="carousel-track" id="${trackId}">`;
-        images.forEach(img => carouselHtml += `<div class="carousel-slide"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`);
+        carouselHtml = `<div class="event-detail-carousel-modern" id="carousel-${event.id}">
+            <div class="carousel-track-modern" id="${trackId}">`;
+        images.forEach(img => {
+            carouselHtml += `<div class="carousel-slide-modern"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
+        });
         carouselHtml += '</div>';
         if (images.length > 1) {
-            carouselHtml += `<button class="carousel-btn prev" onclick="carouselPrev('${event.id}')">‹</button><button class="carousel-btn next" onclick="carouselNext('${event.id}')">›</button>`;
-            carouselHtml += `<div class="carousel-counter"><i class="fas fa-image"></i><span id="carousel-current-${event.id}">1</span>/${images.length}</div>`;
-            carouselHtml += `<div class="carousel-dots" id="${dotsId}">`;
-            for (let d = 0; d < images.length; d++) carouselHtml += `<button class="cdot${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
+            carouselHtml += `<button class="carousel-btn-modern prev" onclick="carouselPrev('${event.id}')">‹</button>
+                             <button class="carousel-btn-modern next" onclick="carouselNext('${event.id}')">›</button>
+                             <div class="carousel-counter-modern"><i class="fas fa-image"></i><span id="carousel-current-${event.id}">1</span>/${images.length}</div>
+                             <div class="carousel-dots-modern" id="${dotsId}">`;
+            for (let d = 0; d < images.length; d++) {
+                carouselHtml += `<button class="cdot-modern${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
+            }
             carouselHtml += '</div>';
         }
         carouselHtml += '</div>';
     }
 
-    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p style="color: var(--gray); font-size: 0.85rem;">${escapeHtml(event.conditions)}</p>`) : `<p style="color: var(--gray); font-size: 0.85rem;">${t('noConditions')}</p>`;
+    // Conditions
+    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p style="color: var(--gray); font-size: 0.9rem;">${escapeHtml(event.conditions)}</p>`) : `<p style="color: var(--gray); font-size: 0.9rem;">${t('noConditions')}</p>`;
 
+    // Reviews
     const eventRatings = ratings.filter(r => r.eventId === event.id);
     let reviewsHtml = eventRatings.length ? eventRatings.map(r => {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return `<div class="review-item-simple"><div class="review-header"><span class="review-user">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars">${stars}</span></div>${r.comment ? `<div class="review-text">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
-    }).join('') : `<p style="color: var(--gray); font-size: 0.85rem;">${t('noReviews')}</p>`;
+        return `<div class="review-item-modern"><div class="review-header-modern"><span class="review-user-modern">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars-modern">${stars}</span></div>${r.comment ? `<div class="review-text-modern">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date-modern">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
+    }).join('') : `<p style="color: var(--gray); font-size: 0.9rem;">${t('noReviews')}</p>`;
 
     const avgRating = eventRatings.length ? eventRatings.reduce((a,r) => a + r.rating, 0) / eventRatings.length : 0;
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
@@ -1570,67 +1583,88 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
+    // Construction du nouveau HTML structuré
     content.innerHTML = `
-        <div class="event-detail-header-simple">
-            <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
-            <span class="detail-title-header">${escapeHtml(event.title)}</span>
-            <span class="detail-category-tag-simple">${escapeHtml(event.category)}</span>
-            <button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
+        <!-- En-tête -->
+        <div class="event-detail-header-modern">
+            <button class="back-btn-detail-modern" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
+            <span class="detail-title-modern">${escapeHtml(event.title)}</span>
+            <span class="detail-category-modern">${escapeHtml(event.category)}</span>
+            <button class="modal-close-detail-modern" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
         </div>
-        <div class="event-detail-body-simple">
-            ${carouselHtml}
 
-            <div class="event-detail-description">
-                <h4>${t('fullDescription')}</h4>
+        <!-- Carousel (images uniquement) -->
+        ${carouselHtml}
+
+        <!-- Corps -->
+        <div class="event-detail-body-modern">
+            <!-- Description -->
+            <section class="detail-section detail-description">
+                <h4><i class="fas fa-align-left"></i> ${t('fullDescription')}</h4>
                 <p>${event.description || 'No description'}</p>
-            </div>
+            </section>
 
-            <div class="event-detail-info-box">
-                <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
-                <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#f5a623;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#f5a623;"></i> ${durationDisplay}` : ''}</div>
-            </div>
-
-            <div class="event-detail-price-seats-simple">
-                <span class="price-simple">${priceDisplay}</span>
-                <span class="seats-simple"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
-            </div>
-
-            <div class="event-detail-conditions">
-                <h4>${t('conditions')}</h4>
-                ${conditionsHtml}
-            </div>
-
-            <div class="event-detail-meta">
-                <h4>${t('information')}</h4>
-                <div class="meta-grid">
-                    <div class="meta-item"><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div>
-                    <div class="meta-item"><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
-                    <div class="meta-item"><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
-                    <div class="meta-item"><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
+            <!-- Informations pratiques -->
+            <section class="detail-section detail-info">
+                <h4><i class="fas fa-info-circle"></i> ${t('information')}</h4>
+                <div class="info-grid-modern">
+                    <div class="info-item-modern"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
+                    <div class="info-item-modern"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
+                    <div class="info-item-modern"><i class="fas fa-clock"></i> ${timeFormatted}</div>
+                    ${durationDisplay ? `<div class="info-item-modern"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
                 </div>
-            </div>
+            </section>
 
-            <div class="event-detail-reviews">
-                <h4>${t('reviews')}</h4>
-                ${reviewsHtml}
-            </div>
+            <!-- Prix et places -->
+            <section class="detail-section detail-price-seats">
+                <div class="price-seats-modern">
+                    <span class="price-modern"><i class="fas fa-tag"></i> ${priceDisplay}</span>
+                    <span class="seats-modern"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
+                </div>
+            </section>
+
+            <!-- Conditions -->
+            <section class="detail-section detail-conditions">
+                <h4><i class="fas fa-list-ul"></i> ${t('conditions')}</h4>
+                ${conditionsHtml}
+            </section>
+
+            <!-- Métadonnées -->
+            <section class="detail-section detail-meta">
+                <div class="meta-grid-modern">
+                    <div class="meta-item-modern"><span class="meta-label-modern">${t('organizer')}</span><span class="meta-value-modern">${escapeHtml(organizerDisplay)}</span></div>
+                    <div class="meta-item-modern"><span class="meta-label-modern">${t('createdOn')}</span><span class="meta-value-modern">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+                    <div class="meta-item-modern"><span class="meta-label-modern">${t('seatsLeft')}</span><span class="meta-value-modern">${event.seatsLeft}/${event.seatsTotal}</span></div>
+                    <div class="meta-item-modern"><span class="meta-label-modern">${t('rating')}</span><span class="meta-value-modern">${ratingDisplay}</span></div>
+                </div>
+            </section>
+
+            <!-- Avis -->
+            <section class="detail-section detail-reviews">
+                <h4><i class="fas fa-star"></i> ${t('reviews')}</h4>
+                <div class="reviews-list-modern">${reviewsHtml}</div>
+            </section>
         </div>
 
-        <div class="event-detail-footer-simple">
-            <button class="btn-buy-simple" id="detailBuyBtnSimple"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
+        <!-- Pied de page avec bouton d'achat -->
+        <div class="event-detail-footer-modern">
+            <button class="btn-buy-modern" id="detailBuyBtnModern"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
         </div>
     `;
 
-    document.getElementById('detailBuyBtnSimple').onclick = function() {
+    // Attacher l'événement au bouton d'achat
+    document.getElementById('detailBuyBtnModern').onclick = function() {
         closeEventDetailModalAndGoBack();
         setTimeout(() => openQuantityPopup(event.id), 300);
     };
 
+    // Afficher le modal
     modal.classList.add('show');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    setTimeout(() => { const body = document.querySelector('.event-detail-body-simple'); if (body) body.scrollTop = 0; }, 100);
+    setTimeout(() => { const body = document.querySelector('.event-detail-body-modern'); if (body) body.scrollTop = 0; }, 100);
 
+    // Initialiser le carousel
     if (images.length > 1) {
         window._carousels = window._carousels || {};
         window._carousels[event.id] = { currentIndex: 0, totalSlides: images.length, trackId: 'carousel-track-' + event.id, dotsId: 'carousel-dots-' + event.id, eventId: event.id };
@@ -1639,21 +1673,9 @@ function openEventDetails(eventId) {
     }
 }
 
-function closeEventDetailModalAndGoBack() {
-    const modal = document.getElementById('eventDetailModal');
-    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
-    if (window._carousels) { for (let key in window._carousels) delete window._carousels[key]; }
-    setTimeout(() => {
-        if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
-    }, 50);
-}
-
-function closeEventDetailModal() {
-    const modal = document.getElementById('eventDetailModal');
-    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
-    if (window._carousels) { for (let key in window._carousels) delete window._carousels[key]; }
-}
-
+// ============================================================
+// Fonctions du carousel (adaptées aux nouvelles classes)
+// ============================================================
 function carouselGoTo(eventId, index) {
     const carousel = window._carousels && window._carousels[eventId];
     if (!carousel) return;
@@ -1664,7 +1686,7 @@ function carouselGoTo(eventId, index) {
     if (index >= total) index = 0;
     carousel.currentIndex = index;
     track.style.transform = 'translateX(' + (-index * 100) + '%)';
-    document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+    document.querySelectorAll('#' + carousel.dotsId + ' .cdot-modern').forEach((dot, i) => dot.classList.toggle('active', i === index));
     const counter = document.getElementById('carousel-current-' + eventId);
     if (counter) counter.textContent = index + 1;
 }
@@ -1678,6 +1700,15 @@ function carouselNext(eventId) {
     const carousel = window._carousels && window._carousels[eventId];
     if (!carousel) return;
     carouselGoTo(eventId, carousel.currentIndex + 1);
+}
+
+function closeEventDetailModalAndGoBack() {
+    const modal = document.getElementById('eventDetailModal');
+    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
+    if (window._carousels) { for (let key in window._carousels) delete window._carousels[key]; }
+    setTimeout(() => {
+        if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
+    }, 50);
 }
 
 function openGallery(eventId, startIndex) {
@@ -3010,7 +3041,7 @@ function hideConnectSpinner() {
 }
 
 // ============================================================
-// INITIALISATION – CORRECTION DU DÉMARRAGE
+// INITIALISATION
 // ============================================================
 function initApp() {
     const successPopup = document.getElementById('successPopup');
@@ -3141,7 +3172,7 @@ function initApp() {
     }
 }
 
-// Exécution immédiate si DOM prêt, sinon attendre DOMContentLoaded
+// Exécution
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
