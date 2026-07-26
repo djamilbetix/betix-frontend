@@ -4974,29 +4974,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern {
     max-width: 260px;
 }
 
-/* ============================================================
-   NOUVEAUX LIENS DOCUMENTATION DANS LE FOOTER
-   ============================================================ */
-.footer-doc-links {
-    display: flex;
-    gap: 16px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-.footer-doc-links a {
-    color: #a0b4cc;
-    text-decoration: none;
-    font-size: 16px;
-    transition: color 0.2s, transform 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.footer-doc-links a:hover {
-    color: #ffffff;
-    transform: translateX(2px);
-}
-
 /* RESEAUX SOCIAUX EN BLEU */
 .footer-social a {
     display: inline-flex;
