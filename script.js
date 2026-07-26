@@ -847,6 +847,9 @@ function markTicketAsUsed(ticketId) {
     }
 }
 
+// ============================================================
+// FONCTION RENDER EVENT CARD - MISE À JOUR
+// ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
     const dateEvent = new Date(event.date);
@@ -863,6 +866,7 @@ function renderEventCard(event) {
     
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
+    const locationDisplay = event.location ? ` · ${escapeHtml(event.location)}` : '';
     let desc = event.description || '';
     if (desc.length > 100) desc = desc.substring(0, 97) + '...';
     let organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
@@ -889,28 +893,19 @@ function renderEventCard(event) {
     // Badge rouge "Tickets X/Y"
     const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
     
-    // Ligne localisation + durée
-    let durationText = '';
-    if (event.durationValue && event.durationUnit) {
-        const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
-        durationText = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
-    }
-    let countryDurationHtml = '';
-    if (countryFlag || durationText) {
-        countryDurationHtml = `<div class="event-country-duration">${countryFlag ? `<span class="country-flag">${countryFlag} ${escapeHtml(countryDisplay)}</span>` : ''}${countryFlag && durationText ? ' · ' : ''}${durationText ? `<span class="duration-text"><i class="fas fa-hourglass-half"></i> ${durationText}</span>` : ''}</div>`;
-    }
+    // Ligne localisation (pays + lieu)
+    const locationLine = `<div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>`;
+    
+    // Ligne date et heure
+    const dateTimeLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · ${timeFormatted}</div>`;
     
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
             <div class="event-title-classic">${escapeHtml(event.title)}</div>
             ${desc ? `<div class="event-desc-classic">${escapeHtml(desc)}</div>` : ''}
-            ${countryDurationHtml}
-            <div class="info-grid-classic">
-                <div class="info-item-classic"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
-                <div class="info-item-classic"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location || 'Online')}</div>
-                <div class="info-item-classic"><i class="fas fa-clock"></i> ${timeFormatted}</div>
-            </div>
+            ${locationLine}
+            ${dateTimeLine}
             <div class="card-footer-classic">
                 <span class="event-rating-classic">${ratingDisplay}</span>
                 ${ticketsLabelHtml}
@@ -921,6 +916,10 @@ function renderEventCard(event) {
         </div>
     </div>`;
 }
+
+// ============================================================
+// FIN DE LA FONCTION RENDER EVENT CARD
+// ============================================================
 
 function changeLanguage(lang) {
     currentLang = lang;
