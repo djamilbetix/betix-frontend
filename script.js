@@ -898,20 +898,22 @@ function renderEventCard(event) {
     // Tickets (gauche)
     const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
 
-    // Prix (droite) – badge "Price" bleu foncé, montant vert, Pi gris
+    // Prix (droite) – badge "Price" bleu foncé, montant vert, Pi agrandi
     const priceRightHtml = `<div class="event-price-right">
         <span class="price-label-badge">Price</span>
         <span class="price-amount-green">${(event.price || 0).toFixed(6)}</span>
-        <span class="price-currency-gray">Pi</span>
+        <span class="price-currency-gray" style="font-size:1.2rem; font-weight:700;">Pi</span>
     </div>`;
 
-    const locationLine = `<div class="event-location-line"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>`;
-    const dateTimeLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day"></i> ${dateFormatted} · ${timeFormatted}</div>`;
+    // Lignes de localisation et date/heure (icônes en jaune)
+    const locationLine = `<div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>`;
+    const dateTimeLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · ${timeFormatted}</div>`;
 
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
-            <div class="event-title-large">${escapeHtml(event.title)}</div>
+            <!-- TITRE AGRANDI -->
+            <div class="event-title-large" style="font-size:1.6rem; font-weight:700; margin-bottom:2px;">${escapeHtml(event.title)}</div>
             ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
             ${locationLine}
             ${dateTimeLine}
