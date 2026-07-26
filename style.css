@@ -1,3 +1,4 @@
+
 /* ============================================================
    STYLES GÉNÉRAUX
    ============================================================ */
@@ -1336,8 +1337,9 @@ body.dark-mode .event-description-full {
     align-items: center;
     gap: 6px;
     font-size: 0.85rem;
-    color: #6b7280;
+    color: #1f2937; /* couleur renforcée */
     margin: 2px 0;
+    flex-wrap: wrap;
 }
 .event-location-line i,
 .event-datetime-line i {
@@ -1346,9 +1348,12 @@ body.dark-mode .event-description-full {
     text-align: center;
     font-size: 0.8rem;
 }
+.event-datetime-line .fa-hourglass-half {
+    font-size: 0.75rem;
+}
 body.dark-mode .event-location-line,
 body.dark-mode .event-datetime-line {
-    color: #9ca3af;
+    color: #e5e7eb; /* plus clair en mode sombre pour rester lisible */
 }
 
 .event-meta-row {
