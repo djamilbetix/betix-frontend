@@ -3014,5 +3014,3 @@ function hideConnectSpinner() {
     const btn = document.getElementById('sidebarWalletBtn');
     if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
 }
-
-// FIN DU SCRIPT
