@@ -1946,9 +1946,6 @@ function updateScanButtonVisibility() {
     scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
 }
 
-// ============================================================
-// ADMIN FUNCTIONS (intégrales)
-// ============================================================
 function initAdmin() {
     const adminItem = document.getElementById('adminMenuItem');
     if (!adminItem) return;
@@ -2317,9 +2314,6 @@ function renderEventsByCategory() {
     container.innerHTML = html;
 }
 
-// ============================================================
-// QUANTITY POPUP & PURCHASE FLOW
-// ============================================================
 function openQuantityPopup(eventId) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
@@ -3014,3 +3008,158 @@ function hideConnectSpinner() {
     const btn = document.getElementById('sidebarWalletBtn');
     if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
 }
+
+// ============================================================
+// INITIALISATION – CORRECTION DU DÉMARRAGE
+// ============================================================
+function initApp() {
+    const successPopup = document.getElementById('successPopup');
+    if (successPopup) { successPopup.classList.remove('show'); successPopup.style.display = 'none'; }
+    const successInfo = document.getElementById('successTicketInfo');
+    if (successInfo) successInfo.innerHTML = '';
+    localStorage.removeItem('betix_success_popup_shown');
+
+    try {
+        const savedUser = localStorage.getItem('betix_user');
+        if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) {
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); loadAllFromSupabase(); }, 600);
+            }, 3000);
+        }
+        detectLanguage();
+        syncSettingsLanguageSelector();
+        loadUsedTickets();
+        if (!events || events.length === 0) { events = []; saveEvents(); }
+        initCountrySelectors();
+        calculateLoyaltyPoints();
+        initFilters();
+        renderEventsByCategory();
+        updateUserInfo();
+        updateProfilePage();
+        updateNotifBadgeHeader();
+        initAdmin();
+        initChat();
+        initLegalModals();
+        const dark = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
+        if (dark) dark.addEventListener('change', toggleDarkMode);
+        loadHeroSlides();
+        renderAdminLogs();
+        setupTicketTypesUI();
+        initCharCounters();
+        const storedPassword = localStorage.getItem('betix_admin_password');
+        if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
+            const adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
+            if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
+        }
+        const menuBtn = document.getElementById('menuBtn');
+        const headerRight = document.getElementById('headerRight');
+        if (menuBtn) {
+            menuBtn.style.cssText += 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 99999 !important; position: relative !important; pointer-events: auto !important; cursor: pointer !important; opacity: 1 !important; visibility: visible !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; border-radius: 12px !important; background: rgba(255,255,255,0.25) !important; border: 2px solid rgba(255,255,255,0.15) !important; font-size: 1.5rem !important; color: white !important;';
+            menuBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); openSidebar(); return false; });
+            if (headerRight) {
+                headerRight.addEventListener('click', function(e) {
+                    const target = e.target;
+                    if (target.closest('#menuBtn')) { e.preventDefault(); e.stopPropagation(); openSidebar(); }
+                });
+            }
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('#menuBtn')) { e.preventDefault(); e.stopPropagation(); openSidebar(); }
+            });
+            menuBtn.addEventListener('mouseenter', function() { this.style.background = 'rgba(255,255,255,0.4)'; this.style.transform = 'scale(1.05)'; });
+            menuBtn.addEventListener('mouseleave', function() { this.style.background = 'rgba(255,255,255,0.25)'; this.style.transform = 'scale(1)'; });
+            menuBtn.style.pointerEvents = 'auto'; menuBtn.style.cursor = 'pointer';
+        }
+        const backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); goBack(); return false; });
+            const homePage = document.getElementById('homePage');
+            if (homePage && homePage.style.display !== 'none') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; } else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
+        }
+        document.getElementById('closeSidebarBtn') && document.getElementById('closeSidebarBtn').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); closeSidebar(); });
+        document.getElementById('overlay') && document.getElementById('overlay').addEventListener('click', function() { closeSidebar(); });
+        const eventForm = document.getElementById('eventForm');
+        const searchInput = document.getElementById('searchInput');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        updateConnectButtons();
+        document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
+        document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
+        const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
+        const adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
+        const adminImageInput = document.getElementById('adminSlideImageInput');
+        const adminUploadBox = document.getElementById('adminUploadBox');
+        const adminPreview = document.getElementById('adminSlidePreview');
+        if (adminAddSlideBtn) adminAddSlideBtn.addEventListener('click', function() { adminShowSlideForm(-1); });
+        if (adminSaveSlideBtn) adminSaveSlideBtn.addEventListener('click', adminSaveSlide);
+        if (adminCancelSlideBtn) adminCancelSlideBtn.addEventListener('click', adminCancelSlideForm);
+        if (adminImageInput && adminUploadBox) {
+            adminImageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { adminPreview.src = e.target.result; adminPreview.style.display = 'block'; adminUploadBox.classList.add('has-image'); };
+                    reader.readAsDataURL(file);
+                }
+            });
+            adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
+        }
+        if (eventForm) eventForm.addEventListener('submit', createEvent);
+        if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
+        if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
+        document.querySelectorAll('.image-input-modern').forEach(input => {
+            const index = parseInt(input.dataset.index);
+            input.addEventListener('change', function(e) { if (this.files && this.files[0]) handleImageUploadModern(this.files[0], index); });
+            const box = document.getElementById('uploadBox' + (index + 1));
+            if (box) {
+                box.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+                box.addEventListener('dragleave', function(e) { e.preventDefault(); this.classList.remove('dragover'); });
+                box.addEventListener('drop', function(e) {
+                    e.preventDefault(); this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    const inputFile = this.querySelector('.image-input-modern');
+                    if (files && files.length > 0 && inputFile) { inputFile.files = files; inputFile.dispatchEvent(new Event('change')); }
+                });
+            }
+        });
+        document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
+        bindActivityListeners();
+        setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
+        setTimeout(() => loadAllFromSupabase(), 1000);
+        setInterval(() => syncAllToSupabase(), 30000);
+        window.addEventListener('beforeunload', () => syncAllToSupabase());
+        if (currentUser.wallet && isSessionExpired()) disconnectPi();
+    } catch (error) {
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
+    }
+}
+
+// Exécution immédiate si DOM prêt, sinon attendre DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+
+window.syncAllToSupabase = syncAllToSupabase;
+window.loadAllFromSupabase = loadAllFromSupabase;
+window.forceRefreshData = forceRefreshData;
+window.updateSyncStatus = updateSyncStatus;
+window.saveEventToSupabase = saveEventToSupabase;
+window.saveTicketToSupabase = saveTicketToSupabase;
+window.saveUserToSupabase = saveUserToSupabase;
+window.loadEventsFromSupabase = loadEventsFromSupabase;
+window.loadTicketsFromSupabase = loadTicketsFromSupabase;
+window.verifySupabasePersistence = verifySupabasePersistence;
+window.forceFullSync = forceFullSync;
+window.loadHeroSlides = loadHeroSlides;
+window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
+window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
+window.uploadHeroImage = uploadHeroImage;
