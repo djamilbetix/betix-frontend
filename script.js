@@ -855,7 +855,7 @@ function markTicketAsUsed(ticketId) {
 }
 
 // ============================================================
-// FONCTION RENDER EVENT CARD - STYLE FINAL (PRIX À DROITE)
+// FONCTION RENDER EVENT CARD - AVEC DATE, HEURE ET DURÉE SUR MÊME LIGNE
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -898,25 +898,31 @@ function renderEventCard(event) {
     // Tickets (gauche)
     const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
 
-    // Prix (droite) – badge "Price" bleu foncé, montant vert, Pi agrandi
+    // Prix (droite)
     const priceRightHtml = `<div class="event-price-right">
         <span class="price-label-badge">Price</span>
         <span class="price-amount-green">${(event.price || 0).toFixed(6)}</span>
-        <span class="price-currency-gray" style="font-size:1.2rem; font-weight:700;">Pi</span>
+        <span class="price-currency-gray">Pi</span>
     </div>`;
 
-    // Lignes de localisation et date/heure (icônes en jaune)
+    // Ligne localisation (pays + lieu) – icône jaune
     const locationLine = `<div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>`;
-    const dateTimeLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · ${timeFormatted}</div>`;
+
+    // Ligne date, heure et durée – icônes jaunes, texte renforcé
+    let durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        const unitLabels = { hours: 'h', days: 'd', weeks: 'w', months: 'm', years: 'y' };
+        durationDisplay = `${event.durationValue}${unitLabels[event.durationUnit] || event.durationUnit}`;
+    }
+    const dateTimeDurationLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#f5a623;"></i> ${durationDisplay}` : ''}</div>`;
 
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
-            <!-- TITRE AGRANDI -->
-            <div class="event-title-large" style="font-size:1.6rem; font-weight:700; margin-bottom:2px;">${escapeHtml(event.title)}</div>
+            <div class="event-title-large">${escapeHtml(event.title)}</div>
             ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
             ${locationLine}
-            ${dateTimeLine}
+            ${dateTimeDurationLine}
             <div class="event-meta-row">
                 ${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}
             </div>
