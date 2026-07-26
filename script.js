@@ -301,20 +301,19 @@ async function loadHeroSlides() {
         const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
         if (error) throw error;
         if (data && data.length > 0) {
-            heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
+            heroSlides = data.map(s => ({ id: s.id, image: s.image_url }));
             localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
         } else {
             let local = localStorage.getItem('betix_hero_slides');
-            if (local) try { heroSlides = JSON.parse(local); await migrateHeroSlides(heroSlides); } catch(e) { heroSlides = []; }
+            if (local) try { heroSlides = JSON.parse(local); } catch(e) { heroSlides = []; }
             else {
                 heroSlides = [
-                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
-                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
-                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
-                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
-                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
+                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop' },
+                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop' },
+                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop' },
+                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop' },
+                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop' }
                 ];
-                await migrateHeroSlides(heroSlides);
             }
             localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
         }
@@ -855,7 +854,7 @@ function markTicketAsUsed(ticketId) {
 }
 
 // ============================================================
-// FONCTION RENDER EVENT CARD - AVEC FOND GRIS ET DURÉE EN MAJUSCULE
+// FONCTION RENDER EVENT CARD - STYLE FINAL AVEC FOND GRIS
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -918,7 +917,7 @@ function renderEventCard(event) {
         durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
     }
 
-    // Bloc d'informations avec fond gris (localisation + date/heure/durée)
+    // Bloc d'informations avec fond gris
     const infoBoxHtml = `
         <div class="event-info-box">
             <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
@@ -1924,7 +1923,7 @@ function renderAdminSlides() {
     if (!container) return;
     if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
     container.innerHTML = heroSlides.map((slide, index) =>
-        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>${escapeHtml(slide.title)}</h4><p>${slide.badge || 'Uncategorized'} • ${slide.description || ''}</p></div><div class="slide-actions"><button class="edit-btn" onclick="adminEditSlide(${index})">Edit</button><button class="delete-btn" onclick="adminDeleteSlide(${index})">Cancel</button></div></div>`
+        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Slide ${index + 1}</h4></div><div class="slide-actions"><button class="edit-btn" onclick="adminEditSlide(${index})">Edit</button><button class="delete-btn" onclick="adminDeleteSlide(${index})">Cancel</button></div></div>`
     ).join('');
 }
 
@@ -1938,9 +1937,9 @@ function adminShowSlideForm(index) {
     container.style.display = 'block';
     if (index >= 0 && index < heroSlides.length) {
         title.textContent = 'Edit carousel image';
-        document.getElementById('adminSlideBadge').value = heroSlides[index].badge || '';
-        document.getElementById('adminSlideTitle').value = heroSlides[index].title || '';
-        document.getElementById('adminSlideDesc').value = heroSlides[index].description || '';
+        document.getElementById('adminSlideBadge').value = '';
+        document.getElementById('adminSlideTitle').value = '';
+        document.getElementById('adminSlideDesc').value = '';
         document.getElementById('adminEditSlideIndex').value = index;
         if (heroSlides[index].image) { preview.src = heroSlides[index].image; preview.style.display = 'block'; uploadBox.classList.add('has-image'); }
     } else {
@@ -1977,7 +1976,7 @@ async function adminSaveSlide() {
         if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
         else { alert('Please select an image'); return; }
     }
-    const slideData = { image: imageData, badge, title, description };
+    const slideData = { image: imageData };
     const indexToSave = parseInt(editIndex.value);
     if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
     const saved = await saveHeroSlideToSupabase(slideData, indexToSave);
@@ -1994,7 +1993,7 @@ async function adminDeleteSlide(index) {
     const deleted = await deleteHeroSlideFromSupabase(slide.id);
     if (!deleted) { alert('Error deleting slide'); return; }
     await loadHeroSlides();
-    addAdminLog('Slide deleted', 'Title: ' + slide.title);
+    addAdminLog('Slide deleted', 'Image deleted');
 }
 
 function adminEditSlide(index) { adminShowSlideForm(index); }
@@ -2139,24 +2138,48 @@ function openEventDetails(eventId) {
         const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
+
+    // Construction du détail – version responsive améliorée
     content.innerHTML = `
-        <div class="event-detail-header-simple"><button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button><span class="detail-title-header">${escapeHtml(event.title)}</span><span class="detail-category-tag-simple">${escapeHtml(event.category)}</span><button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button></div>
+        <div class="event-detail-header-simple">
+            <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
+            <span class="detail-title-header">${escapeHtml(event.title)}</span>
+            <span class="detail-category-tag-simple">${escapeHtml(event.category)}</span>
+            <button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
+        </div>
         <div class="event-detail-body-simple">
             ${carouselHtml}
-            <div class="event-detail-info-grid">
-                <div class="info-item"><i class="fas fa-calendar-day"></i> <span class="info-label">${t('eventDate')}</span> <span class="info-value">${dateFormatted}</span></div>
-                <div class="info-item"><i class="fas fa-clock"></i> <span class="info-label">${t('eventTime')}</span> <span class="info-value">${timeFormatted}</span></div>
-                <div class="info-item"><i class="fas fa-map-marker-alt"></i> <span class="info-label">${t('locationLabel')}</span> <span class="info-value">${escapeHtml(event.location || 'Online')}</span></div>
-                <div class="info-item"><i class="fas fa-flag"></i> <span class="info-label">${t('countryLabel')}</span> <span class="info-value">${countryFlag} ${escapeHtml(countryDisplay)}</span></div>
-                ${durationDisplay ? `<div class="info-item full-width"><i class="fas fa-hourglass-half"></i> <span class="info-label">${t('duration')}</span> <span class="info-value">${durationDisplay}</span></div>` : ''}
+            <div class="event-detail-content-grid">
+                <div class="event-detail-info-section">
+                    <div class="detail-info-item"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> <span>${dateFormatted}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-clock" style="color:#f5a623;"></i> <span>${timeFormatted}</span></div>
+                    ${durationDisplay ? `<div class="detail-info-item"><i class="fas fa-hourglass-half" style="color:#f5a623;"></i> <span>${durationDisplay}</span></div>` : ''}
+                    <div class="detail-info-item"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> <span>${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ' · ' + escapeHtml(event.location) : ''}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-ticket-alt" style="color:#f5a623;"></i> <span>${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-tag" style="color:#f5a623;"></i> <span>${priceDisplay}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-user" style="color:#f5a623;"></i> <span>${escapeHtml(organizerDisplay)}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-calendar-alt" style="color:#f5a623;"></i> <span>${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+                    <div class="detail-info-item"><i class="fas fa-star" style="color:#f5a623;"></i> <span>${ratingDisplay}</span></div>
+                </div>
+                <div class="event-detail-description-section">
+                    <h4>${t('fullDescription')}</h4>
+                    <p>${event.description || 'No description'}</p>
+                </div>
+                ${event.conditions ? `
+                <div class="event-detail-conditions-section">
+                    <h4>${t('conditions')}</h4>
+                    ${conditionsHtml}
+                </div>` : ''}
+                ${reviewsHtml ? `
+                <div class="event-detail-reviews-section">
+                    <h4>${t('reviews')}</h4>
+                    ${reviewsHtml}
+                </div>` : ''}
             </div>
-            <div class="event-detail-price-seats-simple"><span class="price-simple">${priceDisplay}</span><span class="seats-simple"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span></div>
-            <div class="event-detail-description"><h4>${t('fullDescription')}</h4><p>${event.description || 'No description'}</p></div>
-            <div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>
-            <div class="event-detail-meta"><h4>${t('information')}</h4><div class="meta-grid"><div class="meta-item"><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div><div class="meta-item"><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div><div class="meta-item"><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div><div class="meta-item"><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div></div></div>
-            <div class="event-detail-reviews"><h4>${t('reviews')}</h4>${reviewsHtml}</div>
         </div>
-        <div class="event-detail-footer-simple"><button class="btn-buy-simple" id="detailBuyBtnSimple"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button></div>
+        <div class="event-detail-footer-simple">
+            <button class="btn-buy-simple" id="detailBuyBtnSimple"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
+        </div>
     `;
     document.getElementById('detailBuyBtnSimple').onclick = function() { closeEventDetailModalAndGoBack(); setTimeout(() => openQuantityPopup(event.id), 300); };
     modal.classList.add('show');
@@ -2364,7 +2387,8 @@ function initHeroSlider() {
     heroSlides.forEach((slide, index) => {
         const div = document.createElement('div');
         div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div><div class="hero-slide-content"><div class="hero-badge">${slide.badge || 'Event'}</div><h2>${slide.title}</h2><p>${slide.description || ''}</p></div>`;
+        // Seule l'image de fond est affichée
+        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>`;
         slidesContainer.appendChild(div);
     });
     const dotsContainer = document.getElementById('heroDots');
