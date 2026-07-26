@@ -853,9 +853,8 @@ function markTicketAsUsed(ticketId) {
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
-
 // ============================================================
-// FONCTION RENDER EVENT CARD - AVEC DATE, HEURE ET DURÉE SUR MÊME LIGNE
+// FONCTION RENDER EVENT CARD - AVEC FOND GRIS ET DURÉE EN MAJUSCULE
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -905,24 +904,33 @@ function renderEventCard(event) {
         <span class="price-currency-gray">Pi</span>
     </div>`;
 
-    // Ligne localisation (pays + lieu) – icône jaune
-    const locationLine = `<div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>`;
-
-    // Ligne date, heure et durée – icônes jaunes, texte renforcé
+    // Durée avec unité en majuscule (Day, Week, Month, Year)
     let durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
-        const unitLabels = { hours: 'h', days: 'd', weeks: 'w', months: 'm', years: 'y' };
-        durationDisplay = `${event.durationValue}${unitLabels[event.durationUnit] || event.durationUnit}`;
+        const unitLabels = {
+            hours: event.durationValue === 1 ? 'Hour' : 'Hours',
+            days: event.durationValue === 1 ? 'Day' : 'Days',
+            weeks: event.durationValue === 1 ? 'Week' : 'Weeks',
+            months: event.durationValue === 1 ? 'Month' : 'Months',
+            years: event.durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
     }
-    const dateTimeDurationLine = `<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#f5a623;"></i> ${durationDisplay}` : ''}</div>`;
+
+    // Bloc d'informations avec fond gris (localisation + date/heure/durée)
+    const infoBoxHtml = `
+        <div class="event-info-box">
+            <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
+            <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#f5a623;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#f5a623;"></i> ${durationDisplay}` : ''}</div>
+        </div>
+    `;
 
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
             <div class="event-title-large">${escapeHtml(event.title)}</div>
             ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
-            ${locationLine}
-            ${dateTimeDurationLine}
+            ${infoBoxHtml}
             <div class="event-meta-row">
                 ${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}
             </div>
@@ -936,6 +944,7 @@ function renderEventCard(event) {
         </div>
     </div>`;
 }
+// ============================================================
 // ============================================================
 
 function changeLanguage(lang) {
