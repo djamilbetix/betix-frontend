@@ -1056,12 +1056,37 @@ function syncSettingsLanguageSelector() {
 }
 
 // ============================================================
-// NOTIFICATIONS
+// NOTIFICATIONS AMÉLIORÉES
 // ============================================================
+function addNotification(message, type, eventTitle, quantity, totalPrice) {
+    let finalMessage = message;
+    if (type === 'purchase' && eventTitle) {
+        const qty = quantity || 1;
+        const price = totalPrice || 0;
+        finalMessage = `🎫 ${qty} ticket(s) purchased for "${eventTitle}" — total ${price.toFixed(6)} Pi`;
+    } else if (type === 'event' && eventTitle) {
+        finalMessage = `📅 Event "${eventTitle}" has been published successfully!`;
+    }
+    const notif = {
+        id: Date.now().toString(),
+        message: finalMessage,
+        type: type || 'info',
+        read: false,
+        date: new Date().toISOString()
+    };
+    notifications.unshift(notif);
+    if (notifications.length > 100) notifications = notifications.slice(0, 100);
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
-    if (!notifications || notifications.length === 0) { container.innerHTML = `<div class="notification-empty"><i class="fas fa-bell-slash"></i> ${t('noNotifications')}</div>`; return; }
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `<div class="notification-empty"><i class="fas fa-bell-slash"></i> ${t('noNotifications')}</div>`;
+        return;
+    }
     let html = '';
     for (let i = 0; i < notifications.length; i++) {
         const notif = notifications[i];
@@ -1090,14 +1115,6 @@ function updateSidebarNotifBadge() {
     if (!badge) return;
     const unread = notifications.filter(n => !n.read).length;
     if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-}
-
-function addNotification(message, type) {
-    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    saveNotifications();
-    updateNotifBadgeHeader();
 }
 
 // ============================================================
@@ -1414,8 +1431,8 @@ async function confirmPurchase(eventId, quantity) {
                     for (let j = 0; j < ticketsAdded.length; j++) { await saveTicketToSupabase(ticketsAdded[j]); await new Promise(r => setTimeout(r, 200)); }
                     await saveEventToSupabase(event);
                     await saveTransactionToSupabase({ id: 'tx-' + Date.now(), buyerWallet: currentUser.wallet, buyerPiUid: currentUser.piUid || currentUser.wallet, eventId: event.id, amount: totalPrice, txid: txid || 'tx-' + Date.now(), status: 'completed', date: new Date().toISOString() });
-                    addNotification('🎫 Nouvelle vente ! ' + quantity + ' ticket(s) acheté(s) pour "' + event.title + '"', 'purchase');
-                    addNotification('✅ Achat réussi ! ' + quantity + ' ticket(s) pour "' + event.title + '"', 'purchase');
+                    // Notification améliorée
+                    addNotification('🎫 ' + quantity + ' ticket(s) acheté(s) pour "' + event.title + '"', 'purchase', event.title, quantity, totalPrice);
                     renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
                     setTimeout(generateAllQRCodes, 300);
                     await syncUserToSupabase();
@@ -1620,7 +1637,7 @@ async function confirmPublishEvent() {
         document.getElementById('eventForm').reset();
         for (let i = 0; i < 2; i++) removeImageModern(i);
         uploadedImages = {};
-        addNotification(t('eventPublished') + ' "' + newEvent.title + '"', 'event');
+        addNotification('📅 Event "' + newEvent.title + '" has been published successfully!', 'event', newEvent.title);
         closePublishConfirmPopup();
         document.getElementById('publishConfirmPopup').classList.remove('show');
         renderEventsByCategory();
@@ -1764,7 +1781,7 @@ async function saveEventEdits() {
         max_tickets: updates.seatsTotal, duration_value: updates.durationValue, duration_unit: updates.durationUnit,
         standard_seats: updates.standardSeats, standard_sold: updates.standardSold
     });
-    addNotification(t('editEvent') + ' "' + event.title + '"', 'event');
+    addNotification('✏️ Event "' + event.title + '" has been updated.', 'event', event.title);
     closeEditEventModal();
     renderEventsByCategory();
     renderMyEvents();
