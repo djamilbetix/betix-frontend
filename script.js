@@ -685,7 +685,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
+// FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -1527,7 +1527,7 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT (avec badge Verified)
+// CARTE D'ÉVÉNEMENT (avec badge Verified - cercle bleu)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1551,13 +1551,16 @@ function renderEventCard(event) {
     if (organizerDisplay.length > 20) organizerDisplay = organizerDisplay.substring(0, 18) + '...';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
 
+    // Vérifier si l'organisateur est Premium
     let isOrganizerPremium = false;
     if (window._users) {
         const user = window._users.find(u => u.pi_uid === event.organizerPiUid || u.wallet === event.organizer);
-        if (user && user.is_verified) isOrganizerPremium = true;
+        if (user && user.is_verified === true) isOrganizerPremium = true;
     }
-    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified) isOrganizerPremium = true;
-    const verifiedBadgeHtml = isOrganizerPremium ? `<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>` : '';
+    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified === true) isOrganizerPremium = true;
+    
+    // Badge Premium : cercle bleu avec check (comme X/Facebook)
+    const premiumBadgeHtml = isOrganizerPremium ? `<span class="premium-verified-badge"><i class="fas fa-check"></i></span>` : '';
 
     let publishDateDisplay = '';
     if (event.createdAt) {
@@ -1616,14 +1619,14 @@ function renderEventCard(event) {
                 ${priceRightHtml}
             </div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
-            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${verifiedBadgeHtml}</div>
+            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${premiumBadgeHtml}</div>
             ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}</div>` : ''}
         </div>
     </div>`;
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (avec badge Verified)
+// PAGE DE DÉTAIL (avec badge Verified - cercle bleu)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1682,10 +1685,10 @@ function openEventDetails(eventId) {
     let isOrganizerPremium = false;
     if (window._users) {
         const user = window._users.find(u => u.pi_uid === event.organizerPiUid || u.wallet === event.organizer);
-        if (user && user.is_verified) isOrganizerPremium = true;
+        if (user && user.is_verified === true) isOrganizerPremium = true;
     }
-    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified) isOrganizerPremium = true;
-    const verifiedBadgeHtml = isOrganizerPremium ? `<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>` : '';
+    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified === true) isOrganizerPremium = true;
+    const premiumBadgeHtml = isOrganizerPremium ? `<span class="premium-verified-badge premium-verified-badge-large"><i class="fas fa-check"></i></span>` : '';
 
     let durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
@@ -1733,7 +1736,7 @@ function openEventDetails(eventId) {
             </div>
             <div class="detail-block meta-block">
                 <div class="meta-grid">
-                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${verifiedBadgeHtml}</span></div>
+                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${premiumBadgeHtml}</span></div>
                     <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
                     <div><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
                     <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
@@ -2077,9 +2080,7 @@ function updatePremiumUI() {
 
     updatePremiumBadge();
     updatePremiumSidebarBadge();
-}
-
-// ============================================================
+}// ============================================================
 // PROFIL – ÉDITION / VÉRIFICATION / TOAST
 // ============================================================
 let isEditingProfile = false;
@@ -2387,7 +2388,7 @@ function updateTicketTotalWithFees() {
 }
 
 // ============================================================
-// AUTRES FONCTIONS (inchangées)
+// AUTRES FONCTIONS
 // ============================================================
 function openGallery(eventId, startIndex) {
     const event = events.find(e => e.id === eventId);
@@ -3287,7 +3288,6 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
-    // Also populate profile country select
     populateProfileCountrySelect();
 }
 
@@ -3733,20 +3733,14 @@ function initApp() {
             if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
-        // Profil
         populateProfileCountrySelect();
         if (currentUser.wallet) loadProfileData();
         document.getElementById('saveProfileBtn').addEventListener('click', saveProfileData);
         document.getElementById('editProfileBtn').addEventListener('click', function() { toggleProfileEdit(true); });
         initProfileFields();
 
-        // Premium
         document.getElementById('upgradePremiumBtn').addEventListener('click', purchasePremium);
-        document.getElementById('confirmPremiumPurchaseBtn').addEventListener('click', function() {
-            // handled in purchasePremium
-        });
 
-        // Chargement des paramètres et utilisateurs
         loadPlatformSettings();
         loadUsersFromSupabase();
         checkAndUpdatePremiumStatus();
