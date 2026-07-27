@@ -551,7 +551,19 @@ function t(key) {
 let events = [];
 let tickets = [];
 let usedTickets = [];
-let currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0 };
+let currentUser = { 
+    name: 'Guest', 
+    wallet: null, 
+    piUid: null, 
+    memberSince: '2026', 
+    loyaltyPoints: 0,
+    first_name: '',
+    last_name: '',
+    country: '',
+    address: '',
+    email: '',
+    phone_number: ''
+};
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
 let searchQuery = '';
@@ -764,7 +776,20 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
     try {
         const now = new Date().toISOString();
-        const userData = { pi_uid: piUid, username, wallet, points, updated_at: now, last_seen: now };
+        const userData = {
+            pi_uid: piUid,
+            username,
+            wallet,
+            points,
+            first_name: currentUser.first_name || '',
+            last_name: currentUser.last_name || '',
+            country: currentUser.country || '',
+            address: currentUser.address || '',
+            email: currentUser.email || '',
+            phone_number: currentUser.phone_number || '',
+            updated_at: now,
+            last_seen: now
+        };
         const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
         if (checkError && checkError.code !== 'PGRST116') throw checkError;
         if (existing) {
@@ -957,7 +982,10 @@ function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(even
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); saveUsedTickets(); syncTicketsToSupabase(); }
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
-function saveUser() { localStorage.setItem('betix_user', JSON.stringify(currentUser)); syncUserToSupabase(); }
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
+    syncUserToSupabase(); 
+}
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); syncNotificationsToSupabase(); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
 function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
@@ -1539,7 +1567,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – MODIFIÉE
+// PAGE DE DÉTAIL (openEventDetails) – carousel épuré, structure en blocs
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1863,6 +1891,113 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
+// PROFIL – FORMULAIRE
+// ============================================================
+
+// 1. Remplir le sélecteur de pays
+function populateProfileCountrySelect() {
+    const select = document.getElementById('profileCountry');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select your country</option>';
+    countriesList.forEach(country => {
+        if (country === 'All') return;
+        const flag = countryFlags[country] || '';
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = flag + ' ' + country;
+        select.appendChild(option);
+    });
+}
+
+// 2. Charger les données du profil depuis Supabase
+async function loadProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('first_name, last_name, country, address, email, phone_number')
+            .eq('pi_uid', piUid)
+            .single();
+        if (error) throw error;
+        if (data) {
+            document.getElementById('profileFirstName').value = data.first_name || '';
+            document.getElementById('profileLastName').value = data.last_name || '';
+            document.getElementById('profileCountry').value = data.country || '';
+            document.getElementById('profileAddress').value = data.address || '';
+            document.getElementById('profileEmail').value = data.email || '';
+            document.getElementById('profilePhone').value = data.phone_number || '';
+            // Mettre à jour currentUser
+            if (data.first_name) currentUser.first_name = data.first_name;
+            if (data.last_name) currentUser.last_name = data.last_name;
+            if (data.country) currentUser.country = data.country;
+            if (data.address) currentUser.address = data.address;
+            if (data.email) currentUser.email = data.email;
+            if (data.phone_number) currentUser.phone_number = data.phone_number;
+            updateUserInfo();
+        }
+    } catch (error) {
+        console.log('No profile data yet or error:', error.message);
+    }
+}
+
+// 3. Sauvegarder les données du profil
+async function saveProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert(t('pleaseConnect'));
+        return;
+    }
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    const country = document.getElementById('profileCountry').value;
+    const address = document.getElementById('profileAddress').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+
+    if (!firstName || !lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    if (email && !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    const updates = {
+        first_name: firstName,
+        last_name: lastName,
+        country: country,
+        address: address,
+        email: email,
+        phone_number: phone,
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+        // Mettre à jour currentUser
+        currentUser.first_name = firstName;
+        currentUser.last_name = lastName;
+        currentUser.country = country;
+        currentUser.address = address;
+        currentUser.email = email;
+        currentUser.phone_number = phone;
+        saveUser();
+        updateUserInfo();
+        document.getElementById('profileSaveMessage').textContent = '✅ Profile saved successfully!';
+        setTimeout(() => { document.getElementById('profileSaveMessage').textContent = ''; }, 3000);
+        addNotification('Profile updated', 'info');
+    } catch (error) {
+        alert('Error saving profile: ' + error.message);
+    }
+}
+
+// ============================================================
 // AUTRES FONCTIONS (paiement, popups, gestion utilisateur, etc.)
 // ============================================================
 function openGallery(eventId, startIndex) {
@@ -2027,10 +2162,11 @@ function handleLogoClick() {
 }
 
 function updateUserInfo() {
-    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
+    const displayName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = displayName);
+    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = displayName);
     document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
-    document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (currentUser.name || 'U')[0].toUpperCase());
-    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = currentUser.name || t('guest'));
+    document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
     document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
     document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
     updateConnectButtons();
@@ -2049,9 +2185,7 @@ function updateProfilePage() {
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
-    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = currentUser.name || t('guest'));
-    document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
-    document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
+    updateUserInfo(); // pour rafraîchir le nom
     updateScanButtonVisibility();
 }
 
@@ -2952,7 +3086,7 @@ function showPage(pageName) {
     }
     if (pageName === 'tickets') renderTickets();
     if (pageName === 'history') renderHistory();
-    if (pageName === 'profile') updateProfilePage();
+    if (pageName === 'profile') { updateProfilePage(); loadProfileData(); }
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
@@ -3010,7 +3144,9 @@ async function connectToPi() {
                 currentCountryFilter = 'All';
                 initFilters();
                 renderEventsByCategory();
-                alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); return;
+                alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); 
+                await loadProfileData();
+                return;
             }
             alert("Please open this page in Pi Browser"); return;
         }
@@ -3028,6 +3164,7 @@ async function connectToPi() {
             initFilters();
             renderEventsByCategory();
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
+            await loadProfileData();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
     finally { hideConnectSpinner(); }
@@ -3090,6 +3227,11 @@ function initApp() {
             if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
+        // Profil
+        populateProfileCountrySelect();
+        if (currentUser.wallet) loadProfileData();
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfileData);
+
         const menuBtn = document.getElementById('menuBtn');
         const headerRight = document.getElementById('headerRight');
         if (menuBtn) {
