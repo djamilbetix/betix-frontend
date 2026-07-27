@@ -4654,3 +4654,167 @@ body.dark-mode .ticket-card .btn-download-ticket:hover { background: #0a1a4f; }
 .admin-slide-item .slide-info p {
     display: none; /* on cache les infos supplémentaires */
 }
+
+/* ============================================================
+   PROFIL – FORMULAIRE (NOUVEAU)
+   ============================================================ */
+.profile-form-section {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.profile-form-section h3 {
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-form-section h3 i {
+    color: #f5a623;
+}
+
+.profile-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.profile-form .form-group {
+    margin-bottom: 12px;
+}
+
+.profile-form .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #1f2937;
+}
+
+.profile-form .form-group input,
+.profile-form .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+    color: #1f2937;
+    font-family: inherit;
+}
+
+.profile-form .form-group input:focus,
+.profile-form .form-group select:focus {
+    outline: none;
+    border-color: #f5a623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+#saveProfileBtn {
+    margin-top: 8px;
+    width: auto;
+    padding: 10px 30px;
+    background: linear-gradient(135deg, #08143F, #1a1a2e);
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#saveProfileBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+#saveProfileBtn:active {
+    transform: scale(0.97);
+}
+
+#profileSaveMessage {
+    margin-left: 12px;
+    font-size: 0.9rem;
+    color: #10b981;
+}
+
+/* ============================================================
+   SLIDER PRINCIPAL (HERO) – ÉPURÉ (uniquement les images)
+   ============================================================ */
+.hero-slide-content {
+    display: none !important;
+}
+
+/* Pour s'assurer que les images prennent tout l'espace */
+.hero-slide-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* ============================================================
+   DARK MODE – ADAPTATIONS POUR LE PROFIL
+   ============================================================ */
+body.dark-mode .profile-form-section {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode .profile-form-section h3 {
+    color: #f3f4f6;
+}
+
+body.dark-mode .profile-form .form-group label {
+    color: #d1d5db;
+}
+
+body.dark-mode .profile-form .form-group input,
+body.dark-mode .profile-form .form-group select {
+    background: #374151;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode .profile-form .form-group input:focus,
+body.dark-mode .profile-form .form-group select:focus {
+    border-color: #f5a623;
+    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
+}
+
+body.dark-mode #profileSaveMessage {
+    color: #34d399;
+}
+
+/* ============================================================
+   RESPONSIVE – FORMULAIRE DE PROFIL
+   ============================================================ */
+@media (max-width: 768px) {
+    .profile-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    #saveProfileBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    #profileSaveMessage {
+        display: block;
+        margin-left: 0;
+        margin-top: 8px;
+        text-align: center;
+    }
+}
