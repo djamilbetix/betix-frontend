@@ -92,7 +92,6 @@
         <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
         <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
         <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
-        <!-- Nouveau lien Premium -->
         <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
@@ -533,11 +532,11 @@
                 </ul>
                 <button class="btn-primary" disabled>Current plan</button>
             </div>
-            <!-- Premium -->
+            <!-- Premium Monthly -->
             <div class="premium-plan-card premium-highlight">
                 <div class="plan-header">
-                    <h3>Premium</h3>
-                    <p class="plan-price"><span id="premiumPriceDisplay">5</span> Pi <span style="font-size:0.7rem;color:var(--gray);">/ month</span></p>
+                    <h3>Premium Monthly</h3>
+                    <p class="plan-price"><span id="premiumPriceMonthly">5</span> Pi <span style="font-size:0.7rem;color:var(--gray);">/ month</span></p>
                 </div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> Official Betix badge ☑️</li>
@@ -547,24 +546,81 @@
                     <li><i class="fas fa-check"></i> Advanced statistics</li>
                     <li><i class="fas fa-check"></i> Priority support</li>
                 </ul>
-                <button class="btn-primary" id="upgradePremiumBtn">Upgrade to Premium</button>
+                <button class="btn-primary" id="upgradeMonthlyBtn">Upgrade Monthly</button>
+            </div>
+            <!-- Premium Yearly -->
+            <div class="premium-plan-card premium-highlight">
+                <div class="plan-header">
+                    <h3>Premium Yearly</h3>
+                    <p class="plan-price"><span id="premiumPriceYearly">50</span> Pi <span style="font-size:0.7rem;color:var(--gray);">/ year</span></p>
+                    <span style="font-size:0.7rem;color:#10b981;">Save 20%</span>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> All monthly benefits</li>
+                    <li><i class="fas fa-check"></i> 12 months for the price of 10</li>
+                    <li><i class="fas fa-check"></i> Priority support</li>
+                </ul>
+                <button class="btn-primary" id="upgradeYearlyBtn">Upgrade Yearly</button>
             </div>
             <!-- Enterprise -->
             <div class="premium-plan-card">
                 <div class="plan-header">
                     <h3>Enterprise</h3>
-                    <p class="plan-price">Contact us</p>
+                    <p class="plan-price">Custom</p>
                 </div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> All Premium features</li>
                     <li><i class="fas fa-check"></i> Custom branding</li>
                     <li><i class="fas fa-check"></i> Dedicated account manager</li>
+                    <li><i class="fas fa-check"></i> Tailored solutions</li>
                 </ul>
-                <button class="btn-secondary">Contact</button>
+                <button class="btn-secondary" id="enterpriseContactBtn">Contact us</button>
             </div>
         </div>
         <p style="margin-top:20px;font-size:0.8rem;color:var(--gray);">All payments are made in Pi cryptocurrency.</p>
         <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- CONTACT PAGE (Entreprise) -->
+<div id="contactPage" class="hidden-page">
+    <div class="page-content contact-page-content">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-envelope" style="color:#f5a623;"></i> Contact Us
+        </h2>
+        <p class="events-sub">For enterprise inquiries, custom branding, or partnerships</p>
+        <form id="contactForm" class="contact-form" onsubmit="submitContactForm(event)">
+            <div class="form-group">
+                <label>Your Name *</label>
+                <input type="text" id="contactName" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" id="contactEmail" placeholder="you@company.com" required>
+            </div>
+            <div class="form-group">
+                <label>Company / Organization</label>
+                <input type="text" id="contactCompany" placeholder="Your company name">
+            </div>
+            <div class="form-group">
+                <label>Subject *</label>
+                <select id="contactSubject" required>
+                    <option value="enterprise">Enterprise / Custom Branding</option>
+                    <option value="partnership">Partnership</option>
+                    <option value="support">Support</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Message *</label>
+                <textarea id="contactMessage" rows="5" placeholder="Tell us about your needs..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" id="contactSubmitBtn">
+                <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+            <p id="contactFormMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+        </form>
+        <button class="btn-back" onclick="showPage('premium')">Back to Premium</button>
     </div>
 </div>
 
@@ -645,8 +701,12 @@
             <div class="admin-settings">
                 <h3>Economic Model Settings</h3>
                 <div class="form-group">
-                    <label>Premium Price (USD)</label>
-                    <input type="number" id="adminPremiumPrice" step="0.01" min="0">
+                    <label>Premium Monthly Price (USD)</label>
+                    <input type="number" id="adminPremiumPriceMonthly" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Premium Yearly Price (USD)</label>
+                    <input type="number" id="adminPremiumPriceYearly" step="0.01" min="0">
                 </div>
                 <div class="form-group">
                     <label>Commission (%)</label>
@@ -657,8 +717,12 @@
                     <input type="number" id="adminServiceFeePercent" step="0.1" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label>Premium Duration (days)</label>
-                    <input type="number" id="adminPremiumDuration" step="1" min="1">
+                    <label>Premium Duration (days) – Monthly</label>
+                    <input type="number" id="adminPremiumDurationMonthly" step="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Premium Duration (days) – Yearly</label>
+                    <input type="number" id="adminPremiumDurationYearly" step="1" min="1">
                 </div>
                 <div class="form-group">
                     <label>Pi Conversion Rate (USD per Pi)</label>
