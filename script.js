@@ -1,3 +1,6 @@
+// ============================================================
+// CONFIGURATION SUPABASE
+// ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
 
@@ -11,6 +14,9 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
     }
 });
 
+// ============================================================
+// LISTES ET TRADUCTIONS
+// ============================================================
 const countriesList = [
     'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
     'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain',
@@ -106,49 +112,6 @@ const countryFlags = {
     'Venezuela': '🇻🇪', 'Vietnam': '🇻🇳', 'Yemen': '🇾🇪', 'Zambia': '🇿🇲',
     'Zimbabwe': '🇿🇼'
 };
-
-let piSDKReady = false;
-function initPiSDK() {
-    if (typeof Pi !== 'undefined') {
-        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
-    }
-    return false;
-}
-initPiSDK();
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
-
-async function ensurePiSDKReady() {
-    let attempts = 0;
-    while (!piSDKReady && attempts < 15) { initPiSDK(); await new Promise(r => setTimeout(r, 500)); attempts++; }
-    return piSDKReady;
-}
-
-const BACKEND_URL = "https://betix-backend.onrender.com";
-
-let isResolving = false;
-let resolveAttempts = 0;
-async function onIncompletePaymentFound(payment) {
-    if (isResolving || resolveAttempts > 3) return null;
-    isResolving = true;
-    resolveAttempts++;
-    try {
-        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId: payment.identifier })
-        });
-        const result = await response.json();
-        if (result.status === 'completed' || result.status === 'cancelled') {
-            setTimeout(() => window.location.reload(), 2000);
-            return result;
-        }
-    } catch(e) {}
-    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
-    return null;
-}
 
 const translations = {
     en: {
@@ -575,14 +538,16 @@ const translations = {
 };
 
 let currentLang = 'en';
-function getTranslation(key) {
+function t(key) {
     let lang = currentLang || 'en';
     if (translations[lang] && translations[lang][key] !== undefined) return translations[lang][key];
     if (translations.en && translations.en[key] !== undefined) return translations.en[key];
     return key;
 }
-function t(key) { return getTranslation(key); }
 
+// ============================================================
+// VARIABLES GLOBALES
+// ============================================================
 let events = [];
 let tickets = [];
 let usedTickets = [];
@@ -607,6 +572,74 @@ let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = [];
 let heroSlides = [];
+
+// ============================================================
+// PI SDK
+// ============================================================
+let piSDKReady = false;
+function initPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
+    }
+    return false;
+}
+initPiSDK();
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
+
+async function ensurePiSDKReady() {
+    let attempts = 0;
+    while (!piSDKReady && attempts < 15) { initPiSDK(); await new Promise(r => setTimeout(r, 500)); attempts++; }
+    return piSDKReady;
+}
+
+const BACKEND_URL = "https://betix-backend.onrender.com";
+let isResolving = false;
+let resolveAttempts = 0;
+async function onIncompletePaymentFound(payment) {
+    if (isResolving || resolveAttempts > 3) return null;
+    isResolving = true;
+    resolveAttempts++;
+    try {
+        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier })
+        });
+        const result = await response.json();
+        if (result.status === 'completed' || result.status === 'cancelled') {
+            setTimeout(() => window.location.reload(), 2000);
+            return result;
+        }
+    } catch(e) {}
+    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
+    return null;
+}
+
+// ============================================================
+// FONCTIONS UTILITAIRES
+// ============================================================
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function formatDate(dateStr) { const d = new Date(dateStr); return !isNaN(d.getTime()) ? d.toLocaleDateString('en-US') : 'Date to be defined'; }
+function formatDateTime(dateStr) { const d = new Date(dateStr); return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Unknown date'; }
+
+const eventImagesList = {
+    Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
+    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+    Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
+    Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
+    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
+    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
+    Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
+    Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
+    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
+    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
+    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
+};
 
 function initCharCounters() {
     const fields = [
@@ -634,26 +667,9 @@ function initCharCounters() {
     });
 }
 
-const eventImagesList = {
-    Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
-    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
-    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
-    Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
-    Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
-    Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
-    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
-    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
-    Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
-    Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
-    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
-    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
-    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
-};
-
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-function formatDate(dateStr) { const d = new Date(dateStr); return !isNaN(d.getTime()) ? d.toLocaleDateString('en-US') : 'Date to be defined'; }
-function formatDateTime(dateStr) { const d = new Date(dateStr); return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Unknown date'; }
-
+// ============================================================
+// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
+// ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
         const response = await fetch(base64Data);
@@ -934,6 +950,9 @@ async function saveNotificationToSupabase(notificationData) {
     } catch (error) { return false; }
 }
 
+// ============================================================
+// SYNCHRONISATION
+// ============================================================
 function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); syncEventsToSupabase(); }
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); saveUsedTickets(); syncTicketsToSupabase(); }
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
@@ -1083,6 +1102,9 @@ async function loadAllFromSupabase() {
     setTimeout(generateAllQRCodes, 300);
 }
 
+// ============================================================
+// AFFICHAGE DES TICKETS
+// ============================================================
 function generateAllQRCodes() {
     document.querySelectorAll('.qr-code-container').forEach(container => {
         const ticketId = container.dataset.ticketId || container.id.replace('qr-', '');
@@ -1270,6 +1292,9 @@ function markTicketAsUsed(ticketId) {
     }
 }
 
+// ============================================================
+// ACHAT ET PAIEMENT
+// ============================================================
 const processingTransactions = new Set();
 
 async function confirmPurchase(eventId, quantity) {
@@ -1425,6 +1450,9 @@ async function confirmPurchase(eventId, quantity) {
     }
 }
 
+// ============================================================
+// CARTE D'ÉVÉNEMENT
+// ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
     const dateEvent = new Date(event.date);
@@ -1511,7 +1539,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// openEventDetails – version révisée (carousel épuré, structure en blocs)
+// PAGE DE DÉTAIL (openEventDetails) – MODIFIÉE
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1530,7 +1558,7 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carousel : uniquement des images, sans texte (pas de badge, titre, description, compteur)
+    // Carousel : uniquement des images, sans texte
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1582,7 +1610,7 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Structure de la page (ordre : titre, carousel, description, infos, prix/places, conditions, métadonnées, avis, bouton)
+    // Structure de la page
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1592,12 +1620,10 @@ function openEventDetails(eventId) {
         </div>
         ${carouselHtml}
         <div class="event-detail-body">
-            <!-- Description -->
             <div class="detail-block description-block">
                 <h4>${t('fullDescription')}</h4>
                 <p>${event.description || 'No description'}</p>
             </div>
-            <!-- Informations pratiques -->
             <div class="detail-block info-block">
                 <h4>${t('information')}</h4>
                 <div class="info-grid">
@@ -1607,19 +1633,16 @@ function openEventDetails(eventId) {
                     ${durationDisplay ? `<div><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
                 </div>
             </div>
-            <!-- Prix et places -->
             <div class="detail-block price-seats-block">
                 <div class="price-seats">
                     <span class="price"><i class="fas fa-tag"></i> ${priceDisplay}</span>
                     <span class="seats"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
                 </div>
             </div>
-            <!-- Conditions -->
             <div class="detail-block conditions-block">
                 <h4>${t('conditions')}</h4>
                 ${conditionsHtml}
             </div>
-            <!-- Métadonnées -->
             <div class="detail-block meta-block">
                 <div class="meta-grid">
                     <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div>
@@ -1628,7 +1651,6 @@ function openEventDetails(eventId) {
                     <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
                 </div>
             </div>
-            <!-- Avis -->
             <div class="detail-block reviews-block">
                 <h4>${t('reviews')}</h4>
                 <div class="reviews-list">${reviewsHtml}</div>
@@ -1656,7 +1678,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// Fonctions carousel (inchangées)
+// FONCTIONS CAROUSEL (détail)
 // ============================================================
 function carouselGoTo(eventId, index) {
     const carousel = window._carousels && window._carousels[eventId];
@@ -1691,6 +1713,158 @@ function closeEventDetailModalAndGoBack() {
     }, 50);
 }
 
+// ============================================================
+// SLIDER PRINCIPAL (HERO) – VERSION ÉPURÉE (uniquement les images)
+// ============================================================
+function initHeroSlider() {
+    const slidesContainer = document.getElementById('heroSlides');
+    if (!slidesContainer) return;
+    slidesContainer.innerHTML = '';
+    heroSlides.forEach((slide, index) => {
+        const div = document.createElement('div');
+        div.className = 'hero-slide' + (index === 0 ? ' active' : '');
+        // On ne met que l'image, pas de contenu texte (badge, titre, description)
+        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>`;
+        slidesContainer.appendChild(div);
+    });
+    const dotsContainer = document.getElementById('heroDots');
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        heroSlides.forEach((slide, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', function() { const idx = parseInt(this.getAttribute('data-index')); stopAutoPlay(); goToSlide(idx); setTimeout(startAutoPlay, 3000); });
+            dotsContainer.appendChild(dot);
+        });
+    }
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dots .dot');
+    const prevBtn = document.getElementById('heroPrev');
+    const nextBtn = document.getElementById('heroNext');
+    let currentIndex = 0;
+    const totalSlides = heroSlides.length;
+    let autoPlayInterval = null;
+    let isTransitioning = false;
+    function goToSlide(index) {
+        if (isTransitioning || totalSlides === 0) return;
+        isTransitioning = true;
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        currentIndex = index;
+        slidesContainer.style.transition = 'transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        slidesContainer.style.transform = 'translateX(' + (-currentIndex * 100) + '%)';
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === currentIndex) {
+                slide.classList.add('active');
+                const bg = slide.querySelector('.hero-slide-bg');
+                if (bg) { bg.style.transition = 'none'; bg.style.transform = 'scale(1.05)'; setTimeout(() => { bg.style.transition = 'transform 8s ease'; bg.style.transform = 'scale(1)'; }, 50); }
+            }
+        });
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+        setTimeout(() => { isTransitioning = false; }, 750);
+    }
+    function nextSlide() { if (totalSlides > 0) goToSlide(currentIndex + 1); }
+    function prevSlide() { if (totalSlides > 0) goToSlide(currentIndex - 1); }
+    function startAutoPlay() {
+        stopAutoPlay();
+        if (totalSlides > 1) autoPlayInterval = setInterval(() => { if (!isTransitioning) nextSlide(); }, 4000);
+    }
+    function stopAutoPlay() { if (autoPlayInterval) { clearInterval(autoPlayInterval); autoPlayInterval = null; } }
+    if (prevBtn) prevBtn.onclick = function() { stopAutoPlay(); prevSlide(); setTimeout(startAutoPlay, 3000); };
+    if (nextBtn) nextBtn.onclick = function() { stopAutoPlay(); nextSlide(); setTimeout(startAutoPlay, 3000); };
+    const hero = document.querySelector('.hero');
+    if (hero) { hero.onmouseenter = stopAutoPlay; hero.onmouseleave = startAutoPlay; }
+    startAutoPlay();
+}
+
+function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
+
+// ============================================================
+// ADMIN CAROUSEL – masquage des champs texte
+// ============================================================
+function renderAdminSlides() {
+    const container = document.getElementById('adminSlidesList');
+    if (!container) return;
+    if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
+    container.innerHTML = heroSlides.map((slide, index) =>
+        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Image ${index+1}</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(${index})">Delete</button></div></div>`
+    ).join('');
+}
+
+function adminShowSlideForm(index) {
+    const container = document.getElementById('adminSlideFormContainer');
+    container.style.display = 'block';
+    // Masquer les champs de texte (ils existent toujours dans le HTML)
+    const badgeGroup = document.querySelector('.form-group:has(#adminSlideBadge)');
+    const titleGroup = document.querySelector('.form-group:has(#adminSlideTitle)');
+    const descGroup = document.querySelector('.form-group:has(#adminSlideDesc)');
+    if (badgeGroup) badgeGroup.style.display = 'none';
+    if (titleGroup) titleGroup.style.display = 'none';
+    if (descGroup) descGroup.style.display = 'none';
+    document.getElementById('adminSlideBadge').value = '';
+    document.getElementById('adminSlideTitle').value = '';
+    document.getElementById('adminSlideDesc').value = '';
+    document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
+    // Réinitialiser l'upload
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function adminSaveSlide() {
+    const imageInput = document.getElementById('adminSlideImageInput');
+    const editIndex = document.getElementById('adminEditSlideIndex');
+    let imageData = null;
+    if (imageInput.files && imageInput.files[0]) {
+        const file = imageInput.files[0];
+        if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return; }
+        const compressedData = await compressImage(file);
+        const url = await uploadHeroImage(compressedData, 'slide_' + Date.now());
+        if (!url) { alert('Error uploading image'); return; }
+        imageData = url;
+    } else {
+        const index = parseInt(editIndex.value);
+        if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
+        else { alert('Please select an image'); return; }
+    }
+    // Ne sauvegarder que l'image
+    const slideData = { image: imageData, badge: '', title: 'Slide', description: '' };
+    const indexToSave = parseInt(editIndex.value);
+    if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
+    const saved = await saveHeroSlideToSupabase(slideData, indexToSave);
+    if (!saved) { alert('Error saving slide'); return; }
+    await loadHeroSlides();
+    adminCancelSlideForm();
+    alert('Slide saved successfully!');
+}
+
+async function adminDeleteSlide(index) {
+    if (!confirm('Delete this carousel image?')) return;
+    const slide = heroSlides[index];
+    if (!slide) return;
+    const deleted = await deleteHeroSlideFromSupabase(slide.id);
+    if (!deleted) { alert('Error deleting slide'); return; }
+    await loadHeroSlides();
+    addAdminLog('Slide deleted', 'Image deleted');
+}
+
+function adminCancelSlideForm() {
+    document.getElementById('adminSlideFormContainer').style.display = 'none';
+    document.getElementById('adminEditSlideIndex').value = '-1';
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+}
+
+// ============================================================
+// AUTRES FONCTIONS (paiement, popups, gestion utilisateur, etc.)
+// ============================================================
 function openGallery(eventId, startIndex) {
     const event = events.find(e => e.id === eventId);
     if (!event) return;
@@ -1835,70 +2009,6 @@ function initLegalModals() {
     if (close) close.onclick = function() { modal.classList.remove('show'); };
     window.onclick = function(e) { if (e.target === modal) modal.classList.remove('show'); };
 }
-
-function initHeroSlider() {
-    const slidesContainer = document.getElementById('heroSlides');
-    if (!slidesContainer) return;
-    slidesContainer.innerHTML = '';
-    heroSlides.forEach((slide, index) => {
-        const div = document.createElement('div');
-        div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div><div class="hero-slide-content"><div class="hero-badge">${slide.badge || 'Event'}</div><h2>${slide.title}</h2><p>${slide.description || ''}</p></div>`;
-        slidesContainer.appendChild(div);
-    });
-    const dotsContainer = document.getElementById('heroDots');
-    if (dotsContainer) {
-        dotsContainer.innerHTML = '';
-        heroSlides.forEach((slide, i) => {
-            const dot = document.createElement('button');
-            dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('data-index', i);
-            dot.addEventListener('click', function() { const idx = parseInt(this.getAttribute('data-index')); stopAutoPlay(); goToSlide(idx); setTimeout(startAutoPlay, 3000); });
-            dotsContainer.appendChild(dot);
-        });
-    }
-    const slides = document.querySelectorAll('.hero-slide');
-    const dots = document.querySelectorAll('.hero-dots .dot');
-    const prevBtn = document.getElementById('heroPrev');
-    const nextBtn = document.getElementById('heroNext');
-    let currentIndex = 0;
-    const totalSlides = heroSlides.length;
-    let autoPlayInterval = null;
-    let isTransitioning = false;
-    function goToSlide(index) {
-        if (isTransitioning || totalSlides === 0) return;
-        isTransitioning = true;
-        if (index < 0) index = totalSlides - 1;
-        if (index >= totalSlides) index = 0;
-        currentIndex = index;
-        slidesContainer.style.transition = 'transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        slidesContainer.style.transform = 'translateX(' + (-currentIndex * 100) + '%)';
-        slides.forEach((slide, i) => {
-            slide.classList.remove('active');
-            if (i === currentIndex) {
-                slide.classList.add('active');
-                const bg = slide.querySelector('.hero-slide-bg');
-                if (bg) { bg.style.transition = 'none'; bg.style.transform = 'scale(1.05)'; setTimeout(() => { bg.style.transition = 'transform 8s ease'; bg.style.transform = 'scale(1)'; }, 50); }
-            }
-        });
-        dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
-        setTimeout(() => { isTransitioning = false; }, 750);
-    }
-    function nextSlide() { if (totalSlides > 0) goToSlide(currentIndex + 1); }
-    function prevSlide() { if (totalSlides > 0) goToSlide(currentIndex - 1); }
-    function startAutoPlay() {
-        stopAutoPlay();
-        if (totalSlides > 1) autoPlayInterval = setInterval(() => { if (!isTransitioning) nextSlide(); }, 4000);
-    }
-    function stopAutoPlay() { if (autoPlayInterval) { clearInterval(autoPlayInterval); autoPlayInterval = null; } }
-    if (prevBtn) prevBtn.onclick = function() { stopAutoPlay(); prevSlide(); setTimeout(startAutoPlay, 3000); };
-    if (nextBtn) nextBtn.onclick = function() { stopAutoPlay(); nextSlide(); setTimeout(startAutoPlay, 3000); };
-    const hero = document.querySelector('.hero');
-    if (hero) { hero.onmouseenter = stopAutoPlay; hero.onmouseleave = startAutoPlay; }
-    startAutoPlay();
-}
-
-function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 function handleLogoClick() {
     logoClickCount++;
@@ -2150,88 +2260,6 @@ function adminDeleteAllEvents() {
         addAdminLog('All events deleted', 'Mass deletion');
         alert('All events have been deleted');
     }
-}
-
-// ============================================================
-// ADMIN CAROUSEL – modifié : masquage des champs texte
-// ============================================================
-function renderAdminSlides() {
-    const container = document.getElementById('adminSlidesList');
-    if (!container) return;
-    if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
-    container.innerHTML = heroSlides.map((slide, index) =>
-        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Image ${index+1}</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(${index})">Delete</button></div></div>`
-    ).join('');
-}
-
-function adminShowSlideForm(index) {
-    const container = document.getElementById('adminSlideFormContainer');
-    const title = document.getElementById('adminSlideFormTitle');
-    const imageInput = document.getElementById('adminSlideImageInput');
-    const preview = document.getElementById('adminSlidePreview');
-    const uploadBox = document.getElementById('adminUploadBox');
-    preview.style.display = 'none'; preview.src = ''; uploadBox.classList.remove('has-image'); imageInput.value = '';
-    container.style.display = 'block';
-    // On masque les champs de texte (ils existent toujours dans le HTML, mais on les cache)
-    const badgeGroup = document.querySelector('.form-group:has(#adminSlideBadge)');
-    const titleGroup = document.querySelector('.form-group:has(#adminSlideTitle)');
-    const descGroup = document.querySelector('.form-group:has(#adminSlideDesc)');
-    if (badgeGroup) badgeGroup.style.display = 'none';
-    if (titleGroup) titleGroup.style.display = 'none';
-    if (descGroup) descGroup.style.display = 'none';
-    // On réinitialise les valeurs
-    document.getElementById('adminSlideBadge').value = '';
-    document.getElementById('adminSlideTitle').value = '';
-    document.getElementById('adminSlideDesc').value = '';
-    document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
-    container.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function adminSaveSlide() {
-    const imageInput = document.getElementById('adminSlideImageInput');
-    const editIndex = document.getElementById('adminEditSlideIndex');
-    let imageData = null;
-    if (imageInput.files && imageInput.files[0]) {
-        const file = imageInput.files[0];
-        if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
-        if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return; }
-        const compressedData = await compressImage(file);
-        const url = await uploadHeroImage(compressedData, 'slide_' + Date.now());
-        if (!url) { alert('Error uploading image'); return; }
-        imageData = url;
-    } else {
-        const index = parseInt(editIndex.value);
-        if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
-        else { alert('Please select an image'); return; }
-    }
-    // On ne sauvegarde que l'image (les champs texte sont vides)
-    const slideData = { image: imageData, badge: '', title: 'Slide', description: '' };
-    const indexToSave = parseInt(editIndex.value);
-    if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
-    const saved = await saveHeroSlideToSupabase(slideData, indexToSave);
-    if (!saved) { alert('Error saving slide'); return; }
-    await loadHeroSlides();
-    adminCancelSlideForm();
-    alert('Slide saved successfully!');
-}
-
-function adminCancelSlideForm() {
-    document.getElementById('adminSlideFormContainer').style.display = 'none';
-    document.getElementById('adminEditSlideIndex').value = '-1';
-    document.getElementById('adminSlideImageInput').value = '';
-    document.getElementById('adminSlidePreview').style.display = 'none';
-    document.getElementById('adminSlidePreview').src = '';
-    document.getElementById('adminUploadBox').classList.remove('has-image');
-}
-
-async function adminDeleteSlide(index) {
-    if (!confirm('Delete this carousel image?')) return;
-    const slide = heroSlides[index];
-    if (!slide) return;
-    const deleted = await deleteHeroSlideFromSupabase(slide.id);
-    if (!deleted) { alert('Error deleting slide'); return; }
-    await loadHeroSlides();
-    addAdminLog('Slide deleted', 'Image deleted');
 }
 
 function initAdminTabs() {
@@ -3146,13 +3174,9 @@ function initApp() {
     }
 }
 
-// Exécution immédiate si DOM prêt, sinon attendre DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}
-
+// ============================================================
+// EXPOSITION DES FONCTIONS GLOBALES
+// ============================================================
 window.syncAllToSupabase = syncAllToSupabase;
 window.loadAllFromSupabase = loadAllFromSupabase;
 window.forceRefreshData = forceRefreshData;
@@ -3168,3 +3192,12 @@ window.loadHeroSlides = loadHeroSlides;
 window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
 window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
 window.uploadHeroImage = uploadHeroImage;
+
+// ============================================================
+// LANCEMENT DE L'APPLICATION
+// ============================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
