@@ -1146,7 +1146,6 @@ async function loadAllFromSupabase() {
         await loadUsersFromSupabase();
         await loadPlatformSettings();
         checkAndUpdatePremiumStatus();
-        renderPremiumEvents();
     } catch (error) {
         console.error('Erreur lors du chargement depuis Supabase :', error);
         updateSyncStatus('error');
@@ -2022,7 +2021,6 @@ function updateUIAfterPremiumChange() {
     updatePremiumBadge();
     updatePremiumSidebarBadge();
     updatePremiumUI();
-    renderPremiumEvents();
 }
 
 function updatePremiumSidebarBadge() {
@@ -2081,33 +2079,209 @@ function updatePremiumUI() {
     updatePremiumSidebarBadge();
 }
 
+// ============================================================
+// PROFIL – ÉDITION / VÉRIFICATION / TOAST
+// ============================================================
+let isEditingProfile = false;
+let pendingVerificationCode = null;
+
+function initProfileFields() {
+    toggleProfileEdit(false);
+    document.getElementById('editProfileBtn').addEventListener('click', function() {
+        toggleProfileEdit(true);
+    });
+    document.getElementById('saveProfileBtn').addEventListener('click', function() {
+        saveProfileData();
+    });
+}
+
+function toggleProfileEdit(enable) {
+    const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+    inputs.forEach(el => el.disabled = !enable);
+    document.getElementById('saveProfileBtn').style.display = enable ? 'inline-flex' : 'none';
+    document.getElementById('editProfileBtn').style.display = enable ? 'none' : 'inline-flex';
+    document.getElementById('verifyEmailBtn').disabled = !enable;
+    document.getElementById('verifyPhoneBtn').disabled = !enable;
+    isEditingProfile = enable;
+    if (!enable) {
+        loadProfileData();
+    }
+}
+
+// Surcharge de saveProfileData pour utiliser le toast
+async function saveProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert(t('pleaseConnect'));
+        return;
+    }
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    const country = document.getElementById('profileCountry').value;
+    const address = document.getElementById('profileAddress').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+
+    if (!firstName || !lastName) {
+        showToast('First name and last name are required.', 'warning');
+        return;
+    }
+    if (email && !email.includes('@')) {
+        showToast('Please enter a valid email address.', 'warning');
+        return;
+    }
+
+    const updates = {
+        first_name: firstName,
+        last_name: lastName,
+        country: country,
+        address: address,
+        email: email,
+        phone_number: phone,
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+        currentUser.first_name = firstName;
+        currentUser.last_name = lastName;
+        currentUser.country = country;
+        currentUser.address = address;
+        currentUser.email = email;
+        currentUser.phone_number = phone;
+        saveUser();
+        updateUserInfo();
+        toggleProfileEdit(false);
+        showToast('✅ Profile saved successfully!', 'success');
+        addNotification('Profile updated', 'info');
+    } catch (error) {
+        showToast('Error saving profile: ' + error.message, 'error');
+    }
+}
+
+// Toast notification
+function showToast(message, type = 'success', duration = 4000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const iconMap = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    toast.innerHTML = `
+        <span class="toast-icon"><i class="${iconMap[type] || iconMap.info}"></i></span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close">&times;</button>
+    `;
+    container.appendChild(toast);
+    toast.querySelector('.toast-close').addEventListener('click', function() {
+        removeToast(toast);
+    });
+    setTimeout(() => {
+        removeToast(toast);
+    }, duration);
+}
+function removeToast(toast) {
+    if (toast.classList.contains('removing')) return;
+    toast.classList.add('removing');
+    setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 400);
+}
+
+// Vérification Email / Téléphone (simulation)
+function sendVerificationCode(field) {
+    const value = document.getElementById('profile' + field.charAt(0).toUpperCase() + field.slice(1)).value;
+    if (!value) {
+        showToast(`Please enter a ${field} address first.`, 'warning');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    pendingVerificationCode = code;
+    const container = document.getElementById(field + 'CodeContainer');
+    container.style.display = 'flex';
+    showToast(`📧 Verification code sent to your ${field}.`, 'info');
+    console.log(`Code for ${field}: ${code}`);
+}
+function verifyCode(field) {
+    const input = document.getElementById(field + 'Code');
+    const status = document.getElementById(field + 'VerifyStatus');
+    if (!pendingVerificationCode) {
+        status.innerHTML = '<span style="color:#ef4444;">No code sent. Please request a new code.</span>';
+        setTimeout(() => { status.innerHTML = ''; }, 3000);
+        return;
+    }
+    if (input.value === pendingVerificationCode) {
+        status.innerHTML = '<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Verified!</span>';
+        document.getElementById(field + 'VerifiedCheck').style.display = 'inline';
+        showToast(`✅ ${field} verified successfully!`, 'success');
+        input.value = '';
+        document.getElementById(field + 'CodeContainer').style.display = 'none';
+        pendingVerificationCode = null;
+        setTimeout(() => { status.innerHTML = ''; }, 2000);
+    } else {
+        status.innerHTML = '<span style="color:#ef4444;"><i class="fas fa-times-circle"></i> Invalid code</span>';
+        setTimeout(() => { status.innerHTML = ''; }, 3000);
+    }
+}
+
+// Attacher les événements de vérification
+document.getElementById('verifyEmailBtn').addEventListener('click', function() {
+    sendVerificationCode('email');
+});
+document.getElementById('verifyPhoneBtn').addEventListener('click', function() {
+    sendVerificationCode('phone');
+});
+document.getElementById('confirmEmailCodeBtn').addEventListener('click', function() {
+    verifyCode('email');
+});
+document.getElementById('confirmPhoneCodeBtn').addEventListener('click', function() {
+    verifyCode('phone');
+});
+
+// ============================================================
+// MODIFICATION DE purchasePremium pour utiliser le modal
+// ============================================================
 async function purchasePremium() {
     if (!currentUser.wallet && !currentUser.piUid) {
         alert(t('pleaseConnect'));
         connectToPi();
         return;
     }
-
-    const settings = window.platformSettings || { premium_price: 0.5 };
+    const settings = window.platformSettings || { premium_price: 0.5, pi_conversion_rate: 1.0 };
     const price = settings.premium_price || 0.5;
+    const priceUSD = (price * settings.pi_conversion_rate).toFixed(2);
 
-    if (!confirm('Upgrade to Premium for ' + price.toFixed(6) + ' Pi?\n\n' +
-        'You will get:\n' +
-        '✅ Betix Verified Badge\n' +
-        '✅ Event Boost on homepage\n' +
-        '✅ Search Priority\n' +
-        '✅ Premium Events section\n' +
-        '✅ Advanced Analytics\n' +
-        '✅ Priority Support')) {
-        return;
-    }
+    document.getElementById('premiumConfirmPrice').textContent = price.toFixed(6) + ' Pi';
+    document.getElementById('premiumConfirmUSD').textContent = '$' + priceUSD;
 
+    document.getElementById('premiumConfirmModal').classList.add('show');
+    document.getElementById('premiumConfirmModal').style.display = 'flex';
+
+    document.getElementById('confirmPremiumPurchaseBtn').onclick = async function() {
+        closePremiumConfirmModal();
+        await processPremiumPayment(price);
+    };
+}
+
+function closePremiumConfirmModal() {
+    document.getElementById('premiumConfirmModal').classList.remove('show');
+    document.getElementById('premiumConfirmModal').style.display = 'none';
+}
+
+async function processPremiumPayment(price) {
     const confirmBtn = document.getElementById('upgradePremiumBtn');
     if (confirmBtn) {
         confirmBtn.textContent = 'Processing...';
         confirmBtn.disabled = true;
     }
-
     try {
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
@@ -2166,53 +2340,6 @@ async function purchasePremium() {
     }
 }
 
-async function activatePremiumSubscription(transactionId) {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) throw new Error('User not identified');
-
-    const settings = window.platformSettings || { premium_duration_days: 30 };
-    const durationDays = settings.premium_duration_days || 30;
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + durationDays);
-
-    const updates = {
-        account_type: 'premium',
-        premium_start_date: startDate.toISOString(),
-        premium_end_date: endDate.toISOString(),
-        is_verified: true,
-        updated_at: new Date().toISOString()
-    };
-
-    const { error } = await supabaseClient
-        .from('users')
-        .update(updates)
-        .eq('pi_uid', piUid);
-
-    if (error) throw error;
-
-    currentUser.account_type = 'premium';
-    currentUser.premium_start_date = startDate.toISOString();
-    currentUser.premium_end_date = endDate.toISOString();
-    currentUser.is_verified = true;
-    saveUser();
-
-    await saveTransactionToSupabase({
-        id: 'tx-premium-' + Date.now(),
-        buyerWallet: currentUser.wallet,
-        buyerPiUid: currentUser.piUid || currentUser.wallet,
-        amount: settings.premium_price || 0.5,
-        type: 'premium_subscription',
-        payment_id: transactionId || 'tx-' + Date.now(),
-        status: 'completed',
-        date: new Date().toISOString()
-    });
-
-    updateUIAfterPremiumChange();
-    alert('🎉 You are now a Betix Premium member! Enjoy your exclusive benefits!');
-    renderEventsByCategory();
-}
-
 function calculateFees(amount, commissionRate, serviceFeeRate) {
     const commission = (amount * commissionRate) / 100;
     const serviceFee = (amount * serviceFeeRate) / 100;
@@ -2257,95 +2384,6 @@ function updateTicketTotalWithFees() {
     const total = subtotal + serviceFee;
     totalDisplay.textContent = total.toFixed(6) + ' Pi';
     updateFeeDisplay(subtotal);
-}
-
-function renderPremiumEvents() {
-    const container = document.getElementById('premiumEventsGrid');
-    const section = document.getElementById('premiumEventsSection');
-    if (!container || !section) return;
-    const premiumEvents = events.filter(e => {
-        if (!window._users) return false;
-        const user = window._users.find(u => u.pi_uid === e.organizerPiUid || u.wallet === e.organizer);
-        return user && user.is_verified === true;
-    });
-    if (premiumEvents.length === 0 || !window.platformSettings?.premium_boost_enabled) {
-        section.style.display = 'none';
-        return;
-    }
-    section.style.display = 'block';
-    container.innerHTML = premiumEvents.map(e => renderEventCard(e)).join('');
-}
-
-async function checkAndUpdatePremiumStatus() {
-    if (!currentUser.piUid && !currentUser.wallet) return;
-    const isPremium = checkPremiumStatus();
-    if (isPremium && !currentUser.is_verified) {
-        currentUser.is_verified = true;
-        saveUser();
-        updateUIAfterPremiumChange();
-    }
-    updateUIAfterPremiumChange();
-}
-
-// ============================================================
-// ADMIN – SAUVEGARDE DES PARAMÈTRES
-// ============================================================
-async function savePlatformSettings() {
-    const premiumPrice = parseFloat(document.getElementById('adminPremiumPrice').value);
-    const commissionRate = parseFloat(document.getElementById('adminCommissionRate').value);
-    const serviceFeeRate = parseFloat(document.getElementById('adminServiceFeeRate').value);
-    const premiumDuration = parseInt(document.getElementById('adminPremiumDuration').value);
-    const piConversionRate = parseFloat(document.getElementById('adminPiConversionRate').value);
-    const verifiedBadgeEnabled = document.getElementById('adminVerifiedBadgeEnabled').checked;
-    const premiumBoostEnabled = document.getElementById('adminPremiumBoostEnabled').checked;
-
-    if (isNaN(premiumPrice) || premiumPrice < 0) {
-        alert('Invalid Premium Price');
-        return;
-    }
-    if (isNaN(commissionRate) || commissionRate < 0 || commissionRate > 100) {
-        alert('Commission rate must be between 0 and 100');
-        return;
-    }
-    if (isNaN(serviceFeeRate) || serviceFeeRate < 0 || serviceFeeRate > 100) {
-        alert('Service fee rate must be between 0 and 100');
-        return;
-    }
-    if (isNaN(premiumDuration) || premiumDuration < 1) {
-        alert('Premium duration must be at least 1 day');
-        return;
-    }
-    if (isNaN(piConversionRate) || piConversionRate < 0.01) {
-        alert('Invalid Pi conversion rate');
-        return;
-    }
-
-    const updates = {
-        premium_price: premiumPrice,
-        commission_rate: commissionRate,
-        service_fee_rate: serviceFeeRate,
-        premium_duration_days: premiumDuration,
-        pi_conversion_rate: piConversionRate,
-        verified_badge_enabled: verifiedBadgeEnabled,
-        premium_boost_enabled: premiumBoostEnabled,
-        updated_at: new Date().toISOString()
-    };
-
-    try {
-        const { error } = await supabaseClient
-            .from('platform_settings')
-            .update(updates)
-            .eq('id', 1);
-        if (error) throw error;
-        window.platformSettings = updates;
-        document.getElementById('adminSettingsMessage').textContent = '✅ Settings saved successfully!';
-        document.getElementById('adminSettingsMessage').style.color = '#10b981';
-        setTimeout(() => { document.getElementById('adminSettingsMessage').textContent = ''; }, 3000);
-        addAdminLog('Platform settings updated', 'Premium price: ' + premiumPrice + ' Pi');
-        updatePremiumUI();
-    } catch (error) {
-        alert('Error saving settings: ' + error.message);
-    }
 }
 
 // ============================================================
@@ -2683,6 +2721,7 @@ function loadAdminPage() {
     if (!adminTimerInterval) startAdminSession();
     const userSearch = document.getElementById('adminUserSearch');
     if (userSearch) userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
+    loadAdminSettings();
 }
 
 function filterAdminUsers(query) {
@@ -3248,6 +3287,51 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
+    // Also populate profile country select
+    populateProfileCountrySelect();
+}
+
+function populateProfileCountrySelect() {
+    const select = document.getElementById('profileCountry');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select your country</option>';
+    countriesList.forEach(country => {
+        if (country === 'All') return;
+        const flag = countryFlags[country] || '';
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = flag + ' ' + country;
+        select.appendChild(option);
+    });
+}
+
+function loadProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) return;
+    supabaseClient
+        .from('users')
+        .select('first_name, last_name, country, address, email, phone_number')
+        .eq('pi_uid', piUid)
+        .single()
+        .then(({ data, error }) => {
+            if (error) throw error;
+            if (data) {
+                document.getElementById('profileFirstName').value = data.first_name || '';
+                document.getElementById('profileLastName').value = data.last_name || '';
+                document.getElementById('profileCountry').value = data.country || '';
+                document.getElementById('profileAddress').value = data.address || '';
+                document.getElementById('profileEmail').value = data.email || '';
+                document.getElementById('profilePhone').value = data.phone_number || '';
+                if (data.first_name) currentUser.first_name = data.first_name;
+                if (data.last_name) currentUser.last_name = data.last_name;
+                if (data.country) currentUser.country = data.country;
+                if (data.address) currentUser.address = data.address;
+                if (data.email) currentUser.email = data.email;
+                if (data.phone_number) currentUser.phone_number = data.phone_number;
+                updateUserInfo();
+            }
+        })
+        .catch(err => console.log('No profile data yet or error:', err.message));
 }
 
 function changeLanguage(lang) {
@@ -3416,7 +3500,7 @@ function bindActivityListeners() { ['click','scroll','keydown','touchstart'].for
 
 function showPage(pageName) {
     updateActivity();
-    const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
+    const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage','premiumPage'];
     pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
     let displayPage = pageName;
     if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
@@ -3434,6 +3518,7 @@ function showPage(pageName) {
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
     if (pageName === 'notifications') renderNotificationsPage();
+    if (pageName === 'premium') updatePremiumUI();
     closeSidebar();
     window.scrollTo(0, 0);
 }
@@ -3523,103 +3608,80 @@ function hideConnectSpinner() {
 }
 
 // ============================================================
-// PROFIL – CHARGEMENT/SAUVEGARDE
+// ADMIN – SAUVEGARDE DES PARAMÈTRES DE LA PLATEFORME
 // ============================================================
-function populateProfileCountrySelect() {
-    const select = document.getElementById('profileCountry');
-    if (!select) return;
-    select.innerHTML = '<option value="">Select your country</option>';
-    countriesList.forEach(country => {
-        if (country === 'All') return;
-        const flag = countryFlags[country] || '';
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = flag + ' ' + country;
-        select.appendChild(option);
-    });
-}
-
-async function loadProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) return;
+async function loadAdminSettings() {
     try {
-        const { data, error } = await supabaseClient
-            .from('users')
-            .select('first_name, last_name, country, address, email, phone_number')
-            .eq('pi_uid', piUid)
-            .single();
-        if (error) throw error;
-        if (data) {
-            document.getElementById('profileFirstName').value = data.first_name || '';
-            document.getElementById('profileLastName').value = data.last_name || '';
-            document.getElementById('profileCountry').value = data.country || '';
-            document.getElementById('profileAddress').value = data.address || '';
-            document.getElementById('profileEmail').value = data.email || '';
-            document.getElementById('profilePhone').value = data.phone_number || '';
-            if (data.first_name) currentUser.first_name = data.first_name;
-            if (data.last_name) currentUser.last_name = data.last_name;
-            if (data.country) currentUser.country = data.country;
-            if (data.address) currentUser.address = data.address;
-            if (data.email) currentUser.email = data.email;
-            if (data.phone_number) currentUser.phone_number = data.phone_number;
-            updateUserInfo();
+        const settings = await loadPlatformSettings();
+        if (settings) {
+            document.getElementById('adminPremiumPrice').value = settings.premium_price || 0.5;
+            document.getElementById('adminCommissionRate').value = settings.commission_rate || 5.0;
+            document.getElementById('adminServiceFeeRate').value = settings.service_fee_rate || 2.0;
+            document.getElementById('adminPremiumDuration').value = settings.premium_duration_days || 30;
+            document.getElementById('adminPiConversionRate').value = settings.pi_conversion_rate || 1.0;
+            document.getElementById('adminVerifiedBadgeEnabled').checked = settings.verified_badge_enabled !== false;
+            document.getElementById('adminPremiumBoostEnabled').checked = settings.premium_boost_enabled !== false;
         }
     } catch (error) {
-        console.log('No profile data yet or error:', error.message);
+        console.log('Erreur chargement settings admin:', error.message);
     }
 }
 
-async function saveProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) {
-        alert(t('pleaseConnect'));
-        return;
-    }
-    const firstName = document.getElementById('profileFirstName').value.trim();
-    const lastName = document.getElementById('profileLastName').value.trim();
-    const country = document.getElementById('profileCountry').value;
-    const address = document.getElementById('profileAddress').value.trim();
-    const email = document.getElementById('profileEmail').value.trim();
-    const phone = document.getElementById('profilePhone').value.trim();
+async function savePlatformSettings() {
+    const premiumPrice = parseFloat(document.getElementById('adminPremiumPrice').value);
+    const commissionRate = parseFloat(document.getElementById('adminCommissionRate').value);
+    const serviceFeeRate = parseFloat(document.getElementById('adminServiceFeeRate').value);
+    const premiumDuration = parseInt(document.getElementById('adminPremiumDuration').value);
+    const piConversionRate = parseFloat(document.getElementById('adminPiConversionRate').value);
+    const verifiedBadgeEnabled = document.getElementById('adminVerifiedBadgeEnabled').checked;
+    const premiumBoostEnabled = document.getElementById('adminPremiumBoostEnabled').checked;
 
-    if (!firstName || !lastName) {
-        alert('First name and last name are required.');
+    if (isNaN(premiumPrice) || premiumPrice < 0) {
+        alert('Invalid Premium Price');
         return;
     }
-    if (email && !email.includes('@')) {
-        alert('Please enter a valid email address.');
+    if (isNaN(commissionRate) || commissionRate < 0 || commissionRate > 100) {
+        alert('Commission rate must be between 0 and 100');
+        return;
+    }
+    if (isNaN(serviceFeeRate) || serviceFeeRate < 0 || serviceFeeRate > 100) {
+        alert('Service fee rate must be between 0 and 100');
+        return;
+    }
+    if (isNaN(premiumDuration) || premiumDuration < 1) {
+        alert('Premium duration must be at least 1 day');
+        return;
+    }
+    if (isNaN(piConversionRate) || piConversionRate < 0.01) {
+        alert('Invalid Pi conversion rate');
         return;
     }
 
     const updates = {
-        first_name: firstName,
-        last_name: lastName,
-        country: country,
-        address: address,
-        email: email,
-        phone_number: phone,
+        premium_price: premiumPrice,
+        commission_rate: commissionRate,
+        service_fee_rate: serviceFeeRate,
+        premium_duration_days: premiumDuration,
+        pi_conversion_rate: piConversionRate,
+        verified_badge_enabled: verifiedBadgeEnabled,
+        premium_boost_enabled: premiumBoostEnabled,
         updated_at: new Date().toISOString()
     };
 
     try {
         const { error } = await supabaseClient
-            .from('users')
+            .from('platform_settings')
             .update(updates)
-            .eq('pi_uid', piUid);
+            .eq('id', 1);
         if (error) throw error;
-        currentUser.first_name = firstName;
-        currentUser.last_name = lastName;
-        currentUser.country = country;
-        currentUser.address = address;
-        currentUser.email = email;
-        currentUser.phone_number = phone;
-        saveUser();
-        updateUserInfo();
-        document.getElementById('profileSaveMessage').textContent = '✅ Profile saved successfully!';
-        setTimeout(() => { document.getElementById('profileSaveMessage').textContent = ''; }, 3000);
-        addNotification('Profile updated', 'info');
+        window.platformSettings = updates;
+        document.getElementById('adminSettingsMessage').textContent = '✅ Settings saved successfully!';
+        document.getElementById('adminSettingsMessage').style.color = '#10b981';
+        setTimeout(() => { document.getElementById('adminSettingsMessage').textContent = ''; }, 3000);
+        addAdminLog('Platform settings updated', 'Premium price: ' + premiumPrice + ' Pi');
+        updatePremiumUI();
     } catch (error) {
-        alert('Error saving profile: ' + error.message);
+        alert('Error saving settings: ' + error.message);
     }
 }
 
@@ -3671,10 +3733,23 @@ function initApp() {
             if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
+        // Profil
         populateProfileCountrySelect();
         if (currentUser.wallet) loadProfileData();
         document.getElementById('saveProfileBtn').addEventListener('click', saveProfileData);
+        document.getElementById('editProfileBtn').addEventListener('click', function() { toggleProfileEdit(true); });
+        initProfileFields();
+
+        // Premium
         document.getElementById('upgradePremiumBtn').addEventListener('click', purchasePremium);
+        document.getElementById('confirmPremiumPurchaseBtn').addEventListener('click', function() {
+            // handled in purchasePremium
+        });
+
+        // Chargement des paramètres et utilisateurs
+        loadPlatformSettings();
+        loadUsersFromSupabase();
+        checkAndUpdatePremiumStatus();
 
         const menuBtn = document.getElementById('menuBtn');
         const headerRight = document.getElementById('headerRight');
