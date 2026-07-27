@@ -37,9 +37,7 @@
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- LOADER AVEC LOGO + 5 BOULETS - 3 SECONDES                   -->
-<!-- ============================================================ -->
+<!-- LOADER -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
         <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
@@ -56,9 +54,7 @@
 
 <div id="main-content" style="display: none;">
 
-<!-- ============================================================ -->
-<!-- HEADER FIXE (sticky) - RÉDUIT                              -->
-<!-- ============================================================ -->
+<!-- HEADER -->
 <header class="header" id="mainHeader">
     <div class="header-left">
         <button class="back-btn hidden" id="backBtn">
@@ -75,9 +71,7 @@
     <div class="header-right" id="headerRight"></div>
 </header>
 
-<!-- ============================================================ -->
-<!-- SIDEBAR                                                       -->
-<!-- ============================================================ -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -98,7 +92,8 @@
         <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
         <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
         <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
-        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium <span class="premium-badge-sidebar" id="premiumBadgeSidebar" style="display:none; background: linear-gradient(135deg, #f5a623, #d4911e); color:white; font-size:0.55rem; padding:2px 8px; border-radius:12px; margin-left:auto;">Active</span></button>
+        <!-- Nouveau lien Premium -->
+        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
         <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
@@ -127,9 +122,7 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ============================================================ -->
-<!-- BOTTOM NAVIGATION                                            -->
-<!-- ============================================================ -->
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
     <button class="nav-item active" id="navHome" onclick="showPage('home')">
         <i class="fas fa-home"></i>
@@ -145,9 +138,7 @@
     </button>
 </nav>
 
-<!-- ============================================================ -->
-<!-- NOTIFICATIONS PAGE                                           -->
-<!-- ============================================================ -->
+<!-- NOTIFICATIONS -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
         <h2 style="display:flex; align-items:center; gap:10px;">
@@ -159,9 +150,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CHAT                                                          -->
-<!-- ============================================================ -->
+<!-- CHAT -->
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 <div id="chatWidget" class="chat-widget">
     <div class="chat-header">
@@ -175,9 +164,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- HOME PAGE                                                    -->
-<!-- ============================================================ -->
+<!-- HOME -->
 <div id="homePage">
     <section class="hero">
         <div class="hero-slider-container">
@@ -211,9 +198,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MY EVENTS PAGE                                               -->
-<!-- ============================================================ -->
+<!-- MY EVENTS -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
@@ -223,9 +208,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CREATE EVENT PAGE (SIMPLIFIÉ)                               -->
-<!-- ============================================================ -->
+<!-- CREATE EVENT -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -334,9 +317,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PUBLISH CONFIRM                                              -->
-<!-- ============================================================ -->
+<!-- PUBLISH CONFIRM -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
@@ -377,9 +358,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- TICKETS PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- TICKETS -->
 <div id="ticketsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Active Tickets</h2>
@@ -389,9 +368,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- HISTORY PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- HISTORY -->
 <div id="historyPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">Ticket History</h2>
@@ -401,9 +378,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- RATINGS PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- RATINGS -->
 <div id="ratingsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Ratings</h2>
@@ -413,9 +388,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PROFILE PAGE (avec formulaire)                               -->
-<!-- ============================================================ -->
+<!-- PROFILE -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -425,13 +398,13 @@
                 </div>
             </div>
             <div class="profile-header-info">
-                <h2 id="profileNameDisplay">Guest</h2>
+                <h2 id="profileNameDisplay">Guest <span id="profilePremiumBadge" class="premium-badge" style="display:none;">☑️ Betix</span></h2>
                 <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
                 <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
                 <div class="profile-badges">
                     <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
                     <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
-                    <span class="profile-badge" id="profilePremiumBadge" style="display:none; background: linear-gradient(135deg, #f5a623, #d4911e); color: #1a1a2e;"><i class="fas fa-crown"></i> Premium</span>
+                    <span class="profile-badge" id="profileAccountTypeBadge" style="background:#f5a623; color:#1a1a2e;">Free</span>
                 </div>
             </div>
         </div>
@@ -458,68 +431,44 @@
             </div>
         </div>
 
-        <!-- ========== FORMULAIRE DE PROFIL ========== -->
+        <!-- Profile Form -->
         <div class="profile-form-section" style="background:#f9fafb; border-radius:16px; padding:20px; margin-bottom:20px; border:1px solid #e5e7eb;">
             <h3 style="margin-bottom:12px; font-size:1.1rem; color:#1a1a2e;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
             <form id="profileForm" class="profile-form">
                 <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" id="profileFirstName" placeholder="John" maxlength="50" disabled>
+                        <input type="text" id="profileFirstName" placeholder="John" maxlength="50">
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" id="profileLastName" placeholder="Doe" maxlength="50" disabled>
+                        <input type="text" id="profileLastName" placeholder="Doe" maxlength="50">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Country</label>
-                    <select id="profileCountry" disabled>
+                    <select id="profileCountry">
                         <option value="">Select your country</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Address</label>
-                    <input type="text" id="profileAddress" placeholder="123 Main St, City" maxlength="100" disabled>
+                    <input type="text" id="profileAddress" placeholder="123 Main St, City" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <div class="input-with-verify">
-                        <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100" disabled>
-                        <button type="button" class="verify-btn" id="verifyEmailBtn" disabled><i class="fas fa-shield-alt"></i> Verify</button>
-                        <span class="verified-check" id="emailVerifiedCheck" style="display:none;"><i class="fas fa-check-circle" style="color:#10b981;"></i></span>
-                    </div>
-                    <div class="verify-code-input" id="emailCodeContainer" style="display:none;">
-                        <input type="text" id="emailCode" placeholder="Enter verification code" maxlength="6">
-                        <button type="button" class="btn-verify-code" id="confirmEmailCodeBtn">Confirm</button>
-                        <span id="emailVerifyStatus"></span>
-                    </div>
+                    <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100">
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <div class="input-with-verify">
-                        <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20" disabled>
-                        <button type="button" class="verify-btn" id="verifyPhoneBtn" disabled><i class="fas fa-shield-alt"></i> Verify</button>
-                        <span class="verified-check" id="phoneVerifiedCheck" style="display:none;"><i class="fas fa-check-circle" style="color:#10b981;"></i></span>
-                    </div>
-                    <div class="verify-code-input" id="phoneCodeContainer" style="display:none;">
-                        <input type="text" id="phoneCode" placeholder="Enter verification code" maxlength="6">
-                        <button type="button" class="btn-verify-code" id="confirmPhoneCodeBtn">Confirm</button>
-                        <span id="phoneVerifyStatus"></span>
-                    </div>
+                    <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20">
                 </div>
-                <div class="profile-form-actions">
-                    <button type="button" class="btn-primary" id="saveProfileBtn" style="display:none; width:auto; padding:10px 30px;">
-                        <i class="fas fa-save"></i> Save Profile
-                    </button>
-                    <button type="button" class="btn-secondary" id="editProfileBtn" style="width:auto; padding:10px 30px;">
-                        <i class="fas fa-pen"></i> Edit Profile
-                    </button>
-                </div>
-                <span id="profileSaveMessage" style="display:block; margin-top:10px; font-size:0.9rem; text-align:center;"></span>
+                <button type="button" class="btn-primary" id="saveProfileBtn" style="margin-top:8px; width:auto; padding:10px 30px;">
+                    <i class="fas fa-save"></i> Save Profile
+                </button>
+                <span id="profileSaveMessage" style="margin-left:12px; font-size:0.9rem; color:#10b981;"></span>
             </form>
         </div>
-        <!-- ========== FIN FORMULAIRE ========== -->
 
         <div class="profile-actions">
             <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
@@ -528,83 +477,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PREMIUM PAGE (simplifiée)                                   -->
-<!-- ============================================================ -->
-<div id="premiumPage" class="hidden-page">
-    <div class="page-content premium-page-content">
-        <div class="premium-header">
-            <div class="premium-badge-icon">
-                <i class="fas fa-crown"></i>
-            </div>
-            <h1 class="premium-title">Betix Premium</h1>
-            <p class="premium-subtitle">Unlock exclusive features to grow your events</p>
-        </div>
-
-        <!-- Statut actuel -->
-        <div class="premium-status-card">
-            <div class="premium-status-current">
-                <span class="status-label">Current Plan</span>
-                <span class="status-plan" id="currentPlanDisplay">Free</span>
-            </div>
-            <div class="premium-status-expiry" id="premiumExpiryDisplay" style="display:none;">
-                <span class="expiry-label">Valid until</span>
-                <span class="expiry-date" id="premiumExpiryDate">-</span>
-            </div>
-        </div>
-
-        <!-- Avantages Premium (simplifiés) -->
-        <div class="premium-features-grid-simple">
-            <div class="premium-feature-item">
-                <i class="fas fa-check-circle feature-icon-gold"></i>
-                <span>Betix Verified Badge</span>
-            </div>
-            <div class="premium-feature-item">
-                <i class="fas fa-rocket feature-icon-gold"></i>
-                <span>Event Boost on homepage</span>
-            </div>
-            <div class="premium-feature-item">
-                <i class="fas fa-search feature-icon-gold"></i>
-                <span>Search Priority</span>
-            </div>
-            <div class="premium-feature-item">
-                <i class="fas fa-star feature-icon-gold"></i>
-                <span>Premium Events section</span>
-            </div>
-            <div class="premium-feature-item">
-                <i class="fas fa-chart-line feature-icon-gold"></i>
-                <span>Advanced Analytics</span>
-            </div>
-            <div class="premium-feature-item">
-                <i class="fas fa-headset feature-icon-gold"></i>
-                <span>Priority Support</span>
-            </div>
-        </div>
-
-        <!-- Prix et bouton -->
-        <div class="premium-pricing-card">
-            <div class="premium-price-display">
-                <span class="price-amount" id="premiumPriceDisplay">0.5</span>
-                <span class="price-currency">Pi</span>
-                <span class="price-period">/ month</span>
-            </div>
-            <div class="premium-price-note">
-                <i class="fas fa-info-circle"></i>
-                <span>Price equivalent to <span id="premiumPriceUSD">$5.00</span> USD</span>
-            </div>
-            <button class="btn-primary premium-btn" id="upgradePremiumBtn">
-                <i class="fas fa-crown"></i> <span id="premiumBtnText">Upgrade to Premium</span>
-            </button>
-            <p id="premiumStatusMessage" style="margin-top:12px; font-size:0.85rem; color:var(--gray);"></p>
-        </div>
-
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- SETTINGS PAGE                                                -->
-<!-- ============================================================ -->
+<!-- SETTINGS -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
@@ -637,9 +510,65 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- ADMIN PAGE                                                   -->
-<!-- ============================================================ -->
+<!-- PREMIUM PAGE -->
+<div id="premiumPage" class="hidden-page">
+    <div class="page-content premium-page-content">
+        <h2 style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-crown" style="color:#f5a623;"></i> Betix Premium
+        </h2>
+        <p class="events-sub">Unlock exclusive features and boost your events</p>
+        <div class="premium-plans">
+            <!-- Free -->
+            <div class="premium-plan-card">
+                <div class="plan-header">
+                    <h3>Free</h3>
+                    <p class="plan-price">0 Pi</p>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Create unlimited events</li>
+                    <li><i class="fas fa-check"></i> Sell tickets</li>
+                    <li><i class="fas fa-times"></i> No badge</li>
+                    <li><i class="fas fa-times"></i> No priority</li>
+                    <li><i class="fas fa-times"></i> No analytics</li>
+                </ul>
+                <button class="btn-primary" disabled>Current plan</button>
+            </div>
+            <!-- Premium -->
+            <div class="premium-plan-card premium-highlight">
+                <div class="plan-header">
+                    <h3>Premium</h3>
+                    <p class="plan-price"><span id="premiumPriceDisplay">5</span> Pi <span style="font-size:0.7rem;color:var(--gray);">/ month</span></p>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Official Betix badge ☑️</li>
+                    <li><i class="fas fa-check"></i> Events highlighted on homepage</li>
+                    <li><i class="fas fa-check"></i> Priority in search results</li>
+                    <li><i class="fas fa-check"></i> More visibility to buyers</li>
+                    <li><i class="fas fa-check"></i> Advanced statistics</li>
+                    <li><i class="fas fa-check"></i> Priority support</li>
+                </ul>
+                <button class="btn-primary" id="upgradePremiumBtn">Upgrade to Premium</button>
+            </div>
+            <!-- Enterprise -->
+            <div class="premium-plan-card">
+                <div class="plan-header">
+                    <h3>Enterprise</h3>
+                    <p class="plan-price">Contact us</p>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> All Premium features</li>
+                    <li><i class="fas fa-check"></i> Custom branding</li>
+                    <li><i class="fas fa-check"></i> Dedicated account manager</li>
+                </ul>
+                <button class="btn-secondary">Contact</button>
+            </div>
+        </div>
+        <p style="margin-top:20px;font-size:0.8rem;color:var(--gray);">All payments are made in Pi cryptocurrency.</p>
+        <button class="btn-back" onclick="showPage('home')">Back</button>
+    </div>
+</div>
+
+<!-- ADMIN -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -714,6 +643,34 @@
         </div>
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
+                <h3>Economic Model Settings</h3>
+                <div class="form-group">
+                    <label>Premium Price (USD)</label>
+                    <input type="number" id="adminPremiumPrice" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Commission (%)</label>
+                    <input type="number" id="adminCommissionPercent" step="0.1" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Service Fee (%)</label>
+                    <input type="number" id="adminServiceFeePercent" step="0.1" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Premium Duration (days)</label>
+                    <input type="number" id="adminPremiumDuration" step="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Pi Conversion Rate (USD per Pi)</label>
+                    <input type="number" id="adminPiConversionRate" step="0.0001" min="0">
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+                    <label style="margin:0;">Enable Badge Globally</label>
+                    <input type="checkbox" id="adminBadgeEnabled" style="width:auto;">
+                </div>
+                <button class="btn-primary" onclick="adminSaveSettings()" style="width:auto; padding:8px 24px;">Save Settings</button>
+                <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+                <hr style="margin: 30px 0; border-color: #e5e7eb;">
                 <h3>Change Password</h3>
                 <div class="form-group">
                     <label>New password</label>
@@ -730,51 +687,13 @@
                 <p><strong>Current password :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
                 <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
                 <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
-                
-                <!-- ========== PARAMÈTRES PLATEFORME ========== -->
-                <div class="admin-settings-group" style="margin-top:20px; border-top:2px solid #e5e7eb; padding-top:20px;">
-                    <h3>Platform Settings</h3>
-                    <div class="form-group">
-                        <label>Premium Price (Pi)</label>
-                        <input type="number" id="adminPremiumPrice" step="0.000001" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Commission Rate (%)</label>
-                        <input type="number" id="adminCommissionRate" step="0.1" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Service Fee Rate (%)</label>
-                        <input type="number" id="adminServiceFeeRate" step="0.1" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Premium Duration (days)</label>
-                        <input type="number" id="adminPremiumDuration" step="1" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>Pi Conversion Rate (Pi per USD)</label>
-                        <input type="number" id="adminPiConversionRate" step="0.01" min="0.01">
-                    </div>
-                    <div class="form-group" style="display:flex; align-items:center; gap:12px;">
-                        <label style="margin:0;">Verified Badge Enabled</label>
-                        <input type="checkbox" id="adminVerifiedBadgeEnabled">
-                    </div>
-                    <div class="form-group" style="display:flex; align-items:center; gap:12px;">
-                        <label style="margin:0;">Premium Boost Enabled</label>
-                        <input type="checkbox" id="adminPremiumBoostEnabled">
-                    </div>
-                    <button class="btn-primary" onclick="savePlatformSettings()" style="width:auto; padding:10px 30px;">Save Settings</button>
-                    <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
-                </div>
-                <!-- ========== FIN PARAMÈTRES ========== -->
             </div>
         </div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- FOOTER (MIS À JOUR)                                         -->
-<!-- ============================================================ -->
+<!-- FOOTER -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -811,9 +730,7 @@
     </div>
 </footer>
 
-<!-- ============================================================ -->
-<!-- MODALS                                                       -->
-<!-- ============================================================ -->
+<!-- MODALS -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
@@ -887,39 +804,8 @@
         <p style="font-size:0.85rem;color:var(--gray);">
             Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
-        <div id="feeBreakdown" style="font-size:0.7rem;color:var(--gray);margin-top:4px;text-align:left;padding:0 8px;"></div>
         <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
         <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
-    </div>
-</div>
-
-<!-- PREMIUM CONFIRM MODAL -->
-<div id="premiumConfirmModal" class="modal">
-    <div class="modal-content premium-confirm-content">
-        <div class="premium-confirm-header">
-            <div class="premium-confirm-icon"><i class="fas fa-crown"></i></div>
-            <h2>Upgrade to Premium</h2>
-            <p class="premium-confirm-sub">You are about to unlock exclusive features</p>
-            <button class="modal-close" onclick="closePremiumConfirmModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="premium-confirm-body">
-            <div class="premium-confirm-features">
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Betix Verified Badge</div>
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Event Boost on homepage</div>
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Search Priority</div>
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Premium Events section</div>
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Advanced Analytics</div>
-                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Priority Support</div>
-            </div>
-            <div class="premium-confirm-price">
-                <span>Total: <strong id="premiumConfirmPrice">0.500000 Pi</strong></span>
-                <span style="font-size:0.8rem; color:var(--gray);">(equivalent to <span id="premiumConfirmUSD">$5.00</span> USD)</span>
-            </div>
-        </div>
-        <div class="premium-confirm-footer">
-            <button class="btn-secondary-modal" onclick="closePremiumConfirmModal()">Cancel</button>
-            <button class="btn-primary" id="confirmPremiumPurchaseBtn">Confirm & Pay</button>
-        </div>
     </div>
 </div>
 
@@ -942,13 +828,10 @@
 
 <div id="paymentPendingModal" style="display: none;"></div>
 
-<!-- SCROLL TO TOP BUTTON -->
+<!-- SCROLL TOP -->
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
     <i class="fas fa-arrow-up"></i>
 </button>
-
-<!-- TOAST CONTAINER -->
-<div id="toastContainer" class="toast-container"></div>
 
 </div>
 
