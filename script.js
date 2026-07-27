@@ -1511,7 +1511,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// MODIFICATION : openEventDetails - Nouvelle version modernisée
+// openEventDetails – version révisée (carousel épuré, structure en blocs)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1530,24 +1530,23 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carousel : uniquement des images, pas de texte
+    // Carousel : uniquement des images, sans texte (pas de badge, titre, description, compteur)
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
         const dotsId = 'carousel-dots-' + event.id;
-        carouselHtml = `<div class="event-detail-carousel-modern" id="carousel-${event.id}">
-            <div class="carousel-track-modern" id="${trackId}">`;
+        carouselHtml = `<div class="event-detail-carousel" id="carousel-${event.id}">
+            <div class="carousel-track" id="${trackId}">`;
         images.forEach(img => {
-            carouselHtml += `<div class="carousel-slide-modern"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
+            carouselHtml += `<div class="carousel-slide"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
         });
         carouselHtml += '</div>';
         if (images.length > 1) {
-            carouselHtml += `<button class="carousel-btn-modern prev" onclick="carouselPrev('${event.id}')">‹</button>
-                             <button class="carousel-btn-modern next" onclick="carouselNext('${event.id}')">›</button>
-                             <div class="carousel-counter-modern"><i class="fas fa-image"></i><span id="carousel-current-${event.id}">1</span>/${images.length}</div>
-                             <div class="carousel-dots-modern" id="${dotsId}">`;
+            carouselHtml += `<button class="carousel-btn prev" onclick="carouselPrev('${event.id}')">‹</button>
+                             <button class="carousel-btn next" onclick="carouselNext('${event.id}')">›</button>
+                             <div class="carousel-dots" id="${dotsId}">`;
             for (let d = 0; d < images.length; d++) {
-                carouselHtml += `<button class="cdot-modern${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
+                carouselHtml += `<button class="cdot${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
             }
             carouselHtml += '</div>';
         }
@@ -1555,14 +1554,14 @@ function openEventDetails(eventId) {
     }
 
     // Conditions
-    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p style="color: var(--gray); font-size: 0.9rem;">${escapeHtml(event.conditions)}</p>`) : `<p style="color: var(--gray); font-size: 0.9rem;">${t('noConditions')}</p>`;
+    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
 
-    // Reviews
+    // Avis
     const eventRatings = ratings.filter(r => r.eventId === event.id);
     let reviewsHtml = eventRatings.length ? eventRatings.map(r => {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return `<div class="review-item-modern"><div class="review-header-modern"><span class="review-user-modern">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars-modern">${stars}</span></div>${r.comment ? `<div class="review-text-modern">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date-modern">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
-    }).join('') : `<p style="color: var(--gray); font-size: 0.9rem;">${t('noReviews')}</p>`;
+        return `<div class="review-item"><div class="review-header"><span class="review-user">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars">${stars}</span></div>${r.comment ? `<div class="review-text">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
+    }).join('') : `<p>${t('noReviews')}</p>`;
 
     const avgRating = eventRatings.length ? eventRatings.reduce((a,r) => a + r.rating, 0) / eventRatings.length : 0;
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
@@ -1583,98 +1582,81 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Construction du nouveau HTML structuré
+    // Structure de la page (ordre : titre, carousel, description, infos, prix/places, conditions, métadonnées, avis, bouton)
     content.innerHTML = `
-        <!-- En-tête -->
-        <div class="event-detail-header-modern">
-            <button class="back-btn-detail-modern" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
-            <span class="detail-title-modern">${escapeHtml(event.title)}</span>
-            <span class="detail-category-modern">${escapeHtml(event.category)}</span>
-            <button class="modal-close-detail-modern" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
+        <div class="event-detail-header">
+            <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
+            <span class="detail-title">${escapeHtml(event.title)}</span>
+            <span class="detail-category">${escapeHtml(event.category)}</span>
+            <button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
         </div>
-
-        <!-- Carousel (images uniquement) -->
         ${carouselHtml}
-
-        <!-- Corps -->
-        <div class="event-detail-body-modern">
+        <div class="event-detail-body">
             <!-- Description -->
-            <section class="detail-section detail-description">
-                <h4><i class="fas fa-align-left"></i> ${t('fullDescription')}</h4>
+            <div class="detail-block description-block">
+                <h4>${t('fullDescription')}</h4>
                 <p>${event.description || 'No description'}</p>
-            </section>
-
+            </div>
             <!-- Informations pratiques -->
-            <section class="detail-section detail-info">
-                <h4><i class="fas fa-info-circle"></i> ${t('information')}</h4>
-                <div class="info-grid-modern">
-                    <div class="info-item-modern"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
-                    <div class="info-item-modern"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
-                    <div class="info-item-modern"><i class="fas fa-clock"></i> ${timeFormatted}</div>
-                    ${durationDisplay ? `<div class="info-item-modern"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
+            <div class="detail-block info-block">
+                <h4>${t('information')}</h4>
+                <div class="info-grid">
+                    <div><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
+                    <div><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
+                    <div><i class="fas fa-clock"></i> ${timeFormatted}</div>
+                    ${durationDisplay ? `<div><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
                 </div>
-            </section>
-
+            </div>
             <!-- Prix et places -->
-            <section class="detail-section detail-price-seats">
-                <div class="price-seats-modern">
-                    <span class="price-modern"><i class="fas fa-tag"></i> ${priceDisplay}</span>
-                    <span class="seats-modern"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
+            <div class="detail-block price-seats-block">
+                <div class="price-seats">
+                    <span class="price"><i class="fas fa-tag"></i> ${priceDisplay}</span>
+                    <span class="seats"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
                 </div>
-            </section>
-
+            </div>
             <!-- Conditions -->
-            <section class="detail-section detail-conditions">
-                <h4><i class="fas fa-list-ul"></i> ${t('conditions')}</h4>
+            <div class="detail-block conditions-block">
+                <h4>${t('conditions')}</h4>
                 ${conditionsHtml}
-            </section>
-
+            </div>
             <!-- Métadonnées -->
-            <section class="detail-section detail-meta">
-                <div class="meta-grid-modern">
-                    <div class="meta-item-modern"><span class="meta-label-modern">${t('organizer')}</span><span class="meta-value-modern">${escapeHtml(organizerDisplay)}</span></div>
-                    <div class="meta-item-modern"><span class="meta-label-modern">${t('createdOn')}</span><span class="meta-value-modern">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
-                    <div class="meta-item-modern"><span class="meta-label-modern">${t('seatsLeft')}</span><span class="meta-value-modern">${event.seatsLeft}/${event.seatsTotal}</span></div>
-                    <div class="meta-item-modern"><span class="meta-label-modern">${t('rating')}</span><span class="meta-value-modern">${ratingDisplay}</span></div>
+            <div class="detail-block meta-block">
+                <div class="meta-grid">
+                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div>
+                    <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+                    <div><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
+                    <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
                 </div>
-            </section>
-
+            </div>
             <!-- Avis -->
-            <section class="detail-section detail-reviews">
-                <h4><i class="fas fa-star"></i> ${t('reviews')}</h4>
-                <div class="reviews-list-modern">${reviewsHtml}</div>
-            </section>
+            <div class="detail-block reviews-block">
+                <h4>${t('reviews')}</h4>
+                <div class="reviews-list">${reviewsHtml}</div>
+            </div>
         </div>
-
-        <!-- Pied de page avec bouton d'achat -->
-        <div class="event-detail-footer-modern">
-            <button class="btn-buy-modern" id="detailBuyBtnModern"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
+        <div class="event-detail-footer">
+            <button class="btn-buy" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
         </div>
     `;
 
-    // Attacher l'événement au bouton d'achat
-    document.getElementById('detailBuyBtnModern').onclick = function() {
+    document.getElementById('detailBuyBtn').onclick = function() {
         closeEventDetailModalAndGoBack();
         setTimeout(() => openQuantityPopup(event.id), 300);
     };
 
-    // Afficher le modal
     modal.classList.add('show');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    setTimeout(() => { const body = document.querySelector('.event-detail-body-modern'); if (body) body.scrollTop = 0; }, 100);
+    setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
 
-    // Initialiser le carousel
     if (images.length > 1) {
         window._carousels = window._carousels || {};
         window._carousels[event.id] = { currentIndex: 0, totalSlides: images.length, trackId: 'carousel-track-' + event.id, dotsId: 'carousel-dots-' + event.id, eventId: event.id };
-        const counter = document.getElementById('carousel-current-' + event.id);
-        if (counter) counter.textContent = '1';
     }
 }
 
 // ============================================================
-// Fonctions du carousel (adaptées aux nouvelles classes)
+// Fonctions carousel (inchangées)
 // ============================================================
 function carouselGoTo(eventId, index) {
     const carousel = window._carousels && window._carousels[eventId];
@@ -1686,9 +1668,7 @@ function carouselGoTo(eventId, index) {
     if (index >= total) index = 0;
     carousel.currentIndex = index;
     track.style.transform = 'translateX(' + (-index * 100) + '%)';
-    document.querySelectorAll('#' + carousel.dotsId + ' .cdot-modern').forEach((dot, i) => dot.classList.toggle('active', i === index));
-    const counter = document.getElementById('carousel-current-' + eventId);
-    if (counter) counter.textContent = index + 1;
+    document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
 }
 
 function carouselPrev(eventId) {
@@ -2172,12 +2152,15 @@ function adminDeleteAllEvents() {
     }
 }
 
+// ============================================================
+// ADMIN CAROUSEL – modifié : masquage des champs texte
+// ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
     if (!container) return;
     if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
     container.innerHTML = heroSlides.map((slide, index) =>
-        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>${escapeHtml(slide.title)}</h4><p>${slide.badge || 'Uncategorized'} • ${slide.description || ''}</p></div><div class="slide-actions"><button class="edit-btn" onclick="adminEditSlide(${index})">Edit</button><button class="delete-btn" onclick="adminDeleteSlide(${index})">Cancel</button></div></div>`
+        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Image ${index+1}</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(${index})">Delete</button></div></div>`
     ).join('');
 }
 
@@ -2189,40 +2172,31 @@ function adminShowSlideForm(index) {
     const uploadBox = document.getElementById('adminUploadBox');
     preview.style.display = 'none'; preview.src = ''; uploadBox.classList.remove('has-image'); imageInput.value = '';
     container.style.display = 'block';
-    if (index >= 0 && index < heroSlides.length) {
-        title.textContent = 'Edit carousel image';
-        document.getElementById('adminSlideBadge').value = heroSlides[index].badge || '';
-        document.getElementById('adminSlideTitle').value = heroSlides[index].title || '';
-        document.getElementById('adminSlideDesc').value = heroSlides[index].description || '';
-        document.getElementById('adminEditSlideIndex').value = index;
-        if (heroSlides[index].image) { preview.src = heroSlides[index].image; preview.style.display = 'block'; uploadBox.classList.add('has-image'); }
-    } else {
-        title.textContent = 'Add carousel image';
-        document.getElementById('adminSlideBadge').value = '';
-        document.getElementById('adminSlideTitle').value = '';
-        document.getElementById('adminSlideDesc').value = '';
-        document.getElementById('adminEditSlideIndex').value = '-1';
-    }
+    // On masque les champs de texte (ils existent toujours dans le HTML, mais on les cache)
+    const badgeGroup = document.querySelector('.form-group:has(#adminSlideBadge)');
+    const titleGroup = document.querySelector('.form-group:has(#adminSlideTitle)');
+    const descGroup = document.querySelector('.form-group:has(#adminSlideDesc)');
+    if (badgeGroup) badgeGroup.style.display = 'none';
+    if (titleGroup) titleGroup.style.display = 'none';
+    if (descGroup) descGroup.style.display = 'none';
+    // On réinitialise les valeurs
+    document.getElementById('adminSlideBadge').value = '';
+    document.getElementById('adminSlideTitle').value = '';
+    document.getElementById('adminSlideDesc').value = '';
+    document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
 async function adminSaveSlide() {
     const imageInput = document.getElementById('adminSlideImageInput');
-    const badgeInput = document.getElementById('adminSlideBadge');
-    const titleInput = document.getElementById('adminSlideTitle');
-    const descInput = document.getElementById('adminSlideDesc');
     const editIndex = document.getElementById('adminEditSlideIndex');
-    const badge = badgeInput.value.trim();
-    const title = titleInput.value.trim();
-    const description = descInput.value.trim();
-    if (!title) { alert('Please enter a title'); return; }
     let imageData = null;
     if (imageInput.files && imageInput.files[0]) {
         const file = imageInput.files[0];
         if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
-        if (file.size > 5 * 1024 * 1024) { alert('Image is too large (max 5MB)'); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return; }
         const compressedData = await compressImage(file);
-        const url = await uploadHeroImage(compressedData, title.replace(/\s+/g, '_'));
+        const url = await uploadHeroImage(compressedData, 'slide_' + Date.now());
         if (!url) { alert('Error uploading image'); return; }
         imageData = url;
     } else {
@@ -2230,14 +2204,24 @@ async function adminSaveSlide() {
         if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
         else { alert('Please select an image'); return; }
     }
-    const slideData = { image: imageData, badge, title, description };
+    // On ne sauvegarde que l'image (les champs texte sont vides)
+    const slideData = { image: imageData, badge: '', title: 'Slide', description: '' };
     const indexToSave = parseInt(editIndex.value);
     if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
     const saved = await saveHeroSlideToSupabase(slideData, indexToSave);
-    if (!saved) { alert('Error saving slide (see console for details)'); return; }
+    if (!saved) { alert('Error saving slide'); return; }
     await loadHeroSlides();
     adminCancelSlideForm();
     alert('Slide saved successfully!');
+}
+
+function adminCancelSlideForm() {
+    document.getElementById('adminSlideFormContainer').style.display = 'none';
+    document.getElementById('adminEditSlideIndex').value = '-1';
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
 }
 
 async function adminDeleteSlide(index) {
@@ -2247,17 +2231,7 @@ async function adminDeleteSlide(index) {
     const deleted = await deleteHeroSlideFromSupabase(slide.id);
     if (!deleted) { alert('Error deleting slide'); return; }
     await loadHeroSlides();
-    addAdminLog('Slide deleted', 'Title: ' + slide.title);
-}
-
-function adminEditSlide(index) { adminShowSlideForm(index); }
-function adminCancelSlideForm() {
-    document.getElementById('adminSlideFormContainer').style.display = 'none';
-    document.getElementById('adminEditSlideIndex').value = '-1';
-    document.getElementById('adminSlideImageInput').value = '';
-    document.getElementById('adminSlidePreview').style.display = 'none';
-    document.getElementById('adminSlidePreview').src = '';
-    document.getElementById('adminUploadBox').classList.remove('has-image');
+    addAdminLog('Slide deleted', 'Image deleted');
 }
 
 function initAdminTabs() {
@@ -3172,7 +3146,7 @@ function initApp() {
     }
 }
 
-// Exécution
+// Exécution immédiate si DOM prêt, sinon attendre DOMContentLoaded
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
