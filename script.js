@@ -551,18 +551,22 @@ function t(key) {
 let events = [];
 let tickets = [];
 let usedTickets = [];
-let currentUser = { 
-    name: 'Guest', 
-    wallet: null, 
-    piUid: null, 
-    memberSince: '2026', 
+let currentUser = {
+    name: 'Guest',
+    wallet: null,
+    piUid: null,
+    memberSince: '2026',
     loyaltyPoints: 0,
     first_name: '',
     last_name: '',
     country: '',
     address: '',
     email: '',
-    phone_number: ''
+    phone_number: '',
+    account_type: 'free',
+    premium_start_date: null,
+    premium_end_date: null,
+    is_verified: false
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -584,6 +588,7 @@ let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = [];
 let heroSlides = [];
+window.platformSettings = {};
 
 // ============================================================
 // PI SDK
@@ -787,6 +792,10 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             address: currentUser.address || '',
             email: currentUser.email || '',
             phone_number: currentUser.phone_number || '',
+            account_type: currentUser.account_type || 'free',
+            premium_start_date: currentUser.premium_start_date || null,
+            premium_end_date: currentUser.premium_end_date || null,
+            is_verified: currentUser.is_verified || false,
             updated_at: now,
             last_seen: now
         };
@@ -861,6 +870,9 @@ async function saveTicketToSupabase(ticketData) {
             event_location: eventLocation,
             pays: ticketData.pays || eventPays || 'France',
             transaction_id: ticketData.transactionId || '',
+            commission_amount: ticketData.commission_amount || 0,
+            service_fee_amount: ticketData.service_fee_amount || 0,
+            organizer_revenue: ticketData.organizer_revenue || 0,
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
@@ -925,6 +937,18 @@ async function loadNotificationsFromSupabase(piUid) {
     } catch (error) { return []; }
 }
 
+async function loadUsersFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient.from('users').select('pi_uid, wallet, is_verified, account_type');
+        if (error) throw error;
+        window._users = data;
+        return data;
+    } catch (error) {
+        console.log('Erreur chargement utilisateurs:', error.message);
+        return [];
+    }
+}
+
 async function updateEventInSupabase(eventId, updates) {
     try {
         const { error } = await supabaseClient.from('events').update(updates).eq('id', eventId);
@@ -951,6 +975,10 @@ async function saveTransactionToSupabase(transactionData) {
             currency: 'Pi',
             payment_id: transactionData.txid || transactionData.paymentId || '',
             status: transactionData.status || 'completed',
+            type: transactionData.type || 'ticket_purchase',
+            commission_amount: transactionData.commission_amount || 0,
+            service_fee_amount: transactionData.service_fee_amount || 0,
+            organizer_revenue: transactionData.organizer_revenue || 0,
             created_at: transactionData.date || new Date().toISOString()
         };
         const { error } = await supabaseClient.from('transactions').insert(dbTransaction);
@@ -982,9 +1010,9 @@ function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(even
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); saveUsedTickets(); syncTicketsToSupabase(); }
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
-function saveUser() { 
-    localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    syncUserToSupabase(); 
+function saveUser() {
+    localStorage.setItem('betix_user', JSON.stringify(currentUser));
+    syncUserToSupabase();
 }
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); syncNotificationsToSupabase(); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
@@ -1115,6 +1143,10 @@ async function loadAllFromSupabase() {
         notifications = mergeArraysById(localNotifs, supabaseNotifs);
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
         updateSyncStatus('success');
+        await loadUsersFromSupabase();
+        await loadPlatformSettings();
+        checkAndUpdatePremiumStatus();
+        renderPremiumEvents();
     } catch (error) {
         console.error('Erreur lors du chargement depuis Supabase :', error);
         updateSyncStatus('error');
@@ -1127,6 +1159,7 @@ async function loadAllFromSupabase() {
     renderTickets();
     renderHistory();
     updateProfilePage();
+    updatePremiumUI();
     setTimeout(generateAllQRCodes, 300);
 }
 
@@ -1321,7 +1354,7 @@ function markTicketAsUsed(ticketId) {
 }
 
 // ============================================================
-// ACHAT ET PAIEMENT
+// ACHAT ET PAIEMENT (modifié pour inclure frais)
 // ============================================================
 const processingTransactions = new Set();
 
@@ -1339,8 +1372,17 @@ async function confirmPurchase(eventId, quantity) {
         alert('Plus de places disponibles. Restant: ' + availableSeats);
         return;
     }
-    const totalPrice = quantity * price;
-    if (!confirm('Confirm purchase ' + quantity + ' ticket(s) for "' + event.title + '" (Total: ' + totalPrice.toFixed(6) + ' Pi) ?')) return;
+    const subtotal = quantity * price;
+    const settings = window.platformSettings || { commission_rate: 5.0, service_fee_rate: 2.0 };
+    const fees = calculateFees(subtotal, settings.commission_rate, settings.service_fee_rate);
+    const totalWithFees = subtotal + fees.serviceFee;
+
+    if (!confirm('Confirm purchase of ' + quantity + ' ticket(s) for "' + event.title + '"\n' +
+        'Subtotal: ' + subtotal.toFixed(6) + ' Pi\n' +
+        'Service fee: + ' + fees.serviceFee.toFixed(6) + ' Pi\n' +
+        'Total: ' + totalWithFees.toFixed(6) + ' Pi')) {
+        return;
+    }
     closeQuantityPopup();
     const confirmBtn = document.getElementById('confirmBuyBtn');
     if (confirmBtn) { confirmBtn.textContent = t('connecting'); confirmBtn.disabled = true; }
@@ -1351,9 +1393,9 @@ async function confirmPurchase(eventId, quantity) {
             return;
         }
         const payment = await Pi.createPayment({
-            amount: totalPrice,
+            amount: totalWithFees,
             memo: quantity + ' ticket(s): ' + event.title,
-            metadata: { eventId: event.id, eventTitle: event.title, quantity }
+            metadata: { eventId: event.id, eventTitle: event.title, quantity, serviceFee: fees.serviceFee, commission: fees.commission }
         }, {
             onReadyForServerApproval: function(paymentId) {
                 fetch(BACKEND_URL + '/api/pi/approve', {
@@ -1419,7 +1461,10 @@ async function confirmPurchase(eventId, quantity) {
                             purchaseDate,
                             purchaseDateTime,
                             transactionId: txid || 'tx-' + Date.now(),
-                            qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i
+                            qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i,
+                            commission_amount: fees.commission,
+                            service_fee_amount: fees.serviceFee,
+                            organizer_revenue: fees.organizerRevenue
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -1436,9 +1481,13 @@ async function confirmPurchase(eventId, quantity) {
                         buyerWallet: currentUser.wallet,
                         buyerPiUid: currentUser.piUid || currentUser.wallet,
                         eventId: event.id,
-                        amount: totalPrice,
+                        amount: totalWithFees,
+                        commission_amount: fees.commission,
+                        service_fee_amount: fees.serviceFee,
+                        organizer_revenue: fees.organizerRevenue,
                         txid: txid || 'tx-' + Date.now(),
                         status: 'completed',
+                        type: 'ticket_purchase',
                         date: new Date().toISOString()
                     });
                     addNotification('🎫 Nouvelle vente ! ' + quantity + ' ticket(s) acheté(s) pour "' + event.title + '"', 'purchase');
@@ -1479,7 +1528,7 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT
+// CARTE D'ÉVÉNEMENT (avec badge Verified)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1502,6 +1551,14 @@ function renderEventCard(event) {
     let organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) organizerDisplay = organizerDisplay.substring(0, 18) + '...';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
+
+    let isOrganizerPremium = false;
+    if (window._users) {
+        const user = window._users.find(u => u.pi_uid === event.organizerPiUid || u.wallet === event.organizer);
+        if (user && user.is_verified) isOrganizerPremium = true;
+    }
+    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified) isOrganizerPremium = true;
+    const verifiedBadgeHtml = isOrganizerPremium ? `<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>` : '';
 
     let publishDateDisplay = '';
     if (event.createdAt) {
@@ -1560,14 +1617,14 @@ function renderEventCard(event) {
                 ${priceRightHtml}
             </div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
-            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)}</div>
+            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${verifiedBadgeHtml}</div>
             ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}</div>` : ''}
         </div>
     </div>`;
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – carousel épuré, structure en blocs
+// PAGE DE DÉTAIL (avec badge Verified)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1586,7 +1643,6 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carousel : uniquement des images, sans texte
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1609,10 +1665,8 @@ function openEventDetails(eventId) {
         carouselHtml += '</div>';
     }
 
-    // Conditions
     let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
 
-    // Avis
     const eventRatings = ratings.filter(r => r.eventId === event.id);
     let reviewsHtml = eventRatings.length ? eventRatings.map(r => {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
@@ -1626,6 +1680,14 @@ function openEventDetails(eventId) {
     let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
 
+    let isOrganizerPremium = false;
+    if (window._users) {
+        const user = window._users.find(u => u.pi_uid === event.organizerPiUid || u.wallet === event.organizer);
+        if (user && user.is_verified) isOrganizerPremium = true;
+    }
+    if (event.organizerPiUid === currentUser.piUid && currentUser.is_verified) isOrganizerPremium = true;
+    const verifiedBadgeHtml = isOrganizerPremium ? `<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>` : '';
+
     let durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
         const unitLabels = {
@@ -1638,7 +1700,6 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Structure de la page
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1673,7 +1734,7 @@ function openEventDetails(eventId) {
             </div>
             <div class="detail-block meta-block">
                 <div class="meta-grid">
-                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div>
+                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${verifiedBadgeHtml}</span></div>
                     <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
                     <div><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
                     <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
@@ -1742,7 +1803,7 @@ function closeEventDetailModalAndGoBack() {
 }
 
 // ============================================================
-// SLIDER PRINCIPAL (HERO) – VERSION ÉPURÉE (uniquement les images)
+// SLIDER PRINCIPAL (HERO) – ÉPURÉ
 // ============================================================
 function initHeroSlider() {
     const slidesContainer = document.getElementById('heroSlides');
@@ -1751,7 +1812,6 @@ function initHeroSlider() {
     heroSlides.forEach((slide, index) => {
         const div = document.createElement('div');
         div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        // On ne met que l'image, pas de contenu texte (badge, titre, description)
         div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>`;
         slidesContainer.appendChild(div);
     });
@@ -1810,7 +1870,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL – masquage des champs texte
+// ADMIN CAROUSEL (masquage des champs texte)
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -1824,7 +1884,6 @@ function renderAdminSlides() {
 function adminShowSlideForm(index) {
     const container = document.getElementById('adminSlideFormContainer');
     container.style.display = 'block';
-    // Masquer les champs de texte (ils existent toujours dans le HTML)
     const badgeGroup = document.querySelector('.form-group:has(#adminSlideBadge)');
     const titleGroup = document.querySelector('.form-group:has(#adminSlideTitle)');
     const descGroup = document.querySelector('.form-group:has(#adminSlideDesc)');
@@ -1835,7 +1894,6 @@ function adminShowSlideForm(index) {
     document.getElementById('adminSlideTitle').value = '';
     document.getElementById('adminSlideDesc').value = '';
     document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
-    // Réinitialiser l'upload
     document.getElementById('adminSlideImageInput').value = '';
     document.getElementById('adminSlidePreview').style.display = 'none';
     document.getElementById('adminSlidePreview').src = '';
@@ -1860,7 +1918,6 @@ async function adminSaveSlide() {
         if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
         else { alert('Please select an image'); return; }
     }
-    // Ne sauvegarder que l'image
     const slideData = { image: imageData, badge: '', title: 'Slide', description: '' };
     const indexToSave = parseInt(editIndex.value);
     if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
@@ -1891,114 +1948,408 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE
+// MODÈLE ÉCONOMIQUE – PREMIUM
 // ============================================================
-
-// 1. Remplir le sélecteur de pays
-function populateProfileCountrySelect() {
-    const select = document.getElementById('profileCountry');
-    if (!select) return;
-    select.innerHTML = '<option value="">Select your country</option>';
-    countriesList.forEach(country => {
-        if (country === 'All') return;
-        const flag = countryFlags[country] || '';
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = flag + ' ' + country;
-        select.appendChild(option);
-    });
-}
-
-// 2. Charger les données du profil depuis Supabase
-async function loadProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) return;
+async function loadPlatformSettings() {
     try {
         const { data, error } = await supabaseClient
-            .from('users')
-            .select('first_name, last_name, country, address, email, phone_number')
-            .eq('pi_uid', piUid)
+            .from('platform_settings')
+            .select('*')
             .single();
         if (error) throw error;
         if (data) {
-            document.getElementById('profileFirstName').value = data.first_name || '';
-            document.getElementById('profileLastName').value = data.last_name || '';
-            document.getElementById('profileCountry').value = data.country || '';
-            document.getElementById('profileAddress').value = data.address || '';
-            document.getElementById('profileEmail').value = data.email || '';
-            document.getElementById('profilePhone').value = data.phone_number || '';
-            // Mettre à jour currentUser
-            if (data.first_name) currentUser.first_name = data.first_name;
-            if (data.last_name) currentUser.last_name = data.last_name;
-            if (data.country) currentUser.country = data.country;
-            if (data.address) currentUser.address = data.address;
-            if (data.email) currentUser.email = data.email;
-            if (data.phone_number) currentUser.phone_number = data.phone_number;
-            updateUserInfo();
+            window.platformSettings = data;
+            updatePremiumUI();
         }
+        return data;
     } catch (error) {
-        console.log('No profile data yet or error:', error.message);
+        console.log('Erreur chargement settings:', error.message);
+        window.platformSettings = {
+            premium_price: 0.5,
+            commission_rate: 5.0,
+            service_fee_rate: 2.0,
+            premium_duration_days: 30,
+            pi_conversion_rate: 1.0,
+            verified_badge_enabled: true,
+            premium_boost_enabled: true
+        };
+        return window.platformSettings;
     }
 }
 
-// 3. Sauvegarder les données du profil
-async function saveProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) {
-        alert(t('pleaseConnect'));
-        return;
+function checkPremiumStatus() {
+    if (!currentUser.piUid && !currentUser.wallet) return false;
+    if (currentUser.account_type !== 'premium') return false;
+    if (!currentUser.premium_end_date) return false;
+    const endDate = new Date(currentUser.premium_end_date);
+    const now = new Date();
+    if (endDate < now) {
+        downgradeToFree();
+        return false;
     }
-    const firstName = document.getElementById('profileFirstName').value.trim();
-    const lastName = document.getElementById('profileLastName').value.trim();
-    const country = document.getElementById('profileCountry').value;
-    const address = document.getElementById('profileAddress').value.trim();
-    const email = document.getElementById('profileEmail').value.trim();
-    const phone = document.getElementById('profilePhone').value.trim();
+    return true;
+}
 
-    if (!firstName || !lastName) {
-        alert('First name and last name are required.');
+async function downgradeToFree() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) return;
+    try {
+        const { error } = await supabaseClient
+            .from('users')
+            .update({
+                account_type: 'free',
+                premium_start_date: null,
+                premium_end_date: null,
+                is_verified: false
+            })
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+        currentUser.account_type = 'free';
+        currentUser.premium_start_date = null;
+        currentUser.premium_end_date = null;
+        currentUser.is_verified = false;
+        saveUser();
+        updateUIAfterPremiumChange();
+        addNotification('Your Premium subscription has expired.', 'info');
+    } catch (error) {
+        console.log('Erreur downgrade:', error.message);
+    }
+}
+
+function updateUIAfterPremiumChange() {
+    updateUserInfo();
+    renderEventsByCategory();
+    updatePremiumBadge();
+    updatePremiumSidebarBadge();
+    updatePremiumUI();
+    renderPremiumEvents();
+}
+
+function updatePremiumSidebarBadge() {
+    const badge = document.getElementById('premiumBadgeSidebar');
+    if (!badge) return;
+    const isPremium = checkPremiumStatus();
+    badge.style.display = isPremium ? 'inline-block' : 'none';
+}
+
+function updatePremiumBadge() {
+    const badge = document.getElementById('profilePremiumBadge');
+    if (!badge) return;
+    const isPremium = checkPremiumStatus();
+    badge.style.display = isPremium ? 'inline-flex' : 'none';
+}
+
+function updatePremiumUI() {
+    const settings = window.platformSettings || { premium_price: 0.5, pi_conversion_rate: 1.0 };
+    const priceDisplay = document.getElementById('premiumPriceDisplay');
+    const priceUSD = document.getElementById('premiumPriceUSD');
+    const currentPlan = document.getElementById('currentPlanDisplay');
+    const expiryDisplay = document.getElementById('premiumExpiryDisplay');
+    const expiryDate = document.getElementById('premiumExpiryDate');
+    const btnText = document.getElementById('premiumBtnText');
+
+    if (priceDisplay) {
+        priceDisplay.textContent = (settings.premium_price || 0.5).toFixed(6);
+    }
+    if (priceUSD) {
+        const priceInUSD = (settings.premium_price || 0.5) * (settings.pi_conversion_rate || 1.0);
+        priceUSD.textContent = '$' + priceInUSD.toFixed(2);
+    }
+
+    const isPremium = checkPremiumStatus();
+    if (currentPlan) {
+        currentPlan.textContent = isPremium ? 'Premium' : 'Free';
+        currentPlan.style.color = isPremium ? '#f5a623' : '#6b7280';
+    }
+
+    if (expiryDisplay && isPremium && currentUser.premium_end_date) {
+        expiryDisplay.style.display = 'flex';
+        expiryDate.textContent = new Date(currentUser.premium_end_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    } else if (expiryDisplay) {
+        expiryDisplay.style.display = 'none';
+    }
+
+    if (btnText) {
+        btnText.textContent = isPremium ? 'Manage Subscription' : 'Upgrade to Premium';
+    }
+
+    updatePremiumBadge();
+    updatePremiumSidebarBadge();
+}
+
+async function purchasePremium() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        alert(t('pleaseConnect'));
+        connectToPi();
         return;
     }
-    if (email && !email.includes('@')) {
-        alert('Please enter a valid email address.');
+
+    const settings = window.platformSettings || { premium_price: 0.5 };
+    const price = settings.premium_price || 0.5;
+
+    if (!confirm('Upgrade to Premium for ' + price.toFixed(6) + ' Pi?\n\n' +
+        'You will get:\n' +
+        '✅ Betix Verified Badge\n' +
+        '✅ Event Boost on homepage\n' +
+        '✅ Search Priority\n' +
+        '✅ Premium Events section\n' +
+        '✅ Advanced Analytics\n' +
+        '✅ Priority Support')) {
+        return;
+    }
+
+    const confirmBtn = document.getElementById('upgradePremiumBtn');
+    if (confirmBtn) {
+        confirmBtn.textContent = 'Processing...';
+        confirmBtn.disabled = true;
+    }
+
+    try {
+        if (typeof Pi === 'undefined') {
+            alert('Pi SDK not available. Please use Pi Browser.');
+            if (confirmBtn) {
+                confirmBtn.textContent = 'Upgrade to Premium';
+                confirmBtn.disabled = false;
+            }
+            return;
+        }
+
+        const payment = await Pi.createPayment({
+            amount: price,
+            memo: 'Betix Premium Subscription - ' + currentUser.name,
+            metadata: {
+                type: 'premium_subscription',
+                userWallet: currentUser.wallet,
+                price: price
+            }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                }).catch(() => {});
+            },
+            onReadyForServerCompletion: async function(paymentId, txid) {
+                try {
+                    await activatePremiumSubscription(txid);
+                } catch (error) {
+                    alert('Payment completed but subscription activation failed. Please contact support.');
+                }
+            },
+            onCancel: function() {
+                alert(t('paymentCancelled'));
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Upgrade to Premium';
+                    confirmBtn.disabled = false;
+                }
+            },
+            onError: function(error) {
+                alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+                if (confirmBtn) {
+                    confirmBtn.textContent = 'Upgrade to Premium';
+                    confirmBtn.disabled = false;
+                }
+            },
+            onIncompletePaymentFound
+        });
+    } catch (error) {
+        alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+        if (confirmBtn) {
+            confirmBtn.textContent = 'Upgrade to Premium';
+            confirmBtn.disabled = false;
+        }
+    }
+}
+
+async function activatePremiumSubscription(transactionId) {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) throw new Error('User not identified');
+
+    const settings = window.platformSettings || { premium_duration_days: 30 };
+    const durationDays = settings.premium_duration_days || 30;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + durationDays);
+
+    const updates = {
+        account_type: 'premium',
+        premium_start_date: startDate.toISOString(),
+        premium_end_date: endDate.toISOString(),
+        is_verified: true,
+        updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabaseClient
+        .from('users')
+        .update(updates)
+        .eq('pi_uid', piUid);
+
+    if (error) throw error;
+
+    currentUser.account_type = 'premium';
+    currentUser.premium_start_date = startDate.toISOString();
+    currentUser.premium_end_date = endDate.toISOString();
+    currentUser.is_verified = true;
+    saveUser();
+
+    await saveTransactionToSupabase({
+        id: 'tx-premium-' + Date.now(),
+        buyerWallet: currentUser.wallet,
+        buyerPiUid: currentUser.piUid || currentUser.wallet,
+        amount: settings.premium_price || 0.5,
+        type: 'premium_subscription',
+        payment_id: transactionId || 'tx-' + Date.now(),
+        status: 'completed',
+        date: new Date().toISOString()
+    });
+
+    updateUIAfterPremiumChange();
+    alert('🎉 You are now a Betix Premium member! Enjoy your exclusive benefits!');
+    renderEventsByCategory();
+}
+
+function calculateFees(amount, commissionRate, serviceFeeRate) {
+    const commission = (amount * commissionRate) / 100;
+    const serviceFee = (amount * serviceFeeRate) / 100;
+    const organizerRevenue = amount - commission - serviceFee;
+    return { commission, serviceFee, organizerRevenue };
+}
+
+function updateFeeDisplay(amount) {
+    const feeBreakdown = document.getElementById('feeBreakdown');
+    if (!feeBreakdown) return;
+    const settings = window.platformSettings || { commission_rate: 5.0, service_fee_rate: 2.0 };
+    const fees = calculateFees(amount, settings.commission_rate, settings.service_fee_rate);
+    feeBreakdown.innerHTML = `
+        <div style="display:flex; justify-content:space-between; padding:2px 0;">
+            <span>Ticket price:</span>
+            <span>${amount.toFixed(6)} Pi</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0; color:#f5a623;">
+            <span>Service fee (${settings.service_fee_rate}%):</span>
+            <span>+ ${fees.serviceFee.toFixed(6)} Pi</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0; font-weight:600; border-top:1px solid #e5e7eb; margin-top:4px; padding-top:4px;">
+            <span>Total:</span>
+            <span>${(amount + fees.serviceFee).toFixed(6)} Pi</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:2px 0; font-size:0.6rem; color:#9ca3af;">
+            <span>Commission (${settings.commission_rate}%):</span>
+            <span>${fees.commission.toFixed(6)} Pi</span>
+        </div>
+    `;
+}
+
+function updateTicketTotalWithFees() {
+    const input = document.getElementById('ticketQuantity');
+    const totalDisplay = document.getElementById('totalPriceDisplay');
+    if (!input || !totalDisplay || !selectedEventForPurchase) return;
+    const qty = parseInt(input.value) || 1;
+    const price = selectedEventForPurchase.price || 0;
+    const subtotal = qty * price;
+    const settings = window.platformSettings || { service_fee_rate: 2.0 };
+    const serviceFee = (subtotal * settings.service_fee_rate) / 100;
+    const total = subtotal + serviceFee;
+    totalDisplay.textContent = total.toFixed(6) + ' Pi';
+    updateFeeDisplay(subtotal);
+}
+
+function renderPremiumEvents() {
+    const container = document.getElementById('premiumEventsGrid');
+    const section = document.getElementById('premiumEventsSection');
+    if (!container || !section) return;
+    const premiumEvents = events.filter(e => {
+        if (!window._users) return false;
+        const user = window._users.find(u => u.pi_uid === e.organizerPiUid || u.wallet === e.organizer);
+        return user && user.is_verified === true;
+    });
+    if (premiumEvents.length === 0 || !window.platformSettings?.premium_boost_enabled) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'block';
+    container.innerHTML = premiumEvents.map(e => renderEventCard(e)).join('');
+}
+
+async function checkAndUpdatePremiumStatus() {
+    if (!currentUser.piUid && !currentUser.wallet) return;
+    const isPremium = checkPremiumStatus();
+    if (isPremium && !currentUser.is_verified) {
+        currentUser.is_verified = true;
+        saveUser();
+        updateUIAfterPremiumChange();
+    }
+    updateUIAfterPremiumChange();
+}
+
+// ============================================================
+// ADMIN – SAUVEGARDE DES PARAMÈTRES
+// ============================================================
+async function savePlatformSettings() {
+    const premiumPrice = parseFloat(document.getElementById('adminPremiumPrice').value);
+    const commissionRate = parseFloat(document.getElementById('adminCommissionRate').value);
+    const serviceFeeRate = parseFloat(document.getElementById('adminServiceFeeRate').value);
+    const premiumDuration = parseInt(document.getElementById('adminPremiumDuration').value);
+    const piConversionRate = parseFloat(document.getElementById('adminPiConversionRate').value);
+    const verifiedBadgeEnabled = document.getElementById('adminVerifiedBadgeEnabled').checked;
+    const premiumBoostEnabled = document.getElementById('adminPremiumBoostEnabled').checked;
+
+    if (isNaN(premiumPrice) || premiumPrice < 0) {
+        alert('Invalid Premium Price');
+        return;
+    }
+    if (isNaN(commissionRate) || commissionRate < 0 || commissionRate > 100) {
+        alert('Commission rate must be between 0 and 100');
+        return;
+    }
+    if (isNaN(serviceFeeRate) || serviceFeeRate < 0 || serviceFeeRate > 100) {
+        alert('Service fee rate must be between 0 and 100');
+        return;
+    }
+    if (isNaN(premiumDuration) || premiumDuration < 1) {
+        alert('Premium duration must be at least 1 day');
+        return;
+    }
+    if (isNaN(piConversionRate) || piConversionRate < 0.01) {
+        alert('Invalid Pi conversion rate');
         return;
     }
 
     const updates = {
-        first_name: firstName,
-        last_name: lastName,
-        country: country,
-        address: address,
-        email: email,
-        phone_number: phone,
+        premium_price: premiumPrice,
+        commission_rate: commissionRate,
+        service_fee_rate: serviceFeeRate,
+        premium_duration_days: premiumDuration,
+        pi_conversion_rate: piConversionRate,
+        verified_badge_enabled: verifiedBadgeEnabled,
+        premium_boost_enabled: premiumBoostEnabled,
         updated_at: new Date().toISOString()
     };
 
     try {
         const { error } = await supabaseClient
-            .from('users')
+            .from('platform_settings')
             .update(updates)
-            .eq('pi_uid', piUid);
+            .eq('id', 1);
         if (error) throw error;
-        // Mettre à jour currentUser
-        currentUser.first_name = firstName;
-        currentUser.last_name = lastName;
-        currentUser.country = country;
-        currentUser.address = address;
-        currentUser.email = email;
-        currentUser.phone_number = phone;
-        saveUser();
-        updateUserInfo();
-        document.getElementById('profileSaveMessage').textContent = '✅ Profile saved successfully!';
-        setTimeout(() => { document.getElementById('profileSaveMessage').textContent = ''; }, 3000);
-        addNotification('Profile updated', 'info');
+        window.platformSettings = updates;
+        document.getElementById('adminSettingsMessage').textContent = '✅ Settings saved successfully!';
+        document.getElementById('adminSettingsMessage').style.color = '#10b981';
+        setTimeout(() => { document.getElementById('adminSettingsMessage').textContent = ''; }, 3000);
+        addAdminLog('Platform settings updated', 'Premium price: ' + premiumPrice + ' Pi');
+        updatePremiumUI();
     } catch (error) {
-        alert('Error saving profile: ' + error.message);
+        alert('Error saving settings: ' + error.message);
     }
 }
 
 // ============================================================
-// AUTRES FONCTIONS (paiement, popups, gestion utilisateur, etc.)
+// AUTRES FONCTIONS (inchangées)
 // ============================================================
 function openGallery(eventId, startIndex) {
     const event = events.find(e => e.id === eventId);
@@ -2173,6 +2524,7 @@ function updateUserInfo() {
     updateSidebarNotifBadge();
     updateUITranslations();
     updateScanButtonVisibility();
+    updatePremiumBadge();
 }
 
 function updateProfilePage() {
@@ -2185,7 +2537,7 @@ function updateProfilePage() {
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
-    updateUserInfo(); // pour rafraîchir le nom
+    updateUserInfo();
     updateScanButtonVisibility();
 }
 
@@ -2501,7 +2853,7 @@ function openQuantityPopup(eventId) {
     }
     if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; updateMaxQuantity(); }
     if (maxInfo) maxInfo.textContent = 'Maximum: ' + standardLeft + ' ticket(s) disponible(s)';
-    updateTicketTotal();
+    updateTicketTotalWithFees();
     popup.classList.add('show');
 }
 
@@ -2513,16 +2865,7 @@ function updateMaxQuantity() {
     const maxAllowed = Math.min(maxSeats, 10);
     if (quantityInput) { quantityInput.max = maxAllowed; if (parseInt(quantityInput.value) > maxAllowed) quantityInput.value = maxAllowed; }
     if (maxInfo) maxInfo.textContent = 'Maximum: ' + maxAllowed + ' ticket(s) disponible(s)';
-    updateTicketTotal();
-}
-
-function updateTicketTotal() {
-    const input = document.getElementById('ticketQuantity');
-    const totalDisplay = document.getElementById('totalPriceDisplay');
-    if (!input || !totalDisplay || !selectedEventForPurchase) return;
-    const qty = parseInt(input.value) || 1;
-    const price = selectedEventForPurchase.price || 0;
-    totalDisplay.textContent = (qty * price).toFixed(6) + ' Pi';
+    updateTicketTotalWithFees();
 }
 
 function closeQuantityPopup() { document.getElementById('quantityPopup').classList.remove('show'); selectedEventForPurchase = null; }
@@ -2533,7 +2876,7 @@ function updateQuantity(delta) {
     const maxVal = parseInt(input.max) || 10;
     val = Math.min(Math.max(val + delta, 1), maxVal);
     input.value = val;
-    updateTicketTotal();
+    updateTicketTotalWithFees();
 }
 
 async function confirmPurchaseFromPopup() {
@@ -3144,7 +3487,7 @@ async function connectToPi() {
                 currentCountryFilter = 'All';
                 initFilters();
                 renderEventsByCategory();
-                alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); 
+                alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar();
                 await loadProfileData();
                 return;
             }
@@ -3177,6 +3520,107 @@ function showConnectSpinner() {
 function hideConnectSpinner() {
     const btn = document.getElementById('sidebarWalletBtn');
     if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
+}
+
+// ============================================================
+// PROFIL – CHARGEMENT/SAUVEGARDE
+// ============================================================
+function populateProfileCountrySelect() {
+    const select = document.getElementById('profileCountry');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select your country</option>';
+    countriesList.forEach(country => {
+        if (country === 'All') return;
+        const flag = countryFlags[country] || '';
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = flag + ' ' + country;
+        select.appendChild(option);
+    });
+}
+
+async function loadProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('first_name, last_name, country, address, email, phone_number')
+            .eq('pi_uid', piUid)
+            .single();
+        if (error) throw error;
+        if (data) {
+            document.getElementById('profileFirstName').value = data.first_name || '';
+            document.getElementById('profileLastName').value = data.last_name || '';
+            document.getElementById('profileCountry').value = data.country || '';
+            document.getElementById('profileAddress').value = data.address || '';
+            document.getElementById('profileEmail').value = data.email || '';
+            document.getElementById('profilePhone').value = data.phone_number || '';
+            if (data.first_name) currentUser.first_name = data.first_name;
+            if (data.last_name) currentUser.last_name = data.last_name;
+            if (data.country) currentUser.country = data.country;
+            if (data.address) currentUser.address = data.address;
+            if (data.email) currentUser.email = data.email;
+            if (data.phone_number) currentUser.phone_number = data.phone_number;
+            updateUserInfo();
+        }
+    } catch (error) {
+        console.log('No profile data yet or error:', error.message);
+    }
+}
+
+async function saveProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert(t('pleaseConnect'));
+        return;
+    }
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    const country = document.getElementById('profileCountry').value;
+    const address = document.getElementById('profileAddress').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+
+    if (!firstName || !lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    if (email && !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    const updates = {
+        first_name: firstName,
+        last_name: lastName,
+        country: country,
+        address: address,
+        email: email,
+        phone_number: phone,
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+        currentUser.first_name = firstName;
+        currentUser.last_name = lastName;
+        currentUser.country = country;
+        currentUser.address = address;
+        currentUser.email = email;
+        currentUser.phone_number = phone;
+        saveUser();
+        updateUserInfo();
+        document.getElementById('profileSaveMessage').textContent = '✅ Profile saved successfully!';
+        setTimeout(() => { document.getElementById('profileSaveMessage').textContent = ''; }, 3000);
+        addNotification('Profile updated', 'info');
+    } catch (error) {
+        alert('Error saving profile: ' + error.message);
+    }
 }
 
 // ============================================================
@@ -3227,10 +3671,10 @@ function initApp() {
             if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
-        // Profil
         populateProfileCountrySelect();
         if (currentUser.wallet) loadProfileData();
         document.getElementById('saveProfileBtn').addEventListener('click', saveProfileData);
+        document.getElementById('upgradePremiumBtn').addEventListener('click', purchasePremium);
 
         const menuBtn = document.getElementById('menuBtn');
         const headerRight = document.getElementById('headerRight');
@@ -3334,6 +3778,10 @@ window.loadHeroSlides = loadHeroSlides;
 window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
 window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
 window.uploadHeroImage = uploadHeroImage;
+window.savePlatformSettings = savePlatformSettings;
+window.loadPlatformSettings = loadPlatformSettings;
+window.purchasePremium = purchasePremium;
+window.checkPremiumStatus = checkPremiumStatus;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
