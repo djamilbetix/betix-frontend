@@ -205,15 +205,6 @@
     </div>
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
     <div class="events-container">
-        <!-- Section Premium Events -->
-        <div id="premiumEventsSection" style="display:none; margin-bottom:2rem;">
-            <div class="premium-section-header">
-                <i class="fas fa-crown"></i>
-                <h3>Premium Events</h3>
-                <span style="font-size:0.7rem; background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:12px;">Featured</span>
-            </div>
-            <div id="premiumEventsGrid" class="events-grid-centered"></div>
-        </div>
         <h2 class="events-title">Upcoming Events</h2>
         <p class="events-sub">Join the community and live unique experiences</p>
         <div id="eventsByCategory" class="events-grid-centered"></div>
@@ -423,7 +414,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PROFILE PAGE (avec formulaire)                               -->
+<!-- PROFILE PAGE (avec formulaire et vérification)              -->
 <!-- ============================================================ -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
@@ -467,42 +458,65 @@
             </div>
         </div>
 
-        <!-- ========== FORMULAIRE DE PROFIL ========== -->
-        <div class="profile-form-section" style="background:#f9fafb; border-radius:16px; padding:20px; margin-bottom:20px; border:1px solid #e5e7eb;">
-            <h3 style="margin-bottom:12px; font-size:1.1rem; color:#1a1a2e;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+        <!-- ========== FORMULAIRE DE PROFIL AVEC VÉRIFICATION ========== -->
+        <div class="profile-form-section">
+            <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
             <form id="profileForm" class="profile-form">
-                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-row">
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" id="profileFirstName" placeholder="John" maxlength="50">
+                        <input type="text" id="profileFirstName" placeholder="John" maxlength="50" disabled>
                     </div>
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" id="profileLastName" placeholder="Doe" maxlength="50">
+                        <input type="text" id="profileLastName" placeholder="Doe" maxlength="50" disabled>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Country</label>
-                    <select id="profileCountry">
+                    <select id="profileCountry" disabled>
                         <option value="">Select your country</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Address</label>
-                    <input type="text" id="profileAddress" placeholder="123 Main St, City" maxlength="100">
+                    <input type="text" id="profileAddress" placeholder="123 Main St, City" maxlength="100" disabled>
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100">
+                    <div class="input-with-verify">
+                        <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100" disabled>
+                        <button type="button" class="verify-btn" id="verifyEmailBtn" disabled><i class="fas fa-shield-alt"></i> Verify</button>
+                        <span class="verified-check" id="emailVerifiedCheck" style="display:none;"><i class="fas fa-check-circle" style="color:#10b981;"></i></span>
+                    </div>
+                    <div class="verify-code-input" id="emailCodeContainer" style="display:none;">
+                        <input type="text" id="emailCode" placeholder="Enter verification code" maxlength="6">
+                        <button type="button" class="btn-verify-code" id="confirmEmailCodeBtn">Confirm</button>
+                        <span id="emailVerifyStatus"></span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20">
+                    <div class="input-with-verify">
+                        <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20" disabled>
+                        <button type="button" class="verify-btn" id="verifyPhoneBtn" disabled><i class="fas fa-shield-alt"></i> Verify</button>
+                        <span class="verified-check" id="phoneVerifiedCheck" style="display:none;"><i class="fas fa-check-circle" style="color:#10b981;"></i></span>
+                    </div>
+                    <div class="verify-code-input" id="phoneCodeContainer" style="display:none;">
+                        <input type="text" id="phoneCode" placeholder="Enter verification code" maxlength="6">
+                        <button type="button" class="btn-verify-code" id="confirmPhoneCodeBtn">Confirm</button>
+                        <span id="phoneVerifyStatus"></span>
+                    </div>
                 </div>
-                <button type="button" class="btn-primary" id="saveProfileBtn" style="margin-top:8px; width:auto; padding:10px 30px;">
-                    <i class="fas fa-save"></i> Save Profile
-                </button>
-                <span id="profileSaveMessage" style="margin-left:12px; font-size:0.9rem; color:#10b981;"></span>
+                <div class="profile-form-actions">
+                    <button type="button" class="btn-primary" id="saveProfileBtn" style="display:none; width:auto; padding:10px 30px;">
+                        <i class="fas fa-save"></i> Save Profile
+                    </button>
+                    <button type="button" class="btn-secondary" id="editProfileBtn" style="width:auto; padding:10px 30px;">
+                        <i class="fas fa-pen"></i> Edit Profile
+                    </button>
+                </div>
+                <span id="profileSaveMessage" style="display:block; margin-top:10px; font-size:0.9rem; text-align:center;"></span>
             </form>
         </div>
         <!-- ========== FIN FORMULAIRE ========== -->
@@ -515,7 +529,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PREMIUM PAGE                                                 -->
+<!-- PREMIUM PAGE (simplifiée)                                   -->
 <!-- ============================================================ -->
 <div id="premiumPage" class="hidden-page">
     <div class="page-content premium-page-content">
@@ -528,7 +542,7 @@
         </div>
 
         <!-- Statut actuel -->
-        <div class="premium-status-card" id="premiumStatusCard">
+        <div class="premium-status-card">
             <div class="premium-status-current">
                 <span class="status-label">Current Plan</span>
                 <span class="status-plan" id="currentPlanDisplay">Free</span>
@@ -539,37 +553,31 @@
             </div>
         </div>
 
-        <!-- Avantages Premium -->
-        <div class="premium-features-grid">
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
-                <h4>Betix Verified Badge</h4>
-                <p>Get the official verified badge next to your name</p>
+        <!-- Avantages Premium (simplifiés) -->
+        <div class="premium-features-grid-simple">
+            <div class="premium-feature-item">
+                <i class="fas fa-check-circle feature-icon-gold"></i>
+                <span>Betix Verified Badge</span>
             </div>
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-rocket"></i></div>
-                <h4>Event Boost</h4>
-                <p>Your events appear first on the homepage</p>
+            <div class="premium-feature-item">
+                <i class="fas fa-rocket feature-icon-gold"></i>
+                <span>Event Boost on homepage</span>
             </div>
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-search"></i></div>
-                <h4>Search Priority</h4>
-                <p>Higher ranking in search results</p>
+            <div class="premium-feature-item">
+                <i class="fas fa-search feature-icon-gold"></i>
+                <span>Search Priority</span>
             </div>
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-star"></i></div>
-                <h4>Premium Section</h4>
-                <p>Featured in the Premium Events section</p>
+            <div class="premium-feature-item">
+                <i class="fas fa-star feature-icon-gold"></i>
+                <span>Premium Events section</span>
             </div>
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                <h4>Advanced Analytics</h4>
-                <p>Detailed statistics about your events</p>
+            <div class="premium-feature-item">
+                <i class="fas fa-chart-line feature-icon-gold"></i>
+                <span>Advanced Analytics</span>
             </div>
-            <div class="premium-feature-card">
-                <div class="feature-icon"><i class="fas fa-headset"></i></div>
-                <h4>Priority Support</h4>
-                <p>Get help faster with priority support</p>
+            <div class="premium-feature-item">
+                <i class="fas fa-headset feature-icon-gold"></i>
+                <span>Priority Support</span>
             </div>
         </div>
 
@@ -885,6 +893,36 @@
     </div>
 </div>
 
+<!-- PREMIUM CONFIRM MODAL -->
+<div id="premiumConfirmModal" class="modal">
+    <div class="modal-content premium-confirm-content">
+        <div class="premium-confirm-header">
+            <div class="premium-confirm-icon"><i class="fas fa-crown"></i></div>
+            <h2>Upgrade to Premium</h2>
+            <p class="premium-confirm-sub">You are about to unlock exclusive features</p>
+            <button class="modal-close" onclick="closePremiumConfirmModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="premium-confirm-body">
+            <div class="premium-confirm-features">
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Betix Verified Badge</div>
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Event Boost on homepage</div>
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Search Priority</div>
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Premium Events section</div>
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Advanced Analytics</div>
+                <div class="feature-row"><i class="fas fa-check-circle" style="color:#f5a623;"></i> Priority Support</div>
+            </div>
+            <div class="premium-confirm-price">
+                <span>Total: <strong id="premiumConfirmPrice">0.500000 Pi</strong></span>
+                <span style="font-size:0.8rem; color:var(--gray);">(equivalent to <span id="premiumConfirmUSD">$5.00</span> USD)</span>
+            </div>
+        </div>
+        <div class="premium-confirm-footer">
+            <button class="btn-secondary-modal" onclick="closePremiumConfirmModal()">Cancel</button>
+            <button class="btn-primary" id="confirmPremiumPurchaseBtn">Confirm & Pay</button>
+        </div>
+    </div>
+</div>
+
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
         <div class="success-icon success-icon-blue">
@@ -908,6 +946,9 @@
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
     <i class="fas fa-arrow-up"></i>
 </button>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
 
 </div>
 
