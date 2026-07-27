@@ -98,6 +98,7 @@
         <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
         <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
         <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
+        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium <span class="premium-badge-sidebar" id="premiumBadgeSidebar" style="display:none; background: linear-gradient(135deg, #f5a623, #d4911e); color:white; font-size:0.55rem; padding:2px 8px; border-radius:12px; margin-left:auto;">Active</span></button>
         <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
         <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
@@ -204,6 +205,15 @@
     </div>
     <div class="filters-wrapper"><div class="filters-horizontal" id="filtersContainer"></div></div>
     <div class="events-container">
+        <!-- Section Premium Events -->
+        <div id="premiumEventsSection" style="display:none; margin-bottom:2rem;">
+            <div class="premium-section-header">
+                <i class="fas fa-crown"></i>
+                <h3>Premium Events</h3>
+                <span style="font-size:0.7rem; background:rgba(255,255,255,0.2); padding:2px 10px; border-radius:12px;">Featured</span>
+            </div>
+            <div id="premiumEventsGrid" class="events-grid-centered"></div>
+        </div>
         <h2 class="events-title">Upcoming Events</h2>
         <p class="events-sub">Join the community and live unique experiences</p>
         <div id="eventsByCategory" class="events-grid-centered"></div>
@@ -430,6 +440,7 @@
                 <div class="profile-badges">
                     <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
                     <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
+                    <span class="profile-badge" id="profilePremiumBadge" style="display:none; background: linear-gradient(135deg, #f5a623, #d4911e); color: #1a1a2e;"><i class="fas fa-crown"></i> Premium</span>
                 </div>
             </div>
         </div>
@@ -500,6 +511,86 @@
             <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
         </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PREMIUM PAGE                                                 -->
+<!-- ============================================================ -->
+<div id="premiumPage" class="hidden-page">
+    <div class="page-content premium-page-content">
+        <div class="premium-header">
+            <div class="premium-badge-icon">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h1 class="premium-title">Betix Premium</h1>
+            <p class="premium-subtitle">Unlock exclusive features to grow your events</p>
+        </div>
+
+        <!-- Statut actuel -->
+        <div class="premium-status-card" id="premiumStatusCard">
+            <div class="premium-status-current">
+                <span class="status-label">Current Plan</span>
+                <span class="status-plan" id="currentPlanDisplay">Free</span>
+            </div>
+            <div class="premium-status-expiry" id="premiumExpiryDisplay" style="display:none;">
+                <span class="expiry-label">Valid until</span>
+                <span class="expiry-date" id="premiumExpiryDate">-</span>
+            </div>
+        </div>
+
+        <!-- Avantages Premium -->
+        <div class="premium-features-grid">
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                <h4>Betix Verified Badge</h4>
+                <p>Get the official verified badge next to your name</p>
+            </div>
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                <h4>Event Boost</h4>
+                <p>Your events appear first on the homepage</p>
+            </div>
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-search"></i></div>
+                <h4>Search Priority</h4>
+                <p>Higher ranking in search results</p>
+            </div>
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-star"></i></div>
+                <h4>Premium Section</h4>
+                <p>Featured in the Premium Events section</p>
+            </div>
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h4>Advanced Analytics</h4>
+                <p>Detailed statistics about your events</p>
+            </div>
+            <div class="premium-feature-card">
+                <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                <h4>Priority Support</h4>
+                <p>Get help faster with priority support</p>
+            </div>
+        </div>
+
+        <!-- Prix et bouton -->
+        <div class="premium-pricing-card">
+            <div class="premium-price-display">
+                <span class="price-amount" id="premiumPriceDisplay">0.5</span>
+                <span class="price-currency">Pi</span>
+                <span class="price-period">/ month</span>
+            </div>
+            <div class="premium-price-note">
+                <i class="fas fa-info-circle"></i>
+                <span>Price equivalent to <span id="premiumPriceUSD">$5.00</span> USD</span>
+            </div>
+            <button class="btn-primary premium-btn" id="upgradePremiumBtn">
+                <i class="fas fa-crown"></i> <span id="premiumBtnText">Upgrade to Premium</span>
+            </button>
+            <p id="premiumStatusMessage" style="margin-top:12px; font-size:0.85rem; color:var(--gray);"></p>
+        </div>
+
+        <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
@@ -631,6 +722,42 @@
                 <p><strong>Current password :</strong> <span id="adminCurrentPasswordDisplay">••••••••</span></p>
                 <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
                 <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
+                
+                <!-- ========== PARAMÈTRES PLATEFORME ========== -->
+                <div class="admin-settings-group" style="margin-top:20px; border-top:2px solid #e5e7eb; padding-top:20px;">
+                    <h3>Platform Settings</h3>
+                    <div class="form-group">
+                        <label>Premium Price (Pi)</label>
+                        <input type="number" id="adminPremiumPrice" step="0.000001" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Commission Rate (%)</label>
+                        <input type="number" id="adminCommissionRate" step="0.1" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Service Fee Rate (%)</label>
+                        <input type="number" id="adminServiceFeeRate" step="0.1" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Premium Duration (days)</label>
+                        <input type="number" id="adminPremiumDuration" step="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Pi Conversion Rate (Pi per USD)</label>
+                        <input type="number" id="adminPiConversionRate" step="0.01" min="0.01">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+                        <label style="margin:0;">Verified Badge Enabled</label>
+                        <input type="checkbox" id="adminVerifiedBadgeEnabled">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:12px;">
+                        <label style="margin:0;">Premium Boost Enabled</label>
+                        <input type="checkbox" id="adminPremiumBoostEnabled">
+                    </div>
+                    <button class="btn-primary" onclick="savePlatformSettings()" style="width:auto; padding:10px 30px;">Save Settings</button>
+                    <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+                </div>
+                <!-- ========== FIN PARAMÈTRES ========== -->
             </div>
         </div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
@@ -752,6 +879,7 @@
         <p style="font-size:0.85rem;color:var(--gray);">
             Total : <span id="totalPriceDisplay" style="font-weight:700;color:var(--primary);">0 Pi</span>
         </p>
+        <div id="feeBreakdown" style="font-size:0.7rem;color:var(--gray);margin-top:4px;text-align:left;padding:0 8px;"></div>
         <p style="font-size:0.75rem;color:var(--gray);" id="maxQuantityInfo"></p>
         <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
     </div>
