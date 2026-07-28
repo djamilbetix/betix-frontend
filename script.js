@@ -1309,9 +1309,6 @@ function getRemainingFreeEvents() {
 // ============================================================
 function renderVerifiedBadge(userId, userName) {
     if (!appSettings.badgeEnabled) return '';
-    // Pour l'instant, on affiche le badge si l'utilisateur courant est premium et que le nom correspond
-    // Dans un contexte réel, il faudrait vérifier dans la base de données l'utilisateur de l'événement
-    // On peut stocker un champ organizerPremium dans l'événement, mais on va se baser sur currentUser
     if (isUserPremium() && (userId === currentUser.piUid || userId === currentUser.wallet || userName === currentUser.name)) {
         return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#08143F; font-size:0.8rem; margin-left:4px;"></i></span>`;
     }
@@ -2126,7 +2123,6 @@ async function loadProfileData() {
             if (data.email) currentUser.email = data.email;
             if (data.phone_number) currentUser.phone_number = data.phone_number;
             updateUserInfo();
-            // Désactiver l'édition si des données existent
             enableEditMode(false);
         } else {
             enableEditMode(true);
@@ -2459,6 +2455,11 @@ async function subscribePremiumWithDuration(durationDays) {
     } catch (error) {
         alert('Error: ' + error.message);
     }
+}
+
+// On expose une version sans paramètre pour la compatibilité avec l'ancien code
+function subscribePremium() {
+    subscribePremiumWithDuration(appSettings.premiumDurationDays);
 }
 
 // ============================================================
@@ -3903,6 +3904,7 @@ window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
 window.uploadHeroImage = uploadHeroImage;
 window.renderPremiumPage = renderPremiumPage;
 window.subscribePremium = subscribePremium;
+window.subscribePremiumWithDuration = subscribePremiumWithDuration;
 window.adminSaveSettings = adminSaveSettings;
 window.loadAppSettings = loadAppSettings;
 window.saveAppSettings = saveAppSettings;
