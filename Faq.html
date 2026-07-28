@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,139 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-        body { padding-top: 70px; background: #f5f7fa; }
+        /* ============================================================
+           STYLES FAQ - MÊME DESIGN SANS LOGO
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding-top: 70px;
+            background: #f5f7fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #08143F, #1a1a2e);
+            padding: 0.4rem 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(8, 20, 63, 0.3);
+            z-index: 99999;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            gap: 8px;
+            flex-wrap: wrap;
+            height: 60px;
+            min-height: 60px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            cursor: pointer;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 99999;
+            position: relative;
+            pointer-events: auto !important;
+            min-width: 60px;
+            height: 36px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 500;
+            text-decoration: none;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .back-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: white;
+            flex-shrink: 0;
+        }
+
+        .back-btn .back-btn-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo .logo-img {
+            height: 40px;
+            width: auto;
+            border-radius: 8px;
+            filter: brightness(0) invert(1);
+        }
+
+        .logo .logo-text {
+            font-size: 1.6rem;
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.2rem;
+                gap: 6px;
+            }
+            .logo .logo-img {
+                height: 32px;
+            }
+            .logo .logo-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ===== CONTENU PRINCIPAL ===== */
         .faq-container-page {
             max-width: 900px;
             margin: 2rem auto;
@@ -16,24 +148,89 @@
             border-radius: 24px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
-        .faq-container-page h1 {
-            font-size: 2rem;
-            color: #1a1a2e;
+
+        .faq-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 2px solid #f5a623;
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 12px;
         }
+
+        .faq-header h1 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            margin: 0;
+        }
+
+        .faq-lang-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .faq-lang-buttons .btn-lang {
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #08143F;
+            background: #ffffff;
+            color: #08143F;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .faq-lang-buttons .btn-lang:hover {
+            background: #08143F;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .faq-lang-buttons .btn-lang.active {
+            background: #08143F;
+            color: #ffffff;
+        }
+
+        /* ===== CATÉGORIES ===== */
+        .faq-category {
+            margin-bottom: 1.5rem;
+        }
+
+        .faq-category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #08143F;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .faq-category-title i {
+            color: #f5a623;
+            font-size: 0.9rem;
+        }
+
+        /* ===== ITEMS ===== */
         .faq-item {
             background: #f8fafc;
             border-radius: 12px;
             padding: 14px 18px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border-left: 4px solid #f5a623;
             transition: all 0.2s;
         }
+
         .faq-item:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
+
         .faq-item .q {
             font-size: 1rem;
             font-weight: 700;
@@ -42,39 +239,277 @@
             display: flex;
             align-items: flex-start;
             gap: 8px;
+            cursor: pointer;
         }
+
         .faq-item .q .q-icon {
             color: #f5a623;
             font-size: 1rem;
             flex-shrink: 0;
         }
+
+        .faq-item .q .toggle-icon {
+            color: #6b7280;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .faq-item .q .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
         .faq-item .a {
             font-size: 0.9rem;
             color: #4b5563;
-            line-height: 1.6;
+            line-height: 1.7;
             padding-left: 26px;
+            display: none;
         }
+
+        .faq-item .a.open {
+            display: block;
+        }
+
+        .faq-item .a ul, .faq-item .a ol {
+            padding-left: 20px;
+            margin: 4px 0;
+        }
+
+        .faq-item .a ul li, .faq-item .a ol li {
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .faq-item .a strong {
+            color: #08143F;
+        }
+
+        /* ===== BOUTON RETOUR ===== */
         .btn-back-home {
             display: inline-block;
             margin-top: 2rem;
             padding: 0.6rem 1.5rem;
-            background: #08143F;
-            color: white;
+            background: #F5A623;
+            color: #1a1a2e;
             border-radius: 40px;
             text-decoration: none;
-            font-weight: 500;
-            transition: background 0.2s;
+            font-weight: 700;
+            border: 1px solid #F5A623;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
         }
+
         .btn-back-home:hover {
-            background: #1a1a3e;
+            background: #d4911e;
+            border-color: #d4911e;
+            transform: scale(1.02);
         }
-        @media (max-width: 600px) {
-            .faq-container-page { margin: 1rem; padding: 1.2rem; }
+
+        .btn-back-home i {
+            margin-right: 6px;
         }
+
+        /* ===== FOOTER ===== */
+        .betix-footer {
+            background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
+            color: #c8d4e6;
+            padding: 40px 5% 16px;
+            border-top: 1px solid rgba(245, 166, 35, 0.15);
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px 20px;
+            width: 100%;
+        }
+
+        .footer-col h4 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, #f5a623, #d4911e);
+            border-radius: 3px;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 6px;
+            list-style: none;
+        }
+
+        .footer-col ul li a {
+            color: #a0b4cc;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.2s, transform 0.2s;
+            display: inline-block;
+            padding: 4px 0;
+        }
+
+        .footer-col ul li a:hover {
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .footer-logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .footer-slogan {
+            font-size: 18px;
+            color: #f5a623;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .footer-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #a0b4cc;
+            margin-bottom: 12px;
+            max-width: 260px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .footer-social a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #1DA1F2;
+        }
+
+        .footer-social a[href*="t.me"] { color: #0088cc; }
+        .footer-social a[href*="twitter"] { color: #1DA1F2; }
+        .footer-social a[href*="discord"] { color: #5865F2; }
+        .footer-social a[href*="facebook"] { color: #1877F2; }
+        .footer-social a[href*="whatsapp"] { color: #25D366; }
+
+        .footer-social a:hover {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff !important;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 24px auto 0;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 14px;
+            color: #6a7f9a;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .faq-container-page {
+                margin: 1rem;
+                padding: 1.2rem;
+            }
+
+            .faq-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .faq-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px 12px;
+            }
+
+            .footer-col h4 {
+                font-size: 18px;
+            }
+            .footer-col ul li a {
+                font-size: 15px;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+                font-size: 12px;
+            }
+            .footer-logo {
+                font-size: 26px;
+            }
+            .footer-slogan {
+                font-size: 15px;
+            }
+            .footer-desc {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .faq-container-page {
+                padding: 0.8rem;
+                margin: 0.5rem;
+            }
+            .faq-item {
+                padding: 10px 12px;
+            }
+            .faq-item .q {
+                font-size: 0.9rem;
+            }
+            .faq-item .a {
+                font-size: 0.8rem;
+                padding-left: 18px;
+            }
+        }
+
+        /* ===== DARK MODE ===== */
         body.dark-mode .faq-container-page {
             background: #1f2937;
         }
-        body.dark-mode .faq-container-page h1 {
+        body.dark-mode .faq-header h1 {
             color: #f3f4f6;
         }
         body.dark-mode .faq-item {
@@ -86,18 +521,45 @@
         body.dark-mode .faq-item .a {
             color: #d1d5db;
         }
+        body.dark-mode .faq-item .a ul li,
+        body.dark-mode .faq-item .a ol li {
+            color: #d1d5db;
+        }
+        body.dark-mode .faq-category-title {
+            color: #f5a623;
+            border-bottom-color: #4b5563;
+        }
+        body.dark-mode .faq-item .a strong {
+            color: #f5a623;
+        }
+        body.dark-mode .betix-footer {
+            background: linear-gradient(145deg, #0b1120, #0f1a2e);
+        }
+        body.dark-mode .btn-back-home {
+            background: #f5a623;
+            color: #1a1a2e;
+            border-color: #f5a623;
+        }
+        body.dark-mode .btn-back-home:hover {
+            background: #d4911e;
+            border-color: #d4911e;
+        }
     </style>
 </head>
 <body>
+
+    <!-- ============================================================
+         HEADER FIXE
+         ============================================================ -->
     <header class="header" id="mainHeader">
         <div class="header-left">
-            <a href="/" class="back-btn" style="text-decoration:none; color:white;">
+            <a href="index.html" class="back-btn" style="text-decoration:none; color:white;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
                 <span class="back-btn-label">Back</span>
             </a>
-            <div class="logo" onclick="window.location.href='/'">
+            <div class="logo" onclick="window.location.href='index.html'">
                 <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'">
                 <span class="logo-text">Betix</span>
             </div>
@@ -105,109 +567,996 @@
         <div class="header-right"></div>
     </header>
 
+    <!-- ============================================================
+         CONTENU FAQ
+         ============================================================ -->
     <div class="faq-container-page">
-        <h1>Frequently Asked Questions</h1>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> What is Betix?</div>
-            <div class="a">Betix is the first decentralized event ticketing platform built on the Pi Network blockchain.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> How does Betix work?</div>
-            <div class="a">Betix uses the Pi Network blockchain to ensure secure and transparent transactions.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Is Betix free?</div>
-            <div class="a">Yes! Betix is completely free for users. No commission on sales.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Who can use Betix?</div>
-            <div class="a">Any Pi Network account holder can use Betix.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> How to buy a ticket?</div>
-            <div class="a">Connect, browse events, click 'Buy Ticket' and choose the quantity.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Are payments secure?</div>
-            <div class="a">Yes, via the Pi Network and Betix's escrow system.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Can I get a refund?</div>
-            <div class="a">Yes in case of cancellation, postponement or fraud.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Where are my tickets stored?</div>
-            <div class="a">In the 'My Tickets' section of your account.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> How to create an event?</div>
-            <div class="a">Connect, click 'Create Event' and fill out the form.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Conditions to be an organizer?</div>
-            <div class="a">Have an active Pi Network account and comply with the terms of use.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Can I modify an event?</div>
-            <div class="a">Yes, from the 'My Events' section.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> How to boost my event?</div>
-            <div class="a">By paying a small amount in Pi to increase visibility.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> How to connect my Pi account?</div>
-            <div class="a">Click 'Connect Pi' in the menu and authorize access.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> What is the escrow system?</div>
-            <div class="a">A mechanism that blocks funds until event validation.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Are transactions anonymous?</div>
-            <div class="a">Transactions are traceable on the blockchain, but your information remains private.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Other cryptocurrencies?</div>
-            <div class="a">Currently only Pi Network.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Buyer protection?</div>
-            <div class="a">Via escrow, organizer verification and a refund policy.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Report a problem?</div>
-            <div class="a">Via chat, email or social networks.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Contact support?</div>
-            <div class="a">Online chat, email or Telegram.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Available languages?</div>
-            <div class="a">English, French, Portuguese, Chinese, Indonesian.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Join the community?</div>
-            <div class="a">Follow us on Telegram, Twitter, Discord, Instagram and WhatsApp.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Become an ambassador?</div>
-            <div class="a">Contact us to apply for the ambassador program.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Become a partner?</div>
-            <div class="a">Contact us to discuss partnership opportunities.</div>
-        </div>
-        <div class="faq-item">
-            <div class="q"><span class="q-icon">Q</span> Future projects?</div>
-            <div class="a">Mobile app, new cryptocurrencies, social features.</div>
+
+        <!-- En-tête avec boutons de langue -->
+        <div class="faq-header">
+            <h1 id="faqTitle">Foire Aux Questions (FAQ)</h1>
+            <div class="faq-lang-buttons">
+                <button class="btn-lang active" id="btnFr" onclick="switchLanguage('fr')">FR</button>
+                <button class="btn-lang" id="btnEn" onclick="switchLanguage('en')">EN</button>
+            </div>
         </div>
 
-        <a href="/" class="btn-back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        <!-- ============================================================
+             CATÉGORIE 1 : GÉNÉRALITÉS
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-info-circle"></i> <span class="cat-title-fr">Généralités</span><span class="cat-title-en" style="display:none;">General</span></div>
+
+            <!-- Q1 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Qu'est-ce que Betix ?</span>
+                    <span class="q-text-en" style="display:none;">What is Betix?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Betix est la <strong>première plateforme de billetterie décentralisée</strong> construite sur l'écosystème Pi Network. Elle permet aux organisateurs de créer et promouvoir leurs événements (concerts, conférences, festivals, compétitions sportives, etc.) et aux participants d'acheter des billets en utilisant la cryptomonnaie Pi comme moyen de paiement. Contrairement aux plateformes traditionnelles, Betix fonctionne sans intermédiaire centralisé, garantissant transparence, sécurité et réduction des coûts.
+                        <br><br>
+                        La plateforme est accessible depuis un navigateur web et bientôt via une application mobile dédiée. Elle est conçue pour être intuitive, rapide et adaptée à tous les types d'utilisateurs, qu'ils soient organisateurs professionnels ou particuliers souhaitant vendre des billets pour un événement local.
+                        <br><br>
+                        Betix repose sur trois piliers fondamentaux : <strong>la décentralisation</strong> (aucune autorité centrale ne contrôle la plateforme), <strong>la transparence</strong> (toutes les transactions sont enregistrées sur la blockchain) et <strong>l'accessibilité</strong> (utilisation de Pi, une cryptomonnaie minable depuis un smartphone).
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Betix is the <strong>first decentralized ticketing platform</strong> built on the Pi Network ecosystem. It allows organizers to create and promote their events (concerts, conferences, festivals, sports competitions, etc.) and participants to buy tickets using Pi cryptocurrency as payment. Unlike traditional platforms, Betix operates without a centralized intermediary, guaranteeing transparency, security and cost reduction.
+                        <br><br>
+                        The platform is accessible via a web browser and soon via a dedicated mobile application. It is designed to be intuitive, fast and suitable for all types of users, whether professional organizers or individuals wishing to sell tickets for a local event.
+                        <br><br>
+                        Betix is built on three fundamental pillars: <strong>decentralization</strong> (no central authority controls the platform), <strong>transparency</strong> (all transactions are recorded on the blockchain) and <strong>accessibility</strong> (use of Pi, a cryptocurrency mineable from a smartphone).
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment fonctionne Betix ?</span>
+                    <span class="q-text-en" style="display:none;">How does Betix work?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Betix fonctionne comme une place de marché décentralisée où les organisateurs créent des événements et les participants achètent des billets. Voici les étapes principales :
+                        <br><br>
+                        <strong>1. Connexion avec Pi Network :</strong> L'utilisateur se connecte à la plateforme en utilisant son compte Pi Network. Cette connexion sécurisée permet d'identifier l'utilisateur et de gérer ses transactions en Pi.
+                        <br><br>
+                        <strong>2. Création d'un événement :</strong> L'organisateur remplit un formulaire avec les informations de son événement : titre, catégorie, pays, date, durée, lieu, description, conditions, nombre de tickets, prix et photos. Une fois le formulaire validé, un résumé s'affiche pour confirmation avant publication.
+                        <br><br>
+                        <strong>3. Publication et visibilité :</strong> L'événement est publié sur la plateforme et devient visible dans la liste des événements. Les utilisateurs peuvent le rechercher par catégorie, pays ou mot-clé. Les événements des organisateurs Premium bénéficient d'une mise en avant automatique.
+                        <br><br>
+                        <strong>4. Achat de billets :</strong> L'acheteur sélectionne un événement, choisit la quantité de billets souhaitée, visualise le récapitulatif incluant le prix des billets, les frais de service et le total en Pi, puis confirme l'achat. Le paiement est effectué directement depuis le wallet Pi.
+                        <br><br>
+                        <strong>5. Réception des billets :</strong> Les billets sont générés sous forme de QR codes uniques et stockés dans la section "Mes Tickets" du compte de l'acheteur. Un email de confirmation peut également être envoyé.
+                        <br><br>
+                        <strong>6. Gestion des tickets :</strong> L'organisateur peut vérifier la validité des billets via le QR code. Les tickets peuvent être marqués comme utilisés après l'événement.
+                        <br><br>
+                        <strong>7. Paiement à l'organisateur :</strong> Les fonds (moins la commission Betix) sont automatiquement reversés à l'organisateur en Pi dès que l'achat est confirmé.
+                        <br><br>
+                        <strong>8. Évaluation et feedback :</strong> Après l'événement, les participants peuvent noter l'événement et laisser des commentaires, contribuant ainsi à la réputation de l'organisateur.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Betix works as a decentralized marketplace where organizers create events and participants buy tickets. Here are the main steps:
+                        <br><br>
+                        <strong>1. Pi Network connection:</strong> The user logs in using their Pi Network account. This secure connection identifies the user and manages their Pi transactions.
+                        <br><br>
+                        <strong>2. Event creation:</strong> The organizer fills out a form with event information: title, category, country, date, duration, location, description, conditions, number of tickets, price and photos. Once validated, a summary is displayed for confirmation before publication.
+                        <br><br>
+                        <strong>3. Publication and visibility:</strong> The event is published and becomes visible in the events list. Users can search by category, country or keyword. Premium organizers' events receive automatic promotion.
+                        <br><br>
+                        <strong>4. Ticket purchase:</strong> The buyer selects an event, chooses the desired number of tickets, views the summary including ticket price, service fees and total in Pi, then confirms the purchase. Payment is made directly from the Pi wallet.
+                        <br><br>
+                        <strong>5. Ticket receipt:</strong> Tickets are generated as unique QR codes and stored in the "My Tickets" section of the buyer's account. A confirmation email may also be sent.
+                        <br><br>
+                        <strong>6. Ticket management:</strong> The organizer can verify ticket validity via QR code. Tickets can be marked as used after the event.
+                        <br><br>
+                        <strong>7. Payout to organizer:</strong> Funds (minus Betix commission) are automatically transferred to the organizer in Pi as soon as the purchase is confirmed.
+                        <br><br>
+                        <strong>8. Rating and feedback:</strong> After the event, participants can rate the event and leave comments, contributing to the organizer's reputation.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Betix est-il vraiment gratuit ?</span>
+                    <span class="q-text-en" style="display:none;">Is Betix really free?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        <strong>Oui, Betix est gratuit pour les utilisateurs de base.</strong> La plateforme propose un <strong>Compte Gratuit</strong> qui permet d'acheter des billets sans aucune restriction et de publier jusqu'à 3 événements par mois.
+                        <br><br>
+                        Pour les organisateurs qui souhaitent publier plus de 3 événements par mois, un <strong>Compte Premium</strong> est disponible moyennant un abonnement payant en Pi. Ce compte offre des avantages exclusifs : publications illimitées, badge Betix Verified, mise en avant automatique, priorité dans les recherches, statistiques avancées et support prioritaire.
+                        <br><br>
+                        La plateforme génère également des revenus via une <strong>commission de 5%</strong> sur chaque billet vendu (prélevée sur le montant total de la vente) et des <strong>frais de service de 2%</strong> payés par l'acheteur. Ces frais sont transparents et clairement affichés avant la confirmation du paiement.
+                        <br><br>
+                        Ainsi, les organisateurs débutants ou occasionnels peuvent utiliser Betix sans frais, tandis que les organisateurs professionnels ou les utilisateurs ayant des besoins avancés peuvent opter pour le Premium.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        <strong>Yes, Betix is free for basic users.</strong> The platform offers a <strong>Free Account</strong> that allows unlimited ticket purchases and publishing up to 3 events per month.
+                        <br><br>
+                        For organizers who wish to publish more than 3 events per month, a <strong>Premium Account</strong> is available with a paid subscription in Pi. This account offers exclusive benefits: unlimited publishing, Betix Verified badge, automatic promotion, search priority, advanced statistics and priority support.
+                        <br><br>
+                        The platform also generates revenue through a <strong>5% commission</strong> on each ticket sold (deducted from the total sale amount) and a <strong>2% service fee</strong> paid by the buyer. These fees are transparent and clearly displayed before payment confirmation.
+                        <br><br>
+                        Thus, beginner or occasional organizers can use Betix for free, while professional organizers or users with advanced needs can opt for Premium.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 2 : COMPTES ET PROFIL
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-user"></i> <span class="cat-title-fr">Comptes et Profil</span><span class="cat-title-en" style="display:none;">Accounts & Profile</span></div>
+
+            <!-- Q4 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment créer un compte Betix ?</span>
+                    <span class="q-text-en" style="display:none;">How to create a Betix account?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Pour créer un compte Betix, il suffit d'avoir un compte Pi Network actif. Voici les étapes :
+                        <br><br>
+                        <strong>1. Télécharger l'application Pi :</strong> Si vous n'avez pas encore l'application Pi Network, téléchargez-la depuis votre boutique d'applications (App Store ou Google Play) et créez un compte.
+                        <br><br>
+                        <strong>2. Se connecter à Betix :</strong> Rendez-vous sur betixapp.vercel.app ou utilisez l'application mobile Betix. Cliquez sur "Connect Pi" dans le menu.
+                        <br><br>
+                        <strong>3. Autoriser la connexion :</strong> Une fenêtre Pi Network s'ouvre pour demander votre autorisation. Acceptez pour connecter votre compte Pi à Betix.
+                        <br><br>
+                        <strong>4. Compléter votre profil :</strong> Pour pouvoir acheter des billets ou publier des événements, vous devez compléter votre profil en renseignant votre prénom, nom, email, adresse et numéro de téléphone. Ces informations sont nécessaires pour la vérification et la sécurité des transactions.
+                        <br><br>
+                        Une fois ces étapes terminées, votre compte Betix est actif et vous pouvez commencer à utiliser la plateforme.
+                        <br><br>
+                        <strong>Note :</strong> Si vous utilisez l'application Pi Network en mode "sandbox" (test), vous pouvez vous connecter en mode démo en cliquant sur "Pi Browser not detected. Use demo mode?".
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        To create a Betix account, you simply need an active Pi Network account. Here are the steps:
+                        <br><br>
+                        <strong>1. Download the Pi app:</strong> If you don't have the Pi Network app yet, download it from your app store (App Store or Google Play) and create an account.
+                        <br><br>
+                        <strong>2. Log in to Betix:</strong> Go to betixapp.vercel.app or use the Betix mobile app. Click "Connect Pi" in the menu.
+                        <br><br>
+                        <strong>3. Authorize the connection:</strong> A Pi Network window opens to request your authorization. Accept to connect your Pi account to Betix.
+                        <br><br>
+                        <strong>4. Complete your profile:</strong> To be able to buy tickets or publish events, you must complete your profile by providing your first name, last name, email, address and phone number. This information is necessary for verification and transaction security.
+                        <br><br>
+                        Once these steps are completed, your Betix account is active and you can start using the platform.
+                        <br><br>
+                        <strong>Note:</strong> If you are using the Pi Network app in "sandbox" mode (test), you can connect in demo mode by clicking "Pi Browser not detected. Use demo mode?".
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Pourquoi dois-je compléter mon profil ?</span>
+                    <span class="q-text-en" style="display:none;">Why must I complete my profile?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        La complétion du profil est obligatoire pour deux raisons principales :
+                        <br><br>
+                        <strong>1. Sécurité et vérification :</strong> En renseignant vos informations personnelles (prénom, nom, email, adresse, téléphone), Betix s'assure que chaque utilisateur est une personne réelle. Cela permet de lutter contre la fraude, les comptes multiples et les faux billets. Le système de vérification d'identité (KYC) de Pi Network renforce cette sécurité.
+                        <br><br>
+                        <strong>2. Protection des transactions :</strong> En cas de litige, les informations de profil permettent de contacter rapidement l'utilisateur et de résoudre le problème. Les organisateurs ont également besoin de ces informations pour connaître leurs acheteurs.
+                        <br><br>
+                        <strong>Important :</strong> Sans un profil complet, vous ne pourrez ni acheter de billets ni publier d'événements. La plateforme vous redirigera vers la page de profil pour compléter les champs manquants.
+                        <br><br>
+                        Vos informations sont stockées de manière sécurisée et ne sont partagées qu'avec les organisateurs en cas d'achat de billets. Elles ne sont jamais vendues à des tiers.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Completing your profile is mandatory for two main reasons:
+                        <br><br>
+                        <strong>1. Security and verification:</strong> By providing your personal information (first name, last name, email, address, phone), Betix ensures that each user is a real person. This helps combat fraud, multiple accounts and fake tickets. Pi Network's identity verification (KYC) system reinforces this security.
+                        <br><br>
+                        <strong>2. Transaction protection:</strong> In case of dispute, profile information allows quick contact with the user and problem resolution. Organizers also need this information to know their buyers.
+                        <br><br>
+                        <strong>Important:</strong> Without a complete profile, you cannot buy tickets or publish events. The platform will redirect you to the profile page to fill in missing fields.
+                        <br><br>
+                        Your information is stored securely and is only shared with organizers in case of ticket purchase. It is never sold to third parties.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q6 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Que signifie le badge Betix Verified ?</span>
+                    <span class="q-text-en" style="display:none;">What does the Betix Verified badge mean?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Le <strong>badge Betix Verified</strong> est un cocher bleu (✓) qui apparaît à côté du nom des organisateurs Premium. Il est inspiré du système de vérification utilisé par X (anciennement Twitter) et constitue un gage de confiance et de sérieux.
+                        <br><br>
+                        <strong>Ce badge permet aux acheteurs de :</strong>
+                        <ul>
+                            <li>Identifier rapidement les organisateurs vérifiés</li>
+                            <li>Acheter des billets en toute confiance</li>
+                            <li>Être protégés contre les fraudes</li>
+                        </ul>
+                        <strong>Il est affiché sur :</strong>
+                        <ul>
+                            <li>Le profil de l'organisateur</li>
+                            <li>Les cartes des événements</li>
+                            <li>Les pages de détails des événements</li>
+                            <li>Toutes les zones où le nom de l'organisateur apparaît</li>
+                        </ul>
+                        Le badge est automatiquement attribué aux organisateurs Premium et disparaît si l'abonnement expire. L'administrateur peut activer ou désactiver cette fonctionnalité à tout moment.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        The <strong>Betix Verified badge</strong> is a blue checkmark (✓) that appears next to Premium organizers' names. It is inspired by the verification system used by X (formerly Twitter) and is a guarantee of trust and seriousness.
+                        <br><br>
+                        <strong>This badge allows buyers to:</strong>
+                        <ul>
+                            <li>Quickly identify verified organizers</li>
+                            <li>Buy tickets with confidence</li>
+                            <li>Be protected against fraud</li>
+                        </ul>
+                        <strong>It is displayed on:</strong>
+                        <ul>
+                            <li>The organizer's profile</li>
+                            <li>Event cards</li>
+                            <li>Event detail pages</li>
+                            <li>All areas where the organizer's name appears</li>
+                        </ul>
+                        The badge is automatically assigned to Premium organizers and disappears if the subscription expires. The administrator can enable or disable this feature at any time.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 3 : ÉVÉNEMENTS ET BILLETS
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-calendar-alt"></i> <span class="cat-title-fr">Événements et Billets</span><span class="cat-title-en" style="display:none;">Events & Tickets</span></div>
+
+            <!-- Q7 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment créer un événement sur Betix ?</span>
+                    <span class="q-text-en" style="display:none;">How to create an event on Betix?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Pour créer un événement sur Betix, suivez ces étapes :
+                        <br><br>
+                        <strong>1. Se connecter :</strong> Assurez-vous d'être connecté à votre compte Betix via Pi Network.
+                        <br><br>
+                        <strong>2. Accéder à la création :</strong> Cliquez sur l'icône "Create" en bas de l'écran ou sur "Créer un événement" dans le menu.
+                        <br><br>
+                        <strong>3. Remplir le formulaire :</strong> Saisissez les informations suivantes :
+                        <ul>
+                            <li><strong>Titre :</strong> Nom de l'événement (max 25 caractères)</li>
+                            <li><strong>Catégorie :</strong> Concert, Sport, Conférence, Formation, Cinéma, Festival, Théâtre, Danse, Exposition, Gala, Séminaire</li>
+                            <li><strong>Pays :</strong> Sélectionnez le pays où se déroule l'événement</li>
+                            <li><strong>Date et heure :</strong> Date et heure de début de l'événement</li>
+                            <li><strong>Durée :</strong> Durée estimée de l'événement (en heures, jours, semaines, mois ou années)</li>
+                            <li><strong>Lieu :</strong> Adresse ou nom du lieu (max 30 caractères)</li>
+                            <li><strong>Description :</strong> Description détaillée de l'événement (max 150 caractères)</li>
+                            <li><strong>Conditions :</strong> Conditions de participation (max 40 caractères)</li>
+                            <li><strong>Nombre de tickets :</strong> Nombre total de tickets disponibles</li>
+                            <li><strong>Photos :</strong> Au moins 1 image (format JPG, PNG, WebP)</li>
+                        </ul>
+                        <strong>4. Valider le formulaire :</strong> Cliquez sur "Publier l'événement" pour afficher le récapitulatif.
+                        <br><br>
+                        <strong>5. Confirmer la publication :</strong> Vérifiez toutes les informations et cliquez sur "Publier l'événement" pour finaliser.
+                        <br><br>
+                        <strong>Limites :</strong>
+                        <ul>
+                            <li>Les utilisateurs gratuits peuvent publier jusqu'à 3 événements par mois.</li>
+                            <li>Les utilisateurs Premium peuvent publier un nombre illimité d'événements.</li>
+                            <li>Votre profil doit être complet (prénom, nom, email, adresse, téléphone) pour publier.</li>
+                        </ul>
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        To create an event on Betix, follow these steps:
+                        <br><br>
+                        <strong>1. Log in:</strong> Make sure you are logged in to your Betix account via Pi Network.
+                        <br><br>
+                        <strong>2. Access creation:</strong> Click the "Create" icon at the bottom of the screen or "Create Event" in the menu.
+                        <br><br>
+                        <strong>3. Fill out the form:</strong> Enter the following information:
+                        <ul>
+                            <li><strong>Title:</strong> Event name (max 25 characters)</li>
+                            <li><strong>Category:</strong> Concert, Sport, Conference, Training, Cinema, Festival, Theatre, Dance, Exhibition, Gala, Seminar</li>
+                            <li><strong>Country:</strong> Select the country where the event takes place</li>
+                            <li><strong>Date and time:</strong> Event start date and time</li>
+                            <li><strong>Duration:</strong> Estimated event duration (in hours, days, weeks, months or years)</li>
+                            <li><strong>Location:</strong> Address or venue name (max 30 characters)</li>
+                            <li><strong>Description:</strong> Detailed event description (max 150 characters)</li>
+                            <li><strong>Conditions:</strong> Participation conditions (max 40 characters)</li>
+                            <li><strong>Number of tickets:</strong> Total number of tickets available</li>
+                            <li><strong>Photos:</strong> At least 1 image (JPG, PNG, WebP format)</li>
+                        </ul>
+                        <strong>4. Validate the form:</strong> Click "Publish Event" to display the summary.
+                        <br><br>
+                        <strong>5. Confirm publication:</strong> Verify all information and click "Publish Event" to finalize.
+                        <br><br>
+                        <strong>Limits:</strong>
+                        <ul>
+                            <li>Free users can publish up to 3 events per month.</li>
+                            <li>Premium users can publish an unlimited number of events.</li>
+                            <li>Your profile must be complete (first name, last name, email, address, phone) to publish.</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q8 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment acheter un billet ?</span>
+                    <span class="q-text-en" style="display:none;">How to buy a ticket?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        L'achat d'un billet sur Betix est simple et rapide. Voici les étapes :
+                        <br><br>
+                        <strong>1. Rechercher un événement :</strong> Utilisez la barre de recherche ou les filtres (catégorie, pays) pour trouver l'événement qui vous intéresse.
+                        <br><br>
+                        <strong>2. Ouvrir l'événement :</strong> Cliquez sur la carte de l'événement pour accéder à la page de détails. Vous y trouverez toutes les informations : description, lieu, date, heure, prix, conditions, etc.
+                        <br><br>
+                        <strong>3. Cliquer sur "Acheter un billet" :</strong> Le bouton d'achat se trouve sur la carte de l'événement ou en bas de la page de détails.
+                        <br><br>
+                        <strong>4. Choisir la quantité :</strong> Une fenêtre s'ouvre pour sélectionner le nombre de billets souhaité (de 1 à 10). Le prix total s'affiche en temps réel, incluant les frais de service.
+                        <br><br>
+                        <strong>5. Confirmer l'achat :</strong> Cliquez sur "Confirmer l'achat". Une fenêtre de paiement Pi Network s'ouvre pour valider la transaction.
+                        <br><br>
+                        <strong>6. Recevoir les billets :</strong> Après paiement, les billets sont générés et apparaissent dans la section "Mes Tickets" de votre compte. Chaque billet possède un QR code unique.
+                        <br><br>
+                        <strong>Conditions requises :</strong>
+                        <ul>
+                            <li>Votre compte Pi doit être connecté à Betix</li>
+                            <li>Votre profil doit être complet (prénom, nom, email, adresse, téléphone)</li>
+                            <li>Vous devez avoir suffisamment de Pi dans votre wallet</li>
+                        </ul>
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Buying a ticket on Betix is simple and fast. Here are the steps:
+                        <br><br>
+                        <strong>1. Search for an event:</strong> Use the search bar or filters (category, country) to find the event you are interested in.
+                        <br><br>
+                        <strong>2. Open the event:</strong> Click on the event card to access the details page. You will find all information: description, location, date, time, price, conditions, etc.
+                        <br><br>
+                        <strong>3. Click "Buy Ticket":</strong> The buy button is located on the event card or at the bottom of the details page.
+                        <br><br>
+                        <strong>4. Choose quantity:</strong> A window opens to select the desired number of tickets (from 1 to 10). The total price is displayed in real-time, including service fees.
+                        <br><br>
+                        <strong>5. Confirm purchase:</strong> Click "Confirm purchase". A Pi Network payment window opens to validate the transaction.
+                        <br><br>
+                        <strong>6. Receive tickets:</strong> After payment, tickets are generated and appear in the "My Tickets" section of your account. Each ticket has a unique QR code.
+                        <br><br>
+                        <strong>Requirements:</strong>
+                        <ul>
+                            <li>Your Pi account must be connected to Betix</li>
+                            <li>Your profile must be complete (first name, last name, email, address, phone)</li>
+                            <li>You must have enough Pi in your wallet</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q9 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Où sont stockés mes billets ?</span>
+                    <span class="q-text-en" style="display:none;">Where are my tickets stored?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Tous vos billets sont stockés dans la section <strong>"Mes Tickets"</strong> de votre compte Betix. Cette section est accessible depuis le menu principal (les trois barres) ou via l'icône de ticket dans le profil.
+                        <br><br>
+                        <strong>Ce que vous y trouverez :</strong>
+                        <ul>
+                            <li>La liste de tous vos tickets actifs (validés)</li>
+                            <li>Le titre de l'événement</li>
+                            <li>La date et l'heure de l'événement</li>
+                            <li>Le lieu de l'événement</li>
+                            <li>Le prix du billet</li>
+                            <li>Le type de billet (Standard)</li>
+                            <li>Le pays de l'événement</li>
+                            <li>Un code QR unique pour chaque billet</li>
+                            <li>La date d'achat</li>
+                            <li>Un bouton de téléchargement du ticket en PDF</li>
+                        </ul>
+                        <strong>Fonctionnalités supplémentaires :</strong>
+                        <ul>
+                            <li>Télécharger le ticket en PDF : cliquez sur "Télécharger le ticket" pour générer un PDF avec toutes les informations et le QR code.</li>
+                            <li>Les tickets expirés ou utilisés sont automatiquement déplacés dans l'historique.</li>
+                            <li>Les tickets sont disponibles hors ligne une fois téléchargés.</li>
+                        </ul>
+                        <strong>Note :</strong> Les tickets sont également envoyés par email à l'adresse renseignée dans votre profil.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        All your tickets are stored in the <strong>"My Tickets"</strong> section of your Betix account. This section is accessible from the main menu (three bars) or via the ticket icon in the profile.
+                        <br><br>
+                        <strong>What you will find there:</strong>
+                        <ul>
+                            <li>The list of all your active (valid) tickets</li>
+                            <li>The event title</li>
+                            <li>The event date and time</li>
+                            <li>The event location</li>
+                            <li>The ticket price</li>
+                            <li>The ticket type (Standard)</li>
+                            <li>The event country</li>
+                            <li>A unique QR code for each ticket</li>
+                            <li>The purchase date</li>
+                            <li>A ticket download button in PDF</li>
+                        </ul>
+                        <strong>Additional features:</strong>
+                        <ul>
+                            <li>Download the ticket in PDF: click "Download ticket" to generate a PDF with all information and the QR code.</li>
+                            <li>Expired or used tickets are automatically moved to history.</li>
+                            <li>Tickets are available offline once downloaded.</li>
+                        </ul>
+                        <strong>Note:</strong> Tickets are also sent by email to the address provided in your profile.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q10 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Puis-je annuler un achat de billet ?</span>
+                    <span class="q-text-en" style="display:none;">Can I cancel a ticket purchase?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Oui, vous pouvez annuler un achat de billet dans certaines conditions :
+                        <br><br>
+                        <strong>1. Annulation par l'organisateur :</strong> Si l'organisateur annule l'événement, tous les acheteurs sont automatiquement remboursés en Pi. Le remboursement est effectué directement sur votre wallet Pi.
+                        <br><br>
+                        <strong>2. Annulation par l'acheteur :</strong> Vous pouvez annuler votre achat avant que l'événement n'ait lieu. Pour cela :
+                        <ul>
+                            <li>Allez dans la section "Mes Tickets"</li>
+                            <li>Cliquez sur le ticket concerné</li>
+                            <li>Sélectionnez "Annuler le ticket"</li>
+                            <li>Le remboursement est effectué en Pi sur votre wallet</li>
+                        </ul>
+                        <strong>3. Conditions particulières :</strong>
+                        <ul>
+                            <li>Seuls les tickets non utilisés peuvent être annulés</li>
+                            <li>Les frais de service ne sont pas remboursés</li>
+                            <li>Le remboursement peut prendre jusqu'à 24 heures</li>
+                        </ul>
+                        <strong>4. Cas de force majeure :</strong> En cas d'événement imprévu, contactez le support pour obtenir une aide personnalisée.
+                        <br><br>
+                        <strong>Note :</strong> Les remboursements sont effectués exclusivement en Pi, dans le même wallet utilisé pour l'achat.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Yes, you can cancel a ticket purchase under certain conditions:
+                        <br><br>
+                        <strong>1. Cancellation by the organizer:</strong> If the organizer cancels the event, all buyers are automatically refunded in Pi. The refund is made directly to your Pi wallet.
+                        <br><br>
+                        <strong>2. Cancellation by the buyer:</strong> You can cancel your purchase before the event takes place. To do this:
+                        <ul>
+                            <li>Go to the "My Tickets" section</li>
+                            <li>Click on the relevant ticket</li>
+                            <li>Select "Cancel ticket"</li>
+                            <li>The refund is made in Pi to your wallet</li>
+                        </ul>
+                        <strong>3. Special conditions:</strong>
+                        <ul>
+                            <li>Only unused tickets can be canceled</li>
+                            <li>Service fees are not refunded</li>
+                            <li>The refund may take up to 24 hours</li>
+                        </ul>
+                        <strong>4. Force majeure cases:</strong> In case of unforeseen events, contact support for personalized assistance.
+                        <br><br>
+                        <strong>Note:</strong> Refunds are made exclusively in Pi, to the same wallet used for the purchase.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 4 : PAIEMENTS ET FRAIS
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-credit-card"></i> <span class="cat-title-fr">Paiements et Frais</span><span class="cat-title-en" style="display:none;">Payments & Fees</span></div>
+
+            <!-- Q11 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Quels sont les frais sur Betix ?</span>
+                    <span class="q-text-en" style="display:none;">What are the fees on Betix?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Betix applique une structure de frais transparente et compétitive :
+                        <br><br>
+                        <strong>1. Commission Betix (5%) :</strong> Prélevée sur le montant total de chaque billet vendu. Cette commission est automatiquement déduite du paiement de l'organisateur. Par exemple, pour un billet à 10 Pi, l'organisateur reçoit 9.5 Pi et Betix conserve 0.5 Pi.
+                        <br><br>
+                        <strong>2. Frais de service (2%) :</strong> Payés par l'acheteur, ces frais s'ajoutent au prix du billet. Par exemple, pour un billet à 10 Pi, l'acheteur paie 10 Pi + 0.2 Pi de frais de service, soit 10.2 Pi au total.
+                        <br><br>
+                        <strong>3. Frais d'abonnement Premium :</strong> Un abonnement mensuel ou annuel en Pi pour débloquer des fonctionnalités avancées (publications illimitées, badge vérifié, mise en avant, statistiques, support prioritaire). Le prix est configurable par l'administrateur et est actuellement fixé à l'équivalent de 5 USD en Pi.
+                        <br><br>
+                        <strong>4. Frais de transaction Pi Network :</strong> Aucun frais supplémentaire n'est appliqué par Betix pour les transactions Pi Network. Cependant, des frais de réseau minimes peuvent s'appliquer (inférieurs à 0.01 Pi).
+                        <br><br>
+                        <strong>Récapitulatif pour un billet à 10 Pi :</strong>
+                        <ul>
+                            <li><strong>Acheteur paie :</strong> 10 Pi + 0.2 Pi (frais de service) = <strong>10.2 Pi</strong></li>
+                            <li><strong>Organisateur reçoit :</strong> 10 Pi - 0.5 Pi (commission) = <strong>9.5 Pi</strong></li>
+                            <li><strong>Betix perçoit :</strong> 0.5 Pi + 0.2 Pi = <strong>0.7 Pi</strong></li>
+                        </ul>
+                        Tous ces montants sont automatiquement calculés et affichés avant la confirmation du paiement.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Betix applies a transparent and competitive fee structure:
+                        <br><br>
+                        <strong>1. Betix Commission (5%):</strong> Deducted from the total amount of each ticket sold. This commission is automatically deducted from the organizer's payment. For example, for a 10 Pi ticket, the organizer receives 9.5 Pi and Betix retains 0.5 Pi.
+                        <br><br>
+                        <strong>2. Service fees (2%):</strong> Paid by the buyer, these fees are added to the ticket price. For example, for a 10 Pi ticket, the buyer pays 10 Pi + 0.2 Pi service fee, totaling 10.2 Pi.
+                        <br><br>
+                        <strong>3. Premium subscription fees:</strong> A monthly or annual subscription in Pi to unlock advanced features (unlimited publishing, verified badge, promotion, statistics, priority support). The price is configurable by the administrator and is currently set to the equivalent of 5 USD in Pi.
+                        <br><br>
+                        <strong>4. Pi Network transaction fees:</strong> No additional fees are applied by Betix for Pi Network transactions. However, minimal network fees may apply (less than 0.01 Pi).
+                        <br><br>
+                        <strong>Summary for a 10 Pi ticket:</strong>
+                        <ul>
+                            <li><strong>Buyer pays:</strong> 10 Pi + 0.2 Pi (service fee) = <strong>10.2 Pi</strong></li>
+                            <li><strong>Organizer receives:</strong> 10 Pi - 0.5 Pi (commission) = <strong>9.5 Pi</strong></li>
+                            <li><strong>Betix receives:</strong> 0.5 Pi + 0.2 Pi = <strong>0.7 Pi</strong></li>
+                        </ul>
+                        All these amounts are automatically calculated and displayed before payment confirmation.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q12 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Les paiements sont-ils sécurisés ?</span>
+                    <span class="q-text-en" style="display:none;">Are payments secure?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        <strong>Oui, les paiements sur Betix sont entièrement sécurisés.</strong> Plusieurs couches de sécurité protègent vos transactions :
+                        <br><br>
+                        <strong>1. Blockchain Pi Network :</strong> Toutes les transactions sont enregistrées sur la blockchain Pi Network, ce qui garantit leur traçabilité, leur immuabilité et leur transparence. Une fois une transaction effectuée, elle ne peut pas être modifiée ou supprimée.
+                        <br><br>
+                        <strong>2. Système d'escrow (séquestre) :</strong> Les fonds sont bloqués sur le wallet de Betix jusqu'à ce que l'événement soit validé par l'organisateur. Ce mécanisme protège les acheteurs contre les organisateurs malveillants.
+                        <br><br>
+                        <strong>3. Vérification KYC :</strong> Pi Network impose une vérification d'identité (KYC) pour les utilisateurs effectuant des transactions. Cela permet de lutter contre la fraude et de garantir que chaque utilisateur est une personne réelle.
+                        <br><br>
+                        <strong>4. Cryptage des données :</strong> Toutes les données personnelles et les informations de paiement sont cryptées et stockées de manière sécurisée.
+                        <br><br>
+                        <strong>5. Codes QR uniques :</strong> Chaque billet possède un code QR unique et infalsifiable, ce qui rend la contrefaçon impossible.
+                        <br><br>
+                        <strong>6. Paiement direct entre pairs :</strong> Les paiements sont effectués directement depuis le wallet Pi de l'acheteur vers le wallet Betix, puis vers l'organisateur, sans intermédiaire tiers.
+                        <br><br>
+                        <strong>En cas de problème :</strong> Si vous rencontrez un problème de paiement, contactez le support Betix pour une assistance immédiate. Toutes les transactions sont suivies et peuvent être tracées en cas de litige.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        <strong>Yes, payments on Betix are fully secure.</strong> Multiple security layers protect your transactions:
+                        <br><br>
+                        <strong>1. Pi Network Blockchain:</strong> All transactions are recorded on the Pi Network blockchain, guaranteeing their traceability, immutability and transparency. Once a transaction is made, it cannot be modified or deleted.
+                        <br><br>
+                        <strong>2. Escrow system:</strong> Funds are locked in the Betix wallet until the event is validated by the organizer. This mechanism protects buyers against malicious organizers.
+                        <br><br>
+                        <strong>3. KYC verification:</strong> Pi Network requires identity verification (KYC) for users making transactions. This helps combat fraud and ensures that each user is a real person.
+                        <br><br>
+                        <strong>4. Data encryption:</strong> All personal data and payment information are encrypted and securely stored.
+                        <br><br>
+                        <strong>5. Unique QR codes:</strong> Each ticket has a unique and unforgeable QR code, making counterfeiting impossible.
+                        <br><br>
+                        <strong>6. Direct peer-to-peer payment:</strong> Payments are made directly from the buyer's Pi wallet to the Betix wallet, then to the organizer, without any third-party intermediary.
+                        <br><br>
+                        <strong>In case of problem:</strong> If you encounter a payment issue, contact Betix support for immediate assistance. All transactions are tracked and can be traced in case of dispute.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 5 : PREMIUM
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-crown"></i> <span class="cat-title-fr">Abonnement Premium</span><span class="cat-title-en" style="display:none;">Premium Subscription</span></div>
+
+            <!-- Q13 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Qu'est-ce que le compte Premium de Betix ?</span>
+                    <span class="q-text-en" style="display:none;">What is Betix Premium account?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Le <strong>Compte Premium</strong> est un abonnement payant qui débloque des fonctionnalités avancées pour les organisateurs. Il est conçu pour les utilisateurs qui souhaitent maximiser leur visibilité et leur efficacité sur Betix.
+                        <br><br>
+                        <strong>Avantages Premium :</strong>
+                        <ul>
+                            <li><strong>Publications illimitées :</strong> Plus aucune limite sur le nombre d'événements que vous pouvez créer par mois.</li>
+                            <li><strong>Badge Betix Verified :</strong> Un cocher bleu (✓) s'affiche à côté de votre nom, renforçant votre crédibilité et la confiance des acheteurs.</li>
+                            <li><strong>Mise en avant automatique :</strong> Vos événements sont automatiquement mis en avant sur la page d'accueil, ce qui augmente leur visibilité.</li>
+                            <li><strong>Priorité dans les recherches :</strong> Vos événements apparaissent en tête des résultats de recherche, augmentant les chances de vente.</li>
+                            <li><strong>Statistiques avancées :</strong> Accès à des analyses détaillées sur vos événements : nombre de vues, taux de conversion, données démographiques des acheteurs, etc.</li>
+                            <li><strong>Support prioritaire :</strong> Vous bénéficiez d'une assistance rapide et dédiée en cas de besoin.</li>
+                        </ul>
+                        <strong>Prix :</strong> L'abonnement est payant en Pi. Le prix est configurable par l'administrateur et est actuellement fixé à l'équivalent de 5 USD en Pi pour 30 jours. Un abonnement annuel est également disponible avec une réduction.
+                        <br><br>
+                        <strong>Comment souscrire :</strong> Rendez-vous dans la section "Premium" du menu principal, choisissez votre forfait (mensuel ou annuel) et confirmez le paiement en Pi.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        The <strong>Premium Account</strong> is a paid subscription that unlocks advanced features for organizers. It is designed for users who want to maximize their visibility and efficiency on Betix.
+                        <br><br>
+                        <strong>Premium benefits:</strong>
+                        <ul>
+                            <li><strong>Unlimited publishing:</strong> No more limits on the number of events you can create per month.</li>
+                            <li><strong>Betix Verified badge:</strong> A blue checkmark (✓) appears next to your name, enhancing your credibility and buyer trust.</li>
+                            <li><strong>Automatic promotion:</strong> Your events are automatically promoted on the homepage, increasing their visibility.</li>
+                            <li><strong>Search priority:</strong> Your events appear at the top of search results, increasing sales chances.</li>
+                            <li><strong>Advanced statistics:</strong> Access detailed analytics on your events: views, conversion rates, buyer demographics, etc.</li>
+                            <li><strong>Priority support:</strong> You benefit from fast, dedicated assistance when needed.</li>
+                        </ul>
+                        <strong>Price:</strong> The subscription is paid in Pi. The price is configurable by the administrator and is currently set to the equivalent of 5 USD in Pi for 30 days. An annual subscription is also available with a discount.
+                        <br><br>
+                        <strong>How to subscribe:</strong> Go to the "Premium" section in the main menu, choose your plan (monthly or annual) and confirm the payment in Pi.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q14 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Que se passe-t-il si mon abonnement Premium expire ?</span>
+                    <span class="q-text-en" style="display:none;">What happens if my Premium subscription expires?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Lorsque votre abonnement Premium expire, plusieurs choses se produisent automatiquement :
+                        <br><br>
+                        <strong>1. Le badge Betix Verified disparaît :</strong> Le cocher bleu (✓) n'est plus affiché à côté de votre nom.
+                        <br><br>
+                        <strong>2. Votre compte repasse en Compte Gratuit :</strong> Vous êtes automatiquement rétrogradé vers le Compte Gratuit, avec la limite de 3 événements par mois.
+                        <br><br>
+                        <strong>3. Vos événements restent accessibles :</strong> Tous les événements que vous avez déjà publiés restent en ligne et visibles. Vous ne pouvez simplement pas en créer de nouveaux au-delà de la limite gratuite.
+                        <br><br>
+                        <strong>4. Les statistiques avancées ne sont plus accessibles :</strong> Vous perdez l'accès aux analyses détaillées, mais les données historiques restent disponibles.
+                        <br><br>
+                        <strong>5. La mise en avant est désactivée :</strong> Vos événements ne bénéficient plus de la mise en avant automatique sur la page d'accueil.
+                        <br><br>
+                        <strong>6. Le support prioritaire n'est plus actif :</strong> Vous revenez au support standard.
+                        <br><br>
+                        <strong>7. Vous pouvez renouveler à tout moment :</strong> Si vous souhaitez réactiver votre abonnement Premium, il vous suffit de retourner dans la section "Premium" et de souscrire à nouveau. Tous vos avantages seront immédiatement rétablis.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        When your Premium subscription expires, several things happen automatically:
+                        <br><br>
+                        <strong>1. The Betix Verified badge disappears:</strong> The blue checkmark (✓) is no longer displayed next to your name.
+                        <br><br>
+                        <strong>2. Your account reverts to Free Account:</strong> You are automatically downgraded to the Free Account, with the limit of 3 events per month.
+                        <br><br>
+                        <strong>3. Your events remain accessible:</strong> All events you have already published remain online and visible. You simply cannot create new ones beyond the free limit.
+                        <br><br>
+                        <strong>4. Advanced statistics are no longer accessible:</strong> You lose access to detailed analytics, but historical data remains available.
+                        <br><br>
+                        <strong>5. Promotion is disabled:</strong> Your events no longer benefit from automatic promotion on the homepage.
+                        <br><br>
+                        <strong>6. Priority support is no longer active:</strong> You revert to standard support.
+                        <br><br>
+                        <strong>7. You can renew at any time:</strong> If you wish to reactivate your Premium subscription, simply go back to the "Premium" section and subscribe again. All your benefits will be immediately restored.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 6 : SÉCURITÉ ET PRIVACITÉ
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-shield-alt"></i> <span class="cat-title-fr">Sécurité et Confidentialité</span><span class="cat-title-en" style="display:none;">Security & Privacy</span></div>
+
+            <!-- Q15 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Mes données personnelles sont-elles protégées ?</span>
+                    <span class="q-text-en" style="display:none;">Are my personal data protected?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        <strong>Oui, vos données personnelles sont protégées sur Betix.</strong> Nous avons mis en place plusieurs mesures pour garantir la confidentialité et la sécurité de vos informations :
+                        <br><br>
+                        <strong>1. Chiffrement des données :</strong> Toutes les données personnelles (nom, email, adresse, téléphone) sont stockées de manière chiffrée dans notre base de données.
+                        <br><br>
+                        <strong>2. Conformité RGPD :</strong> Betix respecte les réglementations en matière de protection des données (RGPD). Vous avez le droit d'accéder, de modifier ou de supprimer vos données à tout moment.
+                        <br><br>
+                        <strong>3. Stockage sécurisé :</strong> Nos serveurs utilisent des protocoles de sécurité avancés pour prévenir tout accès non autorisé.
+                        <br><br>
+                        <strong>4. Partage limité :</strong> Vos informations ne sont partagées qu'avec les organisateurs lorsque vous achetez des billets. Elles ne sont jamais vendues à des tiers.
+                        <br><br>
+                        <strong>5. Authentification Pi :</strong> La connexion à Betix se fait via votre compte Pi Network, ce qui garantit une authentification forte et sécurisée.
+                        <br><br>
+                        <strong>6. Suppression des données :</strong> Vous pouvez demander la suppression de toutes vos données à tout moment en contactant le support.
+                        <br><br>
+                        <strong>Pour plus d'informations :</strong> Consultez notre Politique de Confidentialité disponible sur betixapp.vercel.app/privacy.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        <strong>Yes, your personal data is protected on Betix.</strong> We have implemented several measures to ensure the confidentiality and security of your information:
+                        <br><br>
+                        <strong>1. Data encryption:</strong> All personal data (name, email, address, phone) is stored encrypted in our database.
+                        <br><br>
+                        <strong>2. GDPR compliance:</strong> Betix complies with data protection regulations (GDPR). You have the right to access, modify or delete your data at any time.
+                        <br><br>
+                        <strong>3. Secure storage:</strong> Our servers use advanced security protocols to prevent unauthorized access.
+                        <br><br>
+                        <strong>4. Limited sharing:</strong> Your information is only shared with organizers when you purchase tickets. It is never sold to third parties.
+                        <br><br>
+                        <strong>5. Pi authentication:</strong> Login to Betix is done via your Pi Network account, ensuring strong and secure authentication.
+                        <br><br>
+                        <strong>6. Data deletion:</strong> You can request the deletion of all your data at any time by contacting support.
+                        <br><br>
+                        <strong>For more information:</strong> See our Privacy Policy available at betixapp.vercel.app/privacy.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q16 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment signaler un problème ou une fraude ?</span>
+                    <span class="q-text-en" style="display:none;">How to report a problem or fraud?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Si vous rencontrez un problème ou suspectez une fraude sur Betix, voici la marche à suivre :
+                        <br><br>
+                        <strong>1. Contacter l'organisateur :</strong> Essayez d'abord de contacter l'organisateur via la messagerie intégrée ou les coordonnées fournies sur l'événement.
+                        <br><br>
+                        <strong>2. Utiliser le chat support :</strong> Cliquez sur l'icône de chat en bas à droite de l'écran pour discuter avec notre équipe de support en temps réel.
+                        <br><br>
+                        <strong>3. Envoyer un email :</strong> Contactez-nous à l'adresse <strong>betixservices@gmail.com</strong> avec une description détaillée du problème, les captures d'écran et l'identifiant de l'événement si possible.
+                        <br><br>
+                        <strong>4. Via les réseaux sociaux :</strong> Vous pouvez également nous contacter via Telegram (@betix), Twitter (@betix_app) ou Discord (discord.gg/MqhdmPCH).
+                        <br><br>
+                        <strong>5. Signaler un événement :</strong> Sur la page de détails de l'événement, vous trouverez un bouton "Signaler" pour signaler tout contenu inapproprié ou frauduleux.
+                        <br><br>
+                        <strong>Que faire en cas de fraude avérée :</strong> Si vous avez été victime d'une fraude, nous vous rembourserons intégralement en Pi après vérification. Notre équipe enquête sur chaque signalement et prend les mesures nécessaires contre les utilisateurs malveillants.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        If you encounter a problem or suspect fraud on Betix, here is what to do:
+                        <br><br>
+                        <strong>1. Contact the organizer:</strong> Try to contact the organizer first via the built-in messaging or the contact details provided on the event.
+                        <br><br>
+                        <strong>2. Use the support chat:</strong> Click on the chat icon at the bottom right of the screen to chat with our support team in real-time.
+                        <br><br>
+                        <strong>3. Send an email:</strong> Contact us at <strong>betixservices@gmail.com</strong> with a detailed description of the problem, screenshots and the event ID if possible.
+                        <br><br>
+                        <strong>4. Via social networks:</strong> You can also contact us via Telegram (@betix), Twitter (@betix_app) or Discord (discord.gg/MqhdmPCH).
+                        <br><br>
+                        <strong>5. Report an event:</strong> On the event details page, you will find a "Report" button to report any inappropriate or fraudulent content.
+                        <br><br>
+                        <strong>What to do in case of proven fraud:</strong> If you have been a victim of fraud, we will fully refund you in Pi after verification. Our team investigates each report and takes necessary measures against malicious users.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 7 : COMMUNAUTÉ ET SUPPORT
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-users"></i> <span class="cat-title-fr">Communauté et Support</span><span class="cat-title-en" style="display:none;">Community & Support</span></div>
+
+            <!-- Q17 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment contacter le support Betix ?</span>
+                    <span class="q-text-en" style="display:none;">How to contact Betix support?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Vous pouvez contacter le support Betix de plusieurs manières :
+                        <br><br>
+                        <strong>1. Chat en direct :</strong> Utilisez l'icône de chat en bas à droite de l'écran pour une assistance instantanée. Notre équipe est disponible 24h/24 et 7j/7 pour répondre à vos questions.
+                        <br><br>
+                        <strong>2. Email :</strong> Envoyez-nous un email à <strong>betixservices@gmail.com</strong>. Nous répondons généralement dans les 24 heures.
+                        <br><br>
+                        <strong>3. Telegram :</strong> Rejoignez notre canal Telegram officiel <strong>t.me/betix</strong> pour une communication rapide et des annonces en direct.
+                        <br><br>
+                        <strong>4. Twitter :</strong> Suivez-nous sur X (Twitter) à <strong>@betix_app</strong> pour les actualités et le support.
+                        <br><br>
+                        <strong>5. Discord :</strong> Rejoignez notre serveur Discord <strong>discord.gg/MqhdmPCH</strong> pour échanger avec la communauté et notre équipe.
+                        <br><br>
+                        <strong>6. WhatsApp :</strong> Abonnez-vous à notre chaîne WhatsApp <strong>whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S</strong> pour recevoir des notifications et des mises à jour.
+                        <br><br>
+                        <strong>Support prioritaire :</strong> Les utilisateurs Premium bénéficient d'un support prioritaire avec des temps de réponse réduits.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        You can contact Betix support in several ways:
+                        <br><br>
+                        <strong>1. Live chat:</strong> Use the chat icon at the bottom right of the screen for instant assistance. Our team is available 24/7 to answer your questions.
+                        <br><br>
+                        <strong>2. Email:</strong> Send us an email at <strong>betixservices@gmail.com</strong>. We usually respond within 24 hours.
+                        <br><br>
+                        <strong>3. Telegram:</strong> Join our official Telegram channel <strong>t.me/betix</strong> for fast communication and live announcements.
+                        <br><br>
+                        <strong>4. Twitter:</strong> Follow us on X (Twitter) at <strong>@betix_app</strong> for news and support.
+                        <br><br>
+                        <strong>5. Discord:</strong> Join our Discord server <strong>discord.gg/MqhdmPCH</strong> to interact with the community and our team.
+                        <br><br>
+                        <strong>6. WhatsApp:</strong> Subscribe to our WhatsApp channel <strong>whatsapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S</strong> to receive notifications and updates.
+                        <br><br>
+                        <strong>Priority support:</strong> Premium users benefit from priority support with reduced response times.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Q18 -->
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Comment rejoindre la communauté Betix ?</span>
+                    <span class="q-text-en" style="display:none;">How to join the Betix community?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Rejoindre la communauté Betix est simple et gratuit. Voici comment faire :
+                        <br><br>
+                        <strong>1. Créer un compte :</strong> Connectez-vous à Betix avec votre compte Pi Network. Vous êtes automatiquement membre de la communauté.
+                        <br><br>
+                        <strong>2. Suivre les réseaux sociaux :</strong>
+                        <ul>
+                            <li><strong>Telegram :</strong> t.me/betix – Pour les annonces et les discussions</li>
+                            <li><strong>Twitter :</strong> @betix_app – Pour les actualités et les mises à jour</li>
+                            <li><strong>Discord :</strong> discord.gg/MqhdmPCH – Pour échanger avec les autres membres</li>
+                            <li><strong>Instagram :</strong> @betix_app – Pour les photos et les événements</li>
+                            <li><strong>Facebook :</strong> betix_app – Pour les actualités et les événements</li>
+                            <li><strong>WhatsApp :</strong> whatspapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S – Pour les notifications</li>
+                        </ul>
+                        <strong>3. Participer aux événements :</strong> Achetez des billets, assistez aux événements et partagez vos expériences.
+                        <br><br>
+                        <strong>4. Devenir ambassadeur :</strong> Si vous êtes passionné par Betix, vous pouvez devenir ambassadeur de la plateforme et aider à faire connaître Betix. Contactez-nous pour en savoir plus.
+                        <br><br>
+                        <strong>5. Devenir partenaire :</strong> Si vous êtes un organisateur ou un influenceur, vous pouvez devenir partenaire de Betix et bénéficier d'avantages exclusifs.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Joining the Betix community is simple and free. Here's how:
+                        <br><br>
+                        <strong>1. Create an account:</strong> Log in to Betix with your Pi Network account. You are automatically a community member.
+                        <br><br>
+                        <strong>2. Follow social media:</strong>
+                        <ul>
+                            <li><strong>Telegram:</strong> t.me/betix – For announcements and discussions</li>
+                            <li><strong>Twitter:</strong> @betix_app – For news and updates</li>
+                            <li><strong>Discord:</strong> discord.gg/MqhdmPCH – To interact with other members</li>
+                            <li><strong>Instagram:</strong> @betix_app – For photos and events</li>
+                            <li><strong>Facebook:</strong> betix_app – For news and events</li>
+                            <li><strong>WhatsApp:</strong> whatspapp.com/channel/0029VbDr7DRJ93wNX9Pccb1S – For notifications</li>
+                        </ul>
+                        <strong>3. Participate in events:</strong> Buy tickets, attend events and share your experiences.
+                        <br><br>
+                        <strong>4. Become an ambassador:</strong> If you are passionate about Betix, you can become an ambassador of the platform and help promote Betix. Contact us to learn more.
+                        <br><br>
+                        <strong>5. Become a partner:</strong> If you are an organizer or an influencer, you can become a Betix partner and benefit from exclusive advantages.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             CATÉGORIE 8 : ÉVOLUTIONS FUTURES
+             ============================================================ -->
+        <div class="faq-category">
+            <div class="faq-category-title"><i class="fas fa-rocket"></i> <span class="cat-title-fr">Évolutions Futures</span><span class="cat-title-en" style="display:none;">Future Developments</span></div>
+
+            <div class="faq-item">
+                <div class="q" onclick="toggleAnswer(this)">
+                    <span class="q-icon">Q</span>
+                    <span class="q-text-fr">Quelles sont les prochaines fonctionnalités prévues ?</span>
+                    <span class="q-text-en" style="display:none;">What are the next planned features?</span>
+                    <span class="toggle-icon"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="a">
+                    <span class="a-text-fr">
+                        Betix évolue constamment pour offrir une expérience toujours plus complète. Voici les fonctionnalités que nous prévoyons d'ajouter dans les mois à venir :
+                        <br><br>
+                        <strong>1. Publication de vidéos :</strong> Les organisateurs pourront publier des vidéos de promotion pour leurs événements, rendant la présentation plus dynamique et attrayante.
+                        <br><br>
+                        <strong>2. Nouveaux types de billets :</strong>
+                        <ul>
+                            <li><strong>VIP :</strong> Billets premium avec des avantages exclusifs (accès spécial, rencontres, etc.)</li>
+                            <li><strong>Early Bird :</strong> Tarifs réduits pour les premiers acheteurs</li>
+                            <li><strong>Billets de groupe :</strong> Offres spéciales pour les achats en groupe</li>
+                            <li><strong>Billets nominatifs :</strong> Billets avec nom et prénom de l'acheteur</li>
+                        </ul>
+                        <strong>3. Application mobile :</strong> Une application mobile dédiée sera disponible pour iOS et Android, offrant une expérience optimale sur smartphone.
+                        <br><br>
+                        <strong>4. Outils d'analyse avancés :</strong> Des tableaux de bord plus complets pour les organisateurs avec des statistiques en temps réel.
+                        <br><br>
+                        <strong>5. Streaming en direct :</strong> Intégration de fonctionnalités de streaming pour les événements en ligne.
+                        <br><br>
+                        <strong>6. Partage social amélioré :</strong> Des outils de partage plus puissants pour promouvoir les événements sur les réseaux sociaux.
+                        <br><br>
+                        <strong>7. Intégration d'autres cryptomonnaies :</strong> À terme, Betix pourrait accepter d'autres cryptomonnaies en plus du Pi.
+                        <br><br>
+                        <strong>Restez à l'écoute !</strong> Nous annoncerons ces fonctionnalités au fur et à mesure de leur développement. Suivez-nous sur les réseaux sociaux pour ne rien manquer.
+                    </span>
+                    <span class="a-text-en" style="display:none;">
+                        Betix is constantly evolving to offer an increasingly complete experience. Here are the features we plan to add in the coming months:
+                        <br><br>
+                        <strong>1. Video publishing:</strong> Organizers will be able to publish promotional videos for their events, making the presentation more dynamic and attractive.
+                        <br><br>
+                        <strong>2. New ticket types:</strong>
+                        <ul>
+                            <li><strong>VIP:</strong> Premium tickets with exclusive benefits (special access, meet-and-greets, etc.)</li>
+                            <li><strong>Early Bird:</strong> Reduced prices for early buyers</li>
+                            <li><strong>Group tickets:</strong> Special offers for group purchases</li>
+                            <li><strong>Personalized tickets:</strong> Tickets with the buyer's name and surname</li>
+                        </ul>
+                        <strong>3. Mobile app:</strong> A dedicated mobile app will be available for iOS and Android, offering an optimal smartphone experience.
+                        <br><br>
+                        <strong>4. Advanced analytics tools:</strong> More comprehensive dashboards for organizers with real-time statistics.
+                        <br><br>
+                        <strong>5. Live streaming:</strong> Integration of streaming features for online events.
+                        <br><br>
+                        <strong>6. Improved social sharing:</strong> More powerful sharing tools to promote events on social media.
+                        <br><br>
+                        <strong>7. Integration of other cryptocurrencies:</strong> In the future, Betix could accept other cryptocurrencies in addition to Pi.
+                        <br><br>
+                        <strong>Stay tuned!</strong> We will announce these features as they are developed. Follow us on social media to stay updated.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+         BOUTON RETOUR
+         ============================================================ -->
+        <div style="text-align: center;">
+            <a href="index.html" class="btn-back-home"><i class="fas fa-arrow-left"></i> Retour à l'accueil</a>
+        </div>
+
     </div>
 
-    <footer class="betix-footer" style="margin-top:2rem;">
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <footer class="betix-footer">
         <div class="footer-container">
             <div class="footer-col">
                 <div class="footer-logo">Betix</div>
@@ -242,5 +1591,60 @@
             <span>Built on Pi Network | Secured by Blockchain</span>
         </div>
     </footer>
+
+    <script>
+        // ============================================================
+        // TOGGLE DES RÉPONSES
+        // ============================================================
+        function toggleAnswer(element) {
+            const parent = element.closest('.faq-item');
+            const answer = parent.querySelector('.a');
+            const icon = element.querySelector('.toggle-icon i');
+            if (answer) {
+                answer.classList.toggle('open');
+                if (icon) {
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                }
+            }
+        }
+
+        // ============================================================
+        // TRADUCTION (FR/EN)
+        // ============================================================
+        let currentLang = 'fr';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+
+            // Titre
+            const title = document.getElementById('faqTitle');
+            if (title) {
+                title.textContent = lang === 'fr' ? 'Foire Aux Questions (FAQ)' : 'Frequently Asked Questions (FAQ)';
+            }
+
+            // Boutons de langue
+            document.getElementById('btnFr').classList.toggle('active', lang === 'fr');
+            document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+
+            // Catégories
+            document.querySelectorAll('.cat-title-fr').forEach(el => el.style.display = lang === 'fr' ? 'inline' : 'none');
+            document.querySelectorAll('.cat-title-en').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+
+            // Questions et réponses
+            document.querySelectorAll('.q-text-fr').forEach(el => el.style.display = lang === 'fr' ? 'inline' : 'none');
+            document.querySelectorAll('.q-text-en').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+            document.querySelectorAll('.a-text-fr').forEach(el => el.style.display = lang === 'fr' ? 'block' : 'none');
+            document.querySelectorAll('.a-text-en').forEach(el => el.style.display = lang === 'en' ? 'block' : 'none');
+        }
+
+        // ============================================================
+        // INITIALISATION (langue FR par défaut)
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            switchLanguage('fr');
+        });
+    </script>
+
 </body>
 </html>
