@@ -588,6 +588,7 @@ let adminSessionTimer = 1800;
 let adminTimerInterval = null;
 let adminLogs = [];
 let heroSlides = [];
+const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 
 // ============================================================
 // PARAMÈTRES DE L'APPLICATION (configurables)
@@ -1319,7 +1320,6 @@ function renderVerifiedBadge(userId, userName) {
 // VÉRIFICATION DU PROFIL COMPLET
 // ============================================================
 function checkProfileComplete() {
-    // Vérifie si l'utilisateur a rempli tous les champs obligatoires
     const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
     for (let field of required) {
         if (!currentUser[field] || currentUser[field].trim() === '') {
@@ -1338,6 +1338,300 @@ function redirectToProfileWithMessage(message) {
             <i class="fas fa-exclamation-triangle"></i> ${message}
         </div>`;
         setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
+}
+
+// ============================================================
+// QR CODE SÉCURISÉ
+// ============================================================
+function generateSecureQRData(ticketId, userId, eventId) {
+    const timestamp = Date.now();
+    const data = `${ticketId}|${userId}|${eventId}|${timestamp}`;
+    const signature = btoa(data + SECURE_KEY);
+    return `${data}|${signature}`;
+}
+
+// ============================================================
+// SPINNER GLOBAL
+// ============================================================
+function showLoader(text = 'Loading...') {
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+        document.getElementById('loaderText').textContent = text;
+        loader.style.display = 'flex';
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) loader.style.display = 'none';
+}
+
+// ============================================================
+// GÉNÉRATION DU HTML DU TICKET
+// ============================================================
+function generateTicketHTML(ticket) {
+    const event = events.find(e => e.id === ticket.eventId);
+    const fallbackImage = eventImagesList[event?.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+    const imageUrl = event?.coverImage || (event?.images && event.images[0]) || fallbackImage;
+
+    const dateEvent = ticket.eventDate ? new Date(ticket.eventDate) : new Date();
+    const dateFormatted = dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const timeFormatted = dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const organizerName = event?.organizerName || event?.organizer || 'Unknown';
+    const category = ticket.category || event?.category || 'Event';
+    const durationDisplay = event?.durationValue && event?.durationUnit
+        ? `${event.durationValue} ${event.durationUnit}`
+        : 'N/A';
+
+    return `
+        <div class="ticket-preview-container" id="ticketPreview">
+            <div class="ticket-header">
+                <div class="logo">
+                    <img src="logo.png" alt="Betix" onerror="this.style.display='none'">
+                    Betix
+                </div>
+                <div class="badge">✓ Valid Ticket</div>
+            </div>
+            <div class="ticket-body">
+                <div class="event-image">
+                    <img src="${imageUrl}" alt="${escapeHtml(ticket.eventTitle)}" onerror="this.src='${fallbackImage}'">
+                </div>
+                <div class="event-info">
+                    <h2>${escapeHtml(ticket.eventTitle)}</h2>
+                    <div class="category">${escapeHtml(category)}</div>
+                    <div class="description">${event?.description || 'No description'}</div>
+                    <div class="details-grid">
+                        <div><span class="label">Participant</span> <span class="value">${escapeHtml(ticket.buyerName || 'Anonymous')}</span></div>
+                        <div><span class="label">Username</span> <span class="value">@${escapeHtml(ticket.buyerWallet || 'unknown')}</span></div>
+                        <div><span class="label">Ticket Type</span> <span class="value">${escapeHtml(ticket.ticketType || 'Standard')}</span></div>
+                        <div><span class="label">Quantity</span> <span class="value">${ticket.quantity || 1}</span></div>
+                        <div><span class="label">Price</span> <span class="value">${(ticket.price || 0).toFixed(6)} Pi</span></div>
+                        <div><span class="label">Event Date</span> <span class="value">${dateFormatted}</span></div>
+                        <div><span class="label">Time</span> <span class="value">${timeFormatted}</span></div>
+                        <div><span class="label">Duration</span> <span class="value">${durationDisplay}</span></div>
+                        <div><span class="label">Location</span> <span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span></div>
+                        <div><span class="label">Country</span> <span class="value">${escapeHtml(ticket.pays || 'France')}</span></div>
+                        <div><span class="label">Organizer</span> <span class="value">${escapeHtml(organizerName)}</span></div>
+                        <div><span class="label">Order #</span> <span class="value">${ticket.id.substring(0, 8).toUpperCase()}</span></div>
+                        <div><span class="label">Ticket #</span> <span class="value">${ticket.id.substring(0, 12).toUpperCase()}</span></div>
+                        <div><span class="label">Purchase Date</span> <span class="value">${ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A'}</span></div>
+                        <div><span class="label">Status</span> <span class="value" style="color:#10b981;">Valid</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-footer">
+                <div class="qr-section">
+                    <div id="qr-ticket-${ticket.id}" class="qr-code"></div>
+                    <span class="qr-label">Scan to validate</span>
+                </div>
+                <div class="security-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secured by Betix Blockchain</span>
+                </div>
+            </div>
+            <div class="ticket-order-info">
+                <span>Order ID: ${ticket.id}</span>
+                <span>© Betix 2026</span>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// TÉLÉCHARGEMENT PDF
+// ============================================================
+async function downloadTicketPDF(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) { alert('Ticket not found'); return; }
+    showLoader('Generating PDF...');
+
+    try {
+        const html = generateTicketHTML(ticket);
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.left = '-9999px';
+        container.style.top = '0';
+        container.style.width = '800px';
+        container.style.background = '#ffffff';
+        container.style.padding = '20px';
+        container.innerHTML = html;
+        document.body.appendChild(container);
+
+        const qrContainer = container.querySelector(`#qr-ticket-${ticket.id}`);
+        if (qrContainer) {
+            await new Promise((resolve) => {
+                try {
+                    new QRCode(qrContainer, {
+                        text: ticket.qrCode || ticket.id,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#08143F",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    resolve();
+                } catch(e) {
+                    qrContainer.innerHTML = '<p style="color:red;">QR Error</p>';
+                    resolve();
+                }
+            });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const canvas = await html2canvas(container, {
+            scale: 2.5,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            allowTaint: true
+        });
+
+        document.body.removeChild(container);
+
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        doc.save(`BETIX_TICKET_${ticket.id.substring(0, 8)}.pdf`);
+        hideLoader();
+        addNotification('✅ Ticket downloaded successfully!', 'info');
+    } catch (error) {
+        console.error(error);
+        alert('Error generating PDF. Please try again.');
+        hideLoader();
+    }
+}
+
+// ============================================================
+// TÉLÉCHARGEMENT PNG
+// ============================================================
+async function downloadTicketPNG(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) { alert('Ticket not found'); return; }
+    showLoader('Generating PNG...');
+
+    try {
+        const html = generateTicketHTML(ticket);
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.left = '-9999px';
+        container.style.top = '0';
+        container.style.width = '800px';
+        container.style.background = '#ffffff';
+        container.style.padding = '20px';
+        container.innerHTML = html;
+        document.body.appendChild(container);
+
+        const qrContainer = container.querySelector(`#qr-ticket-${ticket.id}`);
+        if (qrContainer) {
+            await new Promise((resolve) => {
+                try {
+                    new QRCode(qrContainer, {
+                        text: ticket.qrCode || ticket.id,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#08143F",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    resolve();
+                } catch(e) {
+                    qrContainer.innerHTML = '<p style="color:red;">QR Error</p>';
+                    resolve();
+                }
+            });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const canvas = await html2canvas(container, {
+            scale: 2.5,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            allowTaint: true
+        });
+
+        document.body.removeChild(container);
+
+        const link = document.createElement('a');
+        link.download = `BETIX_TICKET_${ticket.id.substring(0, 8)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        hideLoader();
+        addNotification('✅ Ticket image downloaded!', 'info');
+    } catch (error) {
+        console.error(error);
+        alert('Error generating PNG. Please try again.');
+        hideLoader();
+    }
+}
+
+// ============================================================
+// APERÇU DU TICKET (MODAL)
+// ============================================================
+function viewTicketModal(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) { alert('Ticket not found'); return; }
+
+    const modal = document.getElementById('eventDetailModal');
+    const content = document.getElementById('eventDetailContent');
+
+    const html = generateTicketHTML(ticket);
+    content.innerHTML = html;
+
+    setTimeout(() => {
+        const qrContainer = document.getElementById(`qr-ticket-${ticket.id}`);
+        if (qrContainer) {
+            try {
+                new QRCode(qrContainer, {
+                    text: ticket.qrCode || ticket.id,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#08143F",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch(e) {
+                qrContainer.innerHTML = '<p style="color:red;">QR Error</p>';
+            }
+        }
+    }, 100);
+
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// ============================================================
+// PARTAGE DU TICKET
+// ============================================================
+function shareTicket(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    if (navigator.share) {
+        navigator.share({
+            title: `Ticket for ${ticket.eventTitle}`,
+            text: `My ticket for ${ticket.eventTitle} on Betix`,
+            url: window.location.href + '?ticket=' + ticket.id
+        }).catch(() => {});
+    } else {
+        const url = window.location.href + '?ticket=' + ticket.id;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this link:', url);
+            });
+        } else {
+            prompt('Copy this link:', url);
+        }
     }
 }
 
@@ -1390,8 +1684,14 @@ function renderTicketCard(ticket, status) {
         </div>
         <div class="ticket-qr"><div id="${qrContainerId}" class="qr-code-container" data-ticket-id="${ticket.id}"></div></div>
         <div class="ticket-footer">
-            <span class="ticket-participant">${t('participant')}: <strong>${escapeHtml(participantName)}</strong></span>
-            <span class="ticket-purchase-date">${t('purchaseDate')}: ${purchaseDateDisplay}</span>
+            <div class="ticket-participant">${t('participant')}: <strong>${escapeHtml(participantName)}</strong></div>
+            <div class="ticket-purchase-date">${t('purchaseDate')}: ${purchaseDateDisplay}</div>
+            <div class="ticket-actions">
+                <button class="btn-action btn-view" onclick="viewTicketModal('${ticket.id}')"><i class="fas fa-eye"></i> View</button>
+                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+            </div>
             ${downloadButton}
         </div>
     </div>`;
@@ -1418,6 +1718,7 @@ function renderHistory() {
 async function downloadTicket(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) { alert(t('ticketNotFound')); return; }
+    showLoader('Downloading ticket...');
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -1517,8 +1818,9 @@ async function downloadTicket(ticketId) {
         y += 6;
         doc.text('BETIX - The first ticketing platform on Pi Network', pageWidth / 2, y, { align: 'center' });
         doc.save('ticket_' + ticket.eventTitle.replace(/\s+/g, '_') + '_' + ticket.id.substring(0, 6) + '.pdf');
+        hideLoader();
         addNotification(t('ticketDownloaded') + ': ' + ticket.eventTitle, 'info');
-    } catch (error) { alert(t('paymentError') + ': ' + error.message); }
+    } catch (error) { alert(t('paymentError') + ': ' + error.message); hideLoader(); }
 }
 
 function markTicketAsUsed(ticketId) {
@@ -1618,6 +1920,7 @@ async function confirmPurchase(eventId, quantity) {
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
+                        const qrData = generateSecureQRData(ticketId, currentUser.piUid || currentUser.wallet, event.id);
                         const ticket = {
                             id: ticketId,
                             eventId: event.id,
@@ -1634,7 +1937,8 @@ async function confirmPurchase(eventId, quantity) {
                             status: 'Valid',
                             purchaseDate,
                             transactionId: txid || 'tx-' + Date.now(),
-                            qrCode: 'BETIX-' + Date.now() + '-' + (txid ? txid.substring(0, 8) : 'xxxx') + '-' + i
+                            qrCode: qrData,
+                            quantity: quantity
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -2301,7 +2605,6 @@ async function confirmProfileSave() {
     }
 }
 
-// Vérifications (simulées)
 function verifyEmail() {
     const email = document.getElementById('profileEmail').value.trim();
     if (!email || !email.includes('@')) {
@@ -2501,7 +2804,6 @@ async function subscribePremiumWithDuration(durationDays) {
     }
 }
 
-// Fonction pour compatibilité
 function subscribePremium() {
     subscribePremiumWithDuration(appSettings.premiumDurationDays);
 }
@@ -2509,7 +2811,6 @@ function subscribePremium() {
 // ============================================================
 // MODIFICATION DE openQuantityPopup (achat de ticket)
 // ============================================================
-// Sauvegarde de la fonction originale
 const originalOpenQuantityPopup = window.openQuantityPopup || openQuantityPopup;
 window.openQuantityPopup = function(eventId) {
     if (!checkProfileComplete()) {
@@ -3086,7 +3387,6 @@ function renderEventsByCategory() {
 }
 
 function openQuantityPopup(eventId) {
-    // Vérification du profil ajoutée en haut de cette fonction
     if (!checkProfileComplete()) {
         redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before purchasing a ticket.');
         return;
@@ -3220,7 +3520,6 @@ async function createEvent(e) {
     if (publishBtn.classList.contains('loading')) return;
     if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
 
-    // Vérification du profil
     if (!checkProfileComplete()) {
         redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before publishing an event.');
         return;
@@ -3992,6 +4291,10 @@ window.saveAppSettings = saveAppSettings;
 window.isUserPremium = isUserPremium;
 window.canPublishEvent = canPublishEvent;
 window.getRemainingFreeEvents = getRemainingFreeEvents;
+window.downloadTicketPDF = downloadTicketPDF;
+window.downloadTicketPNG = downloadTicketPNG;
+window.viewTicketModal = viewTicketModal;
+window.shareTicket = shareTicket;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
