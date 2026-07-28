@@ -1312,8 +1312,6 @@ function renderVerifiedBadge(userId, userName) {
     // Pour l'instant, on affiche le badge si l'utilisateur courant est premium et que le nom correspond
     // Dans un contexte réel, il faudrait vérifier dans la base de données l'utilisateur de l'événement
     // On peut stocker un champ organizerPremium dans l'événement, mais on va se baser sur currentUser
-    // car on n'a pas encore d'info sur l'organisateur. On peut toutefois enrichir la base.
-    // Ici on simule : si l'organisateur est l'utilisateur courant et qu'il est premium.
     if (isUserPremium() && (userId === currentUser.piUid || userId === currentUser.wallet || userName === currentUser.name)) {
         return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#08143F; font-size:0.8rem; margin-left:4px;"></i></span>`;
     }
@@ -1625,7 +1623,6 @@ async function confirmPurchase(eventId, quantity) {
                         await new Promise(r => setTimeout(r, 200));
                     }
                     await saveEventToSupabase(event);
-                    // Enregistrer la transaction avec commissions et frais
                     const commission = subtotal * (appSettings.commissionPercent / 100);
                     await saveTransactionToSupabase({
                         id: 'tx-' + Date.now(),
@@ -1745,7 +1742,6 @@ function renderEventCard(event) {
         </div>
     `;
 
-    // Ajout du badge verified à côté du nom de l'organisateur
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
 
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
@@ -1772,9 +1768,6 @@ function renderEventCard(event) {
 // PAGE DE DÉTAIL (openEventDetails) – avec badge
 // ============================================================
 function openEventDetails(eventId) {
-    // ... (code existant, on ajoute le badge dans la partie meta)
-    // Je modifie la ligne du meta-grid pour l'organisateur
-    // On va reconstruire la partie concernée.
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
     const modal = document.getElementById('eventDetailModal');
@@ -1840,7 +1833,6 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Badge verified
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
 
     content.innerHTML = `
@@ -1946,7 +1938,7 @@ function closeEventDetailModalAndGoBack() {
 }
 
 // ============================================================
-// SLIDER PRINCIPAL (HERO) – VERSION ÉPURÉE (uniquement les images)
+// SLIDER PRINCIPAL (HERO) – VERSION ÉPURÉE
 // ============================================================
 function initHeroSlider() {
     const slidesContainer = document.getElementById('heroSlides');
@@ -2013,7 +2005,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL – masquage des champs texte
+// ADMIN CAROUSEL
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -2091,8 +2083,11 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE
+// PROFIL – FORMULAIRE AVEC REVUE ET VÉRIFICATION
 // ============================================================
+let profileDataForReview = {};
+let isEditingProfile = false;
+
 function populateProfileCountrySelect() {
     const select = document.getElementById('profileCountry');
     if (!select) return;
@@ -2131,18 +2126,41 @@ async function loadProfileData() {
             if (data.email) currentUser.email = data.email;
             if (data.phone_number) currentUser.phone_number = data.phone_number;
             updateUserInfo();
+            // Désactiver l'édition si des données existent
+            enableEditMode(false);
+        } else {
+            enableEditMode(true);
         }
     } catch (error) {
         console.log('No profile data yet or error:', error.message);
+        enableEditMode(true);
     }
 }
 
-async function saveProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) {
-        alert(t('pleaseConnect'));
-        return;
+function enableEditMode(edit) {
+    const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+    const saveBtn = document.getElementById('saveProfileBtn');
+    const editBtn = document.getElementById('editProfileBtn');
+    inputs.forEach(inp => inp.disabled = !edit);
+    if (edit) {
+        saveBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        document.getElementById('emailVerificationStatus').innerHTML = '';
+        document.getElementById('phoneVerificationStatus').innerHTML = '';
+        document.querySelectorAll('.verify-btn').forEach(btn => btn.classList.remove('verified'));
+    } else {
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        if (currentUser.email) {
+            document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        }
+        if (currentUser.phone_number) {
+            document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        }
     }
+}
+
+function fillProfileReview() {
     const firstName = document.getElementById('profileFirstName').value.trim();
     const lastName = document.getElementById('profileLastName').value.trim();
     const country = document.getElementById('profileCountry').value;
@@ -2150,44 +2168,296 @@ async function saveProfileData() {
     const email = document.getElementById('profileEmail').value.trim();
     const phone = document.getElementById('profilePhone').value.trim();
 
+    profileDataForReview = { firstName, lastName, country, address, email, phone };
+
+    const content = document.getElementById('profileReviewContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div class="review-item"><span class="review-label">First Name</span><span class="review-value">${escapeHtml(firstName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Last Name</span><span class="review-value">${escapeHtml(lastName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Country</span><span class="review-value">${escapeHtml(country) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Address</span><span class="review-value">${escapeHtml(address) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Email</span><span class="review-value">${escapeHtml(email) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Phone</span><span class="review-value">${escapeHtml(phone) || '—'}</span></div>
+    `;
+}
+
+function openProfileReview() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
     if (!firstName || !lastName) {
         alert('First name and last name are required.');
         return;
     }
-    if (email && !email.includes('@')) {
+    fillProfileReview();
+    document.getElementById('profileReviewModal').classList.add('show');
+    document.getElementById('profileReviewLoading').style.display = 'none';
+    document.getElementById('profileReviewConfirmBtn').style.display = 'inline-block';
+    document.getElementById('profileReviewEditBtn').style.display = 'inline-block';
+}
+
+function closeProfileReview() {
+    document.getElementById('profileReviewModal').classList.remove('show');
+}
+
+async function confirmProfileSave() {
+    const data = profileDataForReview;
+    if (!data.firstName || !data.lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    if (data.email && !data.email.includes('@')) {
         alert('Please enter a valid email address.');
         return;
     }
 
-    const updates = {
-        first_name: firstName,
-        last_name: lastName,
-        country: country,
-        address: address,
-        email: email,
-        phone_number: phone,
-        updated_at: new Date().toISOString()
-    };
+    document.getElementById('profileReviewConfirmBtn').style.display = 'none';
+    document.getElementById('profileReviewEditBtn').style.display = 'none';
+    document.getElementById('profileReviewLoading').style.display = 'block';
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert('Please connect your Pi account first.');
+        closeProfileReview();
+        return;
+    }
 
     try {
+        const updates = {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone,
+            updated_at: new Date().toISOString()
+        };
         const { error } = await supabaseClient
             .from('users')
             .update(updates)
             .eq('pi_uid', piUid);
         if (error) throw error;
-        currentUser.first_name = firstName;
-        currentUser.last_name = lastName;
-        currentUser.country = country;
-        currentUser.address = address;
-        currentUser.email = email;
-        currentUser.phone_number = phone;
+
+        Object.assign(currentUser, {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone
+        });
         saveUser();
+
+        document.getElementById('profileFirstName').value = data.firstName;
+        document.getElementById('profileLastName').value = data.lastName;
+        document.getElementById('profileCountry').value = data.country;
+        document.getElementById('profileAddress').value = data.address;
+        document.getElementById('profileEmail').value = data.email;
+        document.getElementById('profilePhone').value = data.phone;
+
+        closeProfileReview();
+        const msg = document.getElementById('profileSaveMessage');
+        msg.innerHTML = `
+            <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>
+                <div>
+                    <strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>
+                    <p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>
+                </div>
+            </div>
+        `;
+        setTimeout(() => { msg.innerHTML = ''; }, 5000);
+
         updateUserInfo();
-        document.getElementById('profileSaveMessage').textContent = '✅ Profile saved successfully!';
-        setTimeout(() => { document.getElementById('profileSaveMessage').textContent = ''; }, 3000);
-        addNotification('Profile updated', 'info');
+        updateProfilePage();
+        enableEditMode(false);
     } catch (error) {
         alert('Error saving profile: ' + error.message);
+        closeProfileReview();
+    }
+}
+
+// Vérifications (simulées)
+function verifyEmail() {
+    const email = document.getElementById('profileEmail').value.trim();
+    if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${email}.\nCode: ${code} (demo)`);
+    document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyEmailBtn').classList.add('verified');
+}
+
+function verifyPhone() {
+    const phone = document.getElementById('profilePhone').value.trim();
+    if (!phone || phone.length < 6) {
+        alert('Please enter a valid phone number.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
+    document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyPhoneBtn').classList.add('verified');
+}
+
+// ============================================================
+// PAGE PREMIUM – TABLEAU COMPARATIF
+// ============================================================
+function renderPremiumPage() {
+    const container = document.getElementById('premiumContent');
+    if (!container) return;
+    const isPremium = isUserPremium();
+    const monthlyPrice = appSettings.premiumPriceUSD || 5;
+    const yearlyPrice = monthlyPrice * 10;
+    const piRate = appSettings.piRate || 1;
+    const monthlyPi = monthlyPrice / piRate;
+    const yearlyPi = yearlyPrice / piRate;
+
+    let html = '';
+    if (isPremium) {
+        const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
+        html = `
+            <div class="premium-status-card">
+                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#f5a623; font-size:3rem;"></i></div>
+                <h3>You are a Premium member!</h3>
+                <p>Your subscription is active until <strong>${endDate}</strong>.</p>
+                <p>Enjoy unlimited events and exclusive benefits.</p>
+                <button class="btn-secondary" onclick="showPage('home')" style="margin-top:10px;">Go to Home</button>
+            </div>
+        `;
+    } else {
+        const features = [
+            { free: true, monthly: true, yearly: true, label: 'Event publishing' },
+            { free: '3/month', monthly: true, yearly: true, label: 'Unlimited events' },
+            { free: false, monthly: true, yearly: true, label: 'Betix Verified badge' },
+            { free: false, monthly: true, yearly: true, label: 'Event promotion & boost' },
+            { free: false, monthly: true, yearly: true, label: 'Advanced statistics' },
+            { free: false, monthly: true, yearly: true, label: 'Priority support' },
+        ];
+
+        const featureIcon = (val) => {
+            if (val === true) return '<i class="fas fa-check-circle" style="color:#10b981;"></i>';
+            if (val === false) return '<i class="fas fa-times-circle" style="color:#ef4444;"></i>';
+            return `<span style="font-size:0.8rem; color:#f5a623;">${val}</span>`;
+        };
+
+        const cards = [
+            { id: 'free', name: 'Free', price: '0', priceLabel: 'Free', features: features.map(f => featureIcon(f.free)), recommended: false, btn: 'Current Plan', class: 'free' },
+            { id: 'monthly', name: 'Monthly', price: monthlyPi.toFixed(6), priceLabel: `≈ $${monthlyPrice} / month`, features: features.map(f => featureIcon(f.monthly)), recommended: true, btn: 'Subscribe Now', class: '' },
+            { id: 'yearly', name: 'Yearly', price: yearlyPi.toFixed(6), priceLabel: `≈ $${yearlyPrice} / year`, features: features.map(f => featureIcon(f.yearly)), recommended: false, btn: 'Subscribe Now', class: '' }
+        ];
+
+        html = `<div class="pricing-table">`;
+        cards.forEach(card => {
+            html += `<div class="pricing-card ${card.class} ${card.recommended ? 'recommended' : ''}">
+                <div class="plan-name">${card.name}</div>
+                <div class="plan-price">${card.price} <small>Pi</small></div>
+                <div style="font-size:0.8rem; color:#6b7280; margin-bottom:12px;">${card.priceLabel}</div>
+                <ul class="plan-features">
+                    ${card.features.map(f => `<li>${f}</li>`).join('')}
+                </ul>
+                <button class="btn-subscribe" data-plan="${card.id}" ${card.id === 'free' ? 'disabled style="opacity:0.6;cursor:default;"' : ''}>
+                    ${card.btn}
+                </button>
+            </div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+
+        container.querySelectorAll('.btn-subscribe[data-plan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const plan = this.dataset.plan;
+                if (plan === 'free') return;
+                let duration = appSettings.premiumDurationDays;
+                if (plan === 'yearly') duration = 365;
+                subscribePremiumWithDuration(duration);
+            });
+        });
+    }
+    container.innerHTML = html;
+}
+
+async function subscribePremiumWithDuration(durationDays) {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return;
+    }
+    if (isUserPremium()) {
+        alert('You are already a Premium member.');
+        return;
+    }
+    const usdPrice = appSettings.premiumPriceUSD || 5;
+    let priceUSD = usdPrice;
+    if (durationDays && durationDays !== appSettings.premiumDurationDays) {
+        priceUSD = usdPrice * (durationDays / appSettings.premiumDurationDays);
+    }
+    const piRate = appSettings.piRate || 1;
+    const priceInPi = priceUSD / piRate;
+    if (priceInPi <= 0) {
+        alert('Premium price not configured. Please contact admin.');
+        return;
+    }
+    if (!confirm(`Subscribe to Betix Premium for ${priceInPi.toFixed(6)} Pi (≈ $${priceUSD}) for ${durationDays} days?`)) return;
+    try {
+        if (typeof Pi === 'undefined') {
+            alert('Pi SDK not available. Please use Pi Browser.');
+            return;
+        }
+        const payment = await Pi.createPayment({
+            amount: priceInPi,
+            memo: `Betix Premium Subscription (${durationDays} days)`,
+            metadata: { type: 'premium_subscription', duration: durationDays }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                }).catch(() => {});
+            },
+            onReadyForServerCompletion: async function(paymentId, txid) {
+                try {
+                    const startDate = new Date();
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + durationDays);
+                    const piUid = currentUser.piUid || currentUser.wallet;
+                    if (piUid) {
+                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active');
+                        if (success) {
+                            currentUser.account_type = 'premium';
+                            currentUser.premium_start = startDate.toISOString();
+                            currentUser.premium_end = endDate.toISOString();
+                            currentUser.premium_status = 'active';
+                            saveUser();
+                            addNotification('🎉 You are now a Betix Premium member!', 'info');
+                            alert('Subscription successful! Welcome to Betix Premium.');
+                            renderPremiumPage();
+                            updateProfilePage();
+                            updateUserInfo();
+                            renderEventsByCategory();
+                        } else {
+                            alert('Error updating premium status. Please contact support.');
+                        }
+                    }
+                } catch (error) {
+                    alert('Error during premium subscription: ' + error.message);
+                }
+            },
+            onCancel: function() {
+                alert('Payment cancelled.');
+            },
+            onError: function(error) {
+                alert('Payment error: ' + error.message);
+            },
+            onIncompletePaymentFound
+        });
+    } catch (error) {
+        alert('Error: ' + error.message);
     }
 }
 
@@ -2363,7 +2633,6 @@ function updateUserInfo() {
     document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
     document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
     document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
-    // Afficher le badge Verified dans le profil si l'utilisateur est premium
     const badgeEl = document.getElementById('profileBadgeVerified');
     if (badgeEl) {
         if (isUserPremium() && appSettings.badgeEnabled) {
@@ -2372,7 +2641,6 @@ function updateUserInfo() {
             badgeEl.style.display = 'none';
         }
     }
-    // Type de compte
     const accountBadge = document.getElementById('profileAccountTypeBadge');
     if (accountBadge) {
         if (isUserPremium()) {
@@ -2584,7 +2852,6 @@ function loadAdminPage() {
     document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
     document.getElementById('adminLoginCount').textContent = localStorage.getItem('betix_admin_login_count') || 0;
     document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
-    // Charger les valeurs dans les champs admin
     document.getElementById('adminPremiumPrice').value = appSettings.premiumPriceUSD;
     document.getElementById('adminCommission').value = appSettings.commissionPercent;
     document.getElementById('adminServiceFee').value = appSettings.serviceFeePercent;
@@ -2705,7 +2972,6 @@ function renderMyEventCardModern(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
     const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : 'No ticket types';
-    // Badge pour l'organisateur si premium
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, event.organizerName || event.organizer || '');
     return `<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="${imageUrl}" class="event-image" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"><span class="event-status-badge-modern ${statusClass}">${statusBadge}</span></div><div class="event-body-modern"><div class="event-title-modern">${escapeHtml(event.title)}</div><div class="event-details-modern">
         <div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">${t('eventDate')}</span> <span class="detail-value">${dateFormatted}</span></div>
@@ -2878,7 +3144,6 @@ async function createEvent(e) {
     if (publishBtn.classList.contains('loading')) return;
     if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
 
-    // Vérifier la limite gratuite
     if (!canPublishEvent()) {
         alert('You have reached the limit of 3 free events per month. Please upgrade to Premium to publish unlimited events.');
         document.getElementById('freeLimitMessage').style.display = 'block';
@@ -3465,131 +3730,6 @@ function hideConnectSpinner() {
     if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
 }
 
-// ============================================================
-// PAGE PREMIUM
-// ============================================================
-function renderPremiumPage() {
-    const container = document.getElementById('premiumContent');
-    if (!container) return;
-    const isPremium = isUserPremium();
-    const priceUSD = appSettings.premiumPriceUSD || 5;
-    const piRate = appSettings.piRate || 1;
-    const priceInPi = priceUSD / piRate;
-    let html = '';
-    if (isPremium) {
-        const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
-        html = `
-            <div class="premium-status-card">
-                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#f5a623; font-size:3rem;"></i></div>
-                <h3>You are a Premium member!</h3>
-                <p>Your subscription is active until <strong>${endDate}</strong>.</p>
-                <p>Enjoy unlimited events and exclusive benefits.</p>
-                <button class="btn-secondary" onclick="showPage('home')" style="margin-top: 10px;">Go to Home</button>
-            </div>
-        `;
-    } else {
-        html = `
-            <div class="premium-benefits">
-                <div class="benefit-item"><i class="fas fa-infinity"></i> Unlimited event publishing</div>
-                <div class="benefit-item"><i class="fas fa-check-circle" style="color:#08143F;"></i> Betix Verified badge</div>
-                <div class="benefit-item"><i class="fas fa-star"></i> Event promotion & visibility boost</div>
-                <div class="benefit-item"><i class="fas fa-chart-line"></i> Advanced statistics</div>
-                <div class="benefit-item"><i class="fas fa-headset"></i> Priority support</div>
-            </div>
-            <div class="premium-pricing">
-                <h3>Only <span style="color:#f5a623;">${priceInPi.toFixed(6)} Pi</span> (≈ $${priceUSD}) for ${appSettings.premiumDurationDays} days</h3>
-                <p style="color:var(--gray); font-size:0.9rem;">Pay once with Pi Wallet and unlock all features.</p>
-                <button class="btn-primary" id="subscribePremiumBtn" style="width:auto; padding:12px 40px; margin-top:16px;">
-                    <i class="fas fa-crown"></i> Subscribe Now
-                </button>
-            </div>
-        `;
-    }
-    container.innerHTML = html;
-    if (!isPremium) {
-        document.getElementById('subscribePremiumBtn')?.addEventListener('click', subscribePremium);
-    }
-}
-
-async function subscribePremium() {
-    if (!currentUser.wallet) {
-        alert(t('pleaseConnect'));
-        connectToPi();
-        return;
-    }
-    if (isUserPremium()) {
-        alert('You are already a Premium member.');
-        return;
-    }
-    const usdPrice = appSettings.premiumPriceUSD || 5;
-    const piRate = appSettings.piRate || 1;
-    const priceInPi = usdPrice / piRate;
-    if (priceInPi <= 0) {
-        alert('Premium price not configured. Please contact admin.');
-        return;
-    }
-    if (!confirm(`Subscribe to Betix Premium for ${priceInPi.toFixed(6)} Pi (≈ $${usdPrice})?`)) return;
-    try {
-        if (typeof Pi === 'undefined') {
-            alert('Pi SDK not available. Please use Pi Browser.');
-            return;
-        }
-        const payment = await Pi.createPayment({
-            amount: priceInPi,
-            memo: 'Betix Premium Subscription',
-            metadata: { type: 'premium_subscription', duration: appSettings.premiumDurationDays }
-        }, {
-            onReadyForServerApproval: function(paymentId) {
-                fetch(BACKEND_URL + '/api/pi/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
-                }).catch(() => {});
-            },
-            onReadyForServerCompletion: async function(paymentId, txid) {
-                try {
-                    const startDate = new Date();
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + appSettings.premiumDurationDays);
-                    const piUid = currentUser.piUid || currentUser.wallet;
-                    if (piUid) {
-                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active');
-                        if (success) {
-                            currentUser.account_type = 'premium';
-                            currentUser.premium_start = startDate.toISOString();
-                            currentUser.premium_end = endDate.toISOString();
-                            currentUser.premium_status = 'active';
-                            saveUser();
-                            addNotification('🎉 You are now a Betix Premium member!', 'info');
-                            alert('Subscription successful! Welcome to Betix Premium.');
-                            renderPremiumPage();
-                            updateProfilePage();
-                            updateUserInfo();
-                            renderEventsByCategory();
-                        } else {
-                            alert('Error updating premium status. Please contact support.');
-                        }
-                    }
-                } catch (error) {
-                    alert('Error during premium subscription: ' + error.message);
-                }
-            },
-            onCancel: function() {
-                alert('Payment cancelled.');
-            },
-            onError: function(error) {
-                alert('Payment error: ' + error.message);
-            },
-            onIncompletePaymentFound
-        });
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
-
-// ============================================================
-// BANNIÈRE PREMIUM
-// ============================================================
 function updatePremiumBanner() {
     const banner = document.getElementById('premiumBanner');
     if (!banner) return;
@@ -3650,7 +3790,13 @@ async function initApp() {
         }
         populateProfileCountrySelect();
         if (currentUser.wallet) loadProfileData();
-        document.getElementById('saveProfileBtn')?.addEventListener('click', saveProfileData);
+        document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
+        document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
+        document.getElementById('profileReviewConfirmBtn')?.addEventListener('click', confirmProfileSave);
+        document.getElementById('profileReviewClose')?.addEventListener('click', closeProfileReview);
+        document.getElementById('editProfileBtn')?.addEventListener('click', function() { enableEditMode(true); });
+        document.getElementById('verifyEmailBtn')?.addEventListener('click', verifyEmail);
+        document.getElementById('verifyPhoneBtn')?.addEventListener('click', verifyPhone);
 
         const menuBtn = document.getElementById('menuBtn');
         const headerRight = document.getElementById('headerRight');
@@ -3729,7 +3875,6 @@ async function initApp() {
         setInterval(() => syncAllToSupabase(), 30000);
         window.addEventListener('beforeunload', () => syncAllToSupabase());
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
-        // Admin settings save
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
     } catch (error) {
         const loader = document.getElementById('loader');
