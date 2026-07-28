@@ -86,6 +86,9 @@ body {
     gap: 2px;
 }
 
+/* ============================================================
+   LOGO - AGRANDI
+   ============================================================ */
 .logo {
     font-size: 1.6rem;
     font-weight: bold;
@@ -122,6 +125,7 @@ body {
     }
 }
 
+/* BOUTON RETOUR */
 .back-btn {
     background: rgba(255, 255, 255, 0.15);
     border: none;
@@ -3949,42 +3953,68 @@ body.dark-mode .btn-back-whitepaper:hover { background: #374151; }
 body.dark-mode .whitepaper-header { border-bottom-color: #374151; }
 
 /* ============================================================
-   PREMIUM - TABLEAU COMPARATIF
+   PREMIUM - TABLEAU COMPARATIF AMÉLIORÉ
    ============================================================ */
+.premium-page-content {
+    max-width: 1100px !important;
+    padding: 20px !important;
+}
+
 .pricing-table {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 24px;
     margin: 24px 0;
 }
 
 .pricing-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 16px 20px;
-    text-align: center;
+    border-radius: 20px;
+    padding: 28px 20px 24px;
     border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
 }
 
 .pricing-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.10);
     border-color: #f5a623;
 }
 
+.pricing-card .plan-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f5a623;
+    color: #1a1a2e;
+    padding: 2px 18px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 12px rgba(245,166,35,0.3);
+}
+
 .pricing-card .plan-name {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #1a1a2e;
     margin-bottom: 4px;
+    text-align: center;
 }
 
 .pricing-card .plan-price {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
     color: #08143F;
+    text-align: center;
     margin: 8px 0;
 }
 
@@ -3994,96 +4024,129 @@ body.dark-mode .whitepaper-header { border-bottom-color: #374151; }
     color: #6b7280;
 }
 
+.pricing-card .plan-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    min-height: 44px;
+}
+
 .pricing-card .plan-features {
     list-style: none;
     padding: 0;
-    margin: 16px 0 20px;
-    text-align: left;
+    margin: 0 0 20px;
+    flex: 1;
 }
 
 .pricing-card .plan-features li {
-    padding: 6px 0;
+    padding: 8px 0;
     font-size: 0.9rem;
     color: #4b5563;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pricing-card .plan-features li:last-child {
+    border-bottom: none;
 }
 
 .pricing-card .plan-features li i {
-    color: #10b981;
-    width: 18px;
+    width: 20px;
     text-align: center;
+    font-size: 1rem;
 }
 
-.pricing-card .plan-features li i.fa-times {
+.pricing-card .plan-features li i.fa-check-circle {
+    color: #10b981;
+}
+
+.pricing-card .plan-features li i.fa-times-circle {
     color: #ef4444;
+}
+
+.pricing-card .plan-features li .feature-text {
+    flex: 1;
 }
 
 .pricing-card .btn-subscribe {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
     color: white;
     border: none;
-    padding: 10px 24px;
+    padding: 12px 20px;
     border-radius: 40px;
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
+    text-align: center;
+    margin-top: auto;
 }
 
 .pricing-card .btn-subscribe:hover {
     opacity: 0.9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(8,20,63,0.25);
+    box-shadow: 0 6px 20px rgba(8,20,63,0.25);
+}
+
+.pricing-card .btn-subscribe:disabled {
+    opacity: 0.5;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
 }
 
 .pricing-card.recommended {
     border: 2px solid #f5a623;
-    position: relative;
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(245,166,35,0.15);
 }
 
-.pricing-card.recommended::before {
-    content: 'Recommended';
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #f5a623;
-    color: #1a1a2e;
-    padding: 2px 16px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.pricing-card.recommended:hover {
+    transform: scale(1.02) translateY(-6px);
 }
 
 .pricing-card.free {
     background: #f8fafc;
 }
 
+.pricing-card.free .btn-subscribe {
+    background: #e5e7eb;
+    color: #6b7280;
+    cursor: default;
+}
+
+.pricing-card.free .btn-subscribe:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 body.dark-mode .pricing-card {
     background: #1f2937;
     border-color: #374151;
 }
-
 body.dark-mode .pricing-card .plan-name {
     color: #f3f4f6;
 }
-
 body.dark-mode .pricing-card .plan-price {
     color: #f5a623;
 }
-
 body.dark-mode .pricing-card .plan-features li {
     color: #d1d5db;
+    border-bottom-color: #374151;
 }
-
 body.dark-mode .pricing-card.free {
     background: #2d3748;
 }
+body.dark-mode .pricing-card.recommended {
+    border-color: #f5a623;
+}
 
+/* Premium banner */
 .premium-banner {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
     color: white;
@@ -4152,13 +4215,39 @@ body.dark-mode .premium-status-card {
     background: #1f2937;
     border-color: #f5a623;
 }
-
 body.dark-mode .premium-status-card h3 {
     color: #f3f4f6;
 }
 
+/* Responsive Premium */
+@media (max-width: 992px) {
+    .pricing-table {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .pricing-card.recommended {
+        transform: none;
+    }
+    .pricing-card.recommended:hover {
+        transform: translateY(-6px);
+    }
+}
+
+@media (max-width: 640px) {
+    .pricing-table {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .pricing-card {
+        padding: 20px 16px;
+    }
+    .pricing-card .plan-price {
+        font-size: 1.8rem;
+    }
+}
+
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE GLOBAL
    ============================================================ */
 @media (max-width: 992px) {
     .footer-container { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
@@ -4168,7 +4257,6 @@ body.dark-mode .premium-status-card h3 {
     .whitepaper-card { padding: 30px 24px; }
     .admin-stats { grid-template-columns: repeat(2, 1fr); }
     .admin-tab { padding: 5px 10px; font-size: 0.75rem; }
-    .pricing-table { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
     .footer-container { grid-template-columns: 1fr 1fr; gap: 16px 12px; }
@@ -4624,9 +4712,13 @@ body.dark-mode .pricing-card .plan-price {
 }
 body.dark-mode .pricing-card .plan-features li {
     color: #d1d5db;
+    border-bottom-color: #374151;
 }
 body.dark-mode .pricing-card.free {
     background: #2d3748;
+}
+body.dark-mode .pricing-card.recommended {
+    border-color: #f5a623;
 }
 body.dark-mode .premium-banner {
     background: linear-gradient(135deg, #08143F, #1a1a2e);
