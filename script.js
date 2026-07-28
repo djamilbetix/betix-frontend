@@ -18,11 +18,11 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 // PARAMÈTRES ADMIN (avec fallback localStorage)
 // ============================================================
 let adminConfig = {
-    premiumPricePi: 5.0,
-    commissionPercent: 5,
-    serviceFeePercent: 2,
-    subscriptionDurationDays: 30,
-    piConversionRate: 1.0,
+    premiumPricePi: 5.0,           // en Pi (équivalent 5 USD)
+    commissionPercent: 5,          // 5%
+    serviceFeePercent: 2,          // 2%
+    subscriptionDurationDays: 30,  // 30 jours
+    piConversionRate: 1.0,         // 1 Pi = 1 USD (ajustable)
     badgeEnabled: true
 };
 
@@ -76,7 +76,7 @@ async function saveAdminConfigToSupabase() {
 loadAdminConfig();
 
 // ============================================================
-// LISTES ET TRADUCTIONS (inchangé)
+// LISTES ET TRADUCTIONS
 // ============================================================
 const countriesList = [
     'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
