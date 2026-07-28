@@ -235,7 +235,7 @@
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
         <div id="freeLimitMessage" style="display:none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #92400e;">
-            <i class="fas fa-info-circle"></i> You have reached the free limit of 3 events per month. 
+            <i class="fas fa-info-circle"></i> You have reached the limit of 3 free events per month. 
             <a href="#" onclick="showPage('premium'); return false;" style="color: #08143F; font-weight: 600; text-decoration: underline;">Upgrade to Premium</a> to publish unlimited events.
         </div>
         <form id="eventForm" class="create-form">
@@ -393,9 +393,9 @@
     <div class="page-content premium-page-content">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
             <i class="fas fa-crown" style="font-size:2rem; color:#f5a623;"></i>
-            <h2 style="font-size:1.6rem; margin:0;">Betix Premium</h2>
+            <h2 style="font-size:1.8rem; margin:0; font-weight:700;">Betix Premium</h2>
         </div>
-        <p class="events-sub">Choose the plan that fits your needs and unlock exclusive benefits.</p>
+        <p class="events-sub" style="font-size:1rem; margin-bottom:24px;">Choose the plan that fits your needs and unlock exclusive benefits.</p>
         <div id="premiumContent"></div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
@@ -438,7 +438,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PROFILE PAGE (avec relecture, vérification)                 -->
+<!-- PROFILE PAGE (avec formulaire)                               -->
 <!-- ============================================================ -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
@@ -482,7 +482,7 @@
             </div>
         </div>
 
-        <!-- ========== FORMULAIRE DE PROFIL AVEC REVUE ========== -->
+        <!-- ========== FORMULAIRE DE PROFIL ========== -->
         <div class="profile-form-section">
             <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
             <form id="profileForm" class="profile-form">
