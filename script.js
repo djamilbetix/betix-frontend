@@ -1316,6 +1316,32 @@ function renderVerifiedBadge(userId, userName) {
 }
 
 // ============================================================
+// VÉRIFICATION DU PROFIL COMPLET
+// ============================================================
+function checkProfileComplete() {
+    // Vérifie si l'utilisateur a rempli tous les champs obligatoires
+    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
+    for (let field of required) {
+        if (!currentUser[field] || currentUser[field].trim() === '') {
+            return false;
+        }
+    }
+    return true;
+}
+
+function redirectToProfileWithMessage(message) {
+    alert(message);
+    showPage('profile');
+    const msgDiv = document.getElementById('profileSaveMessage');
+    if (msgDiv) {
+        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>`;
+        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
+}
+
+// ============================================================
 // AFFICHAGE DES TICKETS
 // ============================================================
 function generateAllQRCodes() {
@@ -2481,6 +2507,32 @@ function subscribePremium() {
 }
 
 // ============================================================
+// MODIFICATION DE openQuantityPopup (achat de ticket)
+// ============================================================
+// Sauvegarde de la fonction originale
+const originalOpenQuantityPopup = window.openQuantityPopup || openQuantityPopup;
+window.openQuantityPopup = function(eventId) {
+    if (!checkProfileComplete()) {
+        redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before purchasing a ticket.');
+        return;
+    }
+    originalOpenQuantityPopup(eventId);
+};
+
+// ============================================================
+// MODIFICATION DE createEvent (publication d'événement)
+// ============================================================
+const originalCreateEvent = window.createEvent || createEvent;
+window.createEvent = function(e) {
+    e.preventDefault();
+    if (!checkProfileComplete()) {
+        redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before publishing an event.');
+        return;
+    }
+    originalCreateEvent(e);
+};
+
+// ============================================================
 // AUTRES FONCTIONS (paiement, popups, gestion utilisateur, etc.)
 // ============================================================
 function openGallery(eventId, startIndex) {
@@ -3034,6 +3086,11 @@ function renderEventsByCategory() {
 }
 
 function openQuantityPopup(eventId) {
+    // Vérification du profil ajoutée en haut de cette fonction
+    if (!checkProfileComplete()) {
+        redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before purchasing a ticket.');
+        return;
+    }
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
     if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
@@ -3162,6 +3219,12 @@ async function createEvent(e) {
     const publishBtn = document.getElementById('publishEventBtn');
     if (publishBtn.classList.contains('loading')) return;
     if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
+
+    // Vérification du profil
+    if (!checkProfileComplete()) {
+        redirectToProfileWithMessage('⚠️ Please complete your profile (First Name, Last Name, Email, Address, Phone) before publishing an event.');
+        return;
+    }
 
     if (!canPublishEvent()) {
         alert('You have reached the limit of 3 free events per month. Please upgrade to Premium to publish unlimited events.');
