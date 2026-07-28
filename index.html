@@ -76,7 +76,7 @@
 </header>
 
 <!-- ============================================================ -->
-<!-- SIDEBAR                                                       -->
+<!-- SIDEBAR (ordre modifié)                                     -->
 <!-- ============================================================ -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -95,22 +95,22 @@
         <button class="wallet-sidebar-btn" id="sidebarWalletBtn">Connect Pi</button>
     </div>
     <div class="sidebar-nav">
+        <!-- Ordre demandé -->
         <button class="sidebar-item" data-page="home"><i class="fas fa-home"></i> Home</button>
-        <button class="sidebar-item" data-page="myevents"><i class="fas fa-calendar-plus"></i> My Events</button>
         <button class="sidebar-item" data-page="profile"><i class="fas fa-user"></i> Profile</button>
-        <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
+        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" data-page="tickets"><i class="fas fa-ticket-alt"></i> My Tickets</button>
-        <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
         <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #08143F; color: white; border-radius: 8px;">
             <i class="fas fa-qrcode"></i> Scan Ticket
         </button>
+        <button class="sidebar-item" data-page="history"><i class="fas fa-history"></i> Ticket History</button>
+        <button class="sidebar-item" data-page="settings"><i class="fas fa-cog"></i> Settings</button>
         <button class="sidebar-item" onclick="window.location.href='whitepaper.html'">
             <i class="fas fa-file-alt"></i> Whitepaper
         </button>
         <button class="sidebar-item" onclick="window.location.href='faq.html'">
             <i class="fas fa-question-circle"></i> FAQ
         </button>
-        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -179,10 +179,11 @@
 <!-- HOME PAGE                                                    -->
 <!-- ============================================================ -->
 <div id="homePage">
-    <div id="premiumBanner" class="premium-banner" style="display:none; background: linear-gradient(135deg, #08143F, #1a1a2e); color: white; padding: 10px 20px; text-align: center; font-size: 0.9rem; border-radius: 0; margin: 0;">
-        <span>✨ Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
-        <button class="premium-banner-btn" onclick="showPage('premium')" style="background: #f5a623; border: none; padding: 4px 16px; border-radius: 30px; font-weight: 600; color: #1a1a2e; margin-left: 10px; cursor: pointer;">Learn More</button>
-        <button class="premium-banner-close" onclick="document.getElementById('premiumBanner').style.display='none'" style="background: none; border: none; color: white; margin-left: 10px; cursor: pointer; font-size: 1.2rem;">&times;</button>
+    <!-- Bannière Premium (jaune vif) -->
+    <div id="premiumBanner" class="premium-banner" style="display:none; background: #f5a623; color: #1a1a2e; padding: 12px 20px; text-align: center; font-size: 0.95rem; border-radius: 0; margin: 0; font-weight: 600;">
+        <span>🔓 Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
+        <button class="premium-banner-btn" onclick="showPage('premium')" style="background: #1a1a2e; border: none; padding: 4px 16px; border-radius: 30px; font-weight: 700; color: white; margin-left: 10px; cursor: pointer;">Learn More</button>
+        <button class="premium-banner-close" onclick="document.getElementById('premiumBanner').style.display='none'" style="background: none; border: none; color: #1a1a2e; margin-left: 10px; cursor: pointer; font-size: 1.2rem;">&times;</button>
     </div>
     <section class="hero">
         <div class="hero-slider-container">
@@ -503,11 +504,11 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Address</label>
+                    <label>Address <span style="color:red;">*</span></label>
                     <input type="text" id="profileAddress" placeholder="123 Main St, City" maxlength="100">
                 </div>
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>Email <span style="color:red;">*</span></label>
                     <div class="input-with-verify">
                         <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100">
                         <button type="button" class="verify-btn" id="verifyEmailBtn"><i class="fas fa-check-circle"></i> Verify</button>
@@ -515,7 +516,7 @@
                     <div id="emailVerificationStatus" class="verification-status"></div>
                 </div>
                 <div class="form-group">
-                    <label>Phone Number</label>
+                    <label>Phone Number <span style="color:red;">*</span></label>
                     <div class="input-with-verify">
                         <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20">
                         <button type="button" class="verify-btn" id="verifyPhoneBtn"><i class="fas fa-check-circle"></i> Verify</button>
