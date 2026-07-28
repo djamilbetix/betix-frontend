@@ -15,14 +15,14 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 });
 
 // ============================================================
-// PARAMÈTRES ADMIN (avec fallback localStorage)
+// PARAMÈTRES ADMIN (chargement local, sync en arrière‑plan)
 // ============================================================
 let adminConfig = {
-    premiumPricePi: 5.0,           // en Pi (équivalent 5 USD)
-    commissionPercent: 5,          // 5%
-    serviceFeePercent: 2,          // 2%
-    subscriptionDurationDays: 30,  // 30 jours
-    piConversionRate: 1.0,         // 1 Pi = 1 USD (ajustable)
+    premiumPricePi: 5.0,
+    commissionPercent: 5,
+    serviceFeePercent: 2,
+    subscriptionDurationDays: 30,
+    piConversionRate: 1.0,
     badgeEnabled: true
 };
 
@@ -34,7 +34,8 @@ function loadAdminConfig() {
             Object.assign(adminConfig, parsed);
         }
     } catch(e) {}
-    syncAdminConfigWithSupabase();
+    // Sync en arrière‑plan sans bloquer
+    setTimeout(() => syncAdminConfigWithSupabase(), 100);
 }
 
 async function syncAdminConfigWithSupabase() {
@@ -51,8 +52,11 @@ async function syncAdminConfigWithSupabase() {
             adminConfig.piConversionRate = data.pi_conversion_rate || 1.0;
             adminConfig.badgeEnabled = data.badge_enabled !== undefined ? data.badge_enabled : true;
             localStorage.setItem('betix_admin_config', JSON.stringify(adminConfig));
+            updateUIBasedOnConfig();
         }
-    } catch(e) {}
+    } catch(e) {
+        console.warn('Supabase admin config non disponible, utilisation des valeurs locales.');
+    }
 }
 
 async function saveAdminConfigToSupabase() {
