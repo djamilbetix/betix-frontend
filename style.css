@@ -1364,159 +1364,6 @@ body.dark-mode .event-card-classic .poster-grid .grid-item { background: #1f2937
 }
 body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #d1d5db !important; }
 
-/* ============================================================
-   NOUVEAU : BADGE BETIX VERIFIED
-   ============================================================ */
-.verified-badge {
-    display: inline-block;
-    margin-left: 4px;
-    color: #08143F;
-    font-size: 0.7rem;
-    vertical-align: middle;
-}
-.verified-badge i {
-    color: #08143F;
-    font-size: 0.7rem;
-}
-.event-organizer-classic .verified-badge,
-.profile-header-info .verified-badge,
-.event-title-large .verified-badge,
-.detail-block .verified-badge {
-    display: inline-block;
-    margin-left: 4px;
-}
-
-/* ============================================================
-   NOUVEAU : PAGE PREMIUM
-   ============================================================ */
-.premium-page-content {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.premium-container {
-    text-align: center;
-}
-.premium-header h2 {
-    font-size: 2rem;
-    background: linear-gradient(135deg, #08143F, #f5a623);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 0.5rem;
-}
-.premium-header p {
-    color: var(--gray);
-    font-size: 1rem;
-}
-.premium-status {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 12px;
-    margin: 1.5rem 0;
-    border: 1px solid #e5e7eb;
-}
-.premium-status .status-active {
-    color: #10b981;
-    font-weight: 700;
-}
-.premium-status .status-inactive {
-    color: #ef4444;
-    font-weight: 700;
-}
-.premium-features {
-    background: #fef8f0;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    margin: 1.5rem 0;
-    text-align: left;
-    border-left: 4px solid #f5a623;
-}
-.premium-features h3 {
-    margin-bottom: 0.8rem;
-    color: #1a1a2e;
-}
-.premium-features ul {
-    list-style: none;
-    padding: 0;
-}
-.premium-features ul li {
-    padding: 0.5rem 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.premium-features ul li:last-child {
-    border-bottom: none;
-}
-.premium-features ul li i {
-    color: #f5a623;
-    font-size: 1.1rem;
-    width: 24px;
-    text-align: center;
-}
-.verified-badge-example {
-    display: inline-block;
-    background: #e5e7eb;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    color: #08143F;
-}
-.verified-badge-example i {
-    color: #08143F;
-    margin-right: 4px;
-}
-.premium-pricing {
-    background: #08143F;
-    color: white;
-    padding: 1.2rem;
-    border-radius: 12px;
-    margin: 1.5rem 0;
-}
-.premium-pricing .premium-price-display {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #f5a623;
-}
-.premium-pricing .btn-primary {
-    margin-top: 0.8rem;
-    background: #f5a623;
-    color: #1a1a2e;
-    border: none;
-    padding: 0.8rem 2rem;
-    border-radius: 40px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.premium-pricing .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(245, 166, 35, 0.4);
-}
-.premium-pricing .btn-secondary {
-    background: #4b5563;
-    color: white;
-    border: none;
-    padding: 0.8rem 2rem;
-    border-radius: 40px;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-.premium-note {
-    font-size: 0.85rem;
-    color: var(--gray);
-    margin: 1rem 0;
-}
-.premium-note i {
-    color: #f5a623;
-    margin-right: 6px;
-}
-
 /* TICKET CARD (inchangé) */
 .ticket-card {
     background: white;
@@ -2009,10 +1856,18 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     border-color: #f5a623;
     box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
 }
+#subtotalDisplay {
+    font-weight: 700;
+    color: var(--primary);
+}
+#serviceFeeDisplay {
+    font-weight: 700;
+    color: var(--primary);
+}
 #totalPriceDisplay {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #f5a623;
+    color: var(--primary);
 }
 #maxQuantityInfo {
     font-size: 0.7rem;
@@ -2810,6 +2665,9 @@ body.dark-mode .success-popup-content p { color: #9ca3af; }
     font-weight: 700;
     margin: 0 0 4px 0;
     letter-spacing: -0.3px;
+}
+.profile-header-info h2 .verified-badge {
+    color: #f5a623; /* ou la couleur que vous souhaitez */
 }
 .profile-header-info p {
     margin: 2px 0;
@@ -4805,7 +4663,7 @@ body.dark-mode .ticket-card .btn-download-ticket:hover { background: #0a1a4f; }
     color: #1a1a2e;
 }
 .admin-slide-item .slide-info p {
-    display: none;
+    display: none; /* on cache les infos supplémentaires */
 }
 
 /* ============================================================
@@ -4909,6 +4767,7 @@ body.dark-mode .ticket-card .btn-download-ticket:hover { background: #0a1a4f; }
     display: none !important;
 }
 
+/* Pour s'assurer que les images prennent tout l'espace */
 .hero-slide-bg {
     width: 100%;
     height: 100%;
@@ -4918,55 +4777,185 @@ body.dark-mode .ticket-card .btn-download-ticket:hover { background: #0a1a4f; }
 }
 
 /* ============================================================
-   DARK MODE – ADAPTATIONS POUR LE PROFIL
+   BADGE VERIFIED (check bleu)
    ============================================================ */
-body.dark-mode .profile-form-section {
-    background: #1f2937;
-    border-color: #374151;
+.verified-badge {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 1rem;
+    color: #08143F; /* Couleur officielle Betix */
+    vertical-align: middle;
 }
 
-body.dark-mode .profile-form-section h3 {
-    color: #f3f4f6;
-}
-
-body.dark-mode .profile-form .form-group label {
-    color: #d1d5db;
-}
-
-body.dark-mode .profile-form .form-group input,
-body.dark-mode .profile-form .form-group select {
-    background: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-
-body.dark-mode .profile-form .form-group input:focus,
-body.dark-mode .profile-form .form-group select:focus {
-    border-color: #f5a623;
-    box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.1);
-}
-
-body.dark-mode #profileSaveMessage {
-    color: #34d399;
+.verified-badge i {
+    font-size: 0.9rem;
 }
 
 /* ============================================================
-   RESPONSIVE – FORMULAIRE DE PROFIL
+   PAGE PREMIUM
+   ============================================================ */
+.premium-page-content {
+    max-width: 800px !important;
+}
+
+.premium-benefits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.benefit-item {
+    background: #f8fafc;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.benefit-item i {
+    color: #f5a623;
+    width: 24px;
+    text-align: center;
+}
+
+.benefit-item:hover {
+    border-color: #f5a623;
+    background: #fef8f0;
+    transform: translateY(-2px);
+}
+
+.premium-pricing {
+    background: linear-gradient(135deg, #08143F, #1a1a2e);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.premium-pricing h3 {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+}
+
+.premium-pricing h3 span {
+    color: #f5a623 !important;
+}
+
+.premium-pricing p {
+    opacity: 0.8;
+}
+
+.premium-status-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    border: 2px solid #f5a623;
+}
+
+.premium-status-icon {
+    margin-bottom: 12px;
+}
+
+.premium-status-card h3 {
+    color: #1a1a2e;
+    margin-bottom: 8px;
+}
+
+/* ============================================================
+   BANNIÈRE PREMIUM (discrète)
+   ============================================================ */
+.premium-banner {
+    background: linear-gradient(135deg, #08143F, #1a1a2e);
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.premium-banner strong {
+    color: #f5a623;
+}
+
+.premium-banner-btn {
+    background: #f5a623;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.premium-banner-btn:hover {
+    transform: scale(1.05);
+}
+
+.premium-banner-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.premium-banner-close:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
-    .profile-form .form-row {
+    .premium-benefits {
         grid-template-columns: 1fr;
     }
-
-    #saveProfileBtn {
-        width: 100%;
-        justify-content: center;
+    .benefit-item {
+        padding: 12px 14px;
     }
-
-    #profileSaveMessage {
-        display: block;
-        margin-left: 0;
-        margin-top: 8px;
-        text-align: center;
+    .premium-pricing h3 {
+        font-size: 1.2rem;
     }
+}
+
+/* ============================================================
+   DARK MODE ADAPTATIONS
+   ============================================================ */
+body.dark-mode .benefit-item {
+    background: #2d3748;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+body.dark-mode .benefit-item:hover {
+    border-color: #f5a623;
+    background: #1f2937;
+}
+
+body.dark-mode .premium-status-card {
+    background: #1f2937;
+    border-color: #f5a623;
+}
+
+body.dark-mode .premium-status-card h3 {
+    color: #f3f4f6;
+}
+
+body.dark-mode .premium-banner {
+    background: linear-gradient(135deg, #08143F, #1a1a2e);
 }
