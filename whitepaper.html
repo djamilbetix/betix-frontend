@@ -228,16 +228,65 @@
             margin-top: 8px;
         }
 
-        /* ===== LIEN PI NETWORK (caché dans un texte) ===== */
-        .pi-download-link {
-            color: #000000;
-            text-decoration: underline;
-            font-weight: 600;
-            cursor: pointer;
+        /* ===== CALL-TO-ACTION PI NETWORK (style marketing) ===== */
+        .pi-cta-block {
+            background: #f8fafc;
+            border: 1.5px solid #08143F;
+            border-radius: 10px;
+            padding: 18px 24px;
+            margin: 12px 0 8px;
+            text-align: center;
+            transition: all 0.3s ease;
         }
 
-        .pi-download-link:hover {
-            color: #08143F;
+        .pi-cta-block:hover {
+            box-shadow: 0 4px 20px rgba(8, 20, 63, 0.08);
+            border-color: #08143F;
+        }
+
+        .pi-cta-block .cta-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #08143F !important;
+            margin-bottom: 4px;
+        }
+
+        .pi-cta-block .cta-text {
+            font-size: 12px;
+            color: #000000 !important;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .pi-cta-block .cta-button {
+            display: inline-block;
+            padding: 10px 28px;
+            background: #08143F;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 30px;
+            border: 1.5px solid #08143F;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .pi-cta-block .cta-button:hover {
+            background: #ffffff;
+            color: #08143F !important;
+            transform: scale(1.03);
+            box-shadow: 0 4px 16px rgba(8, 20, 63, 0.15);
+        }
+
+        .pi-cta-block .cta-code {
+            font-size: 10px;
+            color: #6b7280 !important;
+            margin-top: 6px;
+        }
+
+        .pi-cta-block .cta-code strong {
+            color: #08143F !important;
         }
 
         /* ===== FONDATEURS DE BETIX (avec photos) ===== */
@@ -501,6 +550,20 @@
             .btn-back-home {
                 font-size: 9px;
                 padding: 6px 18px;
+            }
+
+            .pi-cta-block {
+                padding: 14px 16px;
+            }
+            .pi-cta-block .cta-title {
+                font-size: 12px;
+            }
+            .pi-cta-block .cta-text {
+                font-size: 10.5px;
+            }
+            .pi-cta-block .cta-button {
+                font-size: 10.5px;
+                padding: 8px 20px;
             }
         }
 
@@ -837,10 +900,19 @@
             impact. By using Pi as a payment currency, Betix allows millions of
             unbanked people to participate in the global event economy.
         </p>
-        <p>
-            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-download-link">Download the Pi app</a>
-            and start mining today to fund your events and tickets.
-        </p>
+
+        <!-- CALL-TO-ACTION PI NETWORK (style marketing) -->
+        <div class="pi-cta-block">
+            <div class="cta-title">🚀 Do you already have the Pi app?</div>
+            <div class="cta-text">
+                If you don't have the Pi Network app yet, <strong>download it now</strong> and create your account.
+                Complete all verification steps (KYC) to start mining Pi and enjoy Betix services.
+            </div>
+            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="cta-button">
+                Download Pi Network now
+            </a>
+            <div class="cta-code">Use invitation code: <strong>19510</strong> to get a starter bonus</div>
+        </div>
 
         <h3>2.2 The Pi Network Founders</h3>
 
@@ -921,12 +993,19 @@
             purchasing tickets for real-world events.
         </p>
 
-        <!-- Pi download link (text) -->
-        <p style="text-align: center; margin-top: 12px; font-size: 11px;">
-            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-download-link">
-                Download the Pi Network app and use code 19510
+        <!-- Pi download link (call-to-action) -->
+        <div class="pi-cta-block" style="margin-top: 16px;">
+            <div class="cta-title">📲 Join millions of Pioneers</div>
+            <div class="cta-text">
+                Download the Pi Network app today, complete your KYC verification, and start mining Pi.
+                Once you have Pi in your wallet, you can use it to buy tickets on Betix.
+            </div>
+            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="cta-button">
+                Get the Pi app
             </a>
-        </p>
+            <div class="cta-code">Referral code: <strong>19510</strong> – Don't forget it!</div>
+        </div>
+
     </div>
 
     <!-- FRANÇAIS -->
@@ -960,10 +1039,19 @@
             Betix permet à des millions de personnes non bancarisées de participer
             à l'économie événementielle mondiale.
         </p>
-        <p>
-            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-download-link">Téléchargez l'application Pi</a>
-            et commencez à miner dès aujourd'hui pour financer vos événements et vos billets.
-        </p>
+
+        <!-- CALL-TO-ACTION PI NETWORK (style marketing) -->
+        <div class="pi-cta-block">
+            <div class="cta-title">🚀 Avez-vous déjà l'application Pi ?</div>
+            <div class="cta-text">
+                Si vous n'avez pas encore l'application Pi Network, <strong>téléchargez-la maintenant</strong> et créez votre compte.
+                Remplissez toutes les étapes de vérification (KYC) pour commencer à miner des Pi et profiter des services Betix.
+            </div>
+            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="cta-button">
+                Télécharger Pi Network
+            </a>
+            <div class="cta-code">Utilisez le code d'invitation : <strong>19510</strong> pour recevoir un bonus de démarrage</div>
+        </div>
 
         <h3>2.2 Les fondateurs de Pi Network</h3>
 
@@ -1054,12 +1142,20 @@
             événements du monde réel.
         </p>
 
-        <!-- Lien de téléchargement Pi (texte) -->
-        <p style="text-align: center; margin-top: 12px; font-size: 11px;">
-            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-download-link">
-                Téléchargez l'application Pi Network et utilisez le code 19510
+        <!-- Lien de téléchargement Pi (call-to-action) -->
+        <div class="pi-cta-block" style="margin-top: 16px;">
+            <div class="cta-title">📲 Rejoignez des millions de Pioneers</div>
+            <div class="cta-text">
+                Téléchargez l'application Pi Network dès aujourd'hui, réalisez votre vérification KYC,
+                et commencez à miner des Pi. Une fois que vous aurez des Pi dans votre portefeuille,
+                vous pourrez les utiliser pour acheter des billets sur Betix.
+            </div>
+            <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="cta-button">
+                Obtenir l'application Pi
             </a>
-        </p>
+            <div class="cta-code">Code de parrainage : <strong>19510</strong> – N'oubliez pas !</div>
+        </div>
+
     </div>
 
     <!-- ============================================================
