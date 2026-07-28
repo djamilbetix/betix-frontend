@@ -110,7 +110,6 @@
         <button class="sidebar-item" onclick="window.location.href='faq.html'">
             <i class="fas fa-question-circle"></i> FAQ
         </button>
-        <!-- NOUVEAU LIEN PREMIUM -->
         <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         <div class="sidebar-social">
@@ -180,7 +179,6 @@
 <!-- HOME PAGE                                                    -->
 <!-- ============================================================ -->
 <div id="homePage">
-    <!-- Bannière d'invitation Premium (discrète) -->
     <div id="premiumBanner" class="premium-banner" style="display:none; background: linear-gradient(135deg, #08143F, #1a1a2e); color: white; padding: 10px 20px; text-align: center; font-size: 0.9rem; border-radius: 0; margin: 0;">
         <span>✨ Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
         <button class="premium-banner-btn" onclick="showPage('premium')" style="background: #f5a623; border: none; padding: 4px 16px; border-radius: 30px; font-weight: 600; color: #1a1a2e; margin-left: 10px; cursor: pointer;">Learn More</button>
@@ -236,7 +234,6 @@
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
-        <!-- Message de limite gratuite -->
         <div id="freeLimitMessage" style="display:none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #92400e;">
             <i class="fas fa-info-circle"></i> You have reached the free limit of 3 events per month. 
             <a href="#" onclick="showPage('premium'); return false;" style="color: #08143F; font-weight: 600; text-decoration: underline;">Upgrade to Premium</a> to publish unlimited events.
@@ -398,7 +395,7 @@
             <i class="fas fa-crown" style="font-size:2rem; color:#f5a623;"></i>
             <h2 style="font-size:1.6rem; margin:0;">Betix Premium</h2>
         </div>
-        <p class="events-sub">Unlock exclusive benefits and take your event experience to the next level.</p>
+        <p class="events-sub">Choose the plan that fits your needs and unlock exclusive benefits.</p>
         <div id="premiumContent"></div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
@@ -441,7 +438,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PROFILE PAGE (avec formulaire)                               -->
+<!-- PROFILE PAGE (avec relecture, vérification)                 -->
 <!-- ============================================================ -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
@@ -485,17 +482,17 @@
             </div>
         </div>
 
-        <!-- ========== FORMULAIRE DE PROFIL ========== -->
-        <div class="profile-form-section" style="background:#f9fafb; border-radius:16px; padding:20px; margin-bottom:20px; border:1px solid #e5e7eb;">
-            <h3 style="margin-bottom:12px; font-size:1.1rem; color:#1a1a2e;"><i class="fas fa-user-edit"></i> Edit Profile</h3>
+        <!-- ========== FORMULAIRE DE PROFIL AVEC REVUE ========== -->
+        <div class="profile-form-section">
+            <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
             <form id="profileForm" class="profile-form">
-                <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="form-row">
                     <div class="form-group">
-                        <label>First Name</label>
+                        <label>First Name <span style="color:red;">*</span></label>
                         <input type="text" id="profileFirstName" placeholder="John" maxlength="50">
                     </div>
                     <div class="form-group">
-                        <label>Last Name</label>
+                        <label>Last Name <span style="color:red;">*</span></label>
                         <input type="text" id="profileLastName" placeholder="Doe" maxlength="50">
                     </div>
                 </div>
@@ -511,16 +508,26 @@
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100">
+                    <div class="input-with-verify">
+                        <input type="email" id="profileEmail" placeholder="you@example.com" maxlength="100">
+                        <button type="button" class="verify-btn" id="verifyEmailBtn"><i class="fas fa-check-circle"></i> Verify</button>
+                    </div>
+                    <div id="emailVerificationStatus" class="verification-status"></div>
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20">
+                    <div class="input-with-verify">
+                        <input type="tel" id="profilePhone" placeholder="+1234567890" maxlength="20">
+                        <button type="button" class="verify-btn" id="verifyPhoneBtn"><i class="fas fa-check-circle"></i> Verify</button>
+                    </div>
+                    <div id="phoneVerificationStatus" class="verification-status"></div>
                 </div>
-                <button type="button" class="btn-primary" id="saveProfileBtn" style="margin-top:8px; width:auto; padding:10px 30px;">
-                    <i class="fas fa-save"></i> Save Profile
-                </button>
-                <span id="profileSaveMessage" style="margin-left:12px; font-size:0.9rem; color:#10b981;"></span>
+
+                <div class="profile-form-actions">
+                    <button type="button" class="btn-primary" id="saveProfileBtn"><i class="fas fa-save"></i> Save Profile</button>
+                    <button type="button" class="btn-secondary" id="editProfileBtn" style="display:none;"><i class="fas fa-pen"></i> Edit</button>
+                </div>
+                <div id="profileSaveMessage" style="margin-top:12px; font-size:0.9rem;"></div>
             </form>
         </div>
         <!-- ========== FIN FORMULAIRE ========== -->
@@ -528,6 +535,26 @@
         <div class="profile-actions">
             <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL DE REVUE DU PROFIL                                      -->
+<!-- ============================================================ -->
+<div id="profileReviewModal" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+        <span class="modal-close" id="profileReviewClose">&times;</span>
+        <h2 style="margin-bottom:8px;">Review Your Information</h2>
+        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">Please confirm that all details are correct before saving.</p>
+        <div id="profileReviewContent" style="background:#f9fafb; border-radius:12px; padding:16px; margin-bottom:16px;"></div>
+        <div style="display:flex; gap:12px;">
+            <button class="btn-secondary" id="profileReviewEditBtn" style="flex:1;">Edit</button>
+            <button class="btn-primary" id="profileReviewConfirmBtn" style="flex:2;"><i class="fas fa-check"></i> Confirm & Save</button>
+        </div>
+        <div id="profileReviewLoading" style="display:none; text-align:center; margin-top:12px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:1.5rem; color:#f5a623;"></i>
+            <p style="margin-top:8px;">Saving your information...</p>
         </div>
     </div>
 </div>
