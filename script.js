@@ -1368,7 +1368,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU HTML DU TICKET
+// GÉNÉRATION DU HTML DU TICKET (VERSION OFFICIELLE AVEC LOGO)
 // ============================================================
 function generateTicketHTML(ticket) {
     const event = events.find(e => e.id === ticket.eventId);
@@ -1385,56 +1385,67 @@ function generateTicketHTML(ticket) {
         ? `${event.durationValue} ${event.durationUnit}`
         : 'N/A';
 
+    const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
+                     (currentUser.last_name ? ' ' + currentUser.last_name : '');
+    const userEmail = currentUser.email || 'Not provided';
+    const userPhone = currentUser.phone_number || 'Not provided';
+    const buyerName = ticket.buyerName || fullName || 'Anonymous';
+    const ticketType = ticket.ticketType || 'Standard';
+    const quantity = ticket.quantity || 1;
+    const price = (ticket.price || 0).toFixed(6);
+    const status = ticket.status || 'Valid';
+    const orderId = ticket.id ? ticket.id.substring(0, 12).toUpperCase() : 'N/A';
+    const ticketId = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : 'N/A';
+    const verificationCode = ticket.qrCode || 'BETIX-' + ticket.id?.substring(0, 8) || 'N/A';
+
     return `
-        <div class="ticket-preview-container" id="ticketPreview">
-            <div class="ticket-header">
-                <div class="logo">
+        <div class="ticket-official-container" id="ticketPreview">
+            <div class="ticket-official-header">
+                <div class="ticket-official-logo">
                     <img src="logo.png" alt="Betix" onerror="this.style.display='none'">
-                    Betix
+                    <span>Betix</span>
                 </div>
-                <div class="badge">Valid Ticket</div>
+                <div class="ticket-official-badge">OFFICIAL TICKET</div>
             </div>
-            <div class="ticket-body">
-                <div class="event-image">
-                    <img src="${imageUrl}" alt="${escapeHtml(ticket.eventTitle)}" onerror="this.src='${fallbackImage}'">
+            <div class="ticket-official-subtitle">Your official access to unforgettable events.</div>
+            <div class="ticket-official-body">
+                <div class="ticket-official-left">
+                    <div class="ticket-official-event-title">${escapeHtml(ticket.eventTitle)}</div>
+                    <div class="ticket-official-event-meta">
+                        <div><i class="fas fa-calendar-alt"></i> ${dateFormatted} at ${timeFormatted}</div>
+                        <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(ticket.eventLocation || 'Online')}</div>
+                        <div><i class="fas fa-clock"></i> Duration: ${durationDisplay}</div>
+                        <div><i class="fas fa-tag"></i> Category: ${escapeHtml(category)}</div>
+                        <div><i class="fas fa-user"></i> Organizer: ${escapeHtml(organizerName)}</div>
+                    </div>
                 </div>
-                <div class="event-info">
-                    <h2>${escapeHtml(ticket.eventTitle)}</h2>
-                    <div class="category">${escapeHtml(category)}</div>
-                    <div class="description">${event?.description || 'No description'}</div>
-                    <div class="details-grid">
-                        <div><span class="label">Participant</span> <span class="value">${escapeHtml(ticket.buyerName || 'Anonymous')}</span></div>
-                        <div><span class="label">Username</span> <span class="value">@${escapeHtml(ticket.buyerWallet || 'unknown')}</span></div>
-                        <div><span class="label">Ticket Type</span> <span class="value">${escapeHtml(ticket.ticketType || 'Standard')}</span></div>
-                        <div><span class="label">Quantity</span> <span class="value">${ticket.quantity || 1}</span></div>
-                        <div><span class="label">Price</span> <span class="value">${(ticket.price || 0).toFixed(6)} Pi</span></div>
-                        <div><span class="label">Event Date</span> <span class="value">${dateFormatted}</span></div>
-                        <div><span class="label">Time</span> <span class="value">${timeFormatted}</span></div>
-                        <div><span class="label">Duration</span> <span class="value">${durationDisplay}</span></div>
-                        <div><span class="label">Location</span> <span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span></div>
-                        <div><span class="label">Country</span> <span class="value">${escapeHtml(ticket.pays || 'France')}</span></div>
-                        <div><span class="label">Organizer</span> <span class="value">${escapeHtml(organizerName)}</span></div>
-                        <div><span class="label">Order #</span> <span class="value">${ticket.id.substring(0, 8).toUpperCase()}</span></div>
-                        <div><span class="label">Ticket #</span> <span class="value">${ticket.id.substring(0, 12).toUpperCase()}</span></div>
-                        <div><span class="label">Purchase Date</span> <span class="value">${ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A'}</span></div>
-                        <div><span class="label">Status</span> <span class="value" style="color:#10b981;">Valid</span></div>
+                <div class="ticket-official-right">
+                    <div class="ticket-official-info-grid">
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">ORDER ID</span><span class="ticket-official-value">#${orderId}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">TICKET ID</span><span class="ticket-official-value">#${ticketId}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">NAME</span><span class="ticket-official-value">${escapeHtml(buyerName)}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">EMAIL</span><span class="ticket-official-value">${escapeHtml(userEmail)}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">PHONE</span><span class="ticket-official-value">${escapeHtml(userPhone)}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">TICKET TYPE</span><span class="ticket-official-value">${escapeHtml(ticketType)}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">QUANTITY</span><span class="ticket-official-value">${quantity}</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">PRICE</span><span class="ticket-official-value">${price} Pi</span></div>
+                        <div class="ticket-official-info-item"><span class="ticket-official-label">STATUS</span><span class="ticket-official-value" style="color:#10b981;">${escapeHtml(status)}</span></div>
                     </div>
                 </div>
             </div>
-            <div class="ticket-footer">
-                <div class="qr-section">
-                    <div id="qr-ticket-${ticket.id}" class="qr-code"></div>
-                    <span class="qr-label">Scan to validate</span>
+            <div class="ticket-official-footer">
+                <div class="ticket-official-footer-left">
+                    <div class="ticket-official-footer-title">OFFICIAL TICKET</div>
+                    <div class="ticket-official-footer-sub">Issued by Betix</div>
+                    <div class="ticket-official-security"><i class="fas fa-shield-alt"></i><span>SECURE & VERIFIED</span></div>
+                    <div class="ticket-official-terms"><div>• PERSONAL USE ONLY</div><div>• ONE-TIME ENTRY</div></div>
                 </div>
-                <div class="security-badge">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Secured by Betix Blockchain</span>
+                <div class="ticket-official-footer-right">
+                    <div class="ticket-official-qr" id="qr-ticket-${ticket.id}"></div>
+                    <div class="ticket-official-verification"><span class="ticket-official-verification-label">VERIFICATION CODE</span><span class="ticket-official-verification-code">${escapeHtml(verificationCode)}</span></div>
                 </div>
             </div>
-            <div class="ticket-order-info">
-                <span>Order ID: ${ticket.id}</span>
-                <span>© Betix 2026</span>
-            </div>
+            <div class="ticket-official-thanks">THANK YOU FOR CHOOSING BETIX</div>
         </div>
     `;
 }
@@ -1831,9 +1842,7 @@ function markTicketAsUsed(ticketId) {
         saveUsedTickets(); saveTickets(); addNotification(t('ticketMarkedUsed'), 'info');
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
-}
-
-// ============================================================
+}// ============================================================
 // ACHAT ET PAIEMENT (avec frais de service et commission)
 // ============================================================
 const processingTransactions = new Set();
