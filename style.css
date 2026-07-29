@@ -4992,3 +4992,254 @@ body.dark-mode .ticket-actions .btn-png {
 body.dark-mode .ticket-actions .btn-share {
     background: #2563eb;
 }
+
+
+/* ============================================================
+   NOUVEAU STYLE PROFESSIONNEL POUR QUANTITY POPUP
+   ============================================================ */
+.quantity-popup-professional {
+    max-width: 440px;
+    width: 90%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.quantity-popup-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px 12px 24px;
+    border-bottom: 1px solid #edf2f7;
+    position: relative;
+}
+.quantity-popup-icon {
+    font-size: 1.6rem;
+    color: #1A2C4E;
+    margin-right: 12px;
+}
+.quantity-popup-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1A2C4E;
+    margin: 0;
+    flex: 1;
+}
+.quantity-popup-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.quantity-popup-close:hover {
+    background: #edf2f7;
+}
+.quantity-popup-body {
+    padding: 20px 24px 16px;
+}
+.quantity-event-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #1A2C4E;
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+.quantity-selector-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.quantity-selector-wrapper .qty-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: #f7fafc;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.quantity-selector-wrapper .qty-btn:hover {
+    background: #edf2f7;
+    border-color: #a0aec0;
+}
+.quantity-selector-wrapper #ticketQuantity {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1A2C4E;
+}
+.quantity-receipt {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 12px 0;
+}
+.quantity-receipt .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+.quantity-receipt .receipt-row.total {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: 700;
+    color: #1A2C4E;
+    font-size: 1.05rem;
+}
+.quantity-max-info {
+    font-size: 0.85rem;
+    color: #718096;
+    text-align: center;
+    margin: 8px 0 0;
+}
+.quantity-popup-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid #edf2f7;
+    justify-content: flex-end;
+}
+.quantity-popup-footer .btn-secondary-modal {
+    background: #edf2f7;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.quantity-popup-footer .btn-secondary-modal:hover {
+    background: #e2e8f0;
+}
+.quantity-popup-footer .btn-primary {
+    background: #2B6CB0;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 40px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.quantity-popup-footer .btn-primary:hover {
+    background: #1A4F7A;
+}
+
+/* ============================================================
+   PAST EVENT POPUP
+   ============================================================ */
+.past-event-popup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10001;
+    justify-content: center;
+    align-items: center;
+}
+.past-event-popup.show { display: flex; }
+.past-event-popup-content {
+    max-width: 400px;
+    width: 90%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.past-event-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid #edf2f7;
+}
+.past-event-icon {
+    font-size: 1.8rem;
+    color: #E53E3E;
+    margin-right: 12px;
+}
+.past-event-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #E53E3E;
+    margin: 0;
+    flex: 1;
+}
+.past-event-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+.past-event-close:hover {
+    background: #edf2f7;
+}
+.past-event-body {
+    padding: 20px 24px 16px;
+    font-size: 1rem;
+    color: #2d3748;
+    line-height: 1.6;
+}
+.past-event-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid #edf2f7;
+    justify-content: flex-end;
+}
+.past-event-footer .btn-secondary-modal {
+    background: #edf2f7;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.past-event-footer .btn-secondary-modal:hover {
+    background: #e2e8f0;
+}
+.past-event-footer .btn-primary {
+    background: #2B6CB0;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.past-event-footer .btn-primary:hover {
+    background: #1A4F7A;
+}
+
+/* Animation commune */
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
