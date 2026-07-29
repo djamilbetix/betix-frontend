@@ -1843,7 +1843,7 @@ async function confirmPurchase(eventId, quantity) {
     if (!event) { alert(t('eventNotFound')); return; }
     const eventDate = new Date(event.date);
     if (eventDate < new Date()) {
-        alert("❌ Cet événement a déjà eu lieu. Vous ne pouvez pas acheter de tickets pour un événement passé.");
+        openPastEventPopup();
         return;
     }
     const price = event.price || 0;
@@ -4121,6 +4121,38 @@ function updatePremiumBanner() {
         banner.style.display = 'flex';
     }
 }
+
+// ============================================================
+// PAST EVENT POPUP
+// ============================================================
+function openPastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'flex';
+}
+
+function closePastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'none';
+}
+
+// Bouton "Voir les événements à venir"
+document.addEventListener('DOMContentLoaded', function() {
+    const viewBtn = document.getElementById('viewUpcomingEventsBtn');
+    if (viewBtn) {
+        viewBtn.addEventListener('click', function() {
+            closePastEventPopup();
+            if (typeof showPage === 'function') {
+                showPage('home');
+            }
+            setTimeout(() => {
+                const eventsSection = document.querySelector('.events-container');
+                if (eventsSection) {
+                    eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        });
+    }
+});
 
 // ============================================================
 // INITIALISATION
