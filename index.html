@@ -38,7 +38,7 @@
 <body>
 
 <!-- ============================================================ -->
-<!-- LOADER AVEC LOGO + 5 BOULETS - 3 SECONDES                   -->
+<!-- LOADER                                                       -->
 <!-- ============================================================ -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
@@ -57,7 +57,7 @@
 <div id="main-content" style="display: none;">
 
 <!-- ============================================================ -->
-<!-- HEADER FIXE (sticky) - RÉDUIT                              -->
+<!-- HEADER                                                       -->
 <!-- ============================================================ -->
 <header class="header" id="mainHeader">
     <div class="header-left">
@@ -72,7 +72,11 @@
             <span class="logo-text">Betix</span>
         </div>
     </div>
-    <div class="header-right" id="headerRight"></div>
+    <div class="header-right" id="headerRight">
+        <button id="menuBtn" aria-label="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
 </header>
 
 <!-- ============================================================ -->
@@ -180,7 +184,7 @@
 <!-- ============================================================ -->
 <div id="homePage">
     <div id="premiumBanner" class="premium-banner" style="display:none; background: #f5a623; color: #1a1a2e; padding: 12px 20px; text-align: center; font-size: 0.95rem; border-radius: 0; margin: 0; font-weight: 600;">
-        <span>🔓 Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
+        <span>Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
         <button class="premium-banner-btn" onclick="showPage('premium')" style="background: #1a1a2e; border: none; padding: 4px 16px; border-radius: 30px; font-weight: 700; color: white; margin-left: 10px; cursor: pointer;">Learn More</button>
         <button class="premium-banner-close" onclick="document.getElementById('premiumBanner').style.display='none'" style="background: none; border: none; color: #1a1a2e; margin-left: 10px; cursor: pointer; font-size: 1.2rem;">&times;</button>
     </div>
@@ -229,7 +233,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- CREATE EVENT PAGE (SIMPLIFIÉ)                               -->
+<!-- CREATE EVENT PAGE                                            -->
 <!-- ============================================================ -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
@@ -438,7 +442,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PROFILE PAGE (avec formulaire)                               -->
+<!-- PROFILE PAGE                                                 -->
 <!-- ============================================================ -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
@@ -721,7 +725,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- GLOBAL LOADER POUR LES TÉLÉCHARGEMENTS                       -->
+<!-- GLOBAL LOADER                                                -->
 <!-- ============================================================ -->
 <div id="globalLoader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
     <div style="background:white; padding:30px; border-radius:16px; text-align:center; max-width:300px; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
@@ -731,7 +735,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- FOOTER (MIS À JOUR)                                         -->
+<!-- FOOTER                                                       -->
 <!-- ============================================================ -->
 <footer class="betix-footer">
     <div class="footer-container">
@@ -832,32 +836,77 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- QUANTITY POPUP (PROFESSIONNEL)                               -->
+<!-- QUANTITY POPUP                                               -->
 <!-- ============================================================ -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content quantity-popup-professional">
         <div class="quantity-popup-header">
             <span class="quantity-popup-icon"><i class="fas fa-ticket-alt"></i></span>
-            <h3>Choisissez la quantité</h3>
+            <h3>Choose quantity</h3>
             <button class="quantity-popup-close" onclick="closeQuantityPopup()"><i class="fas fa-times"></i></button>
         </div>
         <div class="quantity-popup-body">
-            <p class="quantity-event-title" id="quantityEventTitle">Nom de l'événement</p>
+            <p class="quantity-event-title" id="quantityEventTitle">Event name</p>
             <div class="quantity-selector-wrapper">
                 <button class="qty-btn" onclick="updateQuantity(-1)">−</button>
                 <input type="number" id="ticketQuantity" value="1" min="1" max="10">
                 <button class="qty-btn" onclick="updateQuantity(1)">+</button>
             </div>
             <div class="quantity-receipt">
-                <div class="receipt-row"><span>Sous‑total</span><span id="subtotalDisplay">0 Pi</span></div>
-                <div class="receipt-row"><span>Frais de service (2%)</span><span id="serviceFeeDisplay">0 Pi</span></div>
+                <div class="receipt-row"><span>Subtotal</span><span id="subtotalDisplay">0 Pi</span></div>
+                <div class="receipt-row"><span>Service fee (2%)</span><span id="serviceFeeDisplay">0 Pi</span></div>
                 <div class="receipt-row total"><span>Total</span><span id="totalPriceDisplay">0 Pi</span></div>
             </div>
-            <p class="quantity-max-info" id="maxQuantityInfo">Maximum : 100 ticket(s) disponible(s)</p>
+            <p class="quantity-max-info" id="maxQuantityInfo">Maximum : 100 ticket(s) available</p>
         </div>
         <div class="quantity-popup-footer">
-            <button class="btn-secondary-modal" onclick="closeQuantityPopup()">Annuler</button>
-            <button class="btn-primary" id="confirmBuyBtn">Confirmer l'achat</button>
+            <button class="btn-secondary-modal" onclick="closeQuantityPopup()">Cancel</button>
+            <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONFIRM PURCHASE POPUP                                       -->
+<!-- ============================================================ -->
+<div id="confirmPurchasePopup" class="confirm-purchase-popup" style="display:none;">
+    <div class="confirm-purchase-popup-content">
+        <div class="confirm-purchase-header">
+            <span class="confirm-purchase-icon"><i class="fas fa-shopping-cart"></i></span>
+            <h3>Confirm Purchase</h3>
+            <button class="confirm-purchase-close" onclick="closeConfirmPurchasePopup()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="confirm-purchase-body">
+            <p class="confirm-purchase-title" id="confirmPurchaseTitle">Confirm purchase of 1 ticket(s) for "Event"</p>
+            <div class="confirm-purchase-receipt">
+                <div class="receipt-row"><span>Subtotal</span><span id="confirmSubtotal">0.000300 Pi</span></div>
+                <div class="receipt-row"><span>Service Fee (2%)</span><span id="confirmServiceFee">0.000006 Pi</span></div>
+                <div class="receipt-row total"><span>Total</span><span id="confirmTotal">0.000306 Pi</span></div>
+            </div>
+        </div>
+        <div class="confirm-purchase-footer">
+            <button class="btn-secondary-modal" onclick="closeConfirmPurchasePopup()">Cancel</button>
+            <button class="btn-primary" id="confirmPurchaseFinalBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TRANSACTION PROCESSED POPUP                                  -->
+<!-- ============================================================ -->
+<div id="transactionProcessedPopup" class="transaction-processed-popup" style="display:none;">
+    <div class="transaction-processed-popup-content">
+        <div class="transaction-processed-header">
+            <span class="transaction-processed-icon"><i class="fas fa-check-circle"></i></span>
+            <h3>Transaction processed</h3>
+            <button class="transaction-processed-close" onclick="closeTransactionProcessedPopup()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="transaction-processed-body">
+            <p>This transaction has already been processed.<br>Your tickets are available in "My Tickets".</p>
+            <p class="transaction-processed-timer" id="transactionProcessedTimer">Your account will be debited in <span id="timerSeconds">5</span> second(s).</p>
+        </div>
+        <div class="transaction-processed-footer">
+            <button class="btn-primary" id="transactionProcessedOkBtn">OK</button>
         </div>
     </div>
 </div>
@@ -869,16 +918,16 @@
     <div class="past-event-popup-content">
         <div class="past-event-header">
             <span class="past-event-icon"><i class="fas fa-calendar-times"></i></span>
-            <h3>Événement terminé</h3>
+            <h3>Event ended</h3>
             <button class="past-event-close" onclick="closePastEventPopup()"><i class="fas fa-times"></i></button>
         </div>
         <div class="past-event-body">
-            <p>Cet événement est déjà passé et n’est plus accessible à la réservation.</p>
-            <p style="margin-top: 8px; color: #4A5568;">Nous vous invitons à découvrir nos prochains événements.</p>
+            <p>This event has already taken place and is no longer available for booking.</p>
+            <p style="margin-top: 8px; color: #4A5568;">Discover our upcoming events.</p>
         </div>
         <div class="past-event-footer">
-            <button class="btn-secondary-modal" onclick="closePastEventPopup()">Fermer</button>
-            <button class="btn-primary" id="viewUpcomingEventsBtn">Voir les événements à venir</button>
+            <button class="btn-secondary-modal" onclick="closePastEventPopup()">Close</button>
+            <button class="btn-primary" id="viewUpcomingEventsBtn">View upcoming events</button>
         </div>
     </div>
 </div>
@@ -904,7 +953,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- PAIEMENT EN ATTENTE                                          -->
+<!-- PAYMENT PENDING                                              -->
 <!-- ============================================================ -->
 <div id="paymentPendingModal" style="display: none;"></div>
 
