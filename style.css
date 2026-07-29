@@ -1865,7 +1865,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     border-color: #d1d5db;
 }
 
-/* QUANTITY POPUP */
+/* QUANTITY POPUP (ancien, gardé pour compatibilité) */
 .quantity-popup {
     display: none;
     position: fixed;
@@ -4993,10 +4993,11 @@ body.dark-mode .ticket-actions .btn-share {
     background: #2563eb;
 }
 
-
 /* ============================================================
-   NOUVEAU STYLE PROFESSIONNEL POUR QUANTITY POPUP
+   NOUVEAUX STYLES POUR POPUPS PROFESSIONNELS
    ============================================================ */
+
+/* ----- QUANTITY POPUP (amélioration) ----- */
 .quantity-popup-professional {
     max-width: 440px;
     width: 90%;
@@ -5143,9 +5144,221 @@ body.dark-mode .ticket-actions .btn-share {
     background: #1A4F7A;
 }
 
-/* ============================================================
-   PAST EVENT POPUP
-   ============================================================ */
+/* ----- CONFIRM PURCHASE POPUP ----- */
+.confirm-purchase-popup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10002;
+    justify-content: center;
+    align-items: center;
+}
+.confirm-purchase-popup.show { display: flex; }
+.confirm-purchase-popup-content {
+    max-width: 440px;
+    width: 90%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.confirm-purchase-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px 12px 24px;
+    border-bottom: 1px solid #edf2f7;
+    position: relative;
+}
+.confirm-purchase-icon {
+    font-size: 1.6rem;
+    color: #1A2C4E;
+    margin-right: 12px;
+}
+.confirm-purchase-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1A2C4E;
+    margin: 0;
+    flex: 1;
+}
+.confirm-purchase-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.confirm-purchase-close:hover {
+    background: #edf2f7;
+}
+.confirm-purchase-body {
+    padding: 20px 24px 16px;
+}
+.confirm-purchase-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #1A2C4E;
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+.confirm-purchase-receipt {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 12px 0;
+}
+.confirm-purchase-receipt .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+.confirm-purchase-receipt .receipt-row.total {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: 700;
+    color: #1A2C4E;
+    font-size: 1.05rem;
+}
+.confirm-purchase-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid #edf2f7;
+    justify-content: flex-end;
+}
+.confirm-purchase-footer .btn-secondary-modal {
+    background: #edf2f7;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.confirm-purchase-footer .btn-secondary-modal:hover {
+    background: #e2e8f0;
+}
+.confirm-purchase-footer .btn-primary {
+    background: #2B6CB0;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 40px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.confirm-purchase-footer .btn-primary:hover {
+    background: #1A4F7A;
+}
+
+/* ----- TRANSACTION PROCESSED POPUP ----- */
+.transaction-processed-popup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10003;
+    justify-content: center;
+    align-items: center;
+}
+.transaction-processed-popup.show { display: flex; }
+.transaction-processed-popup-content {
+    max-width: 420px;
+    width: 90%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.transaction-processed-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid #edf2f7;
+}
+.transaction-processed-icon {
+    font-size: 1.8rem;
+    color: #00A86B;
+    margin-right: 12px;
+}
+.transaction-processed-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #00A86B;
+    margin: 0;
+    flex: 1;
+}
+.transaction-processed-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+.transaction-processed-close:hover {
+    background: #edf2f7;
+}
+.transaction-processed-body {
+    padding: 20px 24px 16px;
+    font-size: 1rem;
+    color: #2d3748;
+    line-height: 1.6;
+    text-align: center;
+}
+.transaction-processed-timer {
+    font-size: 0.9rem;
+    color: #4A5568;
+    margin-top: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #edf2f7;
+}
+.transaction-processed-timer span {
+    font-weight: 700;
+    color: #1A2C4E;
+}
+.transaction-processed-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid #edf2f7;
+    justify-content: center;
+}
+.transaction-processed-footer .btn-primary {
+    background: #2B6CB0;
+    border: none;
+    padding: 10px 40px;
+    border-radius: 40px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.transaction-processed-footer .btn-primary:hover {
+    background: #1A4F7A;
+}
+
+/* ----- PAST EVENT POPUP ----- */
 .past-event-popup {
     display: none;
     position: fixed;
