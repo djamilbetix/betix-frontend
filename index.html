@@ -37,18 +37,13 @@
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- LOADER                                                       -->
-<!-- ============================================================ -->
+<!-- LOADER -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
         <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
         <div class="loader-balls">
-            <div class="loader-ball"></div>
-            <div class="loader-ball"></div>
-            <div class="loader-ball"></div>
-            <div class="loader-ball"></div>
-            <div class="loader-ball"></div>
+            <div class="loader-ball"></div><div class="loader-ball"></div><div class="loader-ball"></div>
+            <div class="loader-ball"></div><div class="loader-ball"></div>
         </div>
         <p class="loader-text">Loading...</p>
     </div>
@@ -56,9 +51,7 @@
 
 <div id="main-content" style="display: none;">
 
-<!-- ============================================================ -->
-<!-- HEADER FIXE (sticky) - RÉDUIT                              -->
-<!-- ============================================================ -->
+<!-- HEADER sans le menu hamburger du haut -->
 <header class="header" id="mainHeader">
     <div class="header-left">
         <button class="back-btn hidden" id="backBtn">
@@ -72,13 +65,10 @@
             <span class="logo-text">Betix</span>
         </div>
     </div>
-    <!-- ====== MENU DU HAUT SUPPRIMÉ ====== -->
-    <!-- ============================================================ -->
+    <!-- Le menu hamburger du haut a été supprimé -->
 </header>
 
-<!-- ============================================================ -->
-<!-- SIDEBAR                                                       -->
-<!-- ============================================================ -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <button class="close-sidebar" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
@@ -105,12 +95,8 @@
         <button class="sidebar-item" id="scanMenuItem" data-page="scan" onclick="window.location.href='scan.html'" style="display: none; background: #08143F; color: white; border-radius: 8px;">
             <i class="fas fa-qrcode"></i> Scan Ticket
         </button>
-        <button class="sidebar-item" onclick="window.location.href='whitepaper.html'">
-            <i class="fas fa-file-alt"></i> Whitepaper
-        </button>
-        <button class="sidebar-item" onclick="window.location.href='faq.html'">
-            <i class="fas fa-question-circle"></i> FAQ
-        </button>
+        <button class="sidebar-item" onclick="window.location.href='whitepaper.html'"><i class="fas fa-file-alt"></i> Whitepaper</button>
+        <button class="sidebar-item" onclick="window.location.href='faq.html'"><i class="fas fa-question-circle"></i> FAQ</button>
         <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         <div class="sidebar-social">
@@ -128,57 +114,32 @@
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- ============================================================ -->
-<!-- BOTTOM NAVIGATION                                            -->
-<!-- ============================================================ -->
+<!-- BOTTOM NAVIGATION -->
 <nav class="bottom-nav" id="bottomNav">
-    <button class="nav-item active" id="navHome" onclick="showPage('home')">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-    </button>
-    <button class="nav-item" id="navCreate" onclick="showPage('create')">
-        <i class="fas fa-plus-circle"></i>
-        <span>Create</span>
-    </button>
-    <button class="nav-item" id="navMenu" onclick="openSidebar()">
-        <i class="fas fa-bars"></i>
-        <span>Menu</span>
-    </button>
+    <button class="nav-item active" id="navHome" onclick="showPage('home')"><i class="fas fa-home"></i><span>Home</span></button>
+    <button class="nav-item" id="navCreate" onclick="showPage('create')"><i class="fas fa-plus-circle"></i><span>Create</span></button>
+    <button class="nav-item" id="navMenu" onclick="openSidebar()"><i class="fas fa-bars"></i><span>Menu</span></button>
 </nav>
 
-<!-- ============================================================ -->
-<!-- NOTIFICATIONS PAGE                                           -->
-<!-- ============================================================ -->
+<!-- NOTIFICATIONS PAGE -->
 <div id="notificationsPage" class="hidden-page">
     <div class="page-content">
-        <h2 style="display:flex; align-items:center; gap:10px;">
-            <i class="fas fa-bell" style="color:#f5a623;"></i> Notifications
-        </h2>
+        <h2 style="display:flex; align-items:center; gap:10px;"><i class="fas fa-bell" style="color:#f5a623;"></i> Notifications</h2>
         <p class="events-sub">All your notifications</p>
         <div id="notificationsList" style="margin-top:20px;"></div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CHAT                                                          -->
-<!-- ============================================================ -->
+<!-- CHAT -->
 <button class="chat-float-btn" id="chatFloatBtn"><i class="fas fa-comment-dots"></i></button>
 <div id="chatWidget" class="chat-widget">
-    <div class="chat-header">
-        <div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div>
-        <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
-    </div>
+    <div class="chat-header"><div><span class="chat-logo">Betix Support</span><span class="chat-status">Online</span></div><button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button></div>
     <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Type your message..." maxlength="500">
-        <button id="chatSendBtn">Send</button>
-    </div>
+    <div class="chat-input-area"><input type="text" id="chatInput" placeholder="Type your message..." maxlength="500"><button id="chatSendBtn">Send</button></div>
 </div>
 
-<!-- ============================================================ -->
-<!-- HOME PAGE                                                    -->
-<!-- ============================================================ -->
+<!-- HOME PAGE -->
 <div id="homePage">
     <div id="premiumBanner" class="premium-banner" style="display:none; background: #f5a623; color: #1a1a2e; padding: 12px 20px; text-align: center; font-size: 0.95rem; border-radius: 0; margin: 0; font-weight: 600;">
         <span>Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
@@ -196,10 +157,7 @@
         </div>
         <div class="hero-divider"></div>
         <div class="hero-content-bottom">
-            <div class="hero-text">
-                <h1>The first ticketing platform powered by Pi Network</h1>
-                <p>Discover and book unique experiences. Pay with your Pi crypto.</p>
-            </div>
+            <div class="hero-text"><h1>The first ticketing platform powered by Pi Network</h1><p>Discover and book unique experiences. Pay with your Pi crypto.</p></div>
         </div>
     </section>
     <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
@@ -217,9 +175,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MY EVENTS PAGE                                               -->
-<!-- ============================================================ -->
+<!-- MY EVENTS PAGE -->
 <div id="myeventsPage" class="hidden-page">
     <div class="events-container my-events-container">
         <h2 class="events-title">My Events</h2>
@@ -229,9 +185,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CREATE EVENT PAGE                                            -->
-<!-- ============================================================ -->
+<!-- CREATE EVENT PAGE -->
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
@@ -253,9 +207,7 @@
                     <option>Gala</option><option>Seminar</option><option>Formation</option>
                 </select>
             </div>
-            <div class="form-group"><label>Country</label>
-                <select id="eventCountry"></select>
-            </div>
+            <div class="form-group"><label>Country</label><select id="eventCountry"></select></div>
             <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="eventDate" required></div>
             <div class="form-group">
                 <label>Duration</label>
@@ -265,11 +217,8 @@
                     </div>
                     <div class="duration-select-group">
                         <select id="eventDurationUnit" class="duration-unit-select">
-                            <option value="hours">Hour</option>
-                            <option value="days" selected>Day</option>
-                            <option value="weeks">Week</option>
-                            <option value="months">Month</option>
-                            <option value="years">Year</option>
+                            <option value="hours">Hour</option><option value="days" selected>Day</option>
+                            <option value="weeks">Week</option><option value="months">Month</option><option value="years">Year</option>
                         </select>
                     </div>
                 </div>
@@ -344,9 +293,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PUBLISH CONFIRM                                              -->
-<!-- ============================================================ -->
+<!-- PUBLISH CONFIRM -->
 <div id="publishConfirmPopup" class="publish-confirm">
     <div class="publish-confirm-content publish-confirm-professional">
         <div class="publish-confirm-header">
@@ -387,9 +334,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PREMIUM PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- PREMIUM PAGE -->
 <div id="premiumPage" class="hidden-page">
     <div class="page-content premium-page-content">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
@@ -402,9 +347,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- TICKETS PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- TICKETS PAGE -->
 <div id="ticketsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Active Tickets</h2>
@@ -414,9 +357,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- HISTORY PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- HISTORY PAGE -->
 <div id="historyPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">Ticket History</h2>
@@ -426,9 +367,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- RATINGS PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- RATINGS PAGE -->
 <div id="ratingsPage" class="hidden-page">
     <div class="events-container">
         <h2 class="events-title">My Ratings</h2>
@@ -438,9 +377,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PROFILE PAGE                                                 -->
-<!-- ============================================================ -->
+<!-- PROFILE PAGE -->
 <div id="profilePage" class="hidden-page">
     <div class="page-content profile-page-content">
         <div class="profile-header-card">
@@ -482,8 +419,6 @@
                 <span class="stat-link">View all →</span>
             </div>
         </div>
-
-        <!-- ========== FORMULAIRE DE PROFIL ========== -->
         <div class="profile-form-section">
             <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
             <form id="profileForm" class="profile-form">
@@ -499,9 +434,7 @@
                 </div>
                 <div class="form-group">
                     <label>Country</label>
-                    <select id="profileCountry">
-                        <option value="">Select your country</option>
-                    </select>
+                    <select id="profileCountry"><option value="">Select your country</option></select>
                 </div>
                 <div class="form-group">
                     <label>Address <span style="color:red;">*</span></label>
@@ -523,7 +456,6 @@
                     </div>
                     <div id="phoneVerificationStatus" class="verification-status"></div>
                 </div>
-
                 <div class="profile-form-actions">
                     <button type="button" class="btn-primary" id="saveProfileBtn"><i class="fas fa-save"></i> Save Profile</button>
                     <button type="button" class="btn-secondary" id="editProfileBtn" style="display:none;"><i class="fas fa-pen"></i> Edit</button>
@@ -531,8 +463,6 @@
                 <div id="profileSaveMessage" style="margin-top:12px; font-size:0.9rem;"></div>
             </form>
         </div>
-        <!-- ========== FIN FORMULAIRE ========== -->
-
         <div class="profile-actions">
             <button class="btn-primary" id="profileConnectBtnPage"><i class="fas fa-plug"></i> Connect Pi</button>
             <button class="btn-secondary" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</button>
@@ -540,9 +470,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- MODAL DE REVUE DU PROFIL                                      -->
-<!-- ============================================================ -->
+<!-- PROFILE REVIEW MODAL -->
 <div id="profileReviewModal" class="modal">
     <div class="modal-content" style="max-width:500px;">
         <span class="modal-close" id="profileReviewClose">&times;</span>
@@ -560,28 +488,17 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SETTINGS PAGE                                                -->
-<!-- ============================================================ -->
+<!-- SETTINGS PAGE -->
 <div id="settingsPage" class="hidden-page">
     <div class="page-content">
         <h2>Settings</h2>
         <div class="settings-group">
             <p><strong>Language</strong></p>
             <select id="settingsLangSelect" class="settings-lang-select" onchange="changeLanguage(this.value)">
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="es">Español</option>
-                <option value="pt">Português</option>
-                <option value="zh">中文</option>
-                <option value="id">Indonesia</option>
-                <option value="ar">العربية</option>
-                <option value="hi">हिन्दी</option>
-                <option value="ru">Русский</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="de">Deutsch</option>
-                <option value="it">Italiano</option>
+                <option value="en">English</option><option value="fr">Français</option><option value="es">Español</option>
+                <option value="pt">Português</option><option value="zh">中文</option><option value="id">Indonesia</option>
+                <option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="ru">Русский</option>
+                <option value="ja">日本語</option><option value="ko">한국어</option><option value="de">Deutsch</option><option value="it">Italiano</option>
             </select>
         </div>
         <div class="settings-group">
@@ -595,9 +512,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- ADMIN PAGE                                                   -->
-<!-- ============================================================ -->
+<!-- ADMIN PAGE -->
 <div id="adminPage" class="hidden-page">
     <div class="page-content admin-content">
         <h2>Administration</h2>
@@ -721,9 +636,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- GLOBAL LOADER                                                -->
-<!-- ============================================================ -->
+<!-- GLOBAL LOADER -->
 <div id="globalLoader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
     <div style="background:white; padding:30px; border-radius:16px; text-align:center; max-width:300px; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
         <i class="fas fa-spinner fa-spin" style="font-size:2.5rem; color:#08143F;"></i>
@@ -731,9 +644,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- FOOTER                                                       -->
-<!-- ============================================================ -->
+<!-- FOOTER -->
 <footer class="betix-footer">
     <div class="footer-container">
         <div class="footer-col">
@@ -770,22 +681,18 @@
     </div>
 </footer>
 
-<!-- ============================================================ -->
-<!-- MODALS                                                       -->
-<!-- ============================================================ -->
+<!-- MODALS (légal, détail événement, édition événement) -->
 <div id="legalModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="legalModalClose"><i class="fas fa-times"></i></span>
         <div id="modalContent"></div>
     </div>
 </div>
-
 <div id="eventDetailModal" class="modal">
     <div class="modal-content event-detail-modal">
         <div id="eventDetailContent"></div>
     </div>
 </div>
-
 <div id="editEventModal" class="modal modal-edit-event">
     <div class="modal-content">
         <span class="modal-close" onclick="closeEditEventModal()"><i class="fas fa-times"></i></span>
@@ -811,11 +718,8 @@
                 </div>
                 <div class="duration-select-group">
                     <select id="editEventDurationUnit" class="duration-unit-select">
-                        <option value="hours">Hour</option>
-                        <option value="days">Day</option>
-                        <option value="weeks">Week</option>
-                        <option value="months">Month</option>
-                        <option value="years">Year</option>
+                        <option value="hours">Hour</option><option value="days">Day</option>
+                        <option value="weeks">Week</option><option value="months">Month</option><option value="years">Year</option>
                     </select>
                 </div>
             </div>
@@ -832,9 +736,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- QUANTITY POPUP (PROFESSIONNEL)                               -->
-<!-- ============================================================ -->
+<!-- QUANTITY POPUP -->
 <div id="quantityPopup" class="quantity-popup">
     <div class="quantity-popup-content quantity-popup-professional">
         <div class="quantity-popup-header">
@@ -863,9 +765,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CONFIRM PURCHASE POPUP                                       -->
-<!-- ============================================================ -->
+<!-- CONFIRM PURCHASE POPUP -->
 <div id="confirmPurchasePopup" class="confirm-purchase-popup" style="display:none;">
     <div class="confirm-purchase-popup-content">
         <div class="confirm-purchase-header">
@@ -888,9 +788,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- TRANSACTION PROCESSED POPUP                                  -->
-<!-- ============================================================ -->
+<!-- TRANSACTION PROCESSED POPUP -->
 <div id="transactionProcessedPopup" class="transaction-processed-popup" style="display:none;">
     <div class="transaction-processed-popup-content">
         <div class="transaction-processed-header">
@@ -908,9 +806,7 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PAST EVENT POPUP                                             -->
-<!-- ============================================================ -->
+<!-- PAST EVENT POPUP -->
 <div id="pastEventPopup" class="past-event-popup" style="display:none;">
     <div class="past-event-popup-content">
         <div class="past-event-header">
@@ -929,18 +825,12 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SUCCESS POPUP                                                -->
-<!-- ============================================================ -->
+<!-- SUCCESS POPUP -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content success-blue">
-        <div class="success-icon success-icon-blue">
-            <i class="fas fa-check-circle"></i>
-        </div>
+        <div class="success-icon success-icon-blue"><i class="fas fa-check-circle"></i></div>
         <h3 id="successTitle">Purchase successful!</h3>
-        <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">
-            Thank you for purchasing your ticket for <strong id="successEventName">Blockchain Africa</strong>
-        </p>
+        <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">Thank you for purchasing your ticket for <strong id="successEventName">Blockchain Africa</strong></p>
         <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
         <button class="btn-primary success-btn-blue" id="viewTicketBtn" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #08143F, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box; border:none; cursor:pointer;">
             <i class="fas fa-eye"></i> View my ticket
@@ -949,22 +839,17 @@
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- PAYMENT PENDING                                              -->
-<!-- ============================================================ -->
+<!-- PAYMENT PENDING MODAL (vide) -->
 <div id="paymentPendingModal" style="display: none;"></div>
 
 <!-- SCROLL TO TOP BUTTON -->
-<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
-    <i class="fas fa-arrow-up"></i>
-</button>
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
 
 </div>
 
 <script>
     window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
 </script>
-
 <script>
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
@@ -1017,8 +902,6 @@
         }, 500);
     }
 </script>
-
 <script src="script.js"></script>
-
 </body>
 </html>
