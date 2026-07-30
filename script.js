@@ -3973,8 +3973,16 @@ function renderNotificationsPage() {
         const time = new Date(notif.date);
         const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
-        const icon = notif.type === 'purchase' ? 'fa-shopping-cart' : notif.type === 'event' ? 'fa-calendar-plus' : 'fa-info-circle';
-        html += `<div class="notification-item ${unreadClass}"><div class="notif-icon"><i class="fas ${icon}"></i></div><div class="notif-content"><div class="notif-msg">${escapeHtml(notif.message)}</div><div class="notif-time">${timeStr}</div></div></div>`;
+        const type = notif.type || 'info';
+        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
+        const icon = iconMap[type] || 'fa-info-circle';
+        html += `<div class="notification-item type-${type} ${unreadClass}">
+            <div class="notif-icon"><i class="fas ${icon}"></i></div>
+            <div class="notif-content">
+                <div class="notif-msg">${escapeHtml(notif.message)}</div>
+                <div class="notif-time">${timeStr}</div>
+            </div>
+        </div>`;
         notifications[i].read = true;
     }
     container.innerHTML = html;
