@@ -1329,16 +1329,12 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU HTML DU TICKET OFFICIEL (CORRIGÉ)
+// GÉNÉRATION DU HTML DU TICKET OFFICIEL (FORCÉ)
 // ============================================================
 
 function generateTicketHTML(ticket) {
-    // Si c'est un concert, utiliser le design officiel
-    if (ticket.category === 'Concert') {
-        return generateConcertTicketHTML(ticket);
-    }
-    // Sinon design générique
-    return generateDefaultTicketHTML(ticket);
+    // FORCER LE DESIGN OFFICIEL POUR TOUS LES TICKETS
+    return generateConcertTicketHTML(ticket);
 }
 
 function generateConcertTicketHTML(ticket) {
@@ -1422,73 +1418,9 @@ function generateConcertTicketHTML(ticket) {
 }
 
 function generateDefaultTicketHTML(ticket) {
-    const event = events.find(e => e.id === ticket.eventId);
-    const fallbackImage = eventImagesList[event?.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
-    const imageUrl = event?.coverImage || (event?.images && event.images[0]) || fallbackImage;
-
-    const dateEvent = new Date(ticket.eventDate);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
-
-    const organizerName = event?.organizerName || event?.organizer || 'Unknown';
-    const category = ticket.category || event?.category || 'Event';
-    const durationDisplay = event?.durationValue && event?.durationUnit
-        ? `${event.durationValue} ${event.durationUnit}`
-        : 'N/A';
-
-    const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
-                     (currentUser.last_name ? ' ' + currentUser.last_name : '');
-    const userEmail = currentUser.email || 'Not provided';
-    const userPhone = currentUser.phone_number || 'Not provided';
-    const buyerName = ticket.buyerName || fullName || 'Anonymous';
-    const ticketType = ticket.ticketType || 'Standard';
-    const quantity = ticket.quantity || 1;
-    const price = (ticket.price || 0).toFixed(6);
-    const status = ticket.status || 'Valid';
-    const orderId = ticket.id ? ticket.id.substring(0, 12).toUpperCase() : 'N/A';
-    const ticketId = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : 'N/A';
-    const verificationCode = ticket.qrCode || 'BETIX-' + ticket.id?.substring(0, 8) || 'N/A';
-
-    return `
-        <div class="ticket-preview-container">
-            <div class="ticket-header">
-                <div class="logo"><img src="logo.png" alt="Betix" onerror="this.style.display='none'"> Betix</div>
-                <span class="badge">${escapeHtml(category)}</span>
-            </div>
-            <div class="ticket-body">
-                <div class="event-image"><img src="${imageUrl}" alt="${escapeHtml(ticket.eventTitle)}" onerror="this.src='${fallbackImage}'"></div>
-                <div class="event-info">
-                    <h2>${escapeHtml(ticket.eventTitle || 'Event')}</h2>
-                    <div class="category">${escapeHtml(category)}</div>
-                    <div class="description">Organizer: ${escapeHtml(organizerName)}</div>
-                    <div class="details-grid">
-                        <div><span class="label">Date:</span> <span class="value">${dateFormatted}</span></div>
-                        <div><span class="label">Time:</span> <span class="value">${timeFormatted}</span></div>
-                        <div><span class="label">Location:</span> <span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span></div>
-                        <div><span class="label">Duration:</span> <span class="value">${durationDisplay}</span></div>
-                        <div><span class="label">Ticket ID:</span> <span class="value">#${ticketId}</span></div>
-                        <div><span class="label">Order ID:</span> <span class="value">#${orderId}</span></div>
-                        <div><span class="label">Name:</span> <span class="value">${escapeHtml(buyerName)}</span></div>
-                        <div><span class="label">Email:</span> <span class="value">${escapeHtml(userEmail)}</span></div>
-                        <div><span class="label">Phone:</span> <span class="value">${escapeHtml(userPhone)}</span></div>
-                        <div><span class="label">Price:</span> <span class="value">${price} Pi</span></div>
-                        <div><span class="label">Status:</span> <span class="value" style="color:#10b981;">${escapeHtml(status)}</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="ticket-footer">
-                <div class="qr-section">
-                    <div class="qr-code" id="qr-ticket-${ticket.id}"></div>
-                    <span class="qr-label">Scan to validate</span>
-                </div>
-                <div class="security-badge"><i class="fas fa-shield-alt"></i> Secure & Verified</div>
-            </div>
-            <div class="ticket-order-info">
-                <span>Verification: ${escapeHtml(verificationCode)}</span>
-                <span>Issued by Betix</span>
-            </div>
-        </div>
-    `;
+    // Cette fonction n'est plus utilisée car nous forçons le design officiel
+    // Elle est conservée pour compatibilité
+    return generateConcertTicketHTML(ticket);
 }
 
 // ============================================================
