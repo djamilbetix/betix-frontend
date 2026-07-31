@@ -1503,7 +1503,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     line-height: 1.3;
     font-family: 'Segoe UI', Arial, sans-serif;
     letter-spacing: 0.2px;
-    
+
     /* Gestion des textes longs */
     max-width: 45%;
     overflow: hidden;
