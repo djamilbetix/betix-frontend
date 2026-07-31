@@ -1067,7 +1067,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (NOUVELLE VERSION)
+// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND – VALEURS SEULEMENT
 // ============================================================
 function generateTicketFromImage(ticket) {
     const event = events.find(e => e.id === ticket.eventId);
@@ -1094,7 +1094,7 @@ function generateTicketFromImage(ticket) {
         <div class="ticket-image-container" id="ticket-${ticket.id}">
             <img src="ticket-officiel.png" alt="Ticket officiel Betix" class="ticket-background-image" onerror="this.src='logo.png'; this.style.objectFit='contain'; this.style.background='#0a1628';">
             
-            <!-- Colonne gauche : infos événement -->
+            <!-- Colonne gauche : valeurs (sans libellés) -->
             <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
             <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
             <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
@@ -1102,7 +1102,7 @@ function generateTicketFromImage(ticket) {
             <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
             <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
             
-            <!-- Colonne droite : acheteur et prix -->
+            <!-- Colonne droite : acheteur et prix (valeurs) -->
             <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
             <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
             <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
