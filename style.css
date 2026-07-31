@@ -820,7 +820,7 @@ body {
     font-weight: 500;
     transition: all 0.2s;
     font-size: 0.8rem;
-    color: #F5B400 !important; /* MODIFICATION : jaune Betix */
+    color: #F5B400 !important;
 }
 .filter-chip:hover { border-color: #F5B400; }
 .filter-chip.active {
@@ -1480,8 +1480,9 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET AVEC IMAGE DE FOND – GESTION DES TEXTES LONGS (VERSION CORRIGÉE)
+   TICKET AVEC IMAGE DE FOND – VALEURS SEULEMENT
    ============================================================ */
+
 .ticket-image-container {
     position: relative;
     max-width: 780px;
@@ -1513,61 +1514,62 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     opacity: 1;
 }
 
-/* Colonne gauche (infos événement) */
+/* --- Colonne gauche (valeurs) --- */
 .ticket-event-title {
     top: 10.5%;
     left: 6.5%;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
     color: #000000;
     max-width: 42%;
 }
 .ticket-event-category {
-    top: 18.5%;
+    top: 17.5%;
     left: 6.5%;
-    font-size: 15px;
-    font-weight: 600;
-    color: #000000;
+    font-size: 20px;
+    font-weight: 700;
+    color: #F5B400;
     max-width: 35%;
+    text-transform: uppercase;
 }
 .ticket-event-duration {
-    top: 26.5%;
+    top: 25.5%;
     left: 6.5%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 35%;
 }
 .ticket-event-date {
-    top: 34.5%;
+    top: 33.5%;
     left: 6.5%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 40%;
 }
 .ticket-event-time {
-    top: 42.5%;
+    top: 41.5%;
     left: 6.5%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 35%;
 }
 .ticket-event-location {
-    top: 50.5%;
+    top: 49.5%;
     left: 6.5%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 40%;
 }
 
-/* Colonne droite (acheteur + prix) */
+/* --- Colonne droite (valeurs) --- */
 .ticket-buyer-name {
     top: 10.5%;
     left: 54%;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #000000;
     max-width: 38%;
@@ -1575,7 +1577,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 .ticket-buyer-email {
     top: 20.5%;
     left: 54%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 38%;
@@ -1583,7 +1585,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 .ticket-buyer-phone {
     top: 30.5%;
     left: 54%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: #000000;
     max-width: 38%;
@@ -1591,17 +1593,17 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 .ticket-price {
     top: 40.5%;
     left: 54%;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #000000;
     max-width: 38%;
 }
 
-/* Ticket ID en bas à droite */
+/* --- Ticket ID en bas à droite --- */
 .ticket-id {
     bottom: 12%;
     right: 8%;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     font-family: 'Courier New', monospace;
     color: #000000;
@@ -1610,7 +1612,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     letter-spacing: 0.5px;
 }
 
-/* QR Code en bas à gauche */
+/* --- QR Code --- */
 .ticket-qr-wrapper {
     position: absolute;
     bottom: 6%;
@@ -1631,30 +1633,34 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     height: 100% !important;
 }
 
-/* Responsive */
+/* --- Responsive --- */
 @media (max-width: 640px) {
     .ticket-event-title {
-        font-size: 14px;
+        font-size: 12px;
         top: 10%;
         left: 5%;
         max-width: 45%;
     }
-    .ticket-event-category,
+    .ticket-event-category {
+        font-size: 16px;
+        top: 17%;
+        left: 5%;
+        max-width: 40%;
+    }
     .ticket-event-duration,
     .ticket-event-date,
     .ticket-event-time,
     .ticket-event-location {
-        font-size: 13px;
+        font-size: 11px;
         max-width: 40%;
     }
-    .ticket-event-category { top: 18%; }
-    .ticket-event-duration { top: 26%; }
-    .ticket-event-date      { top: 34%; }
-    .ticket-event-time      { top: 42%; }
-    .ticket-event-location  { top: 50%; }
+    .ticket-event-duration { top: 25%; }
+    .ticket-event-date      { top: 33%; }
+    .ticket-event-time      { top: 41%; }
+    .ticket-event-location  { top: 49%; }
 
     .ticket-buyer-name {
-        font-size: 14px;
+        font-size: 12px;
         top: 10%;
         left: 52%;
         max-width: 42%;
@@ -1662,7 +1668,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     .ticket-buyer-email,
     .ticket-buyer-phone,
     .ticket-price {
-        font-size: 13px;
+        font-size: 11px;
         max-width: 42%;
     }
     .ticket-buyer-email { top: 20%; }
@@ -1670,7 +1676,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     .ticket-price       { top: 40%; }
 
     .ticket-id {
-        font-size: 13px;
+        font-size: 11px;
         bottom: 10%;
         right: 5%;
     }
