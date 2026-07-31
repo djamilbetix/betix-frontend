@@ -444,7 +444,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT) - début
+// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -1006,7 +1006,7 @@ function getRemainingFreeEvents() {
 function renderVerifiedBadge(userId, userName) {
     if (!appSettings.badgeEnabled) return '';
     if (isUserPremium() && (userId === currentUser.piUid || userId === currentUser.wallet || userName === currentUser.name)) {
-        return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#08143F; font-size:0.8rem; margin-left:4px;"></i></span>`;
+        return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#0B1F5C; font-size:0.8rem; margin-left:4px;"></i></span>`;
     }
     return '';
 }
@@ -1065,7 +1065,7 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }// ============================================================
-// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (CORRIGÉ)
+// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (VERSION FINALE)
 // ============================================================
 function generateTicketFromImage(ticket) {
     const event = events.find(e => e.id === ticket.eventId);
@@ -1093,19 +1093,19 @@ function generateTicketFromImage(ticket) {
             <img src="ticket-officiel.png" alt="Ticket officiel Betix" class="ticket-background-image" onerror="this.src='logo.png'; this.style.objectFit='contain'; this.style.background='#0a1628';">
             
             <!-- Éléments superposés -->
-            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
-            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
-            <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
-            <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
+            <div class="ticket-overlay-text ticket-event-title" title="${escapeHtml(eventTitle)}">${escapeHtml(eventTitle)}</div>
+            <div class="ticket-overlay-text ticket-event-category" title="${escapeHtml(eventCategory)}">${escapeHtml(eventCategory)}</div>
+            <div class="ticket-overlay-text ticket-event-duration" title="${durationDisplay}">${durationDisplay}</div>
+            <div class="ticket-overlay-text ticket-event-date" title="${dateFormatted}">${dateFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-time" title="${timeFormatted}">${timeFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-location" title="${escapeHtml(eventLocation)}">${escapeHtml(eventLocation)}</div>
             
-            <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
-            <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
-            <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
-            <div class="ticket-overlay-text ticket-price">${price} Pi</div>
+            <div class="ticket-overlay-text ticket-buyer-name" title="${escapeHtml(buyerName)}">${escapeHtml(buyerName)}</div>
+            <div class="ticket-overlay-text ticket-buyer-email" title="${escapeHtml(userEmail)}">${escapeHtml(userEmail)}</div>
+            <div class="ticket-overlay-text ticket-buyer-phone" title="${escapeHtml(userPhone)}">${escapeHtml(userPhone)}</div>
+            <div class="ticket-overlay-text ticket-price" title="${price} Pi">${price} Pi</div>
             
-            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
+            <div class="ticket-overlay-text ticket-id" title="#${ticketIdShort}">#${ticketIdShort}</div>
             
             <!-- QR Code -->
             <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
@@ -1138,7 +1138,7 @@ function viewTicketWithImage(ticketId) {
                     text: ticket.qrCode || ticket.id,
                     width: 100,
                     height: 100,
-                    colorDark: "#08143F",
+                    colorDark: "#0B1F5C",
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
@@ -1174,7 +1174,7 @@ async function downloadTicketImagePNG(ticketId) {
                     text: ticket.qrCode || ticket.id,
                     width: 100,
                     height: 100,
-                    colorDark: "#08143F",
+                    colorDark: "#0B1F5C",
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
@@ -1236,7 +1236,7 @@ async function downloadTicketImagePDF(ticketId) {
                     text: ticket.qrCode || ticket.id,
                     width: 100,
                     height: 100,
-                    colorDark: "#08143F",
+                    colorDark: "#0B1F5C",
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
@@ -1389,10 +1389,10 @@ function generateAllQRCodes() {
         container.innerHTML = '';
         try { 
             new QRCode(container, { 
-                text: ticket.id, 
+                text: ticket.qrCode || ticket.id, 
                 width: 100, 
                 height: 100, 
-                colorDark: "#08143F", 
+                colorDark: "#0B1F5C", 
                 colorLight: "#ffffff", 
                 correctLevel: QRCode.CorrectLevel.H 
             }); 
@@ -1453,7 +1453,9 @@ function markTicketAsUsed(ticketId) {
         saveUsedTickets(); saveTickets(); addNotification(t('ticketMarkedUsed'), 'info');
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
-}// ============================================================
+}
+
+// ============================================================
 // CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
 // ============================================================
 function renderEventCard(event) {
@@ -1516,8 +1518,8 @@ function renderEventCard(event) {
 
     const infoBoxHtml = `
         <div class="event-info-box">
-            <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#f5a623;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
-            <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#f5a623;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#f5a623;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#f5a623;"></i> ${durationDisplay}` : ''}</div>
+            <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
+            <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#F5B400;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ${durationDisplay}` : ''}</div>
         </div>
     `;
 
@@ -1778,9 +1780,7 @@ function initHeroSlider() {
     startAutoPlay();
 }
 
-function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
-
-// ============================================================
+function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }// ============================================================
 // ADMIN CAROUSEL
 // ============================================================
 function renderAdminSlides() {
@@ -2076,7 +2076,9 @@ function verifyPhone() {
     alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
     document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     document.getElementById('verifyPhoneBtn').classList.add('verified');
-}// ============================================================
+}
+
+// ============================================================
 // PAGE PREMIUM – TABLEAU COMPARATIF AMÉLIORÉ
 // ============================================================
 function renderPremiumPage() {
@@ -2094,7 +2096,7 @@ function renderPremiumPage() {
         const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
         html = `
             <div class="premium-status-card" style="max-width:500px; margin:0 auto;">
-                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#f5a623; font-size:3rem;"></i></div>
+                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#F5B400; font-size:3rem;"></i></div>
                 <h3>You are a Premium member!</h3>
                 <p>Your subscription is active until <strong>${endDate}</strong>.</p>
                 <p>Enjoy unlimited events and exclusive benefits.</p>
@@ -2914,8 +2916,9 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
-}
-
+}// ============================================================
+// LANGUE, TRADUCTIONS ET UI
+// ============================================================
 function changeLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('betix_language', lang);
@@ -3319,8 +3322,8 @@ function updateUserInfo() {
     if (accountBadge) {
         if (isUserPremium()) {
             accountBadge.innerHTML = '<i class="fas fa-crown"></i> Premium';
-            accountBadge.style.background = 'rgba(245, 166, 35, 0.2)';
-            accountBadge.style.color = '#f5a623';
+            accountBadge.style.background = 'rgba(245, 180, 0, 0.2)';
+            accountBadge.style.color = '#F5B400';
         } else {
             accountBadge.innerHTML = '<i class="fas fa-user"></i> Free';
             accountBadge.style.background = 'rgba(255,255,255,0.12)';
@@ -3373,7 +3376,7 @@ function initAdmin() {
                 localStorage.setItem('betix_admin_password', pwd);
                 adminPassword = pwd;
                 adminItem.style.display = 'block';
-                adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)';
+                adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)';
                 adminItem.style.color = 'white';
                 addAdminLog('Admin authentication', 'Login via logo');
                 alert('Admin activated');
@@ -3384,7 +3387,7 @@ function initAdmin() {
     });
     if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
         adminItem.style.display = 'block';
-        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)';
+        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)';
         adminItem.style.color = 'white';
     }
 }
@@ -3442,7 +3445,7 @@ function updateAdminTimerDisplay() {
         const minutes = Math.floor(adminSessionTimer / 60);
         const seconds = adminSessionTimer % 60;
         display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-        display.style.color = adminSessionTimer < 300 ? '#ef4444' : adminSessionTimer < 600 ? '#f59e0b' : '#f5a623';
+        display.style.color = adminSessionTimer < 300 ? '#ef4444' : adminSessionTimer < 600 ? '#f59e0b' : '#F5B400';
     }
 }
 
@@ -3554,7 +3557,7 @@ function renderAdminUsers() {
     let html = '<table><tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
     const userRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
     const avgRating = userRatings.length ? userRatings.reduce((a,r) => a + r.rating, 0) / userRatings.length : 0;
-    html += `<tr><td>${escapeHtml(currentUser.name)} <span style="color:#f5a623;font-size:0.7rem;">(you)</span></td><td>${currentUser.wallet || 'Not connected'}</td><td>${tickets.length}</td><td>${avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-'}</td><td>Active</td></tr>`;
+    html += `<tr><td>${escapeHtml(currentUser.name)} <span style="color:#F5B400;font-size:0.7rem;">(you)</span></td><td>${currentUser.wallet || 'Not connected'}</td><td>${tickets.length}</td><td>${avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-'}</td><td>Active</td></tr>`;
     connectedUsers.forEach(u => {
         if (u.wallet !== currentUser.wallet) {
             const uRatings = ratings.filter(r => r.userWallet === u.wallet);
@@ -3721,7 +3724,7 @@ function handleLogoClick() {
             localStorage.setItem('betix_admin_password', password);
             adminPassword = password;
             const adminBtn = document.getElementById('adminMenuItem');
-            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
             addAdminLog('Admin authentication', 'Login via logo');
             alert('Administrator access activated!');
             logoClickCount = 0;
@@ -3794,7 +3797,7 @@ async function initApp() {
         const storedPassword = localStorage.getItem('betix_admin_password');
         if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
             const adminBtn = document.getElementById('adminMenuItem');
-            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #08143F)'; adminBtn.style.color = 'white'; }
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
         populateProfileCountrySelect();
@@ -3867,14 +3870,12 @@ async function initApp() {
         window.addEventListener('beforeunload', () => syncAllToSupabase());
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
-        // Scroll to top button
         const scrollBtn = document.getElementById('scrollTopBtn');
         if (scrollBtn) {
             window.addEventListener('scroll', function() {
                 if (window.scrollY > 300) { scrollBtn.classList.add('visible'); } else { scrollBtn.classList.remove('visible'); }
             });
         }
-        // Bind events for confirmPurchase
         document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
             document.getElementById('confirmPurchasePopup').style.display = 'none';
             if (confirmPurchaseResolve) {
