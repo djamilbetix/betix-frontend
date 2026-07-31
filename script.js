@@ -1064,7 +1064,9 @@ function showLoader(text = 'Loading...') {
 function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
-}// ============================================================
+}
+
+// ============================================================
 // GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (VERSION FINALE)
 // ============================================================
 function generateTicketFromImage(ticket) {
@@ -1089,10 +1091,8 @@ function generateTicketFromImage(ticket) {
 
     return `
         <div class="ticket-image-container" id="ticketImageContainer">
-            <!-- Image de fond -->
             <img src="ticket-officiel.png" alt="Ticket officiel Betix" class="ticket-background-image" onerror="this.src='logo.png'; this.style.objectFit='contain'; this.style.background='#0a1628';">
             
-            <!-- Éléments superposés -->
             <div class="ticket-overlay-text ticket-event-title" title="${escapeHtml(eventTitle)}">${escapeHtml(eventTitle)}</div>
             <div class="ticket-overlay-text ticket-event-category" title="${escapeHtml(eventCategory)}">${escapeHtml(eventCategory)}</div>
             <div class="ticket-overlay-text ticket-event-duration" title="${durationDisplay}">${durationDisplay}</div>
@@ -1107,7 +1107,6 @@ function generateTicketFromImage(ticket) {
             
             <div class="ticket-overlay-text ticket-id" title="#${ticketIdShort}">#${ticketIdShort}</div>
             
-            <!-- QR Code -->
             <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
         </div>
     `;
@@ -1280,7 +1279,6 @@ async function downloadTicketImagePDF(ticketId) {
 // FONCTIONS RENDER TICKETS ET HISTORY (CARTE GÉANTE)
 // ============================================================
 function renderTicketCard(ticket, status) {
-    // Conservé pour compatibilité, mais nous utilisons generateTicketFromImage
     return generateTicketFromImage(ticket);
 }
 
@@ -1780,7 +1778,9 @@ function initHeroSlider() {
     startAutoPlay();
 }
 
-function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }// ============================================================
+function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
+
+// ============================================================
 // ADMIN CAROUSEL
 // ============================================================
 function renderAdminSlides() {
@@ -2916,7 +2916,9 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
-}// ============================================================
+}
+
+// ============================================================
 // LANGUE, TRADUCTIONS ET UI
 // ============================================================
 function changeLanguage(lang) {
