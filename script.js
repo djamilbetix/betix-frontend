@@ -1067,7 +1067,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (VERSION FINALE)
+// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (NOUVELLE VERSION)
 // ============================================================
 function generateTicketFromImage(ticket) {
     const event = events.find(e => e.id === ticket.eventId);
@@ -1084,29 +1084,34 @@ function generateTicketFromImage(ticket) {
     const userPhone = currentUser.phone_number || 'Not provided';
     const buyerName = ticket.buyerName || fullName || 'Anonymous';
     const ticketIdShort = ticket.id.substring(0, 8).toUpperCase();
-    const price = (ticket.price || 0).toFixed(6);
+    const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = ticket.eventTitle || event?.title || 'Event';
     const eventLocation = ticket.eventLocation || event?.location || 'Online';
     const eventCategory = ticket.category || event?.category || 'Concert';
+    const organizerName = event?.organizerName || event?.organizer || 'Anonymous';
 
     return `
-        <div class="ticket-image-container" id="ticketImageContainer">
+        <div class="ticket-image-container" id="ticket-${ticket.id}">
             <img src="ticket-officiel.png" alt="Ticket officiel Betix" class="ticket-background-image" onerror="this.src='logo.png'; this.style.objectFit='contain'; this.style.background='#0a1628';">
             
-            <div class="ticket-overlay-text ticket-event-title" title="${escapeHtml(eventTitle)}">${escapeHtml(eventTitle)}</div>
-            <div class="ticket-overlay-text ticket-event-category" title="${escapeHtml(eventCategory)}">${escapeHtml(eventCategory)}</div>
-            <div class="ticket-overlay-text ticket-event-duration" title="${durationDisplay}">${durationDisplay}</div>
-            <div class="ticket-overlay-text ticket-event-date" title="${dateFormatted}">${dateFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-time" title="${timeFormatted}">${timeFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-location" title="${escapeHtml(eventLocation)}">${escapeHtml(eventLocation)}</div>
+            <!-- Colonne gauche : infos événement -->
+            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
+            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
+            <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
+            <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
             
-            <div class="ticket-overlay-text ticket-buyer-name" title="${escapeHtml(buyerName)}">${escapeHtml(buyerName)}</div>
-            <div class="ticket-overlay-text ticket-buyer-email" title="${escapeHtml(userEmail)}">${escapeHtml(userEmail)}</div>
-            <div class="ticket-overlay-text ticket-buyer-phone" title="${escapeHtml(userPhone)}">${escapeHtml(userPhone)}</div>
-            <div class="ticket-overlay-text ticket-price" title="${price} Pi">${price} Pi</div>
+            <!-- Colonne droite : acheteur et prix -->
+            <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
+            <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
+            <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
+            <div class="ticket-overlay-text ticket-price">${price}</div>
             
-            <div class="ticket-overlay-text ticket-id" title="#${ticketIdShort}">#${ticketIdShort}</div>
+            <!-- Ticket ID en bas à droite -->
+            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
             
+            <!-- QR Code -->
             <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
         </div>
     `;
@@ -2085,17 +2090,11 @@ function renderPremiumPage() {
     const container = document.getElementById('premiumContent');
     if (!container) return;
     const isPremium = isUserPremium();
-    const monthlyPrice = appSettings.premiumPriceUSD || 5;
-    const yearlyPrice = monthlyPrice * 10;
-    const piRate = appSettings.piRate || 1;
-    const monthlyPi = monthlyPrice / piRate;
-    const yearlyPi = yearlyPrice / piRate;
 
-    let html = '';
     if (isPremium) {
         const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
-        html = `
-            <div class="premium-status-card" style="max-width:500px; margin:0 auto;">
+        container.innerHTML = `
+            <div class="premium-status-card" style="max-width:500px; margin:0 auto; text-align:center; padding:30px; background:#f8fafc; border-radius:16px; border:1px solid #e6e6e6;">
                 <div class="premium-status-icon"><i class="fas fa-crown" style="color:#F5B400; font-size:3rem;"></i></div>
                 <h3>You are a Premium member!</h3>
                 <p>Your subscription is active until <strong>${endDate}</strong>.</p>
@@ -2103,74 +2102,129 @@ function renderPremiumPage() {
                 <button class="btn-secondary" onclick="showPage('home')" style="margin-top:10px;">Go to Home</button>
             </div>
         `;
-    } else {
-        const featuresFree = [
-            { icon: 'fa-check-circle', text: 'Publish up to 3 events per month' },
-            { icon: 'fa-check-circle', text: 'Buy tickets without limits' },
-            { icon: 'fa-times-circle', text: 'No Betix Verified badge' },
-            { icon: 'fa-times-circle', text: 'No event promotion' },
-            { icon: 'fa-times-circle', text: 'No priority in searches' },
-            { icon: 'fa-times-circle', text: 'No advanced statistics' },
-            { icon: 'fa-times-circle', text: 'Standard support' }
-        ];
-        const featuresMonthly = [
-            { icon: 'fa-check-circle', text: 'Unlimited publications' },
-            { icon: 'fa-check-circle', text: 'Betix Verified badge' },
-            { icon: 'fa-check-circle', text: 'Automatic promotion on homepage' },
-            { icon: 'fa-check-circle', text: 'Priority in searches' },
-            { icon: 'fa-check-circle', text: 'More visibility to buyers' },
-            { icon: 'fa-check-circle', text: 'Advanced statistics' },
-            { icon: 'fa-check-circle', text: 'Priority support' }
-        ];
-        const featuresYearly = [
-            { icon: 'fa-check-circle', text: 'All Monthly Premium benefits' },
-            { icon: 'fa-check-circle', text: 'Unlimited publications' },
-            { icon: 'fa-check-circle', text: 'Betix Verified badge' },
-            { icon: 'fa-check-circle', text: 'Maximum priority' },
-            { icon: 'fa-check-circle', text: 'Complete advanced statistics' },
-            { icon: 'fa-check-circle', text: 'Priority support' },
-            { icon: 'fa-check-circle', text: 'Save money vs monthly payment' }
-        ];
-
-        const card = (id, name, price, priceLabel, features, recommended, btnText, btnDisabled, badgeText = '') => {
-            const badgeHtml = badgeText ? `<div class="plan-badge">${badgeText}</div>` : '';
-            const btnClass = btnDisabled ? 'btn-subscribe disabled' : 'btn-subscribe';
-            return `
-                <div class="pricing-card ${recommended ? 'recommended' : ''} ${id === 'free' ? 'free' : ''}">
-                    ${badgeHtml}
-                    <div class="plan-name">${name}</div>
-                    <div class="plan-price">${price} <small>Pi</small></div>
-                    <div style="font-size:0.8rem; color:#6b7280; text-align:center; margin-bottom:12px;">${priceLabel}</div>
-                    <div class="plan-description">${id === 'free' ? 'Ideal for discovering Betix and starting to organize your events.' : 
-                        id === 'monthly' ? 'The best choice for organizers looking to quickly grow their visibility.' :
-                        'The best value for enjoying all Premium benefits for a full year.'}</div>
-                    <ul class="plan-features">
-                        ${features.map(f => `<li><i class="fas ${f.icon}"></i><span class="feature-text">${f.text}</span></li>`).join('')}
-                    </ul>
-                    <button class="${btnClass}" data-plan="${id}" ${btnDisabled ? 'disabled' : ''}>
-                        ${btnText}
-                    </button>
-                </div>
-            `;
-        };
-
-        html = `<div class="pricing-table">
-            ${card('free', 'Free', '0', 'Free', featuresFree, false, 'Current Plan', true)}
-            ${card('monthly', 'Monthly Premium', monthlyPi.toFixed(6), `≈ $${monthlyPrice} / month`, featuresMonthly, true, 'Upgrade to Premium', false, 'RECOMMENDED')}
-            ${card('yearly', 'Yearly Premium', yearlyPi.toFixed(6), `≈ $${yearlyPrice} / year`, featuresYearly, false, 'Choose Yearly Plan', false, 'BEST VALUE')}
-        </div>`;
-        container.innerHTML = html;
-
-        container.querySelectorAll('.btn-subscribe:not(.disabled)').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const plan = this.dataset.plan;
-                let duration = appSettings.premiumDurationDays;
-                if (plan === 'yearly') duration = 365;
-                subscribePremiumWithDuration(duration);
-            });
-        });
+        return;
     }
-    container.innerHTML = html;
+
+    // Plans
+    const monthlyPrice = appSettings.premiumPriceUSD || 5;
+    const yearlyPrice = monthlyPrice * 10;
+    const piRate = appSettings.piRate || 1;
+    const monthlyPi = monthlyPrice / piRate;
+    const yearlyPi = yearlyPrice / piRate;
+
+    const featuresFree = [
+        { icon: 'fa-check-circle', text: 'Publish up to 3 events per month' },
+        { icon: 'fa-check-circle', text: 'Buy tickets without limits' },
+        { icon: 'fa-times-circle', text: 'No Betix Verified badge' },
+        { icon: 'fa-times-circle', text: 'No event promotion' },
+        { icon: 'fa-times-circle', text: 'No priority in searches' },
+        { icon: 'fa-times-circle', text: 'No advanced statistics' },
+        { icon: 'fa-times-circle', text: 'Standard support' }
+    ];
+    const featuresMonthly = [
+        { icon: 'fa-check-circle', text: 'Unlimited publications' },
+        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
+        { icon: 'fa-check-circle', text: 'Automatic promotion on homepage' },
+        { icon: 'fa-check-circle', text: 'Priority in searches' },
+        { icon: 'fa-check-circle', text: 'More visibility to buyers' },
+        { icon: 'fa-check-circle', text: 'Advanced statistics' },
+        { icon: 'fa-check-circle', text: 'Priority support' }
+    ];
+    const featuresYearly = [
+        { icon: 'fa-check-circle', text: 'All Monthly Premium benefits' },
+        { icon: 'fa-check-circle', text: 'Unlimited publications' },
+        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
+        { icon: 'fa-check-circle', text: 'Maximum priority' },
+        { icon: 'fa-check-circle', text: 'Complete advanced statistics' },
+        { icon: 'fa-check-circle', text: 'Priority support' },
+        { icon: 'fa-check-circle', text: 'Save money vs monthly payment' }
+    ];
+
+    const card = (id, name, price, priceLabel, features, recommended, btnText, btnDisabled, badgeText = '') => {
+        const badgeHtml = badgeText ? `<div class="plan-badge">${badgeText}</div>` : '';
+        const btnClass = btnDisabled ? 'btn-subscribe disabled' : 'btn-subscribe';
+        return `
+            <div class="pricing-card ${recommended ? 'recommended' : ''} ${id === 'free' ? 'free' : ''}">
+                ${badgeHtml}
+                <div class="plan-name">${name}</div>
+                <div class="plan-price">${price} <small>Pi</small></div>
+                <div style="font-size:0.8rem; color:#6b7280; text-align:center; margin-bottom:12px;">${priceLabel}</div>
+                <div class="plan-description">${id === 'free' ? 'Ideal for discovering Betix and starting to organize your events.' : 
+                    id === 'monthly' ? 'The best choice for organizers looking to quickly grow their visibility.' :
+                    'The best value for enjoying all Premium benefits for a full year.'}</div>
+                <ul class="plan-features">
+                    ${features.map(f => `<li><i class="fas ${f.icon}"></i><span class="feature-text">${f.text}</span></li>`).join('')}
+                </ul>
+                <button class="${btnClass}" data-plan="${id}" ${btnDisabled ? 'disabled' : ''}>
+                    ${btnText}
+                </button>
+            </div>
+        `;
+    };
+
+    const plansHtml = `<div class="pricing-table">
+        ${card('free', 'Free', '0', 'Free', featuresFree, false, 'Current Plan', true)}
+        ${card('monthly', 'Monthly Premium', monthlyPi.toFixed(6), `≈ $${monthlyPrice} / month`, featuresMonthly, true, 'Upgrade to Premium', false, 'RECOMMENDED')}
+        ${card('yearly', 'Yearly Premium', yearlyPi.toFixed(6), `≈ $${yearlyPrice} / year`, featuresYearly, false, 'Choose Yearly Plan', false, 'BEST VALUE')}
+    </div>`;
+
+    // Section Avantages
+    const benefitsHtml = `
+        <div class="premium-benefits">
+            <h3>Why choose Betix Premium?</h3>
+            <div class="benefits-grid">
+                <div class="benefit-card"><i class="fas fa-infinity"></i> <span>Unlimited events</span></div>
+                <div class="benefit-card"><i class="fas fa-badge-check"></i> <span>Verified badge</span></div>
+                <div class="benefit-card"><i class="fas fa-rocket"></i> <span>Priority promotion</span></div>
+                <div class="benefit-card"><i class="fas fa-chart-line"></i> <span>Advanced analytics</span></div>
+                <div class="benefit-card"><i class="fas fa-headset"></i> <span>Priority support</span></div>
+                <div class="benefit-card"><i class="fas fa-trophy"></i> <span>Exclusive perks</span></div>
+            </div>
+        </div>
+    `;
+
+    // Section Témoignages
+    const testimonialsHtml = `
+        <div class="premium-testimonials">
+            <h3>What our members say</h3>
+            <div class="testimonials-grid">
+                <div class="testimonial-card"><p>"Since going Premium, my event attendance has tripled. The verified badge really builds trust!"</p><div class="author">– Sarah K., Organizer</div></div>
+                <div class="testimonial-card"><p>"The priority support is incredible. I get answers in minutes, not hours."</p><div class="author">– Michael T., Festival Director</div></div>
+                <div class="testimonial-card"><p>"I love the advanced analytics. I can now target my audience perfectly."</p><div class="author">– Jessica R., Event Manager</div></div>
+            </div>
+        </div>
+    `;
+
+    // Section FAQ
+    const faqHtml = `
+        <div class="premium-faq">
+            <h3>Frequently Asked Questions</h3>
+            <div class="faq-item"><h4>What happens if I cancel my subscription?</h4><p>Your Premium benefits will continue until the end of the current billing period.</p></div>
+            <div class="faq-item"><h4>Can I switch from monthly to yearly?</h4><p>Yes, simply subscribe to the yearly plan and we'll adjust your billing automatically.</p></div>
+            <div class="faq-item"><h4>Is there a free trial?</h4><p>We don't offer a free trial at the moment, but you can test the platform with 3 free events per month.</p></div>
+            <div class="faq-item"><h4>What payment methods are accepted?</h4><p>We accept Pi cryptocurrency only, directly through your Pi wallet.</p></div>
+        </div>
+    `;
+
+    // Call to action
+    const ctaHtml = `
+        <div class="premium-cta">
+            <p>Ready to take your events to the next level?</p>
+            <button class="premium-subscribe-btn" data-plan="monthly">Get Premium Now</button>
+        </div>
+    `;
+
+    container.innerHTML = plansHtml + benefitsHtml + testimonialsHtml + faqHtml + ctaHtml;
+
+    // Réattacher les événements aux boutons
+    container.querySelectorAll('.premium-subscribe-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const plan = this.dataset.plan || 'monthly';
+            let duration = appSettings.premiumDurationDays;
+            if (plan === 'yearly') duration = 365;
+            subscribePremiumWithDuration(duration);
+        });
+    });
 }
 
 async function subscribePremiumWithDuration(durationDays) {
