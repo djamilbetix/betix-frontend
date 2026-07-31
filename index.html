@@ -16,12 +16,7 @@
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
                 try {
-                    // ✅ AJOUT DES SCOPES POUR LES PAIEMENTS
-                    Pi.init({ 
-                        version: "2.0", 
-                        sandbox: true,
-                        scopes: ['username', 'payments'] 
-                    });
+                    Pi.init({ version: "2.0", sandbox: true, scopes: ['username', 'payments'] });
                     console.log("Pi SDK initialized with payments scope");
                     window.piSDKReady = true;
                 } catch (e) {
