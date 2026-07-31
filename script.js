@@ -15,7 +15,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 });
 
 // ============================================================
-// LISTES ET TRADUCTIONS (version complète)
+// LISTES ET TRADUCTIONS (complètes)
 // ============================================================
 const countriesList = [
     'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (version abrégée mais complète pour les clés utilisées)
+// TRADUCTIONS (version complète)
 // ============================================================
 const translations = {
     en: {
@@ -444,7 +444,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
+// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT) - début
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -1064,9 +1064,7 @@ function showLoader(text = 'Loading...') {
 function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
-}
-
-// ============================================================
+}// ============================================================
 // GÉNÉRATION DU TICKET AVEC IMAGE DE FOND (CORRIGÉ)
 // ============================================================
 function generateTicketFromImage(ticket) {
@@ -1281,12 +1279,15 @@ async function downloadTicketImagePDF(ticketId) {
 // ============================================================
 // FONCTIONS RENDER TICKETS ET HISTORY (CARTE GÉANTE)
 // ============================================================
+function renderTicketCard(ticket, status) {
+    // Conservé pour compatibilité, mais nous utilisons generateTicketFromImage
+    return generateTicketFromImage(ticket);
+}
 
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
 
-    // Filtrer les tickets valides (non utilisés, non expirés)
     const validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
@@ -1294,7 +1295,6 @@ function renderTickets() {
         return !isUsed && !isExpired && !isStatusUsed;
     });
 
-    // Dédupliquer par ID
     const uniqueTickets = [];
     const seenIds = new Set();
     for (const t of validTickets) {
@@ -1312,9 +1312,7 @@ function renderTickets() {
     let html = '';
     uniqueTickets.forEach(ticket => {
         html += `<div class="ticket-list-item">`;
-        // Générer la grande carte
         html += generateTicketFromImage(ticket);
-        // Ajouter les boutons d'action sous la carte
         html += `<div class="ticket-actions-wrapper">
                     <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
                     <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
@@ -1455,10 +1453,8 @@ function markTicketAsUsed(ticketId) {
         saveUsedTickets(); saveTickets(); addNotification(t('ticketMarkedUsed'), 'info');
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
-}
-
-// ============================================================
-// CARTE D'ÉVÉNEMENT
+}// ============================================================
+// CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -2080,9 +2076,7 @@ function verifyPhone() {
     alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
     document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     document.getElementById('verifyPhoneBtn').classList.add('verified');
-}
-
-// ============================================================
+}// ============================================================
 // PAGE PREMIUM – TABLEAU COMPARATIF AMÉLIORÉ
 // ============================================================
 function renderPremiumPage() {
@@ -2334,7 +2328,6 @@ function updateQuantity(delta) {
 // CONFIRMATION D'ACHAT AVEC PI
 // ============================================================
 const processingTransactions = new Set();
-
 let confirmPurchaseResolve = null;
 
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
