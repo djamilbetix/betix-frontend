@@ -820,11 +820,12 @@ body {
     font-weight: 500;
     transition: all 0.2s;
     font-size: 0.8rem;
+    color: #F5B400 !important; /* MODIFICATION : jaune Betix */
 }
 .filter-chip:hover { border-color: #F5B400; }
 .filter-chip.active {
     background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
+    color: white !important;
     border-color: transparent;
     box-shadow: 0 4px 10px rgba(11, 31, 92, 0.3);
 }
@@ -1478,164 +1479,148 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     }
 }
 
-/* Assure que l'image de fond du ticket s'adapte bien */
+/* ============================================================
+   TICKET AVEC IMAGE DE FOND – GESTION DES TEXTES LONGS (VERSION CORRIGÉE)
+   ============================================================ */
 .ticket-image-container {
-    max-width: 100% !important;
+    position: relative;
+    max-width: 780px;
+    margin: 0 auto;
+    background: #0a1628;
     border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
 .ticket-background-image {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 16px;
 }
 
-/* ============================================================
-   TICKET AVEC IMAGE DE FOND – GESTION DES TEXTES LONGS (VERSION CORRIGÉE)
-   ============================================================ */
-
-/* --- Classe de base pour tous les textes superposés --- */
 .ticket-overlay-text {
     position: absolute;
     pointer-events: none;
     line-height: 1.3;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     letter-spacing: 0.2px;
-
-    /* Gestion des textes longs */
-    max-width: 45%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     box-sizing: border-box;
     padding-right: 2px;
+    color: #000000;
+    opacity: 1;
 }
 
-/* --- Couleurs et tailles par champ --- */
-
-/* Titre de l'événement (reste blanc sur l'image) */
+/* Colonne gauche (infos événement) */
 .ticket-event-title {
-    top: 10%;
-    left: 5%;
-    font-size: 18px;
-    font-weight: 700;
-    color: #FFFFFF;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-    max-width: 55%;
-}
-
-/* Catégorie – reste en jaune sur l'image */
-.ticket-event-category {
-    top: 18%;
-    left: 5%;
+    top: 10.5%;
+    left: 6.5%;
     font-size: 16px;
     font-weight: 700;
-    color: #F5B400;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    max-width: 40%;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    color: #000000;
+    max-width: 42%;
 }
-
-/* Durée, Date, Heure, Localisation – en bleu foncé pour lisibilité */
-.ticket-event-duration,
-.ticket-event-date,
-.ticket-event-time,
-.ticket-event-location {
+.ticket-event-category {
+    top: 18.5%;
+    left: 6.5%;
     font-size: 15px;
     font-weight: 600;
-    color: #0B1F5C;
-    text-shadow: none;
-    max-width: 40%;
+    color: #000000;
+    max-width: 35%;
 }
 .ticket-event-duration {
-    top: 25%;
-    left: 5%;
+    top: 26.5%;
+    left: 6.5%;
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 35%;
 }
 .ticket-event-date {
-    top: 32%;
-    left: 5%;
+    top: 34.5%;
+    left: 6.5%;
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 40%;
 }
 .ticket-event-time {
-    top: 39%;
-    left: 5%;
+    top: 42.5%;
+    left: 6.5%;
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 35%;
 }
 .ticket-event-location {
-    top: 46%;
-    left: 5%;
-}
-
-/* Nom de l'acheteur – bleu foncé */
-.ticket-buyer-name {
-    top: 24%;
-    left: 56%;
-    font-size: 16px;
-    font-weight: 700;
-    color: #0B1F5C;
-    text-shadow: none;
-    max-width: 38%;
-}
-
-/* Email et Téléphone – bleu foncé légèrement plus petit */
-.ticket-buyer-email,
-.ticket-buyer-phone {
+    top: 50.5%;
+    left: 6.5%;
     font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 40%;
+}
+
+/* Colonne droite (acheteur + prix) */
+.ticket-buyer-name {
+    top: 10.5%;
+    left: 54%;
+    font-size: 16px;
     font-weight: 600;
-    color: #0B1F5C;
-    text-shadow: none;
+    color: #000000;
     max-width: 38%;
 }
 .ticket-buyer-email {
-    top: 32%;
-    left: 56%;
+    top: 20.5%;
+    left: 54%;
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 38%;
 }
 .ticket-buyer-phone {
-    top: 40%;
-    left: 56%;
+    top: 30.5%;
+    left: 54%;
+    font-size: 15px;
+    font-weight: 500;
+    color: #000000;
+    max-width: 38%;
 }
-
-/* Prix – jaune sur l'image (reste en jaune) */
 .ticket-price {
-    top: 48%;
-    left: 56%;
+    top: 40.5%;
+    left: 54%;
     font-size: 16px;
     font-weight: 700;
-    color: #F5B400;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    color: #000000;
     max-width: 38%;
 }
 
-/* Ticket ID – jaune sur l'image */
+/* Ticket ID en bas à droite */
 .ticket-id {
-    top: 63%;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 12%;
+    right: 8%;
     font-size: 15px;
     font-weight: 700;
-    color: #F5B400;
     font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
-    text-align: center;
-    width: 80%;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: #000000;
+    text-align: right;
+    width: auto;
+    letter-spacing: 0.5px;
 }
 
-/* --- QR Code (inchangé) --- */
+/* QR Code en bas à gauche */
 .ticket-qr-wrapper {
     position: absolute;
-    bottom: 7%;
-    right: 5%;
-    width: 110px;
-    height: 110px;
+    bottom: 6%;
+    left: 6%;
+    width: 100px;
+    height: 100px;
     background: white;
-    padding: 6px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1646,62 +1631,54 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     height: 100% !important;
 }
 
-/* --- Responsive mobile --- */
+/* Responsive */
 @media (max-width: 640px) {
     .ticket-event-title {
         font-size: 14px;
         top: 10%;
-        left: 4%;
-        max-width: 55%;
+        left: 5%;
+        max-width: 45%;
     }
-    .ticket-event-category {
-        font-size: 12px;
-        top: 18%;
-        left: 4%;
-        max-width: 40%;
-    }
+    .ticket-event-category,
     .ticket-event-duration,
     .ticket-event-date,
     .ticket-event-time,
     .ticket-event-location {
-        font-size: 12px;
+        font-size: 13px;
         max-width: 40%;
     }
-    .ticket-event-duration { top: 25%; left: 4%; }
-    .ticket-event-date      { top: 32%; left: 4%; }
-    .ticket-event-time      { top: 39%; left: 4%; }
-    .ticket-event-location  { top: 46%; left: 4%; }
+    .ticket-event-category { top: 18%; }
+    .ticket-event-duration { top: 26%; }
+    .ticket-event-date      { top: 34%; }
+    .ticket-event-time      { top: 42%; }
+    .ticket-event-location  { top: 50%; }
 
     .ticket-buyer-name {
         font-size: 14px;
-        top: 22%;
-        left: 54%;
+        top: 10%;
+        left: 52%;
         max-width: 42%;
     }
     .ticket-buyer-email,
-    .ticket-buyer-phone {
-        font-size: 12px;
-        max-width: 42%;
-    }
-    .ticket-buyer-email { top: 30%; left: 54%; }
-    .ticket-buyer-phone { top: 38%; left: 54%; }
-
+    .ticket-buyer-phone,
     .ticket-price {
-        font-size: 14px;
-        top: 46%;
-        left: 54%;
+        font-size: 13px;
         max-width: 42%;
     }
+    .ticket-buyer-email { top: 20%; }
+    .ticket-buyer-phone { top: 30%; }
+    .ticket-price       { top: 40%; }
+
     .ticket-id {
-        font-size: 12px;
-        top: 60%;
+        font-size: 13px;
+        bottom: 10%;
+        right: 5%;
     }
     .ticket-qr-wrapper {
-        width: 60px;
-        height: 60px;
-        bottom: 6%;
-        right: 4%;
-        padding: 4px;
+        width: 70px;
+        height: 70px;
+        bottom: 5%;
+        left: 5%;
     }
 }
 
@@ -5762,4 +5739,144 @@ body { top: 0px !important; position: relative !important; }
 }
 .past-event-footer .btn-primary:hover {
     background: #1A4F7A;
+}
+
+/* ============================================================
+   PREMIUM – NOUVELLES SECTIONS
+   ============================================================ */
+.premium-benefits {
+    margin: 40px 0 20px;
+}
+.premium-benefits h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+}
+.benefit-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 18px 12px;
+    text-align: center;
+    border: 1px solid #e6e6e6;
+    transition: all 0.3s ease;
+}
+.benefit-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    border-color: #F5B400;
+}
+.benefit-card i {
+    font-size: 2rem;
+    color: #F5B400;
+    display: block;
+    margin-bottom: 8px;
+}
+.benefit-card span {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1a1a2e;
+}
+.premium-testimonials {
+    margin: 30px 0;
+}
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+.testimonial-card {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid #F5B400;
+}
+.testimonial-card p {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #1f2937;
+    margin: 0 0 6px 0;
+}
+.testimonial-card .author {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+.premium-faq {
+    margin: 30px 0;
+}
+.faq-item {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border: 1px solid #e6e6e6;
+}
+.faq-item h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 0 0 4px 0;
+}
+.faq-item p {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin: 0;
+}
+.premium-cta {
+    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
+    color: white;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin: 30px 0 10px;
+}
+.premium-cta p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+.premium-cta .premium-subscribe-btn {
+    background: #F5B400;
+    color: #1a1a2e;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.premium-cta .premium-subscribe-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(245,180,0,0.4);
+}
+body.dark-mode .benefit-card {
+    background: #2d3748;
+    border-color: #4b5563;
+}
+body.dark-mode .benefit-card span {
+    color: #f3f4f6;
+}
+body.dark-mode .testimonial-card {
+    background: #2d3748;
+    border-left-color: #F5B400;
+}
+body.dark-mode .testimonial-card p {
+    color: #e5e7eb;
+}
+body.dark-mode .faq-item {
+    background: #2d3748;
+    border-color: #4b5563;
+}
+body.dark-mode .faq-item h4 {
+    color: #f3f4f6;
+}
+body.dark-mode .faq-item p {
+    color: #d1d5db;
 }
