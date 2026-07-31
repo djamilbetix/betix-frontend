@@ -4039,7 +4039,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 .footer-lang-selector { display: none !important; }
 
 /* ============================================================
-   TICKET OFFICIEL - DESIGN EXACT DE L'IMAGE (V2)
+   TICKET OFFICIEL - DESIGN EXACT DE L'IMAGE (V2) - conservé pour compatibilité
    ============================================================ */
 .ticket-official-container-v2 {
     max-width: 780px;
@@ -4314,7 +4314,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 }
 
 /* ============================================================
-   TICKET AVEC IMAGE DE FOND + SUPERPOSITION (MÉTHODE 5)
+   TICKET AVEC IMAGE DE FOND + SUPERPOSITION (VERSION AMÉLIORÉE)
    ============================================================ */
 .ticket-image-container {
     position: relative;
@@ -4324,7 +4324,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     overflow: hidden;
     background: #0a1628;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
 }
 
 .ticket-background-image {
@@ -4334,6 +4334,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     border-radius: 16px;
 }
 
+/* ----- Textes superposés : classe de base ----- */
 .ticket-overlay-text {
     position: absolute;
     color: white;
@@ -4342,48 +4343,49 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     pointer-events: none;
     line-height: 1.3;
     font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.3px;
 }
 
-/* ===== POSITIONNEMENT DES TEXTES ===== */
+/* ===== POSITIONNEMENT AMÉLIORÉ ===== */
 .ticket-event-title {
-    top: 12%;
-    left: 6%;
+    top: 10%;
+    left: 5%;
     font-size: 1.8rem;
     font-weight: 700;
     color: #ffffff;
     max-width: 55%;
 }
 .ticket-event-category {
-    top: 21%;
-    left: 6%;
-    font-size: 0.95rem;
+    top: 18%;
+    left: 5%;
+    font-size: 0.9rem;
     color: #f5a623;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 .ticket-event-duration {
-    top: 28%;
-    left: 6%;
-    font-size: 0.9rem;
+    top: 25%;
+    left: 5%;
+    font-size: 0.85rem;
     color: #c8d4e6;
 }
 .ticket-event-date {
-    top: 34%;
-    left: 6%;
-    font-size: 0.9rem;
+    top: 32%;
+    left: 5%;
+    font-size: 0.85rem;
     color: #c8d4e6;
 }
 .ticket-event-time {
-    top: 40%;
-    left: 6%;
-    font-size: 0.9rem;
+    top: 39%;
+    left: 5%;
+    font-size: 0.85rem;
     color: #c8d4e6;
 }
 .ticket-event-location {
     top: 46%;
-    left: 6%;
-    font-size: 0.9rem;
+    left: 5%;
+    font-size: 0.85rem;
     color: #c8d4e6;
 }
 
@@ -4398,31 +4400,31 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 .ticket-buyer-email {
     top: 32%;
     left: 56%;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #c8d4e6;
     max-width: 40%;
 }
 .ticket-buyer-phone {
     top: 40%;
     left: 56%;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #c8d4e6;
     max-width: 40%;
 }
 .ticket-price {
     top: 48%;
     left: 56%;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #f5a623;
     max-width: 40%;
 }
 
 .ticket-id {
-    top: 65%;
+    top: 63%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #f5a623;
     font-family: 'Courier New', monospace;
@@ -4431,15 +4433,16 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     width: 80%;
 }
 
+/* QR Code : bien placé en bas à droite */
 .ticket-qr-wrapper {
     position: absolute;
-    bottom: 8%;
-    right: 6%;
+    bottom: 7%;
+    right: 5%;
     width: 110px;
     height: 110px;
     background: white;
     padding: 6px;
-    border-radius: 10px;
+    border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
@@ -4451,340 +4454,22 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     height: 100% !important;
 }
 
-/* RESPONSIVE pour le ticket image */
+/* ----- Responsive pour mobile ----- */
 @media (max-width: 640px) {
-    .ticket-event-title { font-size: 1.2rem; top: 11%; left: 5%; }
-    .ticket-event-category { font-size: 0.7rem; top: 19%; left: 5%; }
-    .ticket-event-duration { font-size: 0.7rem; top: 25%; left: 5%; }
-    .ticket-event-date { font-size: 0.7rem; top: 30%; left: 5%; }
-    .ticket-event-time { font-size: 0.7rem; top: 35%; left: 5%; }
-    .ticket-event-location { font-size: 0.7rem; top: 40%; left: 5%; }
+    .ticket-event-title { font-size: 1.2rem; top: 10%; left: 4%; }
+    .ticket-event-category { font-size: 0.7rem; top: 18%; left: 4%; }
+    .ticket-event-duration { font-size: 0.7rem; top: 25%; left: 4%; }
+    .ticket-event-date { font-size: 0.7rem; top: 32%; left: 4%; }
+    .ticket-event-time { font-size: 0.7rem; top: 39%; left: 4%; }
+    .ticket-event-location { font-size: 0.7rem; top: 46%; left: 4%; }
     
-    .ticket-buyer-name { font-size: 0.75rem; top: 22%; left: 54%; }
-    .ticket-buyer-email { font-size: 0.65rem; top: 29%; left: 54%; }
-    .ticket-buyer-phone { font-size: 0.65rem; top: 36%; left: 54%; }
-    .ticket-price { font-size: 0.75rem; top: 43%; left: 54%; }
+    .ticket-buyer-name { font-size: 0.75rem; top: 22%; left: 54%; max-width: 42%; }
+    .ticket-buyer-email { font-size: 0.65rem; top: 30%; left: 54%; max-width: 42%; }
+    .ticket-buyer-phone { font-size: 0.65rem; top: 38%; left: 54%; max-width: 42%; }
+    .ticket-price { font-size: 0.8rem; top: 46%; left: 54%; max-width: 42%; }
     
-    .ticket-id { font-size: 1rem; top: 60%; }
-    .ticket-qr-wrapper { width: 60px; height: 60px; bottom: 6%; right: 5%; }
-}
-
-/* ============================================================
-   DARK MODE ADAPTATIONS (compléments pour le ticket)
-   ============================================================ */
-body.dark-mode .ticket-image-container {
-    background: #0a1628;
-}
-body.dark-mode .ticket-official-container-v2 {
-    background: #0a1628;
-    border-color: #1a2a4a;
-}
-body.dark-mode .ticket-official-header-v2 {
-    background: linear-gradient(135deg, #0a1628, #1a2a4a);
-}
-body.dark-mode .ticket-official-body-v2 {
-    background: #0d1b32;
-}
-body.dark-mode .ticket-official-footer-v2 {
-    background: #0a1628;
-}
-body.dark-mode .ticket-official-thanks-v2 {
-    background: #0d1b32;
-}
-body.dark-mode .ticket-official-info-v2 {
-    background: rgba(255,255,255,0.04);
-}
-
-/* ============================================================
-   PREMIUM - TABLEAU COMPARATIF AMÉLIORÉ
-   ============================================================ */
-.premium-page-content {
-    max-width: 1100px !important;
-    padding: 20px !important;
-}
-
-.pricing-table {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin: 24px 0;
-}
-
-.pricing-card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 28px 20px 24px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-}
-
-.pricing-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.10);
-    border-color: #f5a623;
-}
-
-.pricing-card .plan-badge {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #f5a623;
-    color: #1a1a2e;
-    padding: 2px 18px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 12px rgba(245,166,35,0.3);
-}
-
-.pricing-card .plan-name {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin-bottom: 4px;
-    text-align: center;
-}
-
-.pricing-card .plan-price {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #08143F;
-    text-align: center;
-    margin: 8px 0;
-}
-
-.pricing-card .plan-price small {
-    font-size: 1rem;
-    font-weight: 400;
-    color: #6b7280;
-}
-
-.pricing-card .plan-description {
-    font-size: 0.85rem;
-    color: #6b7280;
-    text-align: center;
-    margin-bottom: 16px;
-    line-height: 1.5;
-    min-height: 44px;
-}
-
-.pricing-card .plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 20px;
-    flex: 1;
-}
-
-.pricing-card .plan-features li {
-    padding: 8px 0;
-    font-size: 0.9rem;
-    color: #4b5563;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.pricing-card .plan-features li:last-child {
-    border-bottom: none;
-}
-
-.pricing-card .plan-features li i {
-    width: 20px;
-    text-align: center;
-    font-size: 1rem;
-}
-
-.pricing-card .plan-features li i.fa-check-circle {
-    color: #10b981;
-}
-
-.pricing-card .plan-features li i.fa-times-circle {
-    color: #ef4444;
-}
-
-.pricing-card .plan-features li .feature-text {
-    flex: 1;
-}
-
-.pricing-card .btn-subscribe {
-    background: linear-gradient(135deg, #08143F, #1a1a2e);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 40px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    text-align: center;
-    margin-top: auto;
-}
-
-.pricing-card .btn-subscribe:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(8,20,63,0.25);
-}
-
-.pricing-card .btn-subscribe:disabled {
-    opacity: 0.5;
-    cursor: default;
-    transform: none;
-    box-shadow: none;
-}
-
-.pricing-card.recommended {
-    border: 2px solid #f5a623;
-    transform: scale(1.02);
-    box-shadow: 0 8px 30px rgba(245,166,35,0.15);
-}
-
-.pricing-card.recommended:hover {
-    transform: scale(1.02) translateY(-6px);
-}
-
-.pricing-card.free {
-    background: #f8fafc;
-}
-
-.pricing-card.free .btn-subscribe {
-    background: #e5e7eb;
-    color: #6b7280;
-    cursor: default;
-}
-
-.pricing-card.free .btn-subscribe:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-body.dark-mode .pricing-card {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .pricing-card .plan-name {
-    color: #f3f4f6;
-}
-body.dark-mode .pricing-card .plan-price {
-    color: #f5a623;
-}
-body.dark-mode .pricing-card .plan-features li {
-    color: #d1d5db;
-    border-bottom-color: #374151;
-}
-body.dark-mode .pricing-card.free {
-    background: #2d3748;
-}
-body.dark-mode .pricing-card.recommended {
-    border-color: #f5a623;
-}
-
-/* Premium banner */
-.premium-banner {
-    background: #f5a623 !important;
-    color: #1a1a2e !important;
-    padding: 12px 20px;
-    text-align: center;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-bottom: 2px solid #d4911e;
-}
-
-.premium-banner strong {
-    color: #1a1a2e;
-}
-
-.premium-banner-btn {
-    background: #1a1a2e !important;
-    border: none;
-    padding: 4px 16px;
-    border-radius: 30px;
-    font-weight: 700;
-    color: white !important;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.premium-banner-btn:hover {
-    transform: scale(1.05);
-}
-
-.premium-banner-close {
-    background: none;
-    border: none;
-    color: #1a1a2e;
-    margin-left: 10px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-}
-
-.premium-banner-close:hover {
-    opacity: 1;
-}
-
-.premium-status-card {
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 30px 20px;
-    text-align: center;
-    border: 2px solid #f5a623;
-}
-
-.premium-status-icon {
-    margin-bottom: 12px;
-}
-
-.premium-status-card h3 {
-    color: #1a1a2e;
-    margin-bottom: 8px;
-}
-
-body.dark-mode .premium-status-card {
-    background: #1f2937;
-    border-color: #f5a623;
-}
-body.dark-mode .premium-status-card h3 {
-    color: #f3f4f6;
-}
-
-/* Responsive Premium */
-@media (max-width: 992px) {
-    .pricing-table {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-    .pricing-card.recommended {
-        transform: none;
-    }
-    .pricing-card.recommended:hover {
-        transform: translateY(-6px);
-    }
-}
-
-@media (max-width: 640px) {
-    .pricing-table {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    .pricing-card {
-        padding: 20px 16px;
-    }
-    .pricing-card .plan-price {
-        font-size: 1.8rem;
-    }
+    .ticket-id { font-size: 0.9rem; top: 60%; }
+    .ticket-qr-wrapper { width: 60px; height: 60px; bottom: 6%; right: 4%; padding: 4px; }
 }
 
 /* ============================================================
