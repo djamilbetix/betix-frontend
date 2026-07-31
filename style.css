@@ -4278,7 +4278,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 }
 
 /* ===== POSITIONNEMENT DES TEXTES ===== */
-/* Ajustez ces valeurs en fonction de votre image */
 .ticket-event-title {
     top: 12%;
     left: 6%;
@@ -4321,7 +4320,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     color: #c8d4e6;
 }
 
-/* Infos acheteur */
 .ticket-buyer-name {
     top: 24%;
     left: 56%;
@@ -4353,7 +4351,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     max-width: 40%;
 }
 
-/* Ticket ID */
 .ticket-id {
     top: 65%;
     left: 50%;
@@ -4367,7 +4364,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     width: 80%;
 }
 
-/* QR Code */
 .ticket-qr-wrapper {
     position: absolute;
     bottom: 8%;
