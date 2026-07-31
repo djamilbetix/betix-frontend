@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (version complète, abrégée ici pour la lisibilité)
+// TRADUCTIONS (version abrégée mais complète pour les clés utilisées)
 // ============================================================
 const translations = {
     en: {
@@ -274,7 +274,6 @@ const translations = {
         footerSlogan: 'La première plateforme de billetterie décentralisée sur Pi Network',
         footerDesc: 'Plateforme sécurisée pour acheter et vendre des billets avec paiement en Pi.'
     }
-    // Vous pouvez ajouter ici les autres langues si nécessaire
 };
 
 let currentLang = 'en';
@@ -1280,66 +1279,22 @@ async function downloadTicketImagePDF(ticketId) {
 }
 
 // ============================================================
-// FONCTIONS D'AFFICHAGE DES TICKETS (CORRIGÉES : dédoublonnage)
+// FONCTIONS RENDER TICKETS ET HISTORY (CARTE GÉANTE)
 // ============================================================
-
-function renderTicketCard(ticket, status) {
-    const dateEvent = new Date(ticket.eventDate);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
-    const statusText = status === 'valid' ? 'Valid' : 'Past';
-    const typeLabel = 'Standard';
-    const qrCode = ticket.qrCode || 'BETIX-' + ticket.id.substring(0, 8);
-    const participantName = ticket.buyerName || currentUser.first_name + ' ' + currentUser.last_name || 'Anonymous';
-    const paysDisplay = ticket.pays || 'France';
-    const qrContainerId = 'qr-' + ticket.id;
-    let purchaseDateDisplay = 'N/A';
-    if (ticket.purchaseDate) {
-        const pd = new Date(ticket.purchaseDate);
-        purchaseDateDisplay = !isNaN(pd.getTime()) ? pd.toLocaleDateString('en-US') + ' ' + pd.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}) : 'N/A';
-    }
-    let downloadButton = '';
-    if (status === 'valid') {
-        downloadButton = `<button class="btn-download-ticket" onclick="downloadTicket('${ticket.id}')"><i class="fas fa-download"></i> ${t('downloadTicket')}</button>`;
-    }
-    return `<div class="ticket-card">
-        <div class="ticket-header"><span class="ticket-status">${statusText} - ${typeLabel}</span><span class="ticket-id">#${ticket.id.substring(0, 8).toUpperCase()}</span></div>
-        <div class="ticket-title">${escapeHtml(ticket.eventTitle)}</div>
-        <div class="ticket-subtitle">${escapeHtml(ticket.category || 'Event')} | ${typeLabel} | ${escapeHtml(paysDisplay)}</div>
-        <div class="ticket-info-grid">
-            <div class="info-item"><span class="label">${t('eventDate')}</span><span class="value">${dateFormatted}</span></div>
-            <div class="info-item"><span class="label">${t('eventTime')}</span><span class="value">${timeFormatted}</span></div>
-            <div class="info-item"><span class="label">${t('locationLabel')}</span><span class="value">${escapeHtml(ticket.eventLocation || 'Online')}</span></div>
-            <div class="info-item"><span class="label">${t('price')}</span><span class="value">${(ticket.price || 0).toFixed(6)} Pi</span></div>
-            <div class="info-item"><span class="label">${t('ticketTypeLabel')}</span><span class="value">${typeLabel}</span></div>
-            <div class="info-item"><span class="label">${t('countryLabel')}</span><span class="value">${escapeHtml(paysDisplay)}</span></div>
-        </div>
-        <div class="ticket-qr"><div id="${qrContainerId}" class="qr-code-container" data-ticket-id="${ticket.id}"></div></div>
-        <div class="ticket-footer">
-            <div class="ticket-participant">${t('participant')}: <strong>${escapeHtml(participantName)}</strong></div>
-            <div class="ticket-purchase-date">${t('purchaseDate')}: ${purchaseDateDisplay}</div>
-            <div class="ticket-actions">
-                <button class="btn-action btn-view" onclick="viewTicketModal('${ticket.id}')"><i class="fas fa-eye"></i> View</button>
-                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-            </div>
-            ${downloadButton}
-        </div>
-    </div>`;
-}
 
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
-    
+
+    // Filtrer les tickets valides (non utilisés, non expirés)
     const validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
-    
+
+    // Dédupliquer par ID
     const uniqueTickets = [];
     const seenIds = new Set();
     for (const t of validTickets) {
@@ -1348,27 +1303,42 @@ function renderTickets() {
             uniqueTickets.push(t);
         }
     }
-    
+
     if (uniqueTickets.length === 0) {
         container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noActiveTickets')}</p>`;
         return;
     }
-    
-    container.innerHTML = uniqueTickets.map(t => renderTicketCard(t, 'valid')).join('');
-    setTimeout(generateAllQRCodes, 200);
+
+    let html = '';
+    uniqueTickets.forEach(ticket => {
+        html += `<div class="ticket-list-item">`;
+        // Générer la grande carte
+        html += generateTicketFromImage(ticket);
+        // Ajouter les boutons d'action sous la carte
+        html += `<div class="ticket-actions-wrapper">
+                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                    <button class="btn-action btn-mark" onclick="markTicketAsUsed('${ticket.id}')"><i class="fas fa-check"></i> Use</button>
+                </div>`;
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+    setTimeout(generateAllQRCodes, 400);
 }
 
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
-    
+
     const historyTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
-    
+
     const uniqueHistory = [];
     const seenIds = new Set();
     for (const t of historyTickets) {
@@ -1377,14 +1347,26 @@ function renderHistory() {
             uniqueHistory.push(t);
         }
     }
-    
+
     if (uniqueHistory.length === 0) {
         container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noTicketHistory')}</p>`;
         return;
     }
-    
-    container.innerHTML = uniqueHistory.map(t => renderTicketCard(t, 'past')).join('');
-    setTimeout(generateAllQRCodes, 200);
+
+    let html = '';
+    uniqueHistory.forEach(ticket => {
+        html += `<div class="ticket-list-item">`;
+        html += generateTicketFromImage(ticket);
+        html += `<div class="ticket-actions-wrapper">
+                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                </div>`;
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+    setTimeout(generateAllQRCodes, 400);
 }
 
 // ============================================================
