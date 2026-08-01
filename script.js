@@ -1066,9 +1066,20 @@ function hideLoader() {
     if (loader) loader.style.display = 'none';
 }
 
-// ============================================================
-// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION FINALE
-// ============================================================
+/* ============================================================
+   TICKET GENERATOR FUNCTION - VERSION CLEAN
+   ============================================================ */
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function generateTicketHTML(ticket) {
     const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
     const dateEvent = new Date(ticket.eventDate);
@@ -1095,36 +1106,34 @@ function generateTicketHTML(ticket) {
     
     const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
-    const eventTitle = ticket.eventTitle || event?.title || 'Event';
+    const eventTitle = ticket.eventTitle || event?.title || 'Event Name';
     const eventLocation = ticket.eventLocation || event?.location || 'Online';
-    const eventCategory = ticket.category || event?.category || 'CONCERT';
+    const eventCategory = ticket.category || event?.category || 'Concert';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            
-            <!-- Badge Catégorie (En haut sur le macaron bleu) -->
-            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
 
-            <!-- ID Ticket (En haut à droite sous le titre) -->
-            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
-
-            <!-- Colonne Gauche (Détails de l'événement) -->
+            <!-- Colonne Gauche (Seulement les valeurs dynamiques à droite des :) -->
             <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
+            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
             <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
             <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
             <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
             <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
 
-            <!-- Colonne Droite (Infos Acheteur & Prix) -->
+            <!-- Colonne Droite (Infos Acheteur) -->
             <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
             <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
             <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
             <div class="ticket-overlay-text ticket-price">${price}</div>
 
-            <!-- Zone du QR Code (Partie jaune à droite) -->
+            <!-- Ticket ID (Aligné sur la ligne en bas à droite) -->
+            <div class="ticket-overlay-text ticket-id">${ticketIdShort}</div>
+
+            <!-- QR Code (Ajusté dans le cadre blanc) -->
             <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
         </div>
     `;
