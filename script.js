@@ -1067,7 +1067,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET VIA CANVAS (AVEC FALLBACK)
+// GÉNÉRATION DU TICKET VIA CANVAS (AVEC FALLBACK ROBUSTE)
 // ============================================================
 function generateTicketCanvas(ticket, containerId) {
     const container = document.getElementById(containerId);
@@ -1102,34 +1102,32 @@ function generateTicketCanvas(ticket, containerId) {
     canvas.height = 600;
     const ctx = canvas.getContext('2d');
 
-    // --- Dessiner un fond de secours (si l'image ne charge pas) ---
-    const drawFallback = function() {
-        console.log('Utilisation du fallback (image non chargée)');
-        // Fond bleu nuit
+    // --- Fonction pour dessiner le ticket sans image de fond ---
+    const drawTicketWithoutImage = function() {
+        console.log('Dessin du ticket sans image de fond (fallback)');
+        // Fond dégradé
         const grad = ctx.createLinearGradient(0, 0, 800, 600);
         grad.addColorStop(0, '#0a1628');
         grad.addColorStop(1, '#1a2a4a');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 800, 600);
 
-        // Titre Betix
+        // Titre
         ctx.font = 'bold 36px Poppins, sans-serif';
         ctx.fillStyle = '#F5B400';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText('Betix', 400, 30);
 
-        // Sous-titre
         ctx.font = '16px Poppins, sans-serif';
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText('Official Ticket', 400, 80);
 
         // Rectangle blanc pour le contenu
         ctx.fillStyle = 'rgba(255,255,255,0.08)';
-        // roundRect n'est pas supporté partout, on utilise fillRect
         ctx.fillRect(40, 120, 720, 420);
 
-        // Afficher les données en texte
+        // Données
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.font = 'bold 16px Poppins, sans-serif';
@@ -1144,7 +1142,7 @@ function generateTicketCanvas(ticket, containerId) {
         ctx.fillText('Email: ' + userEmail, 70, 430);
         ctx.fillText('Price: ' + price, 70, 470);
 
-        // QR Code de secours
+        // QR Code
         QRCode.toCanvas(canvas, ticket.qrCode || ticket.id, {
             width: 120,
             height: 120,
@@ -1161,7 +1159,7 @@ function generateTicketCanvas(ticket, containerId) {
         });
     };
 
-    // --- Charger l'image de fond ---
+    // --- Tenter de charger l'image de fond ---
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = function() {
@@ -1226,7 +1224,7 @@ function generateTicketCanvas(ticket, containerId) {
             color: { dark: '#0B1F5C', light: '#ffffff' }
         }, function(error) {
             if (error) console.error('QR Error:', error);
-            // Insérer le canvas dans le conteneur
+            // Insérer le canvas
             container.innerHTML = '';
             container.appendChild(canvas);
             canvas.style.width = '100%';
@@ -1237,7 +1235,7 @@ function generateTicketCanvas(ticket, containerId) {
 
     img.onerror = function() {
         console.warn('Image ticket-officiel.png non trouvée, utilisation du fallback');
-        drawFallback();
+        drawTicketWithoutImage();
     };
 
     // Démarrer le chargement
@@ -1580,7 +1578,7 @@ function renderTickets() {
             const containerId = 'ticket-canvas-' + ticket.id;
             generateTicketCanvas(ticket, containerId);
         });
-    }, 300);
+    }, 400);
 }
 
 function renderHistory() {
@@ -1628,7 +1626,7 @@ function renderHistory() {
             const containerId = 'ticket-canvas-' + ticket.id;
             generateTicketCanvas(ticket, containerId);
         });
-    }, 300);
+    }, 400);
 }
 
 // ============================================================
@@ -1778,7 +1776,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// PAGE DE DÉTAIL (openEventDetails) - inchangée
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -2610,7 +2608,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI
+// CONFIRMATION D'ACHAT AVEC PI (inchangé)
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
