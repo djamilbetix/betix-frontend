@@ -1069,52 +1069,80 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-// ============================================================
-// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION CORRIGÉE
-// ============================================================
+/* ============================================================
+   TICKET GENERATOR FUNCTION (JS / JSX)
+   ============================================================ */
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function generateTicketHTML(ticket) {
-    const event = events.find(e => e.id === ticket.eventId);
+    const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
     const dateEvent = new Date(ticket.eventDate);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+    
+    const dateFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+        : 'Date to be defined';
+        
+    const timeFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+        : 'Time to be defined';
+        
     const durationDisplay = event?.durationValue && event?.durationUnit 
         ? `${event.durationValue} ${event.durationUnit}` 
         : 'N/A';
     
-    const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
-                     (currentUser.last_name ? ' ' + currentUser.last_name : '');
-    const userEmail = currentUser.email || 'Not provided';
-    const userPhone = currentUser.phone_number || 'Not provided';
-    const buyerName = ticket.buyerName || fullName || 'Anonymous';
-    const ticketIdShort = ticket.id.substring(0, 8).toUpperCase();
+    const user = typeof currentUser !== 'undefined' ? currentUser : {};
+    const fullName = (user.first_name || user.name || '') + 
+                     (user.last_name ? ' ' + user.last_name : '');
+                     
+    const userEmail = user.email || 'Not provided';
+    const userPhone = user.phone_number || 'Not provided';
+    const buyerName = ticket.buyerName || fullName || 'Not provided';
+    
+    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = ticket.eventTitle || event?.title || 'Event';
     const eventLocation = ticket.eventLocation || event?.location || 'Online';
-    const eventCategory = ticket.category || event?.category || 'Concert';
+    const eventCategory = ticket.category || event?.category || 'CONCERT';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- Colonne gauche : valeurs (sans libellés) -->
-            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
+            
+            <!-- Badge Catégorie (En haut sur le macaron bleu) -->
             <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
+
+            <!-- ID Ticket (En haut à droite sous le titre) -->
+            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
+
+            <!-- Colonne Gauche (Détails de l'événement) -->
+            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
             <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
             <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
             <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
             <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
-            <!-- Colonne droite : valeurs -->
+
+            <!-- Colonne Droite (Infos Acheteur & Prix) -->
             <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
             <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
             <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
             <div class="ticket-overlay-text ticket-price">${price}</div>
-            <!-- Ticket ID -->
-            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
-            <!-- QR Code -->
+
+            <!-- Zone du QR Code (Partie jaune à droite) -->
             <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
         </div>
     `;
+}
 }
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
