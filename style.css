@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX
+   STYLES COMPLETS POUR BETIX (avec corrections d'alignement)
    ============================================================ */
 
 * {
@@ -1480,7 +1480,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     position: absolute;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
     color: #1a202c;
     font-weight: 500;
     font-size: clamp(8px, 1.1vw, 11px);
@@ -1492,33 +1492,33 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 
 /* Colonne gauche (événement) */
 .ticket-col-left {
-    left: 5%;
+    left: 6%;
     width: 30%;
-    top: 22%;
+    top: 25%;
 }
 
 /* Colonne centre (acheteur) */
 .ticket-col-center {
-    left: 38%;
+    left: 40%;
     width: 30%;
-    top: 22%;
+    top: 25%;
 }
 
 /* Colonne droite (QR code) */
 .ticket-col-right {
     right: 3%;
-    width: 25%;
-    top: 18%;
+    width: 22%;
+    top: 20%;
     align-items: center;
     text-align: center;
 }
 
-/* Éléments */
+/* Éléments individuels */
 .ticket-col .ticket-event-title {
     font-size: clamp(12px, 1.6vw, 18px);
     font-weight: 700;
     color: #dc2626;  /* rouge */
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .ticket-col .ticket-event-duration,
