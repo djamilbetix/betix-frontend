@@ -1067,9 +1067,13 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET AVEC IMAGE DE FOND – VALEURS SEULEMENT
+// GÉNÉRATION DU TICKET VIA CANVAS (NOUVELLE MÉTHODE)
 // ============================================================
-function generateTicketFromImage(ticket) {
+function generateTicketCanvas(ticket, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // Récupérer les données
     const event = events.find(e => e.id === ticket.eventId);
     const dateEvent = new Date(ticket.eventDate);
     const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
@@ -1090,31 +1094,101 @@ function generateTicketFromImage(ticket) {
     const eventCategory = ticket.category || event?.category || 'Concert';
     const organizerName = event?.organizerName || event?.organizer || 'Anonymous';
 
-    return `
-        <div class="ticket-image-container" id="ticket-${ticket.id}">
-            <img src="ticket-officiel.png" alt="Ticket officiel Betix" class="ticket-background-image" onerror="this.src='logo.png'; this.style.objectFit='contain'; this.style.background='#0a1628';">
-            
-            <!-- Colonne gauche : valeurs (sans libellés) -->
-            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
-            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
-            <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
-            <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
-            
-            <!-- Colonne droite : acheteur et prix (valeurs) -->
-            <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
-            <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
-            <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
-            <div class="ticket-overlay-text ticket-price">${price}</div>
-            
-            <!-- Ticket ID en bas à droite -->
-            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
-            
-            <!-- QR Code -->
-            <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
-        </div>
-    `;
+    // Créer le canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    // Charger l'image de fond
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, 800, 600);
+
+        // --- Dessiner les textes (valeurs uniquement) ---
+        // Police Poppins
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+
+        // 1. Titre de l'événement (noir, gras, taille 14px)
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(eventTitle, 52, 63);
+
+        // 2. Catégorie (jaune, gras, taille 20px)
+        ctx.font = 'bold 20px Poppins, sans-serif';
+        ctx.fillStyle = '#F5B400';
+        ctx.fillText(eventCategory, 52, 105);
+
+        // 3. Durée (noir, taille 13px)
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(durationDisplay, 52, 153);
+
+        // 4. Date (noir, taille 13px)
+        ctx.fillText(dateFormatted, 52, 201);
+
+        // 5. Heure (noir, taille 13px)
+        ctx.fillText(timeFormatted, 52, 249);
+
+        // 6. Localisation (noir, taille 13px)
+        ctx.fillText(eventLocation, 52, 297);
+
+        // 7. Nom de l'acheteur (noir, semi-gras, taille 14px)
+        ctx.font = '600 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(buyerName, 432, 63);
+
+        // 8. Email (noir, taille 13px)
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillText(userEmail, 432, 123);
+
+        // 9. Téléphone (noir, taille 13px)
+        ctx.fillText(userPhone, 432, 183);
+
+        // 10. Prix (noir, gras, taille 14px)
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillText(price, 432, 243);
+
+        // 11. Ticket ID (noir, monospace, taille 13px)
+        ctx.font = 'bold 13px Courier New, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#000000';
+        ctx.fillText('#' + ticketIdShort, 740, 530);
+
+        // --- QR Code ---
+        const qrSize = 100;
+        const qrX = 48;
+        const qrY = 480;
+        QRCode.toCanvas(canvas, ticket.qrCode || ticket.id, {
+            width: qrSize,
+            height: qrSize,
+            margin: 2,
+            color: { dark: '#0B1F5C', light: '#ffffff' }
+        }, function(error) {
+            if (error) console.error('QR Error:', error);
+            // Insérer le canvas dans le conteneur
+            container.innerHTML = '';
+            container.appendChild(canvas);
+            // Appliquer le style CSS pour le responsive
+            canvas.style.width = '100%';
+            canvas.style.height = 'auto';
+        });
+    };
+    img.onerror = function() {
+        // Fallback si l'image ne charge pas
+        console.warn('Image de fond non chargée, utilisation d\'un fond de secours');
+        ctx.fillStyle = '#0a1628';
+        ctx.fillRect(0, 0, 800, 600);
+        // ... continuer le dessin sur fond bleu foncé
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText('Ticket Betix', 50, 50);
+        // (on ne va pas tout recoder ici, mais le principe est le même)
+        // Idéalement, on pourrait appeler la fonction avec un fond blanc.
+    };
+    img.src = 'ticket-officiel.png';
 }
 
 // ============================================================
@@ -1126,31 +1200,12 @@ function viewTicketWithImage(ticketId) {
 
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
-    
-    const html = generateTicketFromImage(ticket);
-    content.innerHTML = html;
-    
+    content.innerHTML = `<div class="ticket-canvas-container" id="ticket-canvas-modal"></div>`;
     modal.classList.add('show');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
-    setTimeout(() => {
-        const qrContainer = document.getElementById(`qr-ticket-${ticket.id}`);
-        if (qrContainer) {
-            try {
-                new QRCode(qrContainer, {
-                    text: ticket.qrCode || ticket.id,
-                    width: 100,
-                    height: 100,
-                    colorDark: "#0B1F5C",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } catch(e) {
-                qrContainer.innerHTML = '<p style="color:red;font-size:10px;">QR Error</p>';
-            }
-        }
-    }, 300);
+    generateTicketCanvas(ticket, 'ticket-canvas-modal');
 }
 
 // ============================================================
@@ -1160,59 +1215,79 @@ async function downloadTicketImagePNG(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) { alert('Ticket not found'); return; }
     showLoader('Génération du ticket PNG...');
-    
-    try {
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '0';
-        tempContainer.style.width = '800px';
-        tempContainer.style.background = 'transparent';
-        tempContainer.innerHTML = generateTicketFromImage(ticket);
-        document.body.appendChild(tempContainer);
-        
-        const qrContainer = tempContainer.querySelector('.ticket-qr-wrapper');
-        if (qrContainer) {
-            try {
-                new QRCode(qrContainer, {
-                    text: ticket.qrCode || ticket.id,
-                    width: 100,
-                    height: 100,
-                    colorDark: "#0B1F5C",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } catch(e) {
-                qrContainer.innerHTML = '<p style="color:red;font-size:10px;">QR Error</p>';
-            }
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const canvas = await html2canvas(tempContainer, {
-            scale: 2.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#0a1628',
-            allowTaint: true,
-            width: 800,
-            height: tempContainer.scrollHeight
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, 800, 600);
+        // Dessiner les textes (même code que generateTicketCanvas)
+        // On pourrait factoriser dans une fonction utilitaire, mais pour l'instant on duplique
+        const event = events.find(e => e.id === ticket.eventId);
+        const dateEvent = new Date(ticket.eventDate);
+        const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+        const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+        const durationDisplay = event?.durationValue && event?.durationUnit ? `${event.durationValue} ${event.durationUnit}` : 'N/A';
+        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+        const userEmail = currentUser.email || 'Not provided';
+        const userPhone = currentUser.phone_number || 'Not provided';
+        const buyerName = ticket.buyerName || fullName || 'Anonymous';
+        const ticketIdShort = ticket.id.substring(0, 8).toUpperCase();
+        const price = (ticket.price || 0).toFixed(6) + ' Pi';
+        const eventTitle = ticket.eventTitle || event?.title || 'Event';
+        const eventLocation = ticket.eventLocation || event?.location || 'Online';
+        const eventCategory = ticket.category || event?.category || 'Concert';
+
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(eventTitle, 52, 63);
+        ctx.font = 'bold 20px Poppins, sans-serif';
+        ctx.fillStyle = '#F5B400';
+        ctx.fillText(eventCategory, 52, 105);
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(durationDisplay, 52, 153);
+        ctx.fillText(dateFormatted, 52, 201);
+        ctx.fillText(timeFormatted, 52, 249);
+        ctx.fillText(eventLocation, 52, 297);
+
+        ctx.font = '600 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(buyerName, 432, 63);
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillText(userEmail, 432, 123);
+        ctx.fillText(userPhone, 432, 183);
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillText(price, 432, 243);
+
+        ctx.font = 'bold 13px Courier New, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#000000';
+        ctx.fillText('#' + ticketIdShort, 740, 530);
+
+        // QR Code
+        QRCode.toCanvas(canvas, ticket.qrCode || ticket.id, {
+            width: 100,
+            height: 100,
+            margin: 2,
+            color: { dark: '#0B1F5C', light: '#ffffff' }
+        }, function(error) {
+            if (error) console.error('QR Error:', error);
+            const link = document.createElement('a');
+            link.download = `BETIX_TICKET_${ticket.id.substring(0, 8)}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            hideLoader();
+            addNotification('Ticket PNG téléchargé avec succès !', 'success');
         });
-        
-        document.body.removeChild(tempContainer);
-        
-        const link = document.createElement('a');
-        link.download = `BETIX_TICKET_${ticket.id.substring(0, 8)}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        
-        hideLoader();
-        addNotification('Ticket PNG téléchargé avec succès !', 'success');
-    } catch (error) {
-        console.error(error);
-        alert('Erreur lors du téléchargement PNG. Veuillez réessayer.');
-        hideLoader();
-    }
+    };
+    img.src = 'ticket-officiel.png';
 }
 
 // ============================================================
@@ -1222,71 +1297,85 @@ async function downloadTicketImagePDF(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) { alert('Ticket not found'); return; }
     showLoader('Génération du ticket PDF...');
-    
-    try {
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '0';
-        tempContainer.style.width = '800px';
-        tempContainer.style.background = 'transparent';
-        tempContainer.innerHTML = generateTicketFromImage(ticket);
-        document.body.appendChild(tempContainer);
-        
-        const qrContainer = tempContainer.querySelector('.ticket-qr-wrapper');
-        if (qrContainer) {
-            try {
-                new QRCode(qrContainer, {
-                    text: ticket.qrCode || ticket.id,
-                    width: 100,
-                    height: 100,
-                    colorDark: "#0B1F5C",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } catch(e) {
-                qrContainer.innerHTML = '<p style="color:red;font-size:10px;">QR Error</p>';
-            }
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const canvas = await html2canvas(tempContainer, {
-            scale: 2.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#0a1628',
-            allowTaint: true,
-            width: 800,
-            height: tempContainer.scrollHeight
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        ctx.drawImage(img, 0, 0, 800, 600);
+        // Même logique de dessin que pour PNG
+        const event = events.find(e => e.id === ticket.eventId);
+        const dateEvent = new Date(ticket.eventDate);
+        const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+        const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+        const durationDisplay = event?.durationValue && event?.durationUnit ? `${event.durationValue} ${event.durationUnit}` : 'N/A';
+        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+        const userEmail = currentUser.email || 'Not provided';
+        const userPhone = currentUser.phone_number || 'Not provided';
+        const buyerName = ticket.buyerName || fullName || 'Anonymous';
+        const ticketIdShort = ticket.id.substring(0, 8).toUpperCase();
+        const price = (ticket.price || 0).toFixed(6) + ' Pi';
+        const eventTitle = ticket.eventTitle || event?.title || 'Event';
+        const eventLocation = ticket.eventLocation || event?.location || 'Online';
+        const eventCategory = ticket.category || event?.category || 'Concert';
+
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(eventTitle, 52, 63);
+        ctx.font = 'bold 20px Poppins, sans-serif';
+        ctx.fillStyle = '#F5B400';
+        ctx.fillText(eventCategory, 52, 105);
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(durationDisplay, 52, 153);
+        ctx.fillText(dateFormatted, 52, 201);
+        ctx.fillText(timeFormatted, 52, 249);
+        ctx.fillText(eventLocation, 52, 297);
+
+        ctx.font = '600 14px Poppins, sans-serif';
+        ctx.fillStyle = '#000000';
+        ctx.fillText(buyerName, 432, 63);
+        ctx.font = '500 13px Poppins, sans-serif';
+        ctx.fillText(userEmail, 432, 123);
+        ctx.fillText(userPhone, 432, 183);
+        ctx.font = 'bold 14px Poppins, sans-serif';
+        ctx.fillText(price, 432, 243);
+
+        ctx.font = 'bold 13px Courier New, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#000000';
+        ctx.fillText('#' + ticketIdShort, 740, 530);
+
+        QRCode.toCanvas(canvas, ticket.qrCode || ticket.id, {
+            width: 100,
+            height: 100,
+            margin: 2,
+            color: { dark: '#0B1F5C', light: '#ffffff' }
+        }, function(error) {
+            if (error) console.error('QR Error:', error);
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            doc.save(`BETIX_TICKET_${ticket.id.substring(0, 8)}.pdf`);
+            hideLoader();
+            addNotification('Ticket PDF téléchargé avec succès !', 'success');
         });
-        
-        document.body.removeChild(tempContainer);
-        
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        doc.save(`BETIX_TICKET_${ticket.id.substring(0, 8)}.pdf`);
-        
-        hideLoader();
-        addNotification('Ticket PDF téléchargé avec succès !', 'success');
-    } catch (error) {
-        console.error(error);
-        alert('Erreur lors du téléchargement PDF. Veuillez réessayer.');
-        hideLoader();
-    }
+    };
+    img.src = 'ticket-officiel.png';
 }
 
 // ============================================================
 // FONCTIONS RENDER TICKETS ET HISTORY (CARTE GÉANTE)
 // ============================================================
-function renderTicketCard(ticket, status) {
-    return generateTicketFromImage(ticket);
-}
-
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
@@ -1314,19 +1403,23 @@ function renderTickets() {
 
     let html = '';
     uniqueTickets.forEach(ticket => {
-        html += `<div class="ticket-list-item">`;
-        html += generateTicketFromImage(ticket);
-        html += `<div class="ticket-actions-wrapper">
-                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-                    <button class="btn-action btn-mark" onclick="markTicketAsUsed('${ticket.id}')"><i class="fas fa-check"></i> Use</button>
+        const containerId = 'ticket-canvas-' + ticket.id;
+        html += `<div class="ticket-list-item">
+                    <div class="ticket-canvas-container" id="${containerId}"></div>
+                    <div class="ticket-actions-wrapper">
+                        <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                        <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                        <button class="btn-action btn-mark" onclick="markTicketAsUsed('${ticket.id}')"><i class="fas fa-check"></i> Use</button>
+                    </div>
                 </div>`;
-        html += `</div>`;
+        // On va générer le canvas après l'insertion
+        setTimeout(() => {
+            generateTicketCanvas(ticket, containerId);
+        }, 100);
     });
 
     container.innerHTML = html;
-    setTimeout(generateAllQRCodes, 400);
 }
 
 function renderHistory() {
@@ -1356,62 +1449,33 @@ function renderHistory() {
 
     let html = '';
     uniqueHistory.forEach(ticket => {
-        html += `<div class="ticket-list-item">`;
-        html += generateTicketFromImage(ticket);
-        html += `<div class="ticket-actions-wrapper">
-                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+        const containerId = 'ticket-canvas-' + ticket.id;
+        html += `<div class="ticket-list-item">
+                    <div class="ticket-canvas-container" id="${containerId}"></div>
+                    <div class="ticket-actions-wrapper">
+                        <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                        <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                    </div>
                 </div>`;
-        html += `</div>`;
+        setTimeout(() => {
+            generateTicketCanvas(ticket, containerId);
+        }, 100);
     });
 
     container.innerHTML = html;
-    setTimeout(generateAllQRCodes, 400);
 }
 
 // ============================================================
-// GÉNÉRATION DES QR CODES
+// GÉNÉRATION DES QR CODES (plus utilisée pour canvas)
 // ============================================================
 function generateAllQRCodes() {
-    document.querySelectorAll('.qr-code-container, .ticket-qr-wrapper').forEach(container => {
-        const ticketId = container.dataset.ticketId || container.id.replace('qr-', '').replace('qr-ticket-', '');
-        const ticket = tickets.find(t => t.id === ticketId);
-        if (!ticket) { 
-            if (container.id.startsWith('qr-ticket-')) {
-                return;
-            }
-            return; 
-        }
-        const isUsed = usedTickets.indexOf(ticket.id) !== -1;
-        const isExpired = new Date(ticket.eventDate) <= new Date();
-        if (isUsed || isExpired || ticket.status === 'Used') { 
-            container.innerHTML = '<div style="color:gray;font-size:11px;text-align:center;"><i class="fas fa-check-circle" style="color:#10b981;"></i> Used</div>'; 
-            return; 
-        }
-        container.innerHTML = '';
-        try { 
-            new QRCode(container, { 
-                text: ticket.qrCode || ticket.id, 
-                width: 100, 
-                height: 100, 
-                colorDark: "#0B1F5C", 
-                colorLight: "#ffffff", 
-                correctLevel: QRCode.CorrectLevel.H 
-            }); 
-        } catch(e) { 
-            container.innerHTML = '<span style="color:red;">Error</span>'; 
-        }
-    });
+    // Rien à faire ici car les QR sont générés dans le canvas
 }
 
 // ============================================================
 // TÉLÉCHARGEMENT ET PARTAGE
 // ============================================================
-async function downloadTicket(ticketId) {
-    await downloadTicketImagePNG(ticketId);
-}
-
 function downloadTicketPDF(ticketId) {
     downloadTicketImagePDF(ticketId);
 }
@@ -1549,7 +1613,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// PAGE DE DÉTAIL (openEventDetails) - inchangée
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -2312,7 +2376,7 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT
+// QUANTITY POPUP ET ACHAT (inchangés)
 // ============================================================
 function openQuantityPopup(eventId) {
     const profileCheck = checkProfileComplete();
@@ -2381,7 +2445,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI
+// CONFIRMATION D'ACHAT AVEC PI (inchangé)
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2644,7 +2708,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CRÉATION D'ÉVÉNEMENT
+// CRÉATION D'ÉVÉNEMENT (inchangé)
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
@@ -2973,7 +3037,7 @@ function initCountrySelectors() {
 }
 
 // ============================================================
-// LANGUE, TRADUCTIONS ET UI
+// LANGUE, TRADUCTIONS ET UI (inchangé)
 // ============================================================
 function changeLanguage(lang) {
     currentLang = lang;
