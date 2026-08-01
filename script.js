@@ -1065,6 +1065,11 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
+
+/* ============================================================
+   TICKET GENERATOR FUNCTION - VERSION MODIFIEE (3 COLONNES)
+   ============================================================ */
+
 function generateTicketHTML(ticket) {
     const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
     const dateEvent = new Date(ticket.eventDate);
@@ -1108,7 +1113,7 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Gauche -->
+            <!-- Colonne gauche (événement) -->
             <div class="ticket-col ticket-col-left">
                 <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
                 <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
@@ -1117,7 +1122,7 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Centre -->
+            <!-- Colonne centre (acheteur) -->
             <div class="ticket-col ticket-col-center">
                 <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
                 <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
@@ -1126,7 +1131,7 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-id">${ticketIdShort}</div>
             </div>
 
-            <!-- Droite -->
+            <!-- Colonne droite (QR code + ID + date achat) -->
             <div class="ticket-col ticket-col-right">
                 <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
                 <div class="ticket-id-right">${ticketIdShort}</div>
@@ -1135,6 +1140,7 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
+
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
