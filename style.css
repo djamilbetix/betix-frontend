@@ -1442,7 +1442,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET OVERLAY - POSITIONS CORRIGÉES (Version de votre ami)
+   TICKET OVERLAY - POLICE PLUS PETITE & ALIGNÉE
    ============================================================ */
 
 .ticket-overlay-container {
@@ -1471,19 +1471,148 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     display: block;
 }
 
-/* Style global du texte superposé */
+/* Base texte : Police plus petite et affinée */
 .ticket-overlay-text {
     position: absolute;
     pointer-events: none;
-    line-height: 1.15;
+    line-height: 1;
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     box-sizing: border-box;
-    color: #0d172a;
-    font-weight: 600;
+    color: #1a202c;
+    font-weight: 500; /* Police moins lourde */
 }
+
+/* ============================================================
+   1. COLONNE GAUCHE (Taille réduite pour tenir sur les lignes)
+   ============================================================ */
+
+/* EVENT */
+.ticket-event-title {
+    top: 33%;
+    left: 27%;
+    font-size: clamp(8px, 1.2vw, 11px);
+    font-weight: 600;
+    max-width: 15%;
+}
+
+/* CATEGORY */
+.ticket-event-category {
+    top: 40%;
+    left: 27%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 15%;
+}
+
+/* DURATION */
+.ticket-event-duration {
+    top: 47.5%;
+    left: 27%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 15%;
+}
+
+/* DATE */
+.ticket-event-date {
+    top: 55%;
+    left: 27%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 15%;
+}
+
+/* TIME */
+.ticket-event-time {
+    top: 62%;
+    left: 27%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 15%;
+}
+
+/* LOCALISATION */
+.ticket-event-location {
+    top: 69.5%;
+    left: 27%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 15%;
+}
+
+/* ============================================================
+   2. COLONNE DROITE (Infos Acheteur)
+   ============================================================ */
+
+/* NAME */
+.ticket-buyer-name {
+    top: 35.5%;
+    left: 58%;
+    font-size: clamp(8px, 1.1vw, 11px);
+    font-weight: 600;
+    max-width: 17%;
+}
+
+/* EMAIL */
+.ticket-buyer-email {
+    top: 44%;
+    left: 58%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 17%;
+}
+
+/* PHONE */
+.ticket-buyer-phone {
+    top: 52.5%;
+    left: 58%;
+    font-size: clamp(7px, 1vw, 10px);
+    max-width: 17%;
+}
+
+/* PRICE */
+.ticket-price {
+    top: 61.5%;
+    left: 58%;
+    font-size: clamp(8px, 1.2vw, 11px);
+    font-weight: 700;
+    color: #0a1628;
+    max-width: 17%;
+}
+
+/* ============================================================
+   3. TICKET ID & QR CODE
+   ============================================================ */
+
+/* QR Code */
+.ticket-qr-wrapper {
+    position: absolute;
+    top: 19.5%;
+    right: 4.8%;
+    width: 16.5%;
+    height: 52%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ticket-qr-wrapper canvas,
+.ticket-qr-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+/* TICKET ID (Police réduite sous le QR Code) */
+.ticket-id {
+    top: 78%;
+    right: 5%;
+    width: 16%;
+    font-size: clamp(8px, 1.1vw, 10px);
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
 
 /* ============================================================
    1. ENTÊTE & BADGES
