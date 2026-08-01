@@ -1542,7 +1542,8 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     color: #1a202c;
 }
 
-.ticket-col .ticket-price {
+.ticket-col .ticket-price,
+.ticket-col .ticket-price-paid {
     font-weight: 700;
     font-size: clamp(10px, 1.4vw, 14px);
     color: #1a202c;
@@ -1558,7 +1559,8 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     word-break: break-all;
 }
 
-.ticket-col .ticket-purchase-date {
+.ticket-col .ticket-purchase-date,
+.ticket-col .ticket-purchase-date-right {
     font-size: clamp(7px, 0.9vw, 10px);
     color: #1a202c;
     margin-top: 2px;
