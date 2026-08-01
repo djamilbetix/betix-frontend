@@ -1069,59 +1069,68 @@ function hideLoader() {
 }
 
 /* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION COMPLETE (3 COLONNES)
+   TICKET GENERATOR FUNCTION - VERSION FINALE (3 COLONNES, SANS N/A, AVEC LOCALISATION COMPLÈTE)
    ============================================================ */
 
 function generateTicketHTML(ticket) {
-    // Récupère les données directement depuis le ticket
-    const eventTitle = ticket.eventTitle || 'Event Name';
+    // Données de l'événement depuis le ticket
+    const eventTitle = ticket.eventTitle || 'Événement sans titre';
     const eventDateStr = ticket.eventDate || new Date().toISOString();
-    const eventLocation = ticket.eventLocation || 'Online';
-    const category = ticket.category || 'General';
+    const eventLocation = ticket.eventLocation || '';
+    const eventPays = ticket.pays || '';
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
-    
-    // Nom complet de l'utilisateur (prénom + nom) depuis le ticket ou currentUser
-    let buyerName = ticket.buyerName || 'Not provided';
-    if (buyerName === 'Not provided' || buyerName === 'Anonymous') {
+
+    // Nom complet
+    let buyerName = ticket.buyerName || '';
+    if (!buyerName || buyerName === 'Anonymous' || buyerName === 'Not provided') {
         const firstName = currentUser?.first_name || '';
         const lastName = currentUser?.last_name || '';
-        if (firstName || lastName) {
-            buyerName = (firstName + ' ' + lastName).trim();
-        } else {
-            buyerName = currentUser?.name || 'Not provided';
-        }
+        buyerName = (firstName + ' ' + lastName).trim() || currentUser?.name || 'Non renseigné';
     }
-    
-    const userEmail = currentUser?.email || ticket.buyerEmail || 'Not provided';
-    const userPhone = currentUser?.phone_number || ticket.buyerPhone || 'Not provided';
-    
-    // Formatage de la date de l'événement
+
+    // Email et téléphone (sans condition, même non vérifiés)
+    const userEmail = currentUser?.email || ticket.buyerEmail || '';
+    const userPhone = currentUser?.phone_number || ticket.buyerPhone || '';
+
+    // Formatage date/heure
     const dateEvent = new Date(eventDateStr);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'Date to be defined';
+        : 'Date non définie';
     const timeFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'Time to be defined';
-    
+        : 'Heure non définie';
+
     // Durée
-    let durationDisplay = 'N/A';
+    let durationDisplay = 'Non spécifiée';
     if (ticket.durationValue && ticket.durationUnit) {
         const unitLabels = {
-            hours: ticket.durationValue === 1 ? 'Hour' : 'Hours',
-            days: ticket.durationValue === 1 ? 'Day' : 'Days',
-            weeks: ticket.durationValue === 1 ? 'Week' : 'Weeks',
-            months: ticket.durationValue === 1 ? 'Month' : 'Months',
-            years: ticket.durationValue === 1 ? 'Year' : 'Years'
+            hours: ticket.durationValue === 1 ? 'Heure' : 'Heures',
+            days: ticket.durationValue === 1 ? 'Jour' : 'Jours',
+            weeks: ticket.durationValue === 1 ? 'Semaine' : 'Semaines',
+            months: ticket.durationValue === 1 ? 'Mois' : 'Mois',
+            years: ticket.durationValue === 1 ? 'An' : 'Ans'
         };
         durationDisplay = `${ticket.durationValue} ${unitLabels[ticket.durationUnit] || ticket.durationUnit}`;
     } else if (ticket.durationDisplay) {
         durationDisplay = ticket.durationDisplay;
     }
-    
+
+    // Localisation complète : Pays + Adresse
+    let locationDisplay = '';
+    if (eventPays && eventLocation) {
+        locationDisplay = `${eventPays} · ${eventLocation}`;
+    } else if (eventPays) {
+        locationDisplay = eventPays;
+    } else if (eventLocation) {
+        locationDisplay = eventLocation;
+    } else {
+        locationDisplay = 'Non spécifié';
+    }
+
     // Date d'achat
-    let purchaseDate = 'N/A';
+    let purchaseDate = 'Non renseignée';
     if (ticket.purchaseDate) {
         const pd = new Date(ticket.purchaseDate);
         if (!isNaN(pd.getTime())) {
@@ -1141,15 +1150,15 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-event-date">${escapeHtml(dateFormatted)}</div>
                 <div class="ticket-event-time">${escapeHtml(timeFormatted)}</div>
                 <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
-                <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
+                <div class="ticket-event-location">${escapeHtml(locationDisplay)}</div>
                 <div class="ticket-price">${escapeHtml(price)}</div>
             </div>
 
             <!-- Colonne 2 : Acheteur -->
             <div class="ticket-col ticket-col-center">
                 <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
-                <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
-                <div class="ticket-buyer-phone">${escapeHtml(userPhone)}</div>
+                <div class="ticket-buyer-email">${escapeHtml(userEmail || 'Non renseigné')}</div>
+                <div class="ticket-buyer-phone">${escapeHtml(userPhone || 'Non renseigné')}</div>
                 <div class="ticket-price-paid">${escapeHtml(price)}</div>
                 <div class="ticket-purchase-date">${escapeHtml(purchaseDate)}</div>
                 <div class="ticket-id">${ticketIdShort}</div>
@@ -1171,6 +1180,8 @@ function generateTicketHTML(ticket) {
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
+    // Éviter de générer plusieurs QR sur le même conteneur
+    if (container.querySelector('canvas')) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
     try {
