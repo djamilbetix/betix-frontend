@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (version complète)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -1073,7 +1073,7 @@ function hideLoader() {
    ============================================================ */
 
 function generateTicketHTML(ticket) {
-    // Récupère les données directement depuis le ticket (stockées lors de l'achat)
+    // Récupère les données directement depuis le ticket
     const eventTitle = ticket.eventTitle || 'Event Name';
     const eventDateStr = ticket.eventDate || new Date().toISOString();
     const eventLocation = ticket.eventLocation || 'Online';
@@ -1084,7 +1084,6 @@ function generateTicketHTML(ticket) {
     const userEmail = currentUser?.email || 'Not provided';
     const userPhone = currentUser?.phone_number || 'Not provided';
     
-    // Formatage de la date
     const dateEvent = new Date(eventDateStr);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
@@ -1093,7 +1092,6 @@ function generateTicketHTML(ticket) {
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
         : 'Time to be defined';
     
-    // Durée : stockée dans le ticket ou fallback
     let durationDisplay = 'N/A';
     if (ticket.durationValue && ticket.durationUnit) {
         const unitLabels = {
@@ -1108,7 +1106,6 @@ function generateTicketHTML(ticket) {
         durationDisplay = ticket.durationDisplay;
     }
     
-    // Date d'achat
     let purchaseDate = 'N/A';
     if (ticket.purchaseDate) {
         const pd = new Date(ticket.purchaseDate);
