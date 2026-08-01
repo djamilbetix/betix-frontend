@@ -1069,9 +1069,8 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-
 // ============================================================
-// GÉNÉRATION DU TICKET EN HTML (OVERLAY)
+// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION CORRIGÉE
 // ============================================================
 function generateTicketHTML(ticket) {
     const event = events.find(e => e.id === ticket.eventId);
@@ -1098,14 +1097,14 @@ function generateTicketHTML(ticket) {
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- Colonne gauche -->
+            <!-- Colonne gauche : valeurs (sans libellés) -->
             <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
             <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
             <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
             <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
             <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
             <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
-            <!-- Colonne droite -->
+            <!-- Colonne droite : valeurs -->
             <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
             <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
             <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
@@ -1117,7 +1116,6 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
-
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
