@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS
+// TRADUCTIONS (version complète)
 // ============================================================
 const translations = {
     en: {
@@ -1069,7 +1069,7 @@ function hideLoader() {
 }
 
 /* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION AUTONOME (3 COLONNES)
+   TICKET GENERATOR FUNCTION - VERSION COMPLETE (3 COLONNES)
    ============================================================ */
 
 function generateTicketHTML(ticket) {
@@ -1080,10 +1080,23 @@ function generateTicketHTML(ticket) {
     const category = ticket.category || 'General';
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
-    const buyerName = ticket.buyerName || currentUser?.name || 'Not provided';
-    const userEmail = currentUser?.email || 'Not provided';
-    const userPhone = currentUser?.phone_number || 'Not provided';
     
+    // Nom complet de l'utilisateur (prénom + nom) depuis le ticket ou currentUser
+    let buyerName = ticket.buyerName || 'Not provided';
+    if (buyerName === 'Not provided' || buyerName === 'Anonymous') {
+        const firstName = currentUser?.first_name || '';
+        const lastName = currentUser?.last_name || '';
+        if (firstName || lastName) {
+            buyerName = (firstName + ' ' + lastName).trim();
+        } else {
+            buyerName = currentUser?.name || 'Not provided';
+        }
+    }
+    
+    const userEmail = currentUser?.email || ticket.buyerEmail || 'Not provided';
+    const userPhone = currentUser?.phone_number || ticket.buyerPhone || 'Not provided';
+    
+    // Formatage de la date de l'événement
     const dateEvent = new Date(eventDateStr);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
@@ -1092,6 +1105,7 @@ function generateTicketHTML(ticket) {
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
         : 'Time to be defined';
     
+    // Durée
     let durationDisplay = 'N/A';
     if (ticket.durationValue && ticket.durationUnit) {
         const unitLabels = {
@@ -1106,6 +1120,7 @@ function generateTicketHTML(ticket) {
         durationDisplay = ticket.durationDisplay;
     }
     
+    // Date d'achat
     let purchaseDate = 'N/A';
     if (ticket.purchaseDate) {
         const pd = new Date(ticket.purchaseDate);
@@ -1120,29 +1135,31 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche : événement -->
+            <!-- Colonne 1 : Événement -->
             <div class="ticket-col ticket-col-left">
                 <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
-                <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
                 <div class="ticket-event-date">${escapeHtml(dateFormatted)}</div>
                 <div class="ticket-event-time">${escapeHtml(timeFormatted)}</div>
+                <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
                 <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
+                <div class="ticket-price">${escapeHtml(price)}</div>
             </div>
 
-            <!-- Colonne centre : acheteur -->
+            <!-- Colonne 2 : Acheteur -->
             <div class="ticket-col ticket-col-center">
                 <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
                 <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
                 <div class="ticket-buyer-phone">${escapeHtml(userPhone)}</div>
-                <div class="ticket-price">${escapeHtml(price)}</div>
+                <div class="ticket-price-paid">${escapeHtml(price)}</div>
+                <div class="ticket-purchase-date">${escapeHtml(purchaseDate)}</div>
                 <div class="ticket-id">${ticketIdShort}</div>
             </div>
 
-            <!-- Colonne droite : QR + ID + date d'achat -->
+            <!-- Colonne 3 : QR + ID + Date d'achat -->
             <div class="ticket-col ticket-col-right">
                 <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
                 <div class="ticket-id-right">${ticketIdShort}</div>
-                <div class="ticket-purchase-date">${purchaseDate}</div>
+                <div class="ticket-purchase-date-right">${escapeHtml(purchaseDate)}</div>
             </div>
         </div>
     `;
