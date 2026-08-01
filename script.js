@@ -630,6 +630,8 @@ async function saveTicketToSupabase(ticketData) {
             pays: ticketData.pays || eventPays || 'France',
             transaction_id: ticketData.transactionId || '',
             category: ticketData.category || '',
+            duration_value: ticketData.durationValue || null,
+            duration_unit: ticketData.durationUnit || null,
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
@@ -1067,38 +1069,46 @@ function hideLoader() {
 }
 
 /* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION MODIFIEE (3 COLONNES)
+   TICKET GENERATOR FUNCTION - VERSION AUTONOME (3 COLONNES)
    ============================================================ */
 
 function generateTicketHTML(ticket) {
-    const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
-    const dateEvent = new Date(ticket.eventDate);
+    // Récupère les données directement depuis le ticket (stockées lors de l'achat)
+    const eventTitle = ticket.eventTitle || 'Event Name';
+    const eventDateStr = ticket.eventDate || new Date().toISOString();
+    const eventLocation = ticket.eventLocation || 'Online';
+    const category = ticket.category || 'General';
+    const price = (ticket.price || 0).toFixed(6) + ' Pi';
+    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
+    const buyerName = ticket.buyerName || currentUser?.name || 'Not provided';
+    const userEmail = currentUser?.email || 'Not provided';
+    const userPhone = currentUser?.phone_number || 'Not provided';
     
+    // Formatage de la date
+    const dateEvent = new Date(eventDateStr);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
         : 'Date to be defined';
-        
     const timeFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
         : 'Time to be defined';
-        
-    const durationDisplay = event?.durationValue && event?.durationUnit 
-        ? `${event.durationValue} ${event.durationUnit}` 
-        : 'N/A';
     
-    const user = typeof currentUser !== 'undefined' ? currentUser : {};
-    const fullName = (user.first_name || user.name || '') + 
-                     (user.last_name ? ' ' + user.last_name : '');
-                     
-    const userEmail = user.email || 'Not provided';
-    const userPhone = user.phone_number || 'Not provided';
-    const buyerName = ticket.buyerName || fullName || 'Not provided';
+    // Durée : stockée dans le ticket ou fallback
+    let durationDisplay = 'N/A';
+    if (ticket.durationValue && ticket.durationUnit) {
+        const unitLabels = {
+            hours: ticket.durationValue === 1 ? 'Hour' : 'Hours',
+            days: ticket.durationValue === 1 ? 'Day' : 'Days',
+            weeks: ticket.durationValue === 1 ? 'Week' : 'Weeks',
+            months: ticket.durationValue === 1 ? 'Month' : 'Months',
+            years: ticket.durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = `${ticket.durationValue} ${unitLabels[ticket.durationUnit] || ticket.durationUnit}`;
+    } else if (ticket.durationDisplay) {
+        durationDisplay = ticket.durationDisplay;
+    }
     
-    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
-    const price = (ticket.price || 0).toFixed(6) + ' Pi';
-    const eventTitle = ticket.eventTitle || event?.title || 'Event Name';
-    const eventLocation = ticket.eventLocation || event?.location || 'Online';
-    
+    // Date d'achat
     let purchaseDate = 'N/A';
     if (ticket.purchaseDate) {
         const pd = new Date(ticket.purchaseDate);
@@ -1113,7 +1123,7 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche (événement) -->
+            <!-- Colonne gauche : événement -->
             <div class="ticket-col ticket-col-left">
                 <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
                 <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
@@ -1122,7 +1132,7 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Colonne centre (acheteur) -->
+            <!-- Colonne centre : acheteur -->
             <div class="ticket-col ticket-col-center">
                 <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
                 <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
@@ -1131,7 +1141,7 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-id">${ticketIdShort}</div>
             </div>
 
-            <!-- Colonne droite (QR code + ID + date achat) -->
+            <!-- Colonne droite : QR + ID + date d'achat -->
             <div class="ticket-col ticket-col-right">
                 <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
                 <div class="ticket-id-right">${ticketIdShort}</div>
@@ -2433,7 +2443,13 @@ async function confirmPurchase(eventId, quantity) {
                             purchaseDate: purchaseDate,
                             transactionId: txid || 'tx-' + Date.now(),
                             qrCode: qrData,
-                            quantity: quantity
+                            quantity: quantity,
+                            // Stocker toutes les données nécessaires pour l'affichage
+                            durationValue: event.durationValue || null,
+                            durationUnit: event.durationUnit || null,
+                            durationDisplay: event.durationValue && event.durationUnit 
+                                ? `${event.durationValue} ${event.durationUnit}` 
+                                : null
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
