@@ -1065,21 +1065,6 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-
-/* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION CLEAN
-   ============================================================ */
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
 function generateTicketHTML(ticket) {
     const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
     const dateEvent = new Date(ticket.eventDate);
@@ -1108,7 +1093,14 @@ function generateTicketHTML(ticket) {
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = ticket.eventTitle || event?.title || 'Event Name';
     const eventLocation = ticket.eventLocation || event?.location || 'Online';
-    const eventCategory = ticket.category || event?.category || 'Concert';
+    
+    let purchaseDate = 'N/A';
+    if (ticket.purchaseDate) {
+        const pd = new Date(ticket.purchaseDate);
+        if (!isNaN(pd.getTime())) {
+            purchaseDate = pd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    }
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
@@ -1116,29 +1108,33 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne Gauche (Seulement les valeurs dynamiques à droite des :) -->
-            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
-            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
-            <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
-            <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
-            <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
+            <!-- Gauche -->
+            <div class="ticket-col ticket-col-left">
+                <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
+                <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
+                <div class="ticket-event-date">${escapeHtml(dateFormatted)}</div>
+                <div class="ticket-event-time">${escapeHtml(timeFormatted)}</div>
+                <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
+            </div>
 
-            <!-- Colonne Droite (Infos Acheteur) -->
-            <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
-            <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
-            <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
-            <div class="ticket-overlay-text ticket-price">${price}</div>
+            <!-- Centre -->
+            <div class="ticket-col ticket-col-center">
+                <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
+                <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
+                <div class="ticket-buyer-phone">${escapeHtml(userPhone)}</div>
+                <div class="ticket-price">${escapeHtml(price)}</div>
+                <div class="ticket-id">${ticketIdShort}</div>
+            </div>
 
-            <!-- Ticket ID (Aligné sur la ligne en bas à droite) -->
-            <div class="ticket-overlay-text ticket-id">${ticketIdShort}</div>
-
-            <!-- QR Code (Ajusté dans le cadre blanc) -->
-            <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
+            <!-- Droite -->
+            <div class="ticket-col ticket-col-right">
+                <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
+                <div class="ticket-id-right">${ticketIdShort}</div>
+                <div class="ticket-purchase-date">${purchaseDate}</div>
+            </div>
         </div>
     `;
 }
-
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
