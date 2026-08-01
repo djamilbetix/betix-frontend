@@ -1069,19 +1069,22 @@ function hideLoader() {
 }
 
 /* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION FINALE (3 COLONNES, SANS N/A, AVEC LOCALISATION COMPLÈTE)
+   TICKET GENERATOR FUNCTION - VERSION CORRIGÉE (récupère les données de l'événement si manquantes)
    ============================================================ */
 
 function generateTicketHTML(ticket) {
-    // Données de l'événement depuis le ticket
-    const eventTitle = ticket.eventTitle || 'Événement sans titre';
-    const eventDateStr = ticket.eventDate || new Date().toISOString();
-    const eventLocation = ticket.eventLocation || '';
-    const eventPays = ticket.pays || '';
-    const price = (ticket.price || 0).toFixed(6) + ' Pi';
+    // Récupérer l'événement correspondant si disponible
+    const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
+
+    // Données de l'événement : priorité au ticket, sinon à l'événement
+    const eventTitle = ticket.eventTitle || (event ? event.title : 'Événement sans titre');
+    const eventDateStr = ticket.eventDate || (event ? event.date : new Date().toISOString());
+    const eventLocation = ticket.eventLocation || (event ? event.location : '');
+    const eventPays = ticket.pays || (event ? (event.pays || event.country) : '');
+    const price = (ticket.price || (event ? event.price : 0)).toFixed(6) + ' Pi';
     const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
 
-    // Nom complet
+    // Nom complet : priorité au ticket, puis currentUser
     let buyerName = ticket.buyerName || '';
     if (!buyerName || buyerName === 'Anonymous' || buyerName === 'Not provided') {
         const firstName = currentUser?.first_name || '';
@@ -1089,7 +1092,7 @@ function generateTicketHTML(ticket) {
         buyerName = (firstName + ' ' + lastName).trim() || currentUser?.name || 'Non renseigné';
     }
 
-    // Email et téléphone (sans condition, même non vérifiés)
+    // Email et téléphone (sans condition)
     const userEmail = currentUser?.email || ticket.buyerEmail || '';
     const userPhone = currentUser?.phone_number || ticket.buyerPhone || '';
 
@@ -1115,9 +1118,18 @@ function generateTicketHTML(ticket) {
         durationDisplay = `${ticket.durationValue} ${unitLabels[ticket.durationUnit] || ticket.durationUnit}`;
     } else if (ticket.durationDisplay) {
         durationDisplay = ticket.durationDisplay;
+    } else if (event && event.durationValue && event.durationUnit) {
+        const unitLabels = {
+            hours: event.durationValue === 1 ? 'Heure' : 'Heures',
+            days: event.durationValue === 1 ? 'Jour' : 'Jours',
+            weeks: event.durationValue === 1 ? 'Semaine' : 'Semaines',
+            months: event.durationValue === 1 ? 'Mois' : 'Mois',
+            years: event.durationValue === 1 ? 'An' : 'Ans'
+        };
+        durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
     }
 
-    // Localisation complète : Pays + Adresse
+    // Localisation complète
     let locationDisplay = '';
     if (eventPays && eventLocation) {
         locationDisplay = `${eventPays} · ${eventLocation}`;
@@ -1180,7 +1192,6 @@ function generateTicketHTML(ticket) {
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
-    // Éviter de générer plusieurs QR sur le même conteneur
     if (container.querySelector('canvas')) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
@@ -1212,7 +1223,7 @@ function renderTickets() {
         return !isUsed && !isExpired && !isStatusUsed;
     });
 
-    // Trier par date d'achat décroissante (les plus récents en premier)
+    // Trier par date d'achat décroissante
     validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueTickets = [];
@@ -1260,7 +1271,6 @@ function renderHistory() {
         return isUsed || isExpired || isStatusUsed;
     });
 
-    // Trier par date d'achat décroissante (les plus récents en premier)
     historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueHistory = [];
@@ -1410,7 +1420,6 @@ function markTicketAsUsed(ticketId) {
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
-
 // ============================================================
 // CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
 // ============================================================
