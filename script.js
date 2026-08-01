@@ -1171,18 +1171,21 @@ function generateTicketQR(ticketId) {
 }
 
 // ============================================================
-// RENDER TICKETS ET HISTORY
+// RENDER TICKETS ET HISTORY (avec tri par date d'achat)
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
 
-    const validTickets = tickets.filter(t => {
+    let validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
+
+    // Trier par date d'achat décroissante (les plus récents en premier)
+    validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueTickets = [];
     const seenIds = new Set();
@@ -1222,12 +1225,15 @@ function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
 
-    const historyTickets = tickets.filter(t => {
+    let historyTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
+
+    // Trier par date d'achat décroissante (les plus récents en premier)
+    historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueHistory = [];
     const seenIds = new Set();
