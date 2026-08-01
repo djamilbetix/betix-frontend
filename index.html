@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <title>Betix - Event Ticketing Platform on Pi Network</title>
-    <meta name="description" content="Betix - The first decentralized event platform on Pi Network">
+    <meta name="description" content="Betix - The first decentralized event platform on Pi Network" />
     
-    <!-- ===== MODIFICATION : AJOUT DE LA POLICE POPPINS ===== -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- ====================================================== -->
+    <!-- POLICE POPPINS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- QRCode.toCanvas (pour canvas) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -45,7 +46,7 @@
 <!-- LOADER -->
 <div id="loader" class="loader-container">
     <div class="loader-content">
-        <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'">
+        <img src="Logo.jpg.jpeg" alt="Betix Logo" class="loader-logo" onerror="this.style.display='none'" />
         <div class="loader-balls">
             <div class="loader-ball"></div><div class="loader-ball"></div><div class="loader-ball"></div>
             <div class="loader-ball"></div><div class="loader-ball"></div>
@@ -66,7 +67,7 @@
             <span class="back-btn-label">Back</span>
         </button>
         <div class="logo" id="mainLogo" onclick="handleLogoClick()">
-            <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'">
+            <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'" />
             <span class="logo-text">Betix</span>
         </div>
     </div>
@@ -164,7 +165,7 @@
             <div class="hero-text"><h1>The first ticketing platform powered by Pi Network</h1><p>Discover and book unique experiences. Pay with your Pi crypto.</p></div>
         </div>
     </section>
-    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..."></div>
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search event..." /></div>
     <div class="filter-country-wrapper">
         <div class="filter-country-select">
             <label for="countrySelect"><i class="fas fa-globe-africa"></i> Choose Country :</label>
