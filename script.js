@@ -1,8 +1,4 @@
 // ============================================================
-// script.js - COMPLET AVEC TICKET OVERLAY
-// ============================================================
-
-// ============================================================
 // CONFIGURATION SUPABASE
 // ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
@@ -1069,20 +1065,10 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-/* ============================================================
-   TICKET GENERATOR FUNCTION (JS / JSX)
-   ============================================================ */
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
+// ============================================================
+// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION FINALE
+// ============================================================
 function generateTicketHTML(ticket) {
     const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
     const dateEvent = new Date(ticket.eventDate);
@@ -1143,7 +1129,7 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
-}
+
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
@@ -1334,7 +1320,7 @@ function viewTicketWithImage(ticketId) {
 }
 
 // ============================================================
-// TÉLÉCHARGEMENT ET PARTAGE (le reste du script est inchangé)
+// TÉLÉCHARGEMENT ET PARTAGE
 // ============================================================
 function downloadTicketPDF(ticketId) { downloadTicketImagePDF(ticketId); }
 function downloadTicketPNG(ticketId) { downloadTicketImagePNG(ticketId); }
@@ -1372,6 +1358,7 @@ function markTicketAsUsed(ticketId) {
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
+
 // ============================================================
 // CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
 // ============================================================
@@ -1463,7 +1450,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) - inchangée
+// PAGE DE DÉTAIL (openEventDetails)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -2295,7 +2282,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI (inchangé)
+// CONFIRMATION D'ACHAT AVEC PI
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -3625,7 +3612,7 @@ function closePastEventPopup() {
 }
 
 // ============================================================
-// GOOGLE TRANSLATE ET AUTRES INITIALISATIONS
+// CHAT
 // ============================================================
 function initChat() {
     const widget = document.getElementById('chatWidget');
