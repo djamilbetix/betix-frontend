@@ -1249,91 +1249,151 @@ function hideLoader() {
 // ============================================================
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
-    const dateFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+
+    const dateFormatted = !isNaN(dateEvent.getTime())
+        ? dateEvent.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        })
         : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+
+    const timeFormatted = !isNaN(dateEvent.getTime())
+        ? dateEvent.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
         : 'Time to be defined';
-    const durationDisplay = ticket.durationValue && ticket.durationUnit 
-        ? `${ticket.durationValue} ${ticket.durationUnit}` 
+
+    const durationDisplay = ticket.durationValue && ticket.durationUnit
+        ? `${ticket.durationValue} ${ticket.durationUnit}`
         : 'N/A';
-    
+
     const buyerName = ticket.buyerName || 'Not provided';
     const userEmail = ticket.buyerEmail || 'Not provided';
     const userPhone = ticket.buyerPhone || 'Not provided';
-    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
+
+    const ticketIdShort = ticket.id
+        ? ticket.id.substring(0, 8).toUpperCase()
+        : '00000000';
+
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
+
     const eventTitle = ticket.eventTitle || 'Event';
     const eventLocation = ticket.eventLocation || 'Online';
-    const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+
+    const purchaseDate = ticket.purchaseDate
+        ? new Date(ticket.purchaseDate).toLocaleDateString('en-US')
+        : 'N/A';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
-                <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+                <img src="ticket-officiel.png"
+                     alt="Ticket officiel Betix"
+                     onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- === BLOC ÉVÉNEMENT (Placement ligne par ligne) === -->
-            <!-- 1. EVENT -->
-            <div style="position:absolute; left:27%; top:34.5%; width:19%; font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:800; color:#dc2626; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+            <!-- ======================= -->
+            <!-- BLOC ÉVÉNEMENT -->
+            <!-- ======================= -->
+
+            <!-- EVENT -->
+            <div style="position:absolute; left:27%; top:34.5%; width:19%; font-size:clamp(6.5px,0.7vw,9.5px); font-weight:800; color:#dc2626; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
                 ${escapeHtml(eventTitle)}
             </div>
 
-            <!-- 2. DURATION -->
-            <div style="position:absolute; left:27%; top:38.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${durationDisplay}
-            </div>
-
-            <!-- 3. DATE -->
-            <div style="position:absolute; left:27%; top:42.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${dateFormatted}
-            </div>
-
-            <!-- 4. TIME -->
-            <div style="position:absolute; left:27%; top:46.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${timeFormatted}
-            </div>
-
-            <!-- 5. LOCALISATION -->
-            <div style="position:absolute; left:27%; top:50.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+            <!-- LOCATION -->
+            <div style="position:absolute; left:27%; top:38.5%; width:19%; font-size:clamp(6px,0.65vw,8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
                 ${escapeHtml(eventLocation)}
             </div>
 
-
-            <!-- === BLOC ACHETEUR (Placement ligne par ligne) === -->
-            <!-- 1. NAME -->
-            <div style="position:absolute; left:48.5%; top:34.5%; width:21%; font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:700; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${escapeHtml(buyerName)}
+            <!-- DATE -->
+            <div style="position:absolute; left:27%; top:42.5%; width:19%; font-size:clamp(6px,0.65vw,8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${dateFormatted}
             </div>
 
-            <!-- 2. EMAIL -->
-            <div style="position:absolute; left:48.5%; top:38.5%; width:21%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${escapeHtml(userEmail)}
+            <!-- TIME -->
+            <div style="position:absolute; left:27%; top:46.5%; width:19%; font-size:clamp(6px,0.65vw,8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${timeFormatted}
             </div>
 
-            <!-- 3. PHONE -->
-            <div style="position:absolute; left:48.5%; top:42.5%; width:21%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
-                ${escapeHtml(userPhone)}
+            <!-- DURATION -->
+            <div style="position:absolute; left:27%; top:50.5%; width:19%; font-size:clamp(6px,0.65vw,8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${durationDisplay}
             </div>
 
-            <!-- 4. PRICE PAID -->
-            <div style="position:absolute; left:48.5%; top:46.5%; width:21%; font-size:clamp(6.5px, 0.75vw, 9px); font-weight:800; color:#000000; pointer-events:none;">
+            <!-- PRICE -->
+            <div style="position:absolute; left:27%; top:54.5%; width:19%; font-size:clamp(6.5px,0.7vw,9px); font-weight:800; color:#000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
                 ${price}
             </div>
 
 
-            <!-- === BLOC DROITE (QR CODE & TICKET ID) === -->
-            <!-- QR Code (Centré dans le carré blanc du coupon jaune) -->
-            <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="position:absolute; right:8.5%; top:19.5%; width:15%; max-width:44px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; pointer-events:none;"></div>
+            <!-- ======================= -->
+            <!-- BLOC ACHETEUR -->
+            <!-- ======================= -->
 
-            <!-- Ticket ID (Aligné en face de TICKET ID sur le coupon jaune) -->
-            <div style="position:absolute; right:6.5%; top:41%; width:18%; font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; text-align:center; pointer-events:none;">
+            <!-- NAME -->
+            <div style="position:absolute; left:48.5%; top:34.5%; width:21%; font-size:clamp(6.5px,0.7vw,9.5px); font-weight:700; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(buyerName)}
+            </div>
+
+            <!-- EMAIL -->
+            <div style="position:absolute; left:48.5%; top:38.5%; width:21%; font-size:clamp(5.5px,0.6vw,8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(userEmail)}
+            </div>
+
+            <!-- PHONE -->
+            <div style="position:absolute; left:48.5%; top:42.5%; width:21%; font-size:clamp(5.5px,0.6vw,8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(userPhone)}
+            </div>
+
+            <!-- PRICE PAID -->
+            <div style="position:absolute; left:48.5%; top:46.5%; width:21%; font-size:clamp(6.5px,0.75vw,9px); font-weight:800; color:#000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${price}
+            </div>
+
+            <!-- DATE OF PURCHASE -->
+            <div style="position:absolute; left:48.5%; top:50.5%; width:21%; font-size:clamp(5.5px,0.6vw,8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${purchaseDate}
+            </div>
+
+            <!-- TICKET ID -->
+            <div style="position:absolute; left:48.5%; top:54.5%; width:21%; font-family:'Courier New',monospace; font-size:clamp(6px,0.65vw,8.5px); font-weight:700; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
                 #${ticketIdShort}
             </div>
 
-            <!-- Date d'achat (Alignée en face de DATE OF PURCHASE) -->
-            <div style="position:absolute; right:6.5%; top:46.5%; width:18%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; text-align:center; pointer-events:none;">
+
+            <!-- ======================= -->
+            <!-- BLOC QR CODE -->
+            <!-- ======================= -->
+
+            <!-- QR CODE -->
+            <div id="qr-ticket-${ticket.id}"
+                 class="ticket-qr-wrapper"
+                 style="
+                    position:absolute;
+                    right:8.2%;
+                    top:17.8%;
+                    width:16.5%;
+                    max-width:48px;
+                    aspect-ratio:1/1;
+                    background:white;
+                    padding:2px;
+                    border-radius:3px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    pointer-events:none;">
+            </div>
+
+            <!-- TICKET ID -->
+            <div style="position:absolute; right:6.5%; top:41%; width:18%; font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px,0.7vw,9px); color:#1a202c; text-align:center; pointer-events:none;">
+                #${ticketIdShort}
+            </div>
+
+            <!-- DATE OF PURCHASE -->
+            <div style="position:absolute; right:6.5%; top:46.5%; width:18%; font-size:clamp(5.5px,0.6vw,8px); color:#4a5568; text-align:center; pointer-events:none;">
                 ${purchaseDate}
             </div>
 
