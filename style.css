@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX (avec corrections d'alignement)
+   STYLES COMPLETS POUR BETIX
    ============================================================ */
 
 * {
@@ -841,9 +841,9 @@ body {
     margin: 0 auto;
     overflow: hidden;
 }
-@media (min-width: 1200px) { .events-grid-centered { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 1199px) and (min-width: 768px) { .events-grid-centered { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; } }
+@media (min-width: 1200px) { .events-grid-centered { grid-template-columns: repeat(3, 1fr); gap: 2rem; } }
+@media (min-width: 768px) and (max-width: 1199px) { .events-grid-centered { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
+@media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; gap: 1.2rem; } }
 
 .event-publish-date {
     font-size: 0.65rem;
@@ -1143,6 +1143,7 @@ body.dark-mode .event-card-classic .poster-grid .grid-item { background: #1f2937
     flex-direction: column;
     padding: 0;
     position: relative;
+    max-width: 100%;
 }
 .event-card-classic:hover {
     transform: translateY(-8px);
@@ -1262,102 +1263,6 @@ body.dark-mode .event-card-classic .poster-grid .grid-item { background: #1f2937
 }
 body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #d1d5db !important; }
 
-/* TICKET CARD (ancienne, conservée pour compatibilité) */
-.ticket-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border-left: 4px solid #F5B400;
-}
-.ticket-card .ticket-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 0.75rem;
-    color: var(--gray);
-}
-.ticket-card .ticket-header .ticket-status {
-    font-weight: 700;
-    color: #10b981;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.ticket-card .ticket-header .ticket-id {
-    font-family: monospace;
-    font-size: 0.7rem;
-    color: var(--gray);
-}
-.ticket-card .ticket-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 2px;
-}
-.ticket-card .ticket-subtitle {
-    font-size: 0.75rem;
-    color: var(--gray);
-    margin-bottom: 12px;
-}
-.ticket-card .ticket-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 16px;
-    font-size: 0.8rem;
-    background: #f8fafc;
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-}
-.ticket-card .ticket-info-grid .info-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.04);
-}
-.ticket-card .ticket-info-grid .info-item:last-child { border-bottom: none; }
-.ticket-card .ticket-info-grid .info-item .label { color: #6b7280; font-weight: 400; }
-.ticket-card .ticket-info-grid .info-item .value { color: var(--dark); font-weight: 600; text-align: right; }
-.ticket-card .ticket-footer {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 6px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
-}
-.ticket-card .ticket-footer .ticket-participant { font-size: 0.75rem; color: var(--gray); }
-.ticket-card .ticket-footer .ticket-participant strong { color: #0B1F5C; }
-.ticket-card .ticket-footer .ticket-purchase-date { font-size: 0.7rem; color: var(--gray); }
-.ticket-card .btn-download-ticket {
-    padding: 5px 16px;
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.ticket-card .btn-download-ticket:hover { background: #0a1a4f; transform: scale(1.02); }
-.ticket-card .ticket-qr { text-align: center; margin: 8px 0; }
-.ticket-card .ticket-qr .qr-code-container {
-    display: inline-block;
-    width: 80px;
-    height: 80px;
-    background: white;
-    padding: 4px;
-    border-radius: 8px;
-    border: 1px solid #e6e6e6;
-}
-.ticket-card .ticket-qr .qr-code-container img { width: 100% !important; height: 100% !important; }
-
 /* ============================================================
    BOUTONS D'ACTION SUR LES TICKETS
    ============================================================ */
@@ -1442,166 +1347,26 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET OVERLAY - POLICE PLUS PETITE & ALIGNÉE (obsolète, conservé pour compatibilité)
+   NOUVEAU TICKET MODERN (sans image de fond)
    ============================================================ */
-
-.ticket-overlay-container {
-    position: relative;
-    width: 100%;
+.ticket-modern {
     max-width: 780px;
     margin: 0 auto;
-    background: #0a1628;
-    border-radius: 16px;
+    background: linear-gradient(145deg, #0a1628, #1a2a4a);
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-    user-select: none;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    border: 1px solid #F5B400;
 }
-
-.ticket-overlay-bg {
-    position: relative;
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.ticket-overlay-bg img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* ============================================================
-   NOUVEAU : TICKET 3 COLONNES (superposé sur l'image)
-   ============================================================ */
-
-/* Colonnes */
-.ticket-col {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    color: #1a202c;
-    font-weight: 500;
-    font-size: clamp(8px, 1.1vw, 11px);
-    line-height: 1.3;
-    pointer-events: none;
-    box-sizing: border-box;
-    padding: 0 4px;
-}
-
-/* Colonne gauche (événement) */
-.ticket-col-left {
-    left: 6%;
-    width: 30%;
-    top: 25%;
-}
-
-/* Colonne centre (acheteur) */
-.ticket-col-center {
-    left: 40%;
-    width: 30%;
-    top: 25%;
-}
-
-/* Colonne droite (QR code) */
-.ticket-col-right {
-    right: 3%;
-    width: 22%;
-    top: 20%;
-    align-items: center;
-    text-align: center;
-}
-
-/* Éléments individuels */
-.ticket-col .ticket-event-title {
-    font-size: clamp(12px, 1.6vw, 18px);
-    font-weight: 700;
-    color: #dc2626;  /* rouge */
-    margin-bottom: 2px;
-}
-
-.ticket-col .ticket-event-duration,
-.ticket-col .ticket-event-date,
-.ticket-col .ticket-event-time,
-.ticket-col .ticket-event-location {
-    font-size: clamp(8px, 1.1vw, 11px);
-    font-weight: 500;
-    color: #1a202c;
-}
-
-.ticket-col .ticket-buyer-name {
-    font-weight: 600;
-    font-size: clamp(10px, 1.3vw, 13px);
-    color: #1a202c;
-}
-
-.ticket-col .ticket-buyer-email,
-.ticket-col .ticket-buyer-phone {
-    font-size: clamp(8px, 1.1vw, 11px);
-    color: #1a202c;
-}
-
-.ticket-col .ticket-price,
-.ticket-col .ticket-price-paid {
-    font-weight: 700;
-    font-size: clamp(10px, 1.4vw, 14px);
-    color: #1a202c;
-}
-
-.ticket-col .ticket-id,
-.ticket-col .ticket-id-right {
-    font-family: 'Courier New', monospace;
-    font-weight: 600;
-    font-size: clamp(8px, 1.1vw, 11px);
-    color: #1a202c;
-    letter-spacing: 0.5px;
-    word-break: break-all;
-}
-
-.ticket-col .ticket-purchase-date,
-.ticket-col .ticket-purchase-date-right {
-    font-size: clamp(7px, 0.9vw, 10px);
-    color: #1a202c;
-    margin-top: 2px;
-}
-
-/* QR code */
-.ticket-qr-wrapper {
-    width: 100%;
-    max-width: 100px;
-    aspect-ratio: 1 / 1;
+.ticket-modern .qr-placeholder {
+    width: 80px;
+    height: 80px;
     background: white;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 4px auto;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.ticket-qr-wrapper canvas,
-.ticket-qr-wrapper img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
-}
-
-@media (max-width: 640px) {
-    .ticket-col {
-        font-size: clamp(6px, 1vw, 9px);
-        gap: 2px;
-    }
-    .ticket-col .ticket-event-title {
-        font-size: clamp(10px, 1.4vw, 14px);
-    }
-    .ticket-qr-wrapper {
-        max-width: 70px;
-    }
-    .ticket-col-left { left: 4%; width: 32%; }
-    .ticket-col-center { left: 38%; width: 32%; }
-    .ticket-col-right { right: 2%; width: 28%; }
 }
 
 /* ============================================================
@@ -4004,280 +3769,6 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     color: #6a7f9a;
 }
 .footer-lang-selector { display: none !important; }
-
-/* ============================================================
-   TICKET OFFICIEL - DESIGN EXACT DE L'IMAGE (V2) - conservé pour compatibilité
-   ============================================================ */
-.ticket-official-container-v2 {
-    max-width: 780px;
-    margin: 0 auto;
-    background: #0a1628;
-    border-radius: 20px;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    color: #ffffff;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
-    border: 1px solid #1a2a4a;
-}
-
-.ticket-official-header-v2 {
-    background: linear-gradient(135deg, #0a1628, #1a2a4a);
-    padding: 22px 30px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #F5B400;
-}
-.ticket-official-logo-v2 {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #ffffff;
-}
-.ticket-official-logo-v2 img {
-    height: 42px;
-    width: auto;
-    filter: brightness(0) invert(1);
-}
-.ticket-official-badge-v2 {
-    background: #F5B400;
-    color: #0a1628;
-    padding: 6px 20px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 0.7rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-}
-.ticket-official-subtitle-v2 {
-    text-align: center;
-    padding: 10px 20px;
-    font-size: 0.85rem;
-    color: #a0b4cc;
-    border-bottom: 1px solid #1a2a4a;
-    background: #0d1b32;
-    letter-spacing: 0.3px;
-}
-.ticket-official-body-v2 {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 24px 30px 20px;
-    gap: 20px;
-    background: #0d1b32;
-}
-.ticket-official-left-v2 {
-    flex: 1 1 55%;
-    min-width: 280px;
-}
-.ticket-official-right-v2 {
-    flex: 1 1 40%;
-    min-width: 220px;
-}
-.ticket-official-event-title-v2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 12px;
-    letter-spacing: -0.5px;
-}
-.ticket-official-event-meta-v2 {
-    font-size: 0.9rem;
-    line-height: 2;
-    color: #c8d4e6;
-}
-.ticket-official-event-meta-v2 .meta-label {
-    font-weight: 700;
-    color: #F5B400;
-    display: inline-block;
-    min-width: 100px;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.5px;
-}
-.ticket-official-info-v2 {
-    background: rgba(255,255,255,0.04);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    border: 1px solid rgba(255,255,255,0.06);
-}
-.ticket-official-info-v2 > div {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.ticket-official-info-v2 > div:last-child { border-bottom: none; }
-.ticket-official-info-v2 .info-label {
-    color: #a0b4cc;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.ticket-official-info-v2 .info-value {
-    color: #ffffff;
-    font-weight: 500;
-    font-size: 0.85rem;
-}
-.ticket-official-id-v2 {
-    background: rgba(245, 180, 0, 0.12);
-    border: 1px solid rgba(245, 180, 0, 0.25);
-    border-radius: 10px;
-    padding: 10px 16px;
-    text-align: center;
-}
-.ticket-official-id-v2 .id-label {
-    display: block;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #a0b4cc;
-}
-.ticket-official-id-v2 .id-value {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #F5B400;
-    font-family: monospace;
-}
-
-.ticket-official-footer-v2 {
-    display: flex;
-    justify-content: space-between;
-    padding: 18px 30px 20px;
-    background: #0a1628;
-    border-top: 2px solid #1a2a4a;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.ticket-official-footer-text-v2 {
-    flex: 1;
-    min-width: 200px;
-}
-.ticket-official-footer-text-v2 .footer-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #F5B400;
-    letter-spacing: 1px;
-}
-.ticket-official-footer-text-v2 .footer-sub {
-    font-size: 0.75rem;
-    color: #a0b4cc;
-    margin-bottom: 8px;
-}
-.ticket-official-footer-text-v2 .footer-security {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    color: #10b981;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-.ticket-official-footer-text-v2 .footer-terms {
-    font-size: 0.65rem;
-    color: #a0b4cc;
-    line-height: 1.8;
-    margin-bottom: 8px;
-}
-.ticket-official-footer-text-v2 .footer-follow {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #F5B400;
-    margin-top: 6px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.ticket-official-footer-text-v2 .footer-social {
-    display: flex;
-    gap: 14px;
-    margin-top: 4px;
-    font-size: 1.1rem;
-    color: #c8d4e6;
-}
-.ticket-official-footer-text-v2 .footer-social i {
-    cursor: default;
-    transition: color 0.3s;
-}
-.ticket-official-footer-text-v2 .footer-social i:hover {
-    color: #F5B400;
-}
-
-.ticket-official-qr-v2 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    min-width: 100px;
-}
-.ticket-official-qr-v2 > div {
-    width: 100px;
-    height: 100px;
-    background: white;
-    padding: 6px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-.ticket-official-qr-v2 > div canvas,
-.ticket-official-qr-v2 > div img {
-    width: 100% !important;
-    height: 100% !important;
-}
-.ticket-official-qr-v2 .qr-code-label {
-    font-size: 0.55rem;
-    color: #a0b4cc;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-}
-
-.ticket-official-thanks-v2 {
-    text-align: center;
-    padding: 12px 20px;
-    font-size: 0.7rem;
-    color: #a0b4cc;
-    background: #0d1b32;
-    border-top: 1px solid #1a2a4a;
-    line-height: 1.6;
-}
-
-@media (max-width: 640px) {
-    .ticket-official-body-v2 {
-        flex-direction: column;
-        padding: 16px;
-    }
-    .ticket-official-footer-v2 {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 16px;
-    }
-    .ticket-official-footer-text-v2 .footer-social {
-        justify-content: center;
-    }
-    .ticket-official-header-v2 {
-        flex-direction: column;
-        gap: 8px;
-        padding: 16px;
-        text-align: center;
-    }
-    .ticket-official-event-title-v2 {
-        font-size: 1.4rem;
-    }
-    .ticket-official-event-meta-v2 .meta-label {
-        min-width: 80px;
-    }
-    .ticket-official-info-v2 > div {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
-    }
-}
 
 /* ============================================================
    DARK MODE ADAPTATIONS (compléments généraux)
