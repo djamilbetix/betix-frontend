@@ -670,8 +670,7 @@ async function loadTicketsFromSupabase(piUid) {
             durationUnit: t.duration_unit || null,
             organizerName: t.organizer_name || '',
             organizerPiUid: t.organizer_pi_uid || '',
-            pays: t.pays || 'France',
-            // ... autres
+            pays: t.pays || 'France'
         }));
     } catch (error) { return []; }
 }
@@ -1088,10 +1087,9 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION FINALE (corrigée)
+// GÉNÉRATION DU TICKET EN HTML - VERSION SANS IMAGE DE FOND (corrigée)
 // ============================================================
 function generateTicketHTML(ticket) {
-    // Récupération des données avec valeurs par défaut
     const dateEvent = new Date(ticket.eventDate);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
@@ -1111,61 +1109,60 @@ function generateTicketHTML(ticket) {
     const eventTitle = ticket.eventTitle || 'Event';
     const eventLocation = ticket.eventLocation || 'Online';
     const eventCategory = ticket.category || ticket.eventCategory || 'CONCERT';
-    const organizerName = ticket.organizerName || 'Anonymous';
     const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
     return `
-        <div class="ticket-official-container-v2" id="ticket-${ticket.id}" style="max-width:780px; margin:0 auto; background:#0a1628; border-radius:20px; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; color:#ffffff; box-shadow:0 15px 50px rgba(0,0,0,0.5); border:1px solid #1a2a4a;">
+        <div class="ticket-modern" id="ticket-${ticket.id}" style="max-width:780px; margin:0 auto; background:linear-gradient(145deg, #0a1628, #1a2a4a); border-radius:24px; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; color:#ffffff; box-shadow:0 15px 50px rgba(0,0,0,0.5); border:1px solid #F5B400; padding:0;">
             
-            <!-- En-tête avec logo et catégorie -->
-            <div style="background:linear-gradient(135deg, #0a1628, #1a2a4a); padding:18px 30px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #F5B400;">
-                <div style="display:flex; align-items:center; gap:12px; font-size:1.6rem; font-weight:800; color:#ffffff;">
-                    <img src="logo.png" alt="Betix" style="height:32px; width:auto; filter:brightness(0) invert(1);" onerror="this.style.display='none'">
+            <!-- En-tête -->
+            <div style="background:linear-gradient(135deg, #0a1628, #1a2a4a); padding:16px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #F5B400;">
+                <div style="display:flex; align-items:center; gap:10px; font-size:1.4rem; font-weight:800;">
+                    <img src="logo.png" alt="Betix" style="height:30px; width:auto; filter:brightness(0) invert(1);" onerror="this.style.display='none'">
                     Betix
                 </div>
-                <div style="background:#F5B400; color:#0a1628; padding:4px 18px; border-radius:30px; font-weight:700; font-size:0.65rem; letter-spacing:1.2px; text-transform:uppercase;">${escapeHtml(eventCategory)}</div>
+                <div style="background:#F5B400; color:#0a1628; padding:4px 16px; border-radius:30px; font-weight:700; font-size:0.6rem; letter-spacing:1px; text-transform:uppercase;">${escapeHtml(eventCategory)}</div>
             </div>
 
-            <!-- Corps : 3 colonnes positionnées en absolu sur l'image de fond -->
-            <div style="position:relative; width:100%; background:#0d1b32; padding:0;">
-                <!-- Image de fond (ticket-officiel.png) -->
-                <img src="ticket-officiel.png" alt="Ticket officiel Betix" style="width:100%; height:auto; display:block; background:#0a1628;" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+            <!-- Corps du ticket : grille d'informations -->
+            <div style="padding:24px 28px 20px; display:grid; grid-template-columns:1fr 1fr; gap:16px 30px; background:#0d1b32;">
 
-                <!-- Colonne gauche (informations événement) -->
-                <div class="ticket-col ticket-col-left" style="position:absolute; left:6%; width:30%; top:26%; display:flex; flex-direction:column; gap:2px; color:#1a202c; font-weight:500; font-size:clamp(8px,1vw,11px); line-height:1.3; pointer-events:none; box-sizing:border-box; padding:0 4px;">
-                    <div class="ticket-event-title" style="font-size:clamp(14px,1.8vw,20px); font-weight:700; color:#dc2626; margin-bottom:2px;">${escapeHtml(eventTitle)}</div>
-                    <div class="ticket-event-duration" style="font-size:clamp(8px,1vw,11px); font-weight:500; color:#1a202c;">${durationDisplay}</div>
-                    <div class="ticket-event-date" style="font-size:clamp(8px,1vw,11px); font-weight:500; color:#1a202c;">${dateFormatted}</div>
-                    <div class="ticket-event-time" style="font-size:clamp(8px,1vw,11px); font-weight:500; color:#1a202c;">${timeFormatted}</div>
-                    <div class="ticket-event-location" style="font-size:clamp(8px,1vw,11px); font-weight:500; color:#1a202c;">${escapeHtml(eventLocation)}</div>
+                <!-- Colonne gauche : événement -->
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div style="font-size:1.6rem; font-weight:700; color:#F5B400; margin-bottom:4px;">${escapeHtml(eventTitle)}</div>
+                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Durée:</span> ${durationDisplay}</div>
+                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Date:</span> ${dateFormatted}</div>
+                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Heure:</span> ${timeFormatted}</div>
+                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Lieu:</span> ${escapeHtml(eventLocation)}</div>
                 </div>
 
-                <!-- Colonne centre (acheteur & prix) -->
-                <div class="ticket-col ticket-col-center" style="position:absolute; left:40%; width:30%; top:26%; display:flex; flex-direction:column; gap:2px; color:#1a202c; font-weight:500; font-size:clamp(8px,1vw,11px); line-height:1.3; pointer-events:none; box-sizing:border-box; padding:0 4px;">
-                    <div class="ticket-buyer-name" style="font-weight:600; font-size:clamp(10px,1.2vw,13px); color:#1a202c;">${escapeHtml(buyerName)}</div>
-                    <div class="ticket-buyer-email" style="font-size:clamp(8px,1vw,11px); color:#1a202c;">${escapeHtml(userEmail)}</div>
-                    <div class="ticket-buyer-phone" style="font-size:clamp(8px,1vw,11px); color:#1a202c;">${escapeHtml(userPhone)}</div>
-                    <div class="ticket-price" style="font-weight:700; font-size:clamp(10px,1.4vw,14px); color:#1a202c; margin-top:4px;">${price}</div>
+                <!-- Colonne droite : acheteur et prix -->
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div style="font-size:1.1rem; font-weight:600; color:#ffffff;">${escapeHtml(buyerName)}</div>
+                    <div style="display:flex; gap:6px; font-size:0.8rem; color:#c8d4e6;"><span style="font-weight:500; color:#a0b4cc;">Email:</span> ${escapeHtml(userEmail)}</div>
+                    <div style="display:flex; gap:6px; font-size:0.8rem; color:#c8d4e6;"><span style="font-weight:500; color:#a0b4cc;">Tél:</span> ${escapeHtml(userPhone)}</div>
+                    <div style="margin-top:6px; font-size:1.2rem; font-weight:700; color:#10b981;">${price}</div>
                 </div>
 
-                <!-- Colonne droite (QR code & ID) -->
-                <div class="ticket-col ticket-col-right" style="position:absolute; right:3%; width:22%; top:22%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; color:#1a202c; font-weight:500; font-size:clamp(7px,0.9vw,10px); pointer-events:none; box-sizing:border-box; padding:0 4px;">
-                    <!-- QR code (sera généré par la suite) -->
-                    <div id="qr-ticket-${ticket.id}" style="width:100%; max-width:90px; aspect-ratio:1/1; background:white; padding:4px; border-radius:6px; display:flex; align-items:center; justify-content:center; margin:0 auto 2px auto; box-shadow:0 2px 10px rgba(0,0,0,0.2);"></div>
-                    <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:600; font-size:clamp(7px,0.9vw,10px); color:#1a202c; letter-spacing:0.5px; word-break:break-all;">#${ticketIdShort}</div>
-                    <div class="ticket-purchase-date-right" style="font-size:clamp(6px,0.8vw,9px); color:#1a202c; margin-top:2px;">${purchaseDate}</div>
+                <!-- QR Code et ID (occupent toute la largeur) -->
+                <div style="grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div id="qr-ticket-${ticket.id}" style="width:80px; height:80px; background:white; padding:4px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>
+                        <div style="font-size:0.7rem; color:#a0b4cc;">
+                            <div style="font-weight:600; color:#F5B400;">ID: #${ticketIdShort}</div>
+                            <div>Achat: ${purchaseDate}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right; font-size:0.6rem; color:#6a7f9a; line-height:1.5;">
+                        Présentez ce ticket à l'entrée<br>
+                        Captures ou altérations refusées
+                    </div>
                 </div>
             </div>
 
-            <!-- Pied de page avec mentions légales -->
-            <div style="display:flex; justify-content:space-between; padding:12px 24px 14px; background:#0a1628; border-top:2px solid #1a2a4a; flex-wrap:wrap; gap:8px; font-size:0.65rem; color:#a0b4cc; align-items:center;">
-                <div>
-                    <span style="color:#F5B400; font-weight:700; letter-spacing:0.5px;">BETIX</span> · Powered by Pi Network
-                </div>
-                <div style="text-align:right; line-height:1.6;">
-                    Présentez ce ticket à l'entrée.<br>
-                    Les captures d'écran ou tickets modifiés peuvent être refusés.
-                </div>
+            <!-- Pied de page -->
+            <div style="background:#0a1628; padding:10px 24px; display:flex; justify-content:space-between; font-size:0.6rem; color:#6a7f9a; border-top:2px solid #1a2a4a;">
+                <span><span style="color:#F5B400; font-weight:700;">BETIX</span> · Powered by Pi Network</span>
+                <span>Ticket valide</span>
             </div>
         </div>
     `;
@@ -3237,10 +3234,18 @@ function trackUserConnection() {
     syncUserToSupabase();
 }
 
+// ============================================================
+// CORRECTION DE renderMyEvents (filtrage par organizerPiUid)
+// ============================================================
 function renderMyEvents() {
     const container = document.getElementById('myEventsList');
     if (!container) return;
-    const myEvents = events.filter(e => e.organizer === currentUser.wallet || e.organizerName === currentUser.name);
+    const userId = currentUser.piUid || currentUser.wallet;
+    const myEvents = events.filter(e => 
+        e.organizer === userId || 
+        e.organizerPiUid === userId || 
+        e.organizerName === currentUser.name
+    );
     if (myEvents.length === 0) {
         container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">${t('noEvents')}</p><p style="font-size:0.85rem;">${t('createEvent')}</p></div>`;
         return;
@@ -3353,13 +3358,17 @@ function updateUserInfo() {
     updatePremiumBanner();
 }
 
+// ============================================================
+// CORRECTION DE updateProfilePage (filtrage par organizerPiUid)
+// ============================================================
 function updateProfilePage() {
-    const myEvents = events.filter(e => e.organizer === currentUser.wallet || e.organizerName === currentUser.name);
-    const userTickets = tickets.filter(t => t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet);
-    const userRatings = ratings.filter(r => r.userWallet === currentUser.wallet || r.userWallet === currentUser.name);
+    const userId = currentUser.piUid || currentUser.wallet;
+    const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+    const userTickets = tickets.filter(t => t.userWallet === userId || t.buyerWallet === userId);
+    const userRatings = ratings.filter(r => r.userWallet === userId || r.userWallet === currentUser.name);
     document.getElementById('myEventsCount') && (document.getElementById('myEventsCount').textContent = myEvents.length);
     document.getElementById('ticketCount') && (document.getElementById('ticketCount').textContent = userTickets.length);
-    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === currentUser.wallet || t.buyerWallet === currentUser.wallet)).length);
+    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === userId || t.buyerWallet === userId)).length);
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
