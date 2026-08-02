@@ -1247,6 +1247,9 @@ function hideLoader() {
 // ============================================================
 // GÉNÉRATION DU TICKET EN HTML
 // ============================================================
+// ============================================================
+// GÉNÉRATION DU TICKET - VERSION AMÉLIORÉE
+// ============================================================
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
@@ -1278,18 +1281,18 @@ function generateTicketHTML(ticket) {
 
             <!-- ===== COLONNE GAUCHE ===== -->
             <!-- EVENT -->
-            <div class="ticket-text ticket-event" style="left:27%; top:34.2%; width:20.5%; font-weight:700; font-size:clamp(9px,1vw,12px); color:#1a202c;">
+            <div class="ticket-text ticket-event" style="left:27%; top:34.2%; width:20.5%; font-weight:700; font-size:clamp(10px,1.1vw,14px); color:#1a202c;">
                 ${escapeHtml(eventTitle)}
             </div>
             <!-- DURATION -->
             <div class="ticket-text ticket-duration" style="left:27%; top:40%; width:20.5%; color:#374151;">
                 ${durationDisplay}
             </div>
-            <!-- DATE -->
+            <!-- DATE (maintenant en position TIME) -->
             <div class="ticket-text ticket-date" style="left:27%; top:45.7%; width:20.5%; color:#374151;">
                 ${dateFormatted}
             </div>
-            <!-- TIME -->
+            <!-- TIME (maintenant en position DATE) -->
             <div class="ticket-text ticket-time" style="left:27%; top:51.4%; width:20.5%; color:#374151;">
                 ${timeFormatted}
             </div>
@@ -1298,17 +1301,17 @@ function generateTicketHTML(ticket) {
                 ${escapeHtml(eventLocation)}
             </div>
             <!-- PRICE -->
-            <div class="ticket-text ticket-price" style="left:27%; top:63%; width:20.5%; font-weight:700; font-size:clamp(9px,0.95vw,12px); color:#1a202c;">
+            <div class="ticket-text ticket-price" style="left:27%; top:63%; width:20.5%; font-weight:700; font-size:clamp(10px,1.05vw,13px); color:#1a202c;">
                 ${price}
             </div>
 
             <!-- ===== COLONNE DROITE ===== -->
             <!-- NAME -->
-            <div class="ticket-text ticket-name" style="left:52.5%; top:34.2%; width:22%; font-weight:700; font-size:clamp(9px,1vw,12px); color:#1a202c;">
+            <div class="ticket-text ticket-name" style="left:52.5%; top:34.2%; width:22%; font-weight:700; font-size:clamp(10px,1.1vw,14px); color:#1a202c;">
                 ${escapeHtml(buyerName)}
             </div>
             <!-- EMAIL -->
-            <div class="ticket-text ticket-email" style="left:52.5%; top:40%; width:22%; color:#374151; font-size:clamp(7.5px,0.7vw,9.5px);">
+            <div class="ticket-text ticket-email" style="left:52.5%; top:40%; width:22%; color:#374151; font-size:clamp(8px,0.75vw,10px);">
                 ${escapeHtml(userEmail)}
             </div>
             <!-- PHONE -->
@@ -1316,37 +1319,34 @@ function generateTicketHTML(ticket) {
                 ${escapeHtml(userPhone)}
             </div>
             <!-- PRICE PAID -->
-            <div class="ticket-text ticket-paid" style="left:52.5%; top:51.4%; width:22%; font-weight:700; font-size:clamp(9px,0.95vw,12px); color:#1a202c;">
+            <div class="ticket-text ticket-paid" style="left:52.5%; top:51.4%; width:22%; font-weight:700; font-size:clamp(10px,1.05vw,13px); color:#1a202c;">
                 ${price}
             </div>
             <!-- PURCHASE DATE -->
-            <div class="ticket-text ticket-purchase" style="left:52.5%; top:57.2%; width:22%; color:#6b7280; font-size:clamp(7.5px,0.7vw,9.5px);">
+            <div class="ticket-text ticket-purchase" style="left:52.5%; top:57.2%; width:22%; color:#6b7280; font-size:clamp(8px,0.75vw,10px);">
                 ${purchaseDate}
             </div>
             <!-- TICKET ID -->
-            <div class="ticket-text ticket-id" style="left:52.5%; top:63%; width:22%; color:#6b7280; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:clamp(7px,0.65vw,9px); letter-spacing:0.3px;">
+            <div class="ticket-text ticket-id" style="left:52.5%; top:63%; width:22%; color:#6b7280; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:clamp(8px,0.75vw,10px); letter-spacing:0.3px;">
                 #${ticketIdShort}
             </div>
 
-            <!-- ===== QR CODE ===== -->
-            <div class="ticket-qr" id="qr-ticket-${ticket.id}" style="left:77%; top:17.8%; width:17%; aspect-ratio:1/1; background:white; padding:4px; border-radius:6px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+            <!-- ===== QR CODE (UN SEUL, bien positionné) ===== -->
+            <div class="ticket-qr" id="qr-ticket-${ticket.id}" style="left:77.5%; top:17.8%; width:16%; aspect-ratio:1/1; background:white; padding:4px; border-radius:6px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
             </div>
 
             <!-- ===== TICKET ID DROIT (sous le QR) ===== -->
-            <div class="ticket-text ticket-right-id" style="left:77%; top:56%; width:17%; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(7px,0.65vw,9px); color:#1a202c; letter-spacing:0.5px;">
+            <div class="ticket-text ticket-right-id" style="left:77.5%; top:56%; width:16%; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(9px,0.85vw,11px); color:#1a202c; letter-spacing:0.5px;">
                 #${ticketIdShort}
             </div>
 
             <!-- ===== DATE D'ACHAT DROIT (sous l'ID) ===== -->
-            <div class="ticket-text ticket-right-date" style="left:77%; top:62%; width:17%; text-align:center; color:#6b7280; font-size:clamp(6px,0.55vw,8px);">
+            <div class="ticket-text ticket-right-date" style="left:77.5%; top:62%; width:16%; text-align:center; color:#6b7280; font-size:clamp(8px,0.75vw,10px);">
                 ${purchaseDate}
             </div>
         </div>
     `;
 }
-// ============================================================
-// GÉNÉRER LE QR CODE DANS LE CONTENEUR
-// ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
