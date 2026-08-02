@@ -1363,7 +1363,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET OVERLAY - AVEC IMAGE DE FOND (classes existantes)
+   TICKET OVERLAY - AVEC IMAGE DE FOND
    ============================================================ */
 .ticket-overlay-container {
     position: relative;
@@ -1418,7 +1418,48 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     align-items: center;
     text-align: center;
 }
-/* Ajustements pour les éléments à l'intérieur */
+
+/* Ajustements PC / grand écran */
+@media (min-width: 1024px) {
+    .ticket-col-left {
+        left: 8%;
+        width: 28%;
+        top: 28%;
+    }
+    .ticket-col-center {
+        left: 42%;
+        width: 28%;
+        top: 28%;
+    }
+    .ticket-col-right {
+        right: 5%;
+        width: 20%;
+        top: 24%;
+    }
+    .ticket-col .ticket-event-title {
+        font-size: clamp(18px, 2.2vw, 26px);
+    }
+    .ticket-col .ticket-event-duration,
+    .ticket-col .ticket-event-date,
+    .ticket-col .ticket-event-time,
+    .ticket-col .ticket-event-location {
+        font-size: clamp(10px, 1.2vw, 14px);
+    }
+    .ticket-col .ticket-buyer-name {
+        font-size: clamp(12px, 1.5vw, 16px);
+    }
+    .ticket-col .ticket-buyer-email,
+    .ticket-col .ticket-buyer-phone {
+        font-size: clamp(10px, 1.2vw, 14px);
+    }
+    .ticket-col .ticket-price {
+        font-size: clamp(14px, 1.8vw, 20px);
+    }
+    .ticket-qr-wrapper {
+        max-width: 120px;
+    }
+}
+
 .ticket-col .ticket-event-title {
     font-size: clamp(14px, 1.8vw, 20px);
     font-weight: 700;
