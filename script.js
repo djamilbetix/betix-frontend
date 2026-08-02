@@ -808,9 +808,13 @@ async function forceRefreshData() {
 }
 
 function mergeArraysById(localArray, supabaseArray) {
+    // Fusion : les éléments de supabaseArray remplacent ceux de localArray (par id)
     const merged = [...localArray];
     for (const item of supabaseArray) {
-        if (!merged.some(l => l.id === item.id)) {
+        const idx = merged.findIndex(l => l.id === item.id);
+        if (idx !== -1) {
+            merged[idx] = item; // remplacer par la version Supabase
+        } else {
             merged.push(item);
         }
     }
@@ -821,24 +825,28 @@ function mergeArraysById(localArray, supabaseArray) {
 // CHARGEMENT DES DONNÉES (CORRIGÉ)
 // ============================================================
 async function loadAllFromSupabase() {
+    console.log("Loading all data from Supabase...");
     loadUsedTickets();
     updateSyncStatus('loading');
     const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
     const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+    console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
     try {
         // Charger tous les événements depuis Supabase
         const supabaseEvents = await loadEventsFromSupabase();
+        console.log("Supabase events:", supabaseEvents.length);
         // Charger les tickets de l'utilisateur connecté seulement
         const userIdentifier = currentUser.piUid || currentUser.wallet;
         let supabaseTickets = [];
         if (userIdentifier) {
             supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            console.log("Supabase tickets for user:", supabaseTickets.length);
         }
 
-        // Fusionner les événements : Supabase + local (priorité Supabase pour les mises à jour)
-        events = mergeArraysById(supabaseEvents, localEvents);
+        // Fusionner les événements : Supabase d'abord, puis local pour compléter
+        events = mergeArraysById(localEvents, supabaseEvents);
         // Fusionner les tickets
-        tickets = mergeArraysById(supabaseTickets, localTickets);
+        tickets = mergeArraysById(localTickets, supabaseTickets);
 
         // Sauvegarder localement
         localStorage.setItem('betix_events', JSON.stringify(events));
@@ -847,12 +855,14 @@ async function loadAllFromSupabase() {
         // Synchroniser vers Supabase les éléments qui n'y sont pas (pour éviter les pertes)
         for (const e of events) {
             if (!supabaseEvents.some(se => se.id === e.id)) {
+                console.log("Saving missing event to Supabase:", e.id);
                 await saveEventToSupabase(e);
                 await new Promise(r => setTimeout(r, 100));
             }
         }
         for (const t of tickets) {
             if (!supabaseTickets.some(st => st.id === t.id)) {
+                console.log("Saving missing ticket to Supabase:", t.id);
                 await saveTicketToSupabase(t);
                 await new Promise(r => setTimeout(r, 100));
             }
@@ -864,7 +874,7 @@ async function loadAllFromSupabase() {
         if (userIdentifier) {
             supabaseNotifs = await loadNotificationsFromSupabase(userIdentifier);
         }
-        notifications = mergeArraysById(supabaseNotifs, localNotifs);
+        notifications = mergeArraysById(localNotifs, supabaseNotifs);
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
 
         updateSyncStatus('success');
@@ -2429,7 +2439,7 @@ async function confirmPurchase(eventId, quantity) {
                         const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
                         const existingInSupabase = supabaseTickets.filter(t => t.transaction_id === txid);
                         if (existingInSupabase.length > 0) {
-                            tickets = mergeArraysById(tickets, supabaseTickets);
+                            tickets = mergeArraysById(localTickets, supabaseTickets);
                             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
                             openTransactionProcessedPopup(5);
                             renderTickets();
