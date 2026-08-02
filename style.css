@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX
+   STYLES COMPLETS POUR BETIX (Version stable)
    ============================================================ */
 
 * {
@@ -29,10 +29,8 @@ body {
 }
 
 :root {
-    --primary: #F5B400;
-    --primary-dark: #D89C00;
-    --secondary: #0B1F5C;
-    --secondary-light: #1a2a4a;
+    --primary: #0B1F5C;
+    --primary-light: #1a2a4a;
     --accent: #F5B400;
     --success: #10b981;
     --warning: #f59e0b;
@@ -54,7 +52,7 @@ body {
 }
 
 /* ============================================================
-   HEADER FIXE (sticky)
+   HEADER FIXE
    ============================================================ */
 .header {
     position: fixed;
@@ -778,12 +776,12 @@ body {
 }
 
 /* ============================================================
-   FILTRES CATÉGORIES – JAUNE ET GRAND (MODIFICATION)
+   FILTRES CATÉGORIES – fond blanc, texte jaune, taille normale
    ============================================================ */
 .filters-wrapper { padding: 0.5rem 5% 0.5rem; }
 .filters-horizontal {
     display: flex;
-    gap: 0.8rem;
+    gap: 0.6rem;
     overflow-x: auto;
     padding-bottom: 0.5rem;
     scrollbar-width: none;
@@ -791,29 +789,31 @@ body {
 .filters-horizontal::-webkit-scrollbar { display: none; }
 .filter-chip {
     flex: 0 0 auto;
-    background: #F5B400 !important;
-    color: #1a1a2e !important;
-    font-size: 1.2rem !important;
-    padding: 0.6rem 1.5rem !important;
-    font-weight: 700 !important;
-    border: none !important;
+    background: #ffffff !important;
+    color: #F5B400 !important;
+    border: 2px solid #F5B400 !important;
+    padding: 0.5rem 1.2rem !important;
     border-radius: 40px !important;
-    box-shadow: 0 2px 8px rgba(245, 180, 0, 0.3) !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
     cursor: pointer;
     transition: all 0.2s ease !important;
 }
 .filter-chip:hover {
+    background: #F5B400 !important;
+    color: #ffffff !important;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245, 180, 0, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(245, 180, 0, 0.2);
 }
 .filter-chip.active {
-    background: #D89C00 !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    background: #F5B400 !important;
+    color: #ffffff !important;
+    border-color: #F5B400 !important;
+    box-shadow: 0 2px 8px rgba(245, 180, 0, 0.3);
 }
 
 /* ============================================================
-   EVENTS GRID
+   EVENTS GRID (design soigné)
    ============================================================ */
 .events-container {
     padding: 0.5rem 5% 2rem;
@@ -969,10 +969,10 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 }
 
 /* ============================================================
-   STYLES POUR LA CARTE D'ÉVÉNEMENT
+   STYLES POUR LA CARTE D'ÉVÉNEMENT (design professionnel)
    ============================================================ */
 .event-title-large {
-    font-size: 1.6rem !important;
+    font-size: 1.3rem !important;
     font-weight: 700;
     color: #1a1a2e;
     line-height: 1.3;
@@ -981,9 +981,9 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 body.dark-mode .event-title-large { color: #f3f4f6; }
 
 .event-description-full {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #4b5563;
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 6px 0 4px;
 }
 body.dark-mode .event-description-full { color: #d1d5db; }
@@ -1060,13 +1060,13 @@ body.dark-mode .event-datetime-line { color: #e5e7eb; }
 .price-amount-green {
     color: #10b981;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.3;
 }
 .price-currency-gray {
     color: #6b7280;
     font-weight: 700;
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
 }
 body.dark-mode .price-amount-green { color: #34d399; }
 body.dark-mode .price-currency-gray { color: #9ca3af; }
@@ -1285,6 +1285,127 @@ body.dark-mode .event-card-classic .poster-grid .grid-item { background: #1f2937
     color: #1a1a2e !important;
 }
 body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #d1d5db !important; }
+
+/* ============================================================
+   PREMIUM – 3 CARTES AVEC ABONNEMENT ANNUEL
+   ============================================================ */
+.premium-page-content {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.pricing-table {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin: 30px 0;
+}
+.pricing-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px 22px 22px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    border: 1px solid #e6e6e6;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+}
+.pricing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+.pricing-card.recommended {
+    border-color: #F5B400;
+    background: linear-gradient(145deg, #ffffff, #fef8f0);
+}
+.pricing-card .plan-badge {
+    position: absolute;
+    top: -10px;
+    right: 16px;
+    background: #F5B400;
+    color: #1a1a2e;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+.pricing-card .plan-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-align: center;
+    margin-bottom: 4px;
+}
+.pricing-card .plan-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #F5B400;
+    text-align: center;
+    margin: 6px 0;
+}
+.pricing-card .plan-price small {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+.pricing-card .plan-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-align: center;
+    margin: 8px 0 12px;
+}
+.pricing-card .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+    flex: 1;
+}
+.pricing-card .plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: #1f2937;
+    border-bottom: 1px solid #f0f0f0;
+}
+.pricing-card .plan-features li:last-child { border-bottom: none; }
+.pricing-card .plan-features li i {
+    width: 20px;
+    text-align: center;
+}
+.pricing-card .plan-features li .fa-check-circle { color: #10b981; }
+.pricing-card .plan-features li .fa-times-circle { color: #ef4444; }
+.pricing-card .plan-features li .feature-text { flex: 1; }
+.pricing-card .btn-subscribe {
+    background: #0B1F5C;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 6px;
+}
+.pricing-card .btn-subscribe:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(11,31,92,0.3);
+}
+.pricing-card .btn-subscribe:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+}
+.pricing-card.free .btn-subscribe {
+    background: #e5e7eb;
+    color: #6b7280;
+    cursor: default;
+}
+.pricing-card.free .btn-subscribe:hover { transform: none; box-shadow: none; }
 
 /* ============================================================
    BOUTONS D'ACTION SUR LES TICKETS
@@ -3907,7 +4028,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 .footer-lang-selector { display: none !important; }
 
 /* ============================================================
-   DARK MODE ADAPTATIONS (compléments généraux)
+   DARK MODE ADAPTATIONS
    ============================================================ */
 body.dark-mode .header {
     background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
@@ -4243,126 +4364,6 @@ body.dark-mode .ticket-actions .btn-share {
 }
 
 /* ============================================================
-   PREMIUM – 3 CARTES SEULEMENT
-   ============================================================ */
-.premium-page-content {
-    max-width: 900px;
-    margin: 0 auto;
-}
-.pricing-table {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin: 20px 0;
-}
-.pricing-card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 20px 20px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    border: 1px solid #e6e6e6;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease;
-    position: relative;
-}
-.pricing-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.1);
-}
-.pricing-card.recommended {
-    border-color: #F5B400;
-    background: linear-gradient(145deg, #ffffff, #fef8f0);
-}
-.pricing-card .plan-badge {
-    position: absolute;
-    top: -10px;
-    right: 16px;
-    background: #F5B400;
-    color: #1a1a2e;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-}
-.pricing-card .plan-name {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    text-align: center;
-    margin-bottom: 4px;
-}
-.pricing-card .plan-price {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #F5B400;
-    text-align: center;
-}
-.pricing-card .plan-price small {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #6b7280;
-}
-.pricing-card .plan-description {
-    font-size: 0.8rem;
-    color: #6b7280;
-    text-align: center;
-    margin: 8px 0 12px;
-}
-.pricing-card .plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 16px 0;
-    flex: 1;
-}
-.pricing-card .plan-features li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    font-size: 0.8rem;
-    color: #1f2937;
-    border-bottom: 1px solid #f0f0f0;
-}
-.pricing-card .plan-features li:last-child { border-bottom: none; }
-.pricing-card .plan-features li i {
-    width: 18px;
-    text-align: center;
-}
-.pricing-card .plan-features li .fa-check-circle { color: #10b981; }
-.pricing-card .plan-features li .fa-times-circle { color: #ef4444; }
-.pricing-card .plan-features li .feature-text { flex: 1; }
-.pricing-card .btn-subscribe {
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    padding: 10px 0;
-    border-radius: 40px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    margin-top: 4px;
-}
-.pricing-card .btn-subscribe:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(11,31,92,0.3);
-}
-.pricing-card .btn-subscribe:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-}
-.pricing-card.free .btn-subscribe {
-    background: #e5e7eb;
-    color: #6b7280;
-    cursor: default;
-}
-.pricing-card.free .btn-subscribe:hover { transform: none; box-shadow: none; }
-
-/* ============================================================
    SCROLL TO TOP
    ============================================================ */
 .scroll-top-btn {
@@ -4399,7 +4400,7 @@ body.dark-mode .ticket-actions .btn-share {
 .scroll-top-btn:active { transform: scale(0.92); }
 
 /* ============================================================
-   POPUPS PROFESSIONNELS (inchangé)
+   POPUPS PROFESSIONNELS
    ============================================================ */
 .quantity-popup-professional {
     max-width: 440px;
