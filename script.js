@@ -330,6 +330,11 @@ let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 
 // ============================================================
+// TICKETS EN ATTENTE DE SYNCHRONISATION (NOUVEAU)
+// ============================================================
+let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
+
+// ============================================================
 // PARAMÈTRES DE L'APPLICATION
 // ============================================================
 let appSettings = {
@@ -342,7 +347,7 @@ let appSettings = {
 };
 
 // ============================================================
-// VÉRIFICATIONS DE CONNEXION ET PROFIL (NOUVEAU)
+// VÉRIFICATIONS DE CONNEXION ET PROFIL
 // ============================================================
 function requireLogin() {
     if (!currentUser.wallet && !currentUser.piUid) {
@@ -596,6 +601,9 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
     } catch (error) { return false; }
 }
 
+// ============================================================
+// SAVE EVENT ET TICKET (AVEC FALLBACK)
+// ============================================================
 async function saveEventToSupabase(eventData) {
     try {
         if (!eventData || !eventData.id) return false;
@@ -630,9 +638,6 @@ async function saveEventToSupabase(eventData) {
     } catch (error) { return false; }
 }
 
-// ============================================================
-// NOUVELLE VERSION DE SAVE TICKET (avec tous les champs)
-// ============================================================
 async function saveTicketToSupabase(ticketData) {
     try {
         if (!ticketData || !ticketData.id) return false;
@@ -661,13 +666,19 @@ async function saveTicketToSupabase(ticketData) {
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error saving ticket:', error);
+            return false;
+        }
         return true;
-    } catch (error) { return false; }
+    } catch (error) {
+        console.error('Error saving ticket to Supabase:', error);
+        return false;
+    }
 }
 
 // ============================================================
-// CHARGEMENT DES TICKETS DEPUIS SUPABASE (avec nouveaux champs)
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE
 // ============================================================
 async function loadTicketsFromSupabase(piUid) {
     try {
@@ -741,7 +752,12 @@ async function loadEventsFromSupabase() {
 // SYNCHRONISATION
 // ============================================================
 function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); syncEventsToSupabase(); }
-function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); saveUsedTickets(); syncTicketsToSupabase(); }
+function saveTickets() { 
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets)); 
+    saveUsedTickets(); 
+    // Tenter la sync, mais ne pas bloquer
+    syncTicketsToSupabase().catch(() => {});
+}
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
@@ -773,6 +789,12 @@ async function syncTicketsToSupabase() {
         if (saved) success++;
         if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
     }
+    // Si des tickets ont échoué, on les met en attente
+    if (success < tickets.length) {
+        const failed = tickets.slice(success);
+        pendingTickets.push(...failed);
+        localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    }
 }
 async function syncNotificationsToSupabase() {
     for (let i = 0; i < notifications.length; i++) {
@@ -794,6 +816,28 @@ async function syncAllToSupabase(retryCount = 0) {
     } catch (error) {
         if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
         else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
+    }
+}
+
+// ============================================================
+// RETRY PENDING TICKETS (NOUVEAU)
+// ============================================================
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) {
+            remaining.push(ticket);
+        }
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) {
+        console.log('All pending tickets saved successfully!');
+    } else {
+        console.log('Still', pendingTickets.length, 'tickets pending.');
     }
 }
 
@@ -842,10 +886,8 @@ function mergeArraysById(localArray, supabaseArray) {
         }
     }
     return merged;
-}
-
-// ============================================================
-// CHARGEMENT DES DONNÉES (CORRIGÉ)
+}// ============================================================
+// LOAD ALL FROM SUPABASE (CORRIGÉ AVEC SAUVEGARDE LOCALE)
 // ============================================================
 async function loadAllFromSupabase() {
     console.log("Loading all data from Supabase...");
@@ -854,6 +896,10 @@ async function loadAllFromSupabase() {
     const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
     const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
+    
+    // SAUVEGARDE DES TICKETS LOCAUX AVANT FUSION
+    const backupTickets = [...localTickets];
+    
     try {
         const supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
@@ -864,9 +910,25 @@ async function loadAllFromSupabase() {
             console.log("Supabase tickets for user:", supabaseTickets.length);
         }
         events = mergeArraysById(localEvents, supabaseEvents);
-        tickets = mergeArraysById(localTickets, supabaseTickets);
+        
+        // FUSION : on garde les tickets locaux s'ils n'existent pas dans Supabase
+        const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
+        
+        // Si après fusion on a moins de tickets qu'en local, on restaure les manquants
+        if (mergedTickets.length < backupTickets.length) {
+            console.warn("Some tickets were lost during merge! Restoring missing ones.");
+            const localIds = new Set(backupTickets.map(t => t.id));
+            const mergedIds = new Set(mergedTickets.map(t => t.id));
+            const missing = backupTickets.filter(t => !mergedIds.has(t.id));
+            mergedTickets.push(...missing);
+            console.log("Restored", missing.length, "missing tickets.");
+        }
+        tickets = mergedTickets;
+        
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        
+        // Tentative de sauvegarde des tickets manquants dans Supabase
         for (const e of events) {
             if (!supabaseEvents.some(se => se.id === e.id)) {
                 console.log("Saving missing event to Supabase:", e.id);
@@ -877,10 +939,16 @@ async function loadAllFromSupabase() {
         for (const t of tickets) {
             if (!supabaseTickets.some(st => st.id === t.id)) {
                 console.log("Saving missing ticket to Supabase:", t.id);
-                await saveTicketToSupabase(t);
+                const saved = await saveTicketToSupabase(t);
+                if (!saved) {
+                    pendingTickets.push(t);
+                    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+                }
                 await new Promise(r => setTimeout(r, 100));
             }
         }
+        
+        // Récupération des notifications
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
         let supabaseNotifs = [];
         if (userIdentifier) {
@@ -892,8 +960,9 @@ async function loadAllFromSupabase() {
     } catch (error) {
         console.error('Erreur lors du chargement depuis Supabase :', error);
         updateSyncStatus('error');
+        // EN CAS D'ERREUR, ON GARDE LES DONNÉES LOCALES
         events = localEvents;
-        tickets = localTickets;
+        tickets = backupTickets; // Utilisation de la sauvegarde
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
     }
@@ -904,6 +973,8 @@ async function loadAllFromSupabase() {
     setTimeout(() => {
         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
     }, 300);
+    // Tenter de sauvegarder les tickets en attente
+    await retryPendingTickets();
 }
 
 // ============================================================
@@ -1124,7 +1195,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET EN HTML - AVEC IMAGE DE FOND (positions corrigées)
+// GÉNÉRATION DU TICKET EN HTML
 // ============================================================
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
@@ -1154,7 +1225,6 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche : Ajustée à top: 26.5% avec espacement vertical régulier -->
             <div class="ticket-col ticket-col-left" style="position:absolute; left:26.5%; width:19%; top:26.5%; display:flex; flex-direction:column; gap:2.8%; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1.2; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div class="ticket-event-title" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:800; color:#dc2626; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
                 <div class="ticket-event-duration" style="font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
@@ -1163,7 +1233,6 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-event-location" style="font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Colonne centre : Ajustée pour aligner Name, Email, Phone et Price sur les lignes -->
             <div class="ticket-col ticket-col-center" style="position:absolute; left:48.5%; width:21%; top:26.5%; display:flex; flex-direction:column; gap:2.8%; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1.2; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(6.5px, 0.7vw, 9.5px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
                 <div class="ticket-buyer-email" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
@@ -1171,7 +1240,6 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-price" style="font-weight:800; font-size:clamp(7px, 0.75vw, 9.5px); color:#000000; margin-top:2px;">${price}</div>
             </div>
 
-            <!-- Colonne droite : QR code repositionné exactement dans le cadre blanc -->
             <div class="ticket-col ticket-col-right" style="position:absolute; right:8.5%; width:15%; top:17.5%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; color:#1a202c; font-weight:500; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="width:100%; max-width:44px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; margin:0 auto 2px auto;"></div>
                 <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; letter-spacing:0.2px; word-break:break-all; margin-top:14px;">#${ticketIdShort}</div>
@@ -1203,16 +1271,15 @@ function generateTicketQR(ticketId) {
     }
 }
 
-// ============================================================
-// GÉNÉRER TOUS LES QR CODES (appelé après chargement)
-// ============================================================
 function generateAllQRCodes() {
     const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
     ticketsList.forEach(container => {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
-}// ============================================================
+}
+
+// ============================================================
 // RENDER TICKETS ET HISTORY
 // ============================================================
 function renderTickets() {
@@ -1305,7 +1372,7 @@ function renderHistory() {
 }
 
 // ============================================================
-// EXPORT PNG ET PDF (avec html2canvas)
+// EXPORT PNG ET PDF
 // ============================================================
 async function downloadTicketPNG(ticketId) {
     const ticketEl = document.getElementById(`ticket-${ticketId}`);
@@ -1379,8 +1446,6 @@ function viewTicketWithImage(ticketId) {
     setTimeout(() => generateTicketQR(ticket.id), 300);
 }
 
-function downloadTicketPDF(ticketId) { downloadTicketImagePDF(ticketId); }
-function downloadTicketPNG(ticketId) { downloadTicketImagePNG(ticketId); }
 function viewTicketModal(ticketId) { viewTicketWithImage(ticketId); }
 
 function shareTicket(ticketId) {
@@ -1417,7 +1482,7 @@ function markTicketAsUsed(ticketId) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
+// CARTE D'ÉVÉNEMENT
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1507,7 +1572,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) 
+// PAGE DE DÉTAIL (openEventDetails)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1744,7 +1809,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL (inchangé)
+// ADMIN CAROUSEL
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -1758,15 +1823,6 @@ function renderAdminSlides() {
 function adminShowSlideForm(index) {
     const container = document.getElementById('adminSlideFormContainer');
     container.style.display = 'block';
-    const badgeGroup = document.querySelector('.form-group:has(#adminSlideBadge)');
-    const titleGroup = document.querySelector('.form-group:has(#adminSlideTitle)');
-    const descGroup = document.querySelector('.form-group:has(#adminSlideDesc)');
-    if (badgeGroup) badgeGroup.style.display = 'none';
-    if (titleGroup) titleGroup.style.display = 'none';
-    if (descGroup) descGroup.style.display = 'none';
-    document.getElementById('adminSlideBadge').value = '';
-    document.getElementById('adminSlideTitle').value = '';
-    document.getElementById('adminSlideDesc').value = '';
     document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
     document.getElementById('adminSlideImageInput').value = '';
     document.getElementById('adminSlidePreview').style.display = 'none';
@@ -1819,9 +1875,7 @@ function adminCancelSlideForm() {
     document.getElementById('adminSlidePreview').style.display = 'none';
     document.getElementById('adminSlidePreview').src = '';
     document.getElementById('adminUploadBox').classList.remove('has-image');
-}
-
-// ============================================================
+}// ============================================================
 // PROFIL – FORMULAIRE AVEC REVUE ET VÉRIFICATION
 // ============================================================
 let profileDataForReview = {};
@@ -2042,7 +2096,7 @@ function verifyPhone() {
 }
 
 // ============================================================
-// PAGE PREMIUM – 3 CARTES SEULEMENT (MODIFIÉ)
+// PAGE PREMIUM – 3 CARTES SEULEMENT
 // ============================================================
 function renderPremiumPage() {
     const container = document.getElementById('premiumContent');
@@ -2289,7 +2343,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI (MODIFIÉE POUR DENORMALISER)
+// CONFIRMATION D'ACHAT AVEC PI (AVEC FALLBACK LOCAL)
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2451,8 +2505,15 @@ async function confirmPurchase(eventId, quantity) {
                     }
                     saveEvents();
                     saveTickets();
+                    // Sauvegarde dans Supabase avec fallback local
                     for (let j = 0; j < ticketsAdded.length; j++) {
-                        await saveTicketToSupabase(ticketsAdded[j]);
+                        const saved = await saveTicketToSupabase(ticketsAdded[j]);
+                        if (!saved) {
+                            // Si échec, on stocke dans les tickets en attente
+                            pendingTickets.push(ticketsAdded[j]);
+                            localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+                            console.warn('Ticket', ticketsAdded[j].id, 'saved locally, will retry later.');
+                        }
                         await new Promise(r => setTimeout(r, 200));
                     }
                     await saveEventToSupabase(event);
@@ -2521,7 +2582,7 @@ async function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// SUCCESS POPUP AVEC BOUTON VERS TICKETS (MODIFIÉ)
+// SUCCESS POPUP AVEC BOUTON VERS TICKETS
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2577,7 +2638,9 @@ function closeSuccessPopup() {
     const info = document.getElementById('successTicketInfo');
     if (info) info.innerHTML = '';
     localStorage.removeItem('betix_success_popup_shown');
-}// ============================================================
+}
+
+// ============================================================
 // CRÉATION D'ÉVÉNEMENT (avec vérifications)
 // ============================================================
 async function createEvent(e) {
@@ -3169,6 +3232,8 @@ async function connectToPi() {
             renderEventsByCategory();
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
             await loadProfileData();
+            // Tentative de sauvegarde des tickets en attente
+            await retryPendingTickets();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
     finally { hideConnectSpinner(); }
@@ -3205,7 +3270,7 @@ function trackUserConnection() {
 }
 
 // ============================================================
-// CORRECTION DE renderMyEvents (filtrage par organizerPiUid)
+// RENDER MY EVENTS
 // ============================================================
 function renderMyEvents() {
     const container = document.getElementById('myEventsList');
@@ -3328,9 +3393,6 @@ function updateUserInfo() {
     updatePremiumBanner();
 }
 
-// ============================================================
-// CORRECTION DE updateProfilePage (filtrage par organizerPiUid)
-// ============================================================
 function updateProfilePage() {
     const userId = currentUser.piUid || currentUser.wallet;
     const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
@@ -3861,8 +3923,8 @@ async function initApp() {
         bindActivityListeners();
         setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
         setTimeout(() => loadAllFromSupabase(), 1000);
-        setInterval(() => syncAllToSupabase(), 30000);
-        window.addEventListener('beforeunload', () => syncAllToSupabase());
+        setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 30000);
+        window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
         const scrollBtn = document.getElementById('scrollTopBtn');
@@ -3930,6 +3992,7 @@ window.scrollToTop = scrollToTop;
 window.openQuantityPopup = openQuantityPopup;
 window.requireLogin = requireLogin;
 window.requireProfileComplete = requireProfileComplete;
+window.retryPendingTickets = retryPendingTickets;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
