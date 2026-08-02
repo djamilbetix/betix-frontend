@@ -1266,7 +1266,6 @@ function generateTicketHTML(ticket) {
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = ticket.eventTitle || 'Event';
     const eventLocation = ticket.eventLocation || 'Online';
-    const eventCategory = ticket.category || ticket.eventCategory || 'CONCERT';
     const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
     return `
@@ -1275,29 +1274,69 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche : Intervalle augmenté et calé sur les 5 lignes (EVENT, DURATION, DATE, TIME, LOCALISATION) -->
-            <div class="ticket-col ticket-col-left" style="position:absolute; left:26%; width:18%; top:33.5%; display:flex; flex-direction:column; gap:5.5px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-event-title" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:800; color:#dc2626; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
-                <div class="ticket-event-duration" style="font-size:clamp(6.5px, 0.7vw, 9px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
-                <div class="ticket-event-date" style="font-size:clamp(6.5px, 0.7vw, 9px); font-weight:600; color:#2d3748;">${dateFormatted}</div>
-                <div class="ticket-event-time" style="font-size:clamp(6.5px, 0.7vw, 9px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
-                <div class="ticket-event-location" style="font-size:clamp(6.5px, 0.7vw, 9px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
+            <!-- === BLOC ÉVÉNEMENT (Placement ligne par ligne) === -->
+            <!-- 1. EVENT -->
+            <div style="position:absolute; left:27%; top:34.5%; width:19%; font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:800; color:#dc2626; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(eventTitle)}
             </div>
 
-            <!-- Colonne centre : Intervalle augmenté (NAME, EMAIL, PHONE, PRICE) -->
-            <div class="ticket-col ticket-col-center" style="position:absolute; left:48.5%; width:21%; top:33.5%; display:flex; flex-direction:column; gap:5.5px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(7px, 0.75vw, 9.5px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
-                <div class="ticket-buyer-email" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
-                <div class="ticket-buyer-phone" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568;">${escapeHtml(userPhone)}</div>
-                <div class="ticket-price" style="font-weight:800; font-size:clamp(7.5px, 0.8vw, 10px); color:#000000; margin-top:1px;">${price}</div>
+            <!-- 2. DURATION -->
+            <div style="position:absolute; left:27%; top:38.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${durationDisplay}
             </div>
 
-            <!-- Colonne droite : QR code recadré dans le rectangle blanc + ID descendu sous le cadre -->
-            <div class="ticket-col ticket-col-right" style="position:absolute; right:8.2%; width:15.5%; top:21%; display:flex; flex-direction:column; align-items:center; text-align:center; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="width:100%; max-width:44px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; margin:0 auto;"></div>
-                <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; letter-spacing:0.2px; word-break:break-all; margin-top:22px;">#${ticketIdShort}</div>
-                <div class="ticket-purchase-date-right" style="font-size:clamp(6px, 0.6vw, 8px); color:#4a5568; margin-top:2px;">${purchaseDate}</div>
+            <!-- 3. DATE -->
+            <div style="position:absolute; left:27%; top:42.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${dateFormatted}
             </div>
+
+            <!-- 4. TIME -->
+            <div style="position:absolute; left:27%; top:46.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${timeFormatted}
+            </div>
+
+            <!-- 5. LOCALISATION -->
+            <div style="position:absolute; left:27%; top:50.5%; width:19%; font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(eventLocation)}
+            </div>
+
+
+            <!-- === BLOC ACHETEUR (Placement ligne par ligne) === -->
+            <!-- 1. NAME -->
+            <div style="position:absolute; left:48.5%; top:34.5%; width:21%; font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:700; color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(buyerName)}
+            </div>
+
+            <!-- 2. EMAIL -->
+            <div style="position:absolute; left:48.5%; top:38.5%; width:21%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(userEmail)}
+            </div>
+
+            <!-- 3. PHONE -->
+            <div style="position:absolute; left:48.5%; top:42.5%; width:21%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none;">
+                ${escapeHtml(userPhone)}
+            </div>
+
+            <!-- 4. PRICE PAID -->
+            <div style="position:absolute; left:48.5%; top:46.5%; width:21%; font-size:clamp(6.5px, 0.75vw, 9px); font-weight:800; color:#000000; pointer-events:none;">
+                ${price}
+            </div>
+
+
+            <!-- === BLOC DROITE (QR CODE & TICKET ID) === -->
+            <!-- QR Code (Centré dans le carré blanc du coupon jaune) -->
+            <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="position:absolute; right:8.5%; top:19.5%; width:15%; max-width:44px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; pointer-events:none;"></div>
+
+            <!-- Ticket ID (Aligné en face de TICKET ID sur le coupon jaune) -->
+            <div style="position:absolute; right:6.5%; top:41%; width:18%; font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; text-align:center; pointer-events:none;">
+                #${ticketIdShort}
+            </div>
+
+            <!-- Date d'achat (Alignée en face de DATE OF PURCHASE) -->
+            <div style="position:absolute; right:6.5%; top:46.5%; width:18%; font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; text-align:center; pointer-events:none;">
+                ${purchaseDate}
+            </div>
+
         </div>
     `;
 }
