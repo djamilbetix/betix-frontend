@@ -606,14 +606,12 @@ async function saveEventToSupabase(eventData) {
     } catch (error) { return false; }
 }
 
+// ============================================================
+// NOUVELLE VERSION DE SAVE TICKET (avec tous les champs)
+// ============================================================
 async function saveTicketToSupabase(ticketData) {
     try {
         if (!ticketData || !ticketData.id) return false;
-        let eventPays = 'France', eventTitle = ticketData.eventTitle || 'Event', eventLocation = ticketData.eventLocation || '', eventDate = ticketData.eventDate || new Date().toISOString();
-        if (ticketData.eventId) {
-            const event = events.find(e => e.id === ticketData.eventId);
-            if (event) { eventPays = event.pays || event.country || 'France'; eventTitle = event.title || eventTitle; eventLocation = event.location || eventLocation; eventDate = event.date || eventDate; }
-        }
         const dbTicket = {
             id: ticketData.id,
             event_id: ticketData.eventId || '',
@@ -625,19 +623,57 @@ async function saveTicketToSupabase(ticketData) {
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
             expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
-            event_title: eventTitle,
-            event_location: eventLocation,
-            pays: ticketData.pays || eventPays || 'France',
+            event_title: ticketData.eventTitle || 'Event',
+            event_location: ticketData.eventLocation || 'Online',
+            pays: ticketData.pays || ticketData.eventPays || 'France',
             transaction_id: ticketData.transactionId || '',
             category: ticketData.category || '',
+            // NOUVEAUX CHAMPS
             duration_value: ticketData.durationValue || null,
             duration_unit: ticketData.durationUnit || null,
+            organizer_name: ticketData.organizerName || '',
+            organizer_pi_uid: ticketData.organizerPiUid || '',
+            buyer_email: ticketData.buyerEmail || '',
+            buyer_phone: ticketData.buyerPhone || '',
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
         if (error) throw error;
         return true;
     } catch (error) { return false; }
+}
+
+// ============================================================
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE (avec nouveaux champs)
+// ============================================================
+async function loadTicketsFromSupabase(piUid) {
+    try {
+        if (!piUid) return [];
+        const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
+        if (error) throw error;
+        return (data || []).map(t => ({
+            id: t.id,
+            eventId: t.event_id,
+            eventTitle: t.event_title || 'Event',
+            eventDate: t.expiration_date || t.purchase_date,
+            eventLocation: t.event_location || 'Online',
+            category: t.category || '',
+            price: t.price || 0,
+            buyerName: t.buyer_name || 'Anonymous',
+            buyerEmail: t.buyer_email || '',
+            buyerPhone: t.buyer_phone || '',
+            purchaseDate: t.purchase_date,
+            transactionId: t.transaction_id,
+            qrCode: t.qr_code,
+            status: t.status || 'Valid',
+            durationValue: t.duration_value || null,
+            durationUnit: t.duration_unit || null,
+            organizerName: t.organizer_name || '',
+            organizerPiUid: t.organizer_pi_uid || '',
+            pays: t.pays || 'France',
+            // ... autres
+        }));
+    } catch (error) { return []; }
 }
 
 async function loadEventsFromSupabase() {
@@ -676,23 +712,6 @@ async function loadEventsFromSupabase() {
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-    } catch (error) { return []; }
-}
-
-async function loadTicketsFromSupabase(piUid) {
-    try {
-        if (!piUid) return [];
-        const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
-        if (error) throw error;
-        return data || [];
-    } catch (error) { return []; }
-}
-
-async function loadNotificationsFromSupabase(piUid) {
-    try {
-        const { data, error } = await supabaseClient.from('notifications').select('*').eq('receiver_pi_uid', piUid).order('created_at', { ascending: false });
-        if (error) throw error;
-        return data || [];
     } catch (error) { return []; }
 }
 
@@ -1068,120 +1087,59 @@ function hideLoader() {
     if (loader) loader.style.display = 'none';
 }
 
-/* ============================================================
-   TICKET GENERATOR FUNCTION - VERSION CORRIGÉE (récupère les données de l'événement si manquantes)
-   ============================================================ */
-
+// ============================================================
+// GÉNÉRATION DU TICKET EN HTML (OVERLAY) - VERSION FINALE (autonome)
+// ============================================================
 function generateTicketHTML(ticket) {
-    // Récupérer l'événement correspondant si disponible
-    const event = typeof events !== 'undefined' ? events.find(e => e.id === ticket.eventId) : null;
-
-    // Données de l'événement : priorité au ticket, sinon à l'événement
-    const eventTitle = ticket.eventTitle || (event ? event.title : 'Événement sans titre');
-    const eventDateStr = ticket.eventDate || (event ? event.date : new Date().toISOString());
-    const eventLocation = ticket.eventLocation || (event ? event.location : '');
-    const eventPays = ticket.pays || (event ? (event.pays || event.country) : '');
-    const price = (ticket.price || (event ? event.price : 0)).toFixed(6) + ' Pi';
-    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
-
-    // Nom complet : priorité au ticket, puis currentUser
-    let buyerName = ticket.buyerName || '';
-    if (!buyerName || buyerName === 'Anonymous' || buyerName === 'Not provided') {
-        const firstName = currentUser?.first_name || '';
-        const lastName = currentUser?.last_name || '';
-        buyerName = (firstName + ' ' + lastName).trim() || currentUser?.name || 'Non renseigné';
-    }
-
-    // Email et téléphone (sans condition)
-    const userEmail = currentUser?.email || ticket.buyerEmail || '';
-    const userPhone = currentUser?.phone_number || ticket.buyerPhone || '';
-
-    // Formatage date/heure
-    const dateEvent = new Date(eventDateStr);
+    // Récupérer les données depuis le ticket lui-même
+    const dateEvent = new Date(ticket.eventDate);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'Date non définie';
+        : 'Date to be defined';
     const timeFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'Heure non définie';
-
-    // Durée
-    let durationDisplay = 'Non spécifiée';
-    if (ticket.durationValue && ticket.durationUnit) {
-        const unitLabels = {
-            hours: ticket.durationValue === 1 ? 'Heure' : 'Heures',
-            days: ticket.durationValue === 1 ? 'Jour' : 'Jours',
-            weeks: ticket.durationValue === 1 ? 'Semaine' : 'Semaines',
-            months: ticket.durationValue === 1 ? 'Mois' : 'Mois',
-            years: ticket.durationValue === 1 ? 'An' : 'Ans'
-        };
-        durationDisplay = `${ticket.durationValue} ${unitLabels[ticket.durationUnit] || ticket.durationUnit}`;
-    } else if (ticket.durationDisplay) {
-        durationDisplay = ticket.durationDisplay;
-    } else if (event && event.durationValue && event.durationUnit) {
-        const unitLabels = {
-            hours: event.durationValue === 1 ? 'Heure' : 'Heures',
-            days: event.durationValue === 1 ? 'Jour' : 'Jours',
-            weeks: event.durationValue === 1 ? 'Semaine' : 'Semaines',
-            months: event.durationValue === 1 ? 'Mois' : 'Mois',
-            years: event.durationValue === 1 ? 'An' : 'Ans'
-        };
-        durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
-    }
-
-    // Localisation complète
-    let locationDisplay = '';
-    if (eventPays && eventLocation) {
-        locationDisplay = `${eventPays} · ${eventLocation}`;
-    } else if (eventPays) {
-        locationDisplay = eventPays;
-    } else if (eventLocation) {
-        locationDisplay = eventLocation;
-    } else {
-        locationDisplay = 'Non spécifié';
-    }
-
-    // Date d'achat
-    let purchaseDate = 'Non renseignée';
-    if (ticket.purchaseDate) {
-        const pd = new Date(ticket.purchaseDate);
-        if (!isNaN(pd.getTime())) {
-            purchaseDate = pd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-    }
+        : 'Time to be defined';
+    const durationDisplay = ticket.durationValue && ticket.durationUnit 
+        ? `${ticket.durationValue} ${ticket.durationUnit}` 
+        : 'N/A';
+    
+    const buyerName = ticket.buyerName || 'Not provided';
+    const userEmail = ticket.buyerEmail || 'Not provided';
+    const userPhone = ticket.buyerPhone || 'Not provided';
+    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
+    const price = (ticket.price || 0).toFixed(6) + ' Pi';
+    const eventTitle = ticket.eventTitle || 'Event';
+    const eventLocation = ticket.eventLocation || 'Online';
+    const eventCategory = ticket.category || ticket.eventCategory || 'CONCERT';
+    const organizerName = ticket.organizerName || 'Anonymous';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
+            
+            <!-- Badge Catégorie -->
+            <div class="ticket-overlay-text ticket-event-category">${escapeHtml(eventCategory)}</div>
 
-            <!-- Colonne 1 : Événement -->
-            <div class="ticket-col ticket-col-left">
-                <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
-                <div class="ticket-event-date">${escapeHtml(dateFormatted)}</div>
-                <div class="ticket-event-time">${escapeHtml(timeFormatted)}</div>
-                <div class="ticket-event-duration">${escapeHtml(durationDisplay)}</div>
-                <div class="ticket-event-location">${escapeHtml(locationDisplay)}</div>
-                <div class="ticket-price">${escapeHtml(price)}</div>
-            </div>
+            <!-- ID Ticket -->
+            <div class="ticket-overlay-text ticket-id">#${ticketIdShort}</div>
 
-            <!-- Colonne 2 : Acheteur -->
-            <div class="ticket-col ticket-col-center">
-                <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
-                <div class="ticket-buyer-email">${escapeHtml(userEmail || 'Non renseigné')}</div>
-                <div class="ticket-buyer-phone">${escapeHtml(userPhone || 'Non renseigné')}</div>
-                <div class="ticket-price-paid">${escapeHtml(price)}</div>
-                <div class="ticket-purchase-date">${escapeHtml(purchaseDate)}</div>
-                <div class="ticket-id">${ticketIdShort}</div>
-            </div>
+            <!-- Colonne Gauche (Détails de l'événement) -->
+            <div class="ticket-overlay-text ticket-event-title">${escapeHtml(eventTitle)}</div>
+            <div class="ticket-overlay-text ticket-event-duration">${durationDisplay}</div>
+            <div class="ticket-overlay-text ticket-event-date">${dateFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-time">${timeFormatted}</div>
+            <div class="ticket-overlay-text ticket-event-location">${escapeHtml(eventLocation)}</div>
 
-            <!-- Colonne 3 : QR + ID + Date d'achat -->
-            <div class="ticket-col ticket-col-right">
-                <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
-                <div class="ticket-id-right">${ticketIdShort}</div>
-                <div class="ticket-purchase-date-right">${escapeHtml(purchaseDate)}</div>
-            </div>
+            <!-- Colonne Droite (Infos Acheteur & Prix) -->
+            <div class="ticket-overlay-text ticket-buyer-name">${escapeHtml(buyerName)}</div>
+            <div class="ticket-overlay-text ticket-buyer-email">${escapeHtml(userEmail)}</div>
+            <div class="ticket-overlay-text ticket-buyer-phone">${escapeHtml(userPhone)}</div>
+            <div class="ticket-overlay-text ticket-price">${price}</div>
+
+            <!-- QR Code -->
+            <div class="ticket-qr-wrapper" id="qr-ticket-${ticket.id}"></div>
         </div>
     `;
 }
@@ -1192,7 +1150,6 @@ function generateTicketHTML(ticket) {
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
-    if (container.querySelector('canvas')) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
     try {
@@ -1210,21 +1167,18 @@ function generateTicketQR(ticketId) {
 }
 
 // ============================================================
-// RENDER TICKETS ET HISTORY (avec tri par date d'achat)
+// RENDER TICKETS ET HISTORY
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
 
-    let validTickets = tickets.filter(t => {
+    const validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
-
-    // Trier par date d'achat décroissante
-    validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueTickets = [];
     const seenIds = new Set();
@@ -1264,14 +1218,12 @@ function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
 
-    let historyTickets = tickets.filter(t => {
+    const historyTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
-
-    historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
 
     const uniqueHistory = [];
     const seenIds = new Set();
@@ -1420,6 +1372,7 @@ function markTicketAsUsed(ticketId) {
         renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
+
 // ============================================================
 // CARTE D'ÉVÉNEMENT (renderEventCard, openEventDetails, etc.)
 // ============================================================
@@ -2343,7 +2296,7 @@ function updateQuantity(delta) {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI
+// CONFIRMATION D'ACHAT AVEC PI (MODIFIÉE POUR DENORMALISER)
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2466,6 +2419,17 @@ async function confirmPurchase(eventId, quantity) {
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = generateSecureQRData(ticketId, currentUser.piUid || currentUser.wallet, event.id);
+                        
+                        // =======================================================
+                        // NOUVEAU : on copie toutes les données de l'événement
+                        // =======================================================
+                        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
+                                         (currentUser.last_name ? ' ' + currentUser.last_name : '');
+                        const buyerEmail = currentUser.email || 'Not provided';
+                        const buyerPhone = currentUser.phone_number || 'Not provided';
+                        const organizerName = event.organizerName || event.organizer || 'Anonymous';
+                        const organizerPiUid = event.organizerPiUid || event.organizer || '';
+                        
                         const ticket = {
                             id: ticketId,
                             eventId: event.id,
@@ -2478,18 +2442,19 @@ async function confirmPurchase(eventId, quantity) {
                             pays: event.pays || event.country || 'France',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: (currentUser.first_name ? currentUser.first_name + ' ' + currentUser.last_name : currentUser.name) || 'Anonymous',
+                            buyerEmail: buyerEmail,
+                            buyerPhone: buyerPhone,
                             userWallet: currentUser.wallet,
                             status: 'Valid',
                             purchaseDate: purchaseDate,
                             transactionId: txid || 'tx-' + Date.now(),
                             qrCode: qrData,
                             quantity: quantity,
-                            // Stocker toutes les données nécessaires pour l'affichage
                             durationValue: event.durationValue || null,
                             durationUnit: event.durationUnit || null,
-                            durationDisplay: event.durationValue && event.durationUnit 
-                                ? `${event.durationValue} ${event.durationUnit}` 
-                                : null
+                            organizerName: organizerName,
+                            organizerPiUid: organizerPiUid,
+                            eventPays: event.pays || event.country || 'France'
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
