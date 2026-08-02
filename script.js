@@ -342,6 +342,30 @@ let appSettings = {
 };
 
 // ============================================================
+// VÉRIFICATIONS DE CONNEXION ET PROFIL (NOUVEAU)
+// ============================================================
+function requireLogin() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        addNotification('Please connect your Pi account before performing this action.', 'warning');
+        alert('Please connect your Pi account first.');
+        return false;
+    }
+    return true;
+}
+
+function requireProfileComplete() {
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        const missing = check.missing.join(', ');
+        const msg = 'Please complete your profile before performing this action. Missing: ' + missing;
+        addNotification(msg, 'warning');
+        redirectToProfileWithMessage(msg);
+        return false;
+    }
+    return true;
+}
+
+// ============================================================
 // PI SDK
 // ============================================================
 let piSDKReady = false;
@@ -714,7 +738,7 @@ async function loadEventsFromSupabase() {
 }
 
 // ============================================================
-// SYNCHRONISATION (corrigée)
+// SYNCHRONISATION
 // ============================================================
 function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); syncEventsToSupabase(); }
 function saveTickets() { localStorage.setItem('betix_tickets', JSON.stringify(tickets)); saveUsedTickets(); syncTicketsToSupabase(); }
@@ -808,12 +832,11 @@ async function forceRefreshData() {
 }
 
 function mergeArraysById(localArray, supabaseArray) {
-    // Fusion : les éléments de supabaseArray remplacent ceux de localArray (par id)
     const merged = [...localArray];
     for (const item of supabaseArray) {
         const idx = merged.findIndex(l => l.id === item.id);
         if (idx !== -1) {
-            merged[idx] = item; // remplacer par la version Supabase
+            merged[idx] = item;
         } else {
             merged.push(item);
         }
@@ -832,27 +855,18 @@ async function loadAllFromSupabase() {
     const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
     try {
-        // Charger tous les événements depuis Supabase
         const supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
-        // Charger les tickets de l'utilisateur connecté seulement
         const userIdentifier = currentUser.piUid || currentUser.wallet;
         let supabaseTickets = [];
         if (userIdentifier) {
             supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
             console.log("Supabase tickets for user:", supabaseTickets.length);
         }
-
-        // Fusionner les événements : Supabase d'abord, puis local pour compléter
         events = mergeArraysById(localEvents, supabaseEvents);
-        // Fusionner les tickets
         tickets = mergeArraysById(localTickets, supabaseTickets);
-
-        // Sauvegarder localement
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-
-        // Synchroniser vers Supabase les éléments qui n'y sont pas (pour éviter les pertes)
         for (const e of events) {
             if (!supabaseEvents.some(se => se.id === e.id)) {
                 console.log("Saving missing event to Supabase:", e.id);
@@ -867,8 +881,6 @@ async function loadAllFromSupabase() {
                 await new Promise(r => setTimeout(r, 100));
             }
         }
-
-        // Notifications (similaire)
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
         let supabaseNotifs = [];
         if (userIdentifier) {
@@ -876,19 +888,15 @@ async function loadAllFromSupabase() {
         }
         notifications = mergeArraysById(localNotifs, supabaseNotifs);
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-
         updateSyncStatus('success');
     } catch (error) {
         console.error('Erreur lors du chargement depuis Supabase :', error);
         updateSyncStatus('error');
-        // En cas d'erreur, on garde les données locales
         events = localEvents;
         tickets = localTickets;
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
     }
-
-    // Rafraîchir l'affichage
     renderEventsByCategory();
     renderTickets();
     renderHistory();
@@ -1204,9 +1212,7 @@ function generateAllQRCodes() {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
-}
-
-// ============================================================
+}// ============================================================
 // RENDER TICKETS ET HISTORY
 // ============================================================
 function renderTickets() {
@@ -1373,9 +1379,6 @@ function viewTicketWithImage(ticketId) {
     setTimeout(() => generateTicketQR(ticket.id), 300);
 }
 
-// ============================================================
-// TÉLÉCHARGEMENT ET PARTAGE
-// ============================================================
 function downloadTicketPDF(ticketId) { downloadTicketImagePDF(ticketId); }
 function downloadTicketPNG(ticketId) { downloadTicketImagePNG(ticketId); }
 function viewTicketModal(ticketId) { viewTicketWithImage(ticketId); }
@@ -1504,7 +1507,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// PAGE DE DÉTAIL (openEventDetails) 
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1741,7 +1744,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL
+// ADMIN CAROUSEL (inchangé)
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -2039,7 +2042,7 @@ function verifyPhone() {
 }
 
 // ============================================================
-// PAGE PREMIUM – TABLEAU COMPARATIF AMÉLIORÉ
+// PAGE PREMIUM – 3 CARTES SEULEMENT (MODIFIÉ)
 // ============================================================
 function renderPremiumPage() {
     const container = document.getElementById('premiumContent');
@@ -2123,56 +2126,10 @@ function renderPremiumPage() {
         ${card('yearly', 'Yearly Premium', yearlyPi.toFixed(6), `≈ $${yearlyPrice} / year`, featuresYearly, false, 'Choose Yearly Plan', false, 'BEST VALUE')}
     </div>`;
 
-    // Section Avantages
-    const benefitsHtml = `
-        <div class="premium-benefits">
-            <h3>Why choose Betix Premium?</h3>
-            <div class="benefits-grid">
-                <div class="benefit-card"><i class="fas fa-infinity"></i> <span>Unlimited events</span></div>
-                <div class="benefit-card"><i class="fas fa-badge-check"></i> <span>Verified badge</span></div>
-                <div class="benefit-card"><i class="fas fa-rocket"></i> <span>Priority promotion</span></div>
-                <div class="benefit-card"><i class="fas fa-chart-line"></i> <span>Advanced analytics</span></div>
-                <div class="benefit-card"><i class="fas fa-headset"></i> <span>Priority support</span></div>
-                <div class="benefit-card"><i class="fas fa-trophy"></i> <span>Exclusive perks</span></div>
-            </div>
-        </div>
-    `;
-
-    // Section Témoignages
-    const testimonialsHtml = `
-        <div class="premium-testimonials">
-            <h3>What our members say</h3>
-            <div class="testimonials-grid">
-                <div class="testimonial-card"><p>"Since going Premium, my event attendance has tripled. The verified badge really builds trust!"</p><div class="author">– Sarah K., Organizer</div></div>
-                <div class="testimonial-card"><p>"The priority support is incredible. I get answers in minutes, not hours."</p><div class="author">– Michael T., Festival Director</div></div>
-                <div class="testimonial-card"><p>"I love the advanced analytics. I can now target my audience perfectly."</p><div class="author">– Jessica R., Event Manager</div></div>
-            </div>
-        </div>
-    `;
-
-    // Section FAQ
-    const faqHtml = `
-        <div class="premium-faq">
-            <h3>Frequently Asked Questions</h3>
-            <div class="faq-item"><h4>What happens if I cancel my subscription?</h4><p>Your Premium benefits will continue until the end of the current billing period.</p></div>
-            <div class="faq-item"><h4>Can I switch from monthly to yearly?</h4><p>Yes, simply subscribe to the yearly plan and we'll adjust your billing automatically.</p></div>
-            <div class="faq-item"><h4>Is there a free trial?</h4><p>We don't offer a free trial at the moment, but you can test the platform with 3 free events per month.</p></div>
-            <div class="faq-item"><h4>What payment methods are accepted?</h4><p>We accept Pi cryptocurrency only, directly through your Pi wallet.</p></div>
-        </div>
-    `;
-
-    // Call to action
-    const ctaHtml = `
-        <div class="premium-cta">
-            <p>Ready to take your events to the next level?</p>
-            <button class="premium-subscribe-btn" data-plan="monthly">Get Premium Now</button>
-        </div>
-    `;
-
-    container.innerHTML = plansHtml + benefitsHtml + testimonialsHtml + faqHtml + ctaHtml;
+    container.innerHTML = plansHtml;
 
     // Réattacher les événements aux boutons
-    container.querySelectorAll('.premium-subscribe-btn').forEach(btn => {
+    container.querySelectorAll('.btn-subscribe:not(.disabled)').forEach(btn => {
         btn.addEventListener('click', function() {
             const plan = this.dataset.plan || 'monthly';
             let duration = appSettings.premiumDurationDays;
@@ -2267,15 +2224,11 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT
+// QUANTITY POPUP ET ACHAT (avec vérifications)
 // ============================================================
 function openQuantityPopup(eventId) {
-    const profileCheck = checkProfileComplete();
-    if (!profileCheck.complete) {
-        const missingFields = profileCheck.missing.join(', ');
-        redirectToProfileWithMessage(`Please complete your profile before purchasing a ticket.\nMissing: ${missingFields}`);
-        return;
-    }
+    if (!requireLogin()) return;
+    if (!requireProfileComplete()) return;
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
     if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
@@ -2460,9 +2413,6 @@ async function confirmPurchase(eventId, quantity) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = generateSecureQRData(ticketId, currentUser.piUid || currentUser.wallet, event.id);
                         
-                        // =======================================================
-                        // NOUVEAU : on copie toutes les données de l'événement
-                        // =======================================================
                         const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                          (currentUser.last_name ? ' ' + currentUser.last_name : '');
                         const buyerEmail = currentUser.email || 'Not provided';
@@ -2570,6 +2520,9 @@ async function confirmPurchaseFromPopup() {
     await confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
+// ============================================================
+// SUCCESS POPUP AVEC BOUTON VERS TICKETS (MODIFIÉ)
+// ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
     const title = document.getElementById('successTitle');
@@ -2604,7 +2557,15 @@ function showSuccessPopup(event, ticketsList, quantity) {
             <div class="ticket-line"><span class="ticket-label">${t('total')}</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
             <div class="ticket-line"><span class="ticket-label">${t('code')}</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>`;
     }
-    if (viewBtn) { viewBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); showPage('tickets'); }; viewBtn.style.display = 'inline-block'; }
+    // Le bouton "View my ticket" redirige vers la page My Tickets
+    if (viewBtn) {
+        viewBtn.onclick = function(e) {
+            e.preventDefault();
+            closeSuccessPopup();
+            showPage('tickets');
+        };
+        viewBtn.style.display = 'inline-block';
+    }
     if (closeBtn) { closeBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); }; }
     popup.style.display = 'flex';
     popup.classList.add('show');
@@ -2616,30 +2577,21 @@ function closeSuccessPopup() {
     const info = document.getElementById('successTicketInfo');
     if (info) info.innerHTML = '';
     localStorage.removeItem('betix_success_popup_shown');
-}
-
-// ============================================================
-// CRÉATION D'ÉVÉNEMENT
+}// ============================================================
+// CRÉATION D'ÉVÉNEMENT (avec vérifications)
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
+    if (!requireLogin()) return;
+    if (!requireProfileComplete()) return;
     const publishBtn = document.getElementById('publishEventBtn');
     if (publishBtn.classList.contains('loading')) return;
     if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
-
-    const profileCheck = checkProfileComplete();
-    if (!profileCheck.complete) {
-        const missingFields = profileCheck.missing.join(', ');
-        redirectToProfileWithMessage(`Please complete your profile before publishing an event.\nMissing: ${missingFields}`);
-        return;
-    }
-
     if (!canPublishEvent()) {
         alert('You have reached the limit of 3 free events per month. Please upgrade to Premium to publish unlimited events.');
         document.getElementById('freeLimitMessage').style.display = 'block';
         return;
     }
-
     const title = document.getElementById('eventTitle').value.trim();
     const category = document.getElementById('eventCategory').value;
     const pays = document.getElementById('eventCountry').value;
@@ -3976,6 +3928,8 @@ window.openTransactionProcessedPopup = openTransactionProcessedPopup;
 window.openPastEventPopup = openPastEventPopup;
 window.scrollToTop = scrollToTop;
 window.openQuantityPopup = openQuantityPopup;
+window.requireLogin = requireLogin;
+window.requireProfileComplete = requireProfileComplete;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
