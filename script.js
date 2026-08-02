@@ -1146,32 +1146,33 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche : Alignée à droite des icônes du fond (left: 25.5%) -->
-            <div class="ticket-col ticket-col-left" style="position:absolute; left:25.5%; width:20%; top:33.5%; display:flex; flex-direction:column; gap:5.5px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-event-title" style="font-size:clamp(7.5px, 0.8vw, 10.5px); font-weight:800; color:#dc2626; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
-                <div class="ticket-event-duration" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
-                <div class="ticket-event-date" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${dateFormatted}</div>
-                <div class="ticket-event-time" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
-                <div class="ticket-event-location" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
+            <!-- Colonne gauche : Alignée sur la première ligne (top: 25.5%, gap ajusté) -->
+            <div class="ticket-col ticket-col-left" style="position:absolute; left:25.5%; width:20%; top:25.5%; display:flex; flex-direction:column; gap:3px; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
+                <div class="ticket-event-title" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:800; color:#dc2626; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
+                <div class="ticket-event-duration" style="font-size:clamp(6px, 0.65vw, 9px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
+                <div class="ticket-event-date" style="font-size:clamp(6px, 0.65vw, 9px); font-weight:600; color:#2d3748;">${dateFormatted}</div>
+                <div class="ticket-event-time" style="font-size:clamp(6px, 0.65vw, 9px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
+                <div class="ticket-event-location" style="font-size:clamp(6px, 0.65vw, 9px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Colonne centre : Alignée sur les champs acheteur (left: 48%) -->
-            <div class="ticket-col ticket-col-center" style="position:absolute; left:48%; width:22%; top:33.5%; display:flex; flex-direction:column; gap:4px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(7.5px, 0.8vw, 10px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
-                <div class="ticket-buyer-email" style="font-size:clamp(6px, 0.65vw, 8.5px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
-                <div class="ticket-buyer-phone" style="font-size:clamp(6px, 0.65vw, 8.5px); color:#4a5568;">${escapeHtml(userPhone)}</div>
-                <div class="ticket-price" style="font-weight:800; font-size:clamp(8px, 0.85vw, 11px); color:#000000; margin-top:5px;">${price}</div>
+            <!-- Colonne centre : Alignée sur Name (top: 25.5%, gap ajusté) -->
+            <div class="ticket-col ticket-col-center" style="position:absolute; left:48%; width:22%; top:25.5%; display:flex; flex-direction:column; gap:3px; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
+                <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(7px, 0.75vw, 9.5px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
+                <div class="ticket-buyer-email" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
+                <div class="ticket-buyer-phone" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568;">${escapeHtml(userPhone)}</div>
+                <div class="ticket-price" style="font-weight:800; font-size:clamp(7.5px, 0.8vw, 10px); color:#000000; margin-top:2px;">${price}</div>
             </div>
 
-            <!-- Colonne droite : QR code & ID -->
-            <div class="ticket-col ticket-col-right" style="position:absolute; right:5%; width:20%; top:20%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; color:#1a202c; font-weight:500; font-size:clamp(7px, 0.7vw, 9px); pointer-events:none; box-sizing:border-box; padding:0;">
-                <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="width:100%; max-width:65px; aspect-ratio:1/1; background:white; padding:2px; border-radius:4px; display:flex; align-items:center; justify-content:center; margin:0 auto 2px auto; box-shadow:0 1px 5px rgba(0,0,0,0.2);"></div>
-                <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:700; font-size:clamp(7px, 0.75vw, 9.5px); color:#1a202c; letter-spacing:0.3px; word-break:break-all;">#${ticketIdShort}</div>
-                <div class="ticket-purchase-date-right" style="font-size:clamp(6.5px, 0.65vw, 8.5px); color:#718096; margin-top:1px;">${purchaseDate}</div>
+            <!-- Colonne droite : QR code cadré dans la boîte blanche (top: 22.5%, max-width réduis) -->
+            <div class="ticket-col ticket-col-right" style="position:absolute; right:7.5%; width:16.5%; top:22.5%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; color:#1a202c; font-weight:500; pointer-events:none; box-sizing:border-box; padding:0;">
+                <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="width:100%; max-width:46px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; margin:0 auto 2px auto;"></div>
+                <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; letter-spacing:0.2px; word-break:break-all; margin-top:6px;">#${ticketIdShort}</div>
+                <div class="ticket-purchase-date-right" style="font-size:clamp(6px, 0.6vw, 8px); color:#4a5568; margin-top:1px;">${purchaseDate}</div>
             </div>
         </div>
     `;
 }
+
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
