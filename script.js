@@ -866,7 +866,9 @@ async function loadAllFromSupabase() {
     renderTickets();
     renderHistory();
     updateProfilePage();
-    setTimeout(generateAllQRCodes, 300);
+    setTimeout(() => {
+        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+    }, 300);
 }
 
 // ============================================================
@@ -1087,7 +1089,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET EN HTML - VERSION SANS IMAGE DE FOND (corrigée)
+// GÉNÉRATION DU TICKET EN HTML - AVEC IMAGE DE FOND (corrigée)
 // ============================================================
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
@@ -1164,6 +1166,17 @@ function generateTicketQR(ticketId) {
     } catch(e) {
         container.innerHTML = '<span style="color:red;">QR Error</span>';
     }
+}
+
+// ============================================================
+// GÉNÉRER TOUS LES QR CODES (appelé après chargement)
+// ============================================================
+function generateAllQRCodes() {
+    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
+    ticketsList.forEach(container => {
+        const id = container.id.replace('ticket-', '');
+        if (id) generateTicketQR(id);
+    });
 }
 
 // ============================================================
@@ -2486,7 +2499,9 @@ async function confirmPurchase(eventId, quantity) {
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
-                    setTimeout(generateAllQRCodes, 300);
+                    setTimeout(() => {
+                        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+                    }, 300);
                     await syncUserToSupabase();
                     showSuccessPopup(event, ticketsAdded, quantity);
                     processingTransactions.delete(txid);
