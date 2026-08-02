@@ -841,7 +841,6 @@ body {
     margin: 0 auto;
     overflow: hidden;
 }
-/* CORRECTION RESPONSIVE */
 @media (min-width: 1200px) {
     .events-grid-centered {
         grid-template-columns: repeat(3, 1fr);
@@ -1392,128 +1391,88 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     position: absolute;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
     color: #1a202c;
     font-weight: 500;
-    font-size: clamp(8px, 1.1vw, 11px);
-    line-height: 1.3;
+    font-size: clamp(11px, 1.4vw, 15px);
+    line-height: 1.4;
     pointer-events: none;
     box-sizing: border-box;
     padding: 0 4px;
 }
 .ticket-col-left {
-    left: 6%;
+    left: 5%;
     width: 30%;
-    top: 25%;
+    top: 20%;
 }
 .ticket-col-center {
-    left: 40%;
+    left: 38%;
     width: 30%;
-    top: 25%;
+    top: 22%;
 }
 .ticket-col-right {
     right: 3%;
     width: 22%;
-    top: 20%;
+    top: 16%;
     align-items: center;
     text-align: center;
 }
 
-/* Ajustements PC / grand écran */
-@media (min-width: 1024px) {
-    .ticket-col-left {
-        left: 8%;
-        width: 28%;
-        top: 28%;
-    }
-    .ticket-col-center {
-        left: 42%;
-        width: 28%;
-        top: 28%;
-    }
-    .ticket-col-right {
-        right: 5%;
-        width: 20%;
-        top: 24%;
-    }
-    .ticket-col .ticket-event-title {
-        font-size: clamp(18px, 2.2vw, 26px);
-    }
-    .ticket-col .ticket-event-duration,
-    .ticket-col .ticket-event-date,
-    .ticket-col .ticket-event-time,
-    .ticket-col .ticket-event-location {
-        font-size: clamp(10px, 1.2vw, 14px);
-    }
-    .ticket-col .ticket-buyer-name {
-        font-size: clamp(12px, 1.5vw, 16px);
-    }
-    .ticket-col .ticket-buyer-email,
-    .ticket-col .ticket-buyer-phone {
-        font-size: clamp(10px, 1.2vw, 14px);
-    }
-    .ticket-col .ticket-price {
-        font-size: clamp(14px, 1.8vw, 20px);
-    }
-    .ticket-qr-wrapper {
-        max-width: 120px;
-    }
-}
-
 .ticket-col .ticket-event-title {
-    font-size: clamp(14px, 1.8vw, 20px);
+    font-size: clamp(18px, 2.2vw, 26px);
     font-weight: 700;
     color: #dc2626;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 .ticket-col .ticket-event-duration,
 .ticket-col .ticket-event-date,
 .ticket-col .ticket-event-time,
 .ticket-col .ticket-event-location {
-    font-size: clamp(8px, 1.1vw, 11px);
+    font-size: clamp(11px, 1.4vw, 15px);
     font-weight: 500;
     color: #1a202c;
 }
 .ticket-col .ticket-buyer-name {
     font-weight: 600;
-    font-size: clamp(10px, 1.3vw, 13px);
+    font-size: clamp(14px, 1.6vw, 18px);
     color: #1a202c;
 }
 .ticket-col .ticket-buyer-email,
 .ticket-col .ticket-buyer-phone {
-    font-size: clamp(8px, 1.1vw, 11px);
+    font-size: clamp(11px, 1.4vw, 15px);
     color: #1a202c;
 }
 .ticket-col .ticket-price {
     font-weight: 700;
-    font-size: clamp(10px, 1.4vw, 14px);
+    font-size: clamp(14px, 1.8vw, 20px);
     color: #1a202c;
+    margin-top: 6px;
 }
 .ticket-col .ticket-id-right {
     font-family: 'Courier New', monospace;
-    font-weight: 600;
-    font-size: clamp(7px, 0.9vw, 10px);
+    font-weight: 700;
+    font-size: clamp(9px, 1.1vw, 13px);
     color: #1a202c;
     letter-spacing: 0.5px;
     word-break: break-all;
 }
 .ticket-col .ticket-purchase-date-right {
-    font-size: clamp(6px, 0.8vw, 9px);
+    font-size: clamp(8px, 1vw, 12px);
     color: #1a202c;
-    margin-top: 2px;
+    margin-top: 3px;
 }
 .ticket-qr-wrapper {
     width: 100%;
     max-width: 100px;
     aspect-ratio: 1 / 1;
     background: white;
-    padding: 4px;
-    border-radius: 6px;
+    padding: 5px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 4px auto;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    margin: 0 auto 5px auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
 }
 .ticket-qr-wrapper canvas,
 .ticket-qr-wrapper img {
@@ -1524,18 +1483,18 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 
 @media (max-width: 640px) {
     .ticket-col {
-        font-size: clamp(6px, 1vw, 9px);
-        gap: 2px;
+        font-size: clamp(9px, 1.1vw, 12px);
+        gap: 4px;
     }
     .ticket-col .ticket-event-title {
-        font-size: clamp(10px, 1.4vw, 14px);
+        font-size: clamp(14px, 1.6vw, 18px);
     }
     .ticket-qr-wrapper {
-        max-width: 70px;
+        max-width: 75px;
     }
-    .ticket-col-left { left: 4%; width: 32%; }
-    .ticket-col-center { left: 38%; width: 32%; }
-    .ticket-col-right { right: 2%; width: 28%; }
+    .ticket-col-left { left: 4%; width: 32%; top: 18%; }
+    .ticket-col-center { left: 38%; width: 30%; top: 20%; }
+    .ticket-col-right { right: 2%; width: 26%; top: 14%; }
 }
 
 /* ============================================================
