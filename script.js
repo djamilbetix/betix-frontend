@@ -1112,57 +1112,33 @@ function generateTicketHTML(ticket) {
     const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
     return `
-        <div class="ticket-modern" id="ticket-${ticket.id}" style="max-width:780px; margin:0 auto; background:linear-gradient(145deg, #0a1628, #1a2a4a); border-radius:24px; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; color:#ffffff; box-shadow:0 15px 50px rgba(0,0,0,0.5); border:1px solid #F5B400; padding:0;">
-            
-            <!-- En-tête -->
-            <div style="background:linear-gradient(135deg, #0a1628, #1a2a4a); padding:16px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #F5B400;">
-                <div style="display:flex; align-items:center; gap:10px; font-size:1.4rem; font-weight:800;">
-                    <img src="logo.png" alt="Betix" style="height:30px; width:auto; filter:brightness(0) invert(1);" onerror="this.style.display='none'">
-                    Betix
-                </div>
-                <div style="background:#F5B400; color:#0a1628; padding:4px 16px; border-radius:30px; font-weight:700; font-size:0.6rem; letter-spacing:1px; text-transform:uppercase;">${escapeHtml(eventCategory)}</div>
+        <div class="ticket-overlay-container" id="ticket-${ticket.id}">
+            <div class="ticket-overlay-bg">
+                <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Corps du ticket : grille d'informations -->
-            <div style="padding:24px 28px 20px; display:grid; grid-template-columns:1fr 1fr; gap:16px 30px; background:#0d1b32;">
-
-                <!-- Colonne gauche : événement -->
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <div style="font-size:1.6rem; font-weight:700; color:#F5B400; margin-bottom:4px;">${escapeHtml(eventTitle)}</div>
-                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Durée:</span> ${durationDisplay}</div>
-                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Date:</span> ${dateFormatted}</div>
-                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Heure:</span> ${timeFormatted}</div>
-                    <div style="display:flex; gap:6px; font-size:0.85rem; color:#c8d4e6;"><span style="font-weight:600; color:#F5B400;">Lieu:</span> ${escapeHtml(eventLocation)}</div>
-                </div>
-
-                <!-- Colonne droite : acheteur et prix -->
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <div style="font-size:1.1rem; font-weight:600; color:#ffffff;">${escapeHtml(buyerName)}</div>
-                    <div style="display:flex; gap:6px; font-size:0.8rem; color:#c8d4e6;"><span style="font-weight:500; color:#a0b4cc;">Email:</span> ${escapeHtml(userEmail)}</div>
-                    <div style="display:flex; gap:6px; font-size:0.8rem; color:#c8d4e6;"><span style="font-weight:500; color:#a0b4cc;">Tél:</span> ${escapeHtml(userPhone)}</div>
-                    <div style="margin-top:6px; font-size:1.2rem; font-weight:700; color:#10b981;">${price}</div>
-                </div>
-
-                <!-- QR Code et ID (occupent toute la largeur) -->
-                <div style="grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div id="qr-ticket-${ticket.id}" style="width:80px; height:80px; background:white; padding:4px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>
-                        <div style="font-size:0.7rem; color:#a0b4cc;">
-                            <div style="font-weight:600; color:#F5B400;">ID: #${ticketIdShort}</div>
-                            <div>Achat: ${purchaseDate}</div>
-                        </div>
-                    </div>
-                    <div style="text-align:right; font-size:0.6rem; color:#6a7f9a; line-height:1.5;">
-                        Présentez ce ticket à l'entrée<br>
-                        Captures ou altérations refusées
-                    </div>
-                </div>
+            <!-- Colonne gauche : événement -->
+            <div class="ticket-col ticket-col-left">
+                <div class="ticket-event-title">${escapeHtml(eventTitle)}</div>
+                <div class="ticket-event-duration">${durationDisplay}</div>
+                <div class="ticket-event-date">${dateFormatted}</div>
+                <div class="ticket-event-time">${timeFormatted}</div>
+                <div class="ticket-event-location">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Pied de page -->
-            <div style="background:#0a1628; padding:10px 24px; display:flex; justify-content:space-between; font-size:0.6rem; color:#6a7f9a; border-top:2px solid #1a2a4a;">
-                <span><span style="color:#F5B400; font-weight:700;">BETIX</span> · Powered by Pi Network</span>
-                <span>Ticket valide</span>
+            <!-- Colonne centre : acheteur -->
+            <div class="ticket-col ticket-col-center">
+                <div class="ticket-buyer-name">${escapeHtml(buyerName)}</div>
+                <div class="ticket-buyer-email">${escapeHtml(userEmail)}</div>
+                <div class="ticket-buyer-phone">${escapeHtml(userPhone)}</div>
+                <div class="ticket-price">${price}</div>
+            </div>
+
+            <!-- Colonne droite : QR code + ID -->
+            <div class="ticket-col ticket-col-right">
+                <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper"></div>
+                <div class="ticket-id-right">#${ticketIdShort}</div>
+                <div class="ticket-purchase-date-right">${purchaseDate}</div>
             </div>
         </div>
     `;
