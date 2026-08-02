@@ -330,7 +330,7 @@ let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 
 // ============================================================
-// TICKETS EN ATTENTE DE SYNCHRONISATION (NOUVEAU)
+// TICKETS EN ATTENTE DE SYNCHRONISATION
 // ============================================================
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
 
@@ -749,15 +749,155 @@ async function loadEventsFromSupabase() {
 }
 
 // ============================================================
+// SAUVEGARDE PERMANENTE (backup)
+// ============================================================
+function saveBackupData(eventsData, ticketsData) {
+    try {
+        localStorage.setItem('betix_backup_events', JSON.stringify(eventsData));
+        localStorage.setItem('betix_backup_tickets', JSON.stringify(ticketsData));
+        localStorage.setItem('betix_backup_timestamp', Date.now().toString());
+    } catch (e) {
+        console.warn("Could not save backup data:", e);
+    }
+}
+
+function restoreBackupData() {
+    try {
+        const events = JSON.parse(localStorage.getItem('betix_backup_events') || '[]');
+        const tickets = JSON.parse(localStorage.getItem('betix_backup_tickets') || '[]');
+        if (events.length === 0 && tickets.length === 0) {
+            return null;
+        }
+        return { events, tickets };
+    } catch (e) {
+        return null;
+    }
+}
+
+// ============================================================
+// LOAD ALL FROM SUPABASE (version robuste)
+// ============================================================
+async function loadAllFromSupabase() {
+    console.log("=== LOAD ALL FROM SUPABASE ===");
+    loadUsedTickets();
+    updateSyncStatus('loading');
+    
+    // 1. Charger les données locales actuelles
+    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+    const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+    console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
+    
+    // 2. Sauvegarder une copie de sécurité
+    saveBackupData(localEvents, localTickets);
+    
+    // 3. Initialiser events et tickets avec les données locales (sécurité)
+    events = [...localEvents];
+    tickets = [...localTickets];
+    
+    try {
+        // 4. Charger depuis Supabase
+        const supabaseEvents = await loadEventsFromSupabase();
+        console.log("Supabase events:", supabaseEvents.length);
+        
+        const userIdentifier = currentUser.piUid || currentUser.wallet;
+        let supabaseTickets = [];
+        if (userIdentifier) {
+            supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            console.log("Supabase tickets for user:", supabaseTickets.length);
+        } else {
+            console.warn("No user identifier, skipping Supabase tickets load.");
+        }
+        
+        // 5. Fusion intelligente : Supabase prévaut mais on garde les locaux si Supabase est vide
+        if (supabaseEvents.length > 0 || supabaseTickets.length > 0) {
+            // Fusion événements : Supabase + locaux (uniques)
+            const mergedEvents = mergeArraysById(localEvents, supabaseEvents);
+            // Fusion tickets
+            const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
+            events = mergedEvents;
+            tickets = mergedTickets;
+        } else {
+            // Si Supabase est vide, on garde les données locales (ne pas effacer)
+            console.warn("Supabase returned no data, keeping local data.");
+        }
+        
+        // 6. Sauvegarder dans localStorage
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        saveBackupData(events, tickets); // mettre à jour la sauvegarde
+        
+        // 7. Tentative de sauvegarde des éléments manquants vers Supabase
+        for (const e of events) {
+            if (!supabaseEvents.some(se => se.id === e.id)) {
+                console.log("Saving missing event to Supabase:", e.id);
+                await saveEventToSupabase(e);
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        for (const t of tickets) {
+            if (!supabaseTickets.some(st => st.id === t.id)) {
+                console.log("Saving missing ticket to Supabase:", t.id);
+                const saved = await saveTicketToSupabase(t);
+                if (!saved) {
+                    pendingTickets.push(t);
+                    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+                }
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        
+        // 8. Notifications
+        const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+        let supabaseNotifs = [];
+        if (userIdentifier) {
+            supabaseNotifs = await loadNotificationsFromSupabase(userIdentifier);
+        }
+        notifications = mergeArraysById(localNotifs, supabaseNotifs);
+        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+        
+        updateSyncStatus('success');
+        console.log("Load completed successfully. Events:", events.length, "Tickets:", tickets.length);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement depuis Supabase :', error);
+        updateSyncStatus('error');
+        // EN CAS D'ERREUR, ON CONSERVE LES DONNÉES LOCALES (sans les écraser)
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        saveBackupData(events, tickets);
+        console.warn("Supabase error, but keeping local data.");
+    }
+    
+    // 9. Rendre l'interface
+    renderEventsByCategory();
+    renderTickets();
+    renderHistory();
+    updateProfilePage();
+    setTimeout(() => {
+        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+    }, 300);
+    
+    // 10. Retenter les tickets en attente
+    await retryPendingTickets();
+    console.log("=== LOAD COMPLETE ===");
+}
+
+// ============================================================
 // SYNCHRONISATION
 // ============================================================
-function saveEvents() { localStorage.setItem('betix_events', JSON.stringify(events)); syncEventsToSupabase(); }
-function saveTickets() { 
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets)); 
-    saveUsedTickets(); 
-    // Tenter la sync, mais ne pas bloquer
+function saveEvents() {
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    saveBackupData(events, tickets);
+    syncEventsToSupabase();
+}
+
+function saveTickets() {
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    saveUsedTickets();
+    saveBackupData(events, tickets);
     syncTicketsToSupabase().catch(() => {});
 }
+
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
@@ -820,7 +960,7 @@ async function syncAllToSupabase(retryCount = 0) {
 }
 
 // ============================================================
-// RETRY PENDING TICKETS (NOUVEAU)
+// RETRY PENDING TICKETS
 // ============================================================
 async function retryPendingTickets() {
     if (!pendingTickets || pendingTickets.length === 0) return;
@@ -886,95 +1026,6 @@ function mergeArraysById(localArray, supabaseArray) {
         }
     }
     return merged;
-}// ============================================================
-// LOAD ALL FROM SUPABASE (CORRIGÉ AVEC SAUVEGARDE LOCALE)
-// ============================================================
-async function loadAllFromSupabase() {
-    console.log("Loading all data from Supabase...");
-    loadUsedTickets();
-    updateSyncStatus('loading');
-    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-    const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-    console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
-    
-    // SAUVEGARDE DES TICKETS LOCAUX AVANT FUSION
-    const backupTickets = [...localTickets];
-    
-    try {
-        const supabaseEvents = await loadEventsFromSupabase();
-        console.log("Supabase events:", supabaseEvents.length);
-        const userIdentifier = currentUser.piUid || currentUser.wallet;
-        let supabaseTickets = [];
-        if (userIdentifier) {
-            supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
-            console.log("Supabase tickets for user:", supabaseTickets.length);
-        }
-        events = mergeArraysById(localEvents, supabaseEvents);
-        
-        // FUSION : on garde les tickets locaux s'ils n'existent pas dans Supabase
-        const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
-        
-        // Si après fusion on a moins de tickets qu'en local, on restaure les manquants
-        if (mergedTickets.length < backupTickets.length) {
-            console.warn("Some tickets were lost during merge! Restoring missing ones.");
-            const localIds = new Set(backupTickets.map(t => t.id));
-            const mergedIds = new Set(mergedTickets.map(t => t.id));
-            const missing = backupTickets.filter(t => !mergedIds.has(t.id));
-            mergedTickets.push(...missing);
-            console.log("Restored", missing.length, "missing tickets.");
-        }
-        tickets = mergedTickets;
-        
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-        
-        // Tentative de sauvegarde des tickets manquants dans Supabase
-        for (const e of events) {
-            if (!supabaseEvents.some(se => se.id === e.id)) {
-                console.log("Saving missing event to Supabase:", e.id);
-                await saveEventToSupabase(e);
-                await new Promise(r => setTimeout(r, 100));
-            }
-        }
-        for (const t of tickets) {
-            if (!supabaseTickets.some(st => st.id === t.id)) {
-                console.log("Saving missing ticket to Supabase:", t.id);
-                const saved = await saveTicketToSupabase(t);
-                if (!saved) {
-                    pendingTickets.push(t);
-                    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-                }
-                await new Promise(r => setTimeout(r, 100));
-            }
-        }
-        
-        // Récupération des notifications
-        const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-        let supabaseNotifs = [];
-        if (userIdentifier) {
-            supabaseNotifs = await loadNotificationsFromSupabase(userIdentifier);
-        }
-        notifications = mergeArraysById(localNotifs, supabaseNotifs);
-        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-        updateSyncStatus('success');
-    } catch (error) {
-        console.error('Erreur lors du chargement depuis Supabase :', error);
-        updateSyncStatus('error');
-        // EN CAS D'ERREUR, ON GARDE LES DONNÉES LOCALES
-        events = localEvents;
-        tickets = backupTickets; // Utilisation de la sauvegarde
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    }
-    renderEventsByCategory();
-    renderTickets();
-    renderHistory();
-    updateProfilePage();
-    setTimeout(() => {
-        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
-    }, 300);
-    // Tenter de sauvegarder les tickets en attente
-    await retryPendingTickets();
 }
 
 // ============================================================
@@ -1216,7 +1267,6 @@ function generateTicketHTML(ticket) {
     const price = (ticket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = ticket.eventTitle || 'Event';
     const eventLocation = ticket.eventLocation || 'Online';
-    const eventCategory = ticket.category || ticket.eventCategory || 'CONCERT';
     const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
     return `
@@ -1224,7 +1274,6 @@ function generateTicketHTML(ticket) {
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-
             <div class="ticket-col ticket-col-left" style="position:absolute; left:26.5%; width:19%; top:26.5%; display:flex; flex-direction:column; gap:2.8%; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1.2; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div class="ticket-event-title" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:800; color:#dc2626; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
                 <div class="ticket-event-duration" style="font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
@@ -1232,14 +1281,12 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-event-time" style="font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
                 <div class="ticket-event-location" style="font-size:clamp(6px, 0.65vw, 8.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
             </div>
-
             <div class="ticket-col ticket-col-center" style="position:absolute; left:48.5%; width:21%; top:26.5%; display:flex; flex-direction:column; gap:2.8%; color:#1a202c; font-weight:600; font-size:clamp(6px, 0.65vw, 9px); line-height:1.2; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(6.5px, 0.7vw, 9.5px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
                 <div class="ticket-buyer-email" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
                 <div class="ticket-buyer-phone" style="font-size:clamp(5.5px, 0.6vw, 8px); color:#4a5568;">${escapeHtml(userPhone)}</div>
                 <div class="ticket-price" style="font-weight:800; font-size:clamp(7px, 0.75vw, 9.5px); color:#000000; margin-top:2px;">${price}</div>
             </div>
-
             <div class="ticket-col ticket-col-right" style="position:absolute; right:8.5%; width:15%; top:17.5%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; color:#1a202c; font-weight:500; pointer-events:none; box-sizing:border-box; padding:0;">
                 <div id="qr-ticket-${ticket.id}" class="ticket-qr-wrapper" style="width:100%; max-width:44px; aspect-ratio:1/1; background:white; padding:1px; border-radius:3px; display:flex; align-items:center; justify-content:center; margin:0 auto 2px auto;"></div>
                 <div class="ticket-id-right" style="font-family:'Courier New',monospace; font-weight:700; font-size:clamp(6.5px, 0.7vw, 9px); color:#1a202c; letter-spacing:0.2px; word-break:break-all; margin-top:14px;">#${ticketIdShort}</div>
@@ -1875,7 +1922,9 @@ function adminCancelSlideForm() {
     document.getElementById('adminSlidePreview').style.display = 'none';
     document.getElementById('adminSlidePreview').src = '';
     document.getElementById('adminUploadBox').classList.remove('has-image');
-}// ============================================================
+}
+
+// ============================================================
 // PROFIL – FORMULAIRE AVEC REVUE ET VÉRIFICATION
 // ============================================================
 let profileDataForReview = {};
@@ -2096,7 +2145,7 @@ function verifyPhone() {
 }
 
 // ============================================================
-// PAGE PREMIUM – 3 CARTES SEULEMENT
+// PAGE PREMIUM – 3 CARTES AVEC ABONNEMENT ANNUEL
 // ============================================================
 function renderPremiumPage() {
     const container = document.getElementById('premiumContent');
@@ -2117,7 +2166,6 @@ function renderPremiumPage() {
         return;
     }
 
-    // Plans
     const monthlyPrice = appSettings.premiumPriceUSD || 5;
     const yearlyPrice = monthlyPrice * 10;
     const piRate = appSettings.piRate || 1;
@@ -2182,7 +2230,6 @@ function renderPremiumPage() {
 
     container.innerHTML = plansHtml;
 
-    // Réattacher les événements aux boutons
     container.querySelectorAll('.btn-subscribe:not(.disabled)').forEach(btn => {
         btn.addEventListener('click', function() {
             const plan = this.dataset.plan || 'monthly';
@@ -2509,7 +2556,6 @@ async function confirmPurchase(eventId, quantity) {
                     for (let j = 0; j < ticketsAdded.length; j++) {
                         const saved = await saveTicketToSupabase(ticketsAdded[j]);
                         if (!saved) {
-                            // Si échec, on stocke dans les tickets en attente
                             pendingTickets.push(ticketsAdded[j]);
                             localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
                             console.warn('Ticket', ticketsAdded[j].id, 'saved locally, will retry later.');
