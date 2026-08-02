@@ -1146,21 +1146,21 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Colonne gauche : détails événement (tailles réduites et espacement ajusté) -->
-            <div class="ticket-col ticket-col-left" style="position:absolute; left:10%; width:27%; top:31%; display:flex; flex-direction:column; gap:2px; color:#1a202c; font-weight:600; font-size:clamp(7px, 0.75vw, 10px); line-height:1.15; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-event-title" style="font-size:clamp(8px, 0.9vw, 11px); font-weight:800; color:#dc2626; line-height:1.1; margin-bottom:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
-                <div class="ticket-event-duration" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
-                <div class="ticket-event-date" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:600; color:#2d3748;">${dateFormatted}</div>
-                <div class="ticket-event-time" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
-                <div class="ticket-event-location" style="font-size:clamp(7px, 0.75vw, 10px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
+            <!-- Colonne gauche : Alignée à droite des icônes du fond (left: 25.5%) -->
+            <div class="ticket-col ticket-col-left" style="position:absolute; left:25.5%; width:20%; top:33.5%; display:flex; flex-direction:column; gap:5.5px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
+                <div class="ticket-event-title" style="font-size:clamp(7.5px, 0.8vw, 10.5px); font-weight:800; color:#dc2626; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventTitle)}</div>
+                <div class="ticket-event-duration" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${durationDisplay}</div>
+                <div class="ticket-event-date" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${dateFormatted}</div>
+                <div class="ticket-event-time" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748;">${timeFormatted}</div>
+                <div class="ticket-event-location" style="font-size:clamp(6.5px, 0.7vw, 9.5px); font-weight:600; color:#2d3748; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(eventLocation)}</div>
             </div>
 
-            <!-- Colonne centre : informations acheteur et prix -->
-            <div class="ticket-col ticket-col-center" style="position:absolute; left:41%; width:26%; top:31%; display:flex; flex-direction:column; gap:2px; color:#1a202c; font-weight:600; font-size:clamp(7px, 0.75vw, 10px); line-height:1.15; pointer-events:none; box-sizing:border-box; padding:0;">
-                <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(8px, 0.85vw, 11px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
-                <div class="ticket-buyer-email" style="font-size:clamp(7px, 0.7vw, 9.5px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
-                <div class="ticket-buyer-phone" style="font-size:clamp(7px, 0.7vw, 9.5px); color:#4a5568;">${escapeHtml(userPhone)}</div>
-                <div class="ticket-price" style="font-weight:800; font-size:clamp(9px, 1vw, 12px); color:#000000; margin-top:3px;">${price}</div>
+            <!-- Colonne centre : Alignée sur les champs acheteur (left: 48%) -->
+            <div class="ticket-col ticket-col-center" style="position:absolute; left:48%; width:22%; top:33.5%; display:flex; flex-direction:column; gap:4px; color:#1a202c; font-weight:600; font-size:clamp(6.5px, 0.7vw, 9.5px); line-height:1; pointer-events:none; box-sizing:border-box; padding:0;">
+                <div class="ticket-buyer-name" style="font-weight:700; font-size:clamp(7.5px, 0.8vw, 10px); color:#1a202c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(buyerName)}</div>
+                <div class="ticket-buyer-email" style="font-size:clamp(6px, 0.65vw, 8.5px); color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(userEmail)}</div>
+                <div class="ticket-buyer-phone" style="font-size:clamp(6px, 0.65vw, 8.5px); color:#4a5568;">${escapeHtml(userPhone)}</div>
+                <div class="ticket-price" style="font-weight:800; font-size:clamp(8px, 0.85vw, 11px); color:#000000; margin-top:5px;">${price}</div>
             </div>
 
             <!-- Colonne droite : QR code & ID -->
