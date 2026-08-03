@@ -1228,8 +1228,9 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
+
 // ============================================================
-// GÉNÉRATION DU TICKET – VERSION SIMPLE ET ROBUSTE
+// GÉNÉRATION DU TICKET HTML – DEUX COLONNES (corrigée)
 // ============================================================
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
@@ -1318,6 +1319,7 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
+
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
@@ -1635,7 +1637,7 @@ function renderEventCard(event) {
             </div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
             <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${badgeHtml}</div>
-            ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}</div>` : ''}
+            ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}` : ''}
         </div>
     </div>`;
 }
@@ -2347,7 +2349,7 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT (avec vérifications)
+// QUANTITY POPUP ET ACHAT (avec vérifications et corrections)
 // ============================================================
 function openQuantityPopup(eventId) {
     if (!requireLogin()) return;
@@ -2362,12 +2364,9 @@ function openQuantityPopup(eventId) {
     const titleEl = document.getElementById('quantityEventTitle');
     const maxInfo = document.getElementById('maxQuantityInfo');
     const quantityInput = document.getElementById('ticketQuantity');
-    const subtotalDisplay = document.getElementById('subtotalDisplay');
-    const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
-    const totalDisplay = document.getElementById('totalPriceDisplay');
     if (titleEl) titleEl.textContent = event.title;
-    if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; updateMaxQuantity(); }
-    if (maxInfo) maxInfo.textContent = 'Maximum: ' + standardLeft + ' ticket(s) available';
+    if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; quantityInput.max = Math.min(standardLeft, 10); }
+    if (maxInfo) maxInfo.textContent = 'Maximum: ' + Math.min(standardLeft, 10) + ' ticket(s) available';
     updateTicketTotal();
     popup.classList.add('show');
 }
@@ -3458,6 +3457,9 @@ function updateUserInfo() {
     updatePremiumBanner();
 }
 
+// ============================================================
+// UPDATE PROFILE PAGE – AJOUT DU COMPTEUR DE PUBLICATIONS
+// ============================================================
 function updateProfilePage() {
     const userId = currentUser.piUid || currentUser.wallet;
     const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
@@ -3469,6 +3471,29 @@ function updateProfilePage() {
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
+
+    // ---- AJOUT : compteur de publications restantes ----
+    const remaining = getRemainingFreeEvents();
+    const isPremium = isUserPremium();
+    const statsGrid = document.querySelector('.profile-stats-grid');
+    if (statsGrid) {
+        let statCard = document.querySelector('.stat-card.remaining-pubs');
+        if (!statCard) {
+            statCard = document.createElement('div');
+            statCard.className = 'stat-card remaining-pubs';
+            statCard.innerHTML = `
+                <span class="stat-number" id="remainingPubsCount">${isPremium ? '∞' : remaining}</span>
+                <span class="stat-label"><i class="fas fa-calendar-alt"></i> Publications restantes</span>
+                <span class="stat-link">${isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois'}</span>
+            `;
+            statsGrid.appendChild(statCard);
+        } else {
+            document.getElementById('remainingPubsCount').textContent = isPremium ? '∞' : remaining;
+            statCard.querySelector('.stat-link').textContent = isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois';
+        }
+    }
+    // ---- FIN AJOUT ----
+
     updateUserInfo();
     updateScanButtonVisibility();
 }
