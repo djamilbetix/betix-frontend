@@ -2406,7 +2406,6 @@ async function subscribePremiumWithDuration(durationDays) {
 function subscribePremium() {
     subscribePremiumWithDuration(appSettings.premiumDurationDays);
 }
-
 // ============================================================
 // QUANTITY POPUP ET ACHAT (avec vérifications et corrections)
 // ============================================================
@@ -2430,45 +2429,17 @@ function openQuantityPopup(eventId) {
     popup.classList.add('show');
 }
 
-function updateMaxQuantity() {
+function confirmPurchaseFromPopup() {
+    if (!selectedEventForPurchase) { alert('No event selected'); return; }
     const quantityInput = document.getElementById('ticketQuantity');
-    const maxInfo = document.getElementById('maxQuantityInfo');
-    if (!selectedEventForPurchase) return;
-    const maxSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
-    const maxAllowed = Math.min(maxSeats, 10);
-    if (quantityInput) { quantityInput.max = maxAllowed; if (parseInt(quantityInput.value) > maxAllowed) quantityInput.value = maxAllowed; }
-    if (maxInfo) maxInfo.textContent = 'Maximum: ' + maxAllowed + ' ticket(s) available';
-    updateTicketTotal();
+    const quantity = parseInt(quantityInput.value) || 1;
+    if (quantity < 1) { alert('Please select at least 1 ticket'); return; }
+    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
+    if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
+    if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
+    // Appeler la fonction d'achat qui ouvrira la popup de confirmation
+    confirmPurchase(selectedEventForPurchase.id, quantity);
 }
-
-function updateTicketTotal() {
-    const input = document.getElementById('ticketQuantity');
-    const subtotalDisplay = document.getElementById('subtotalDisplay');
-    const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
-    const totalDisplay = document.getElementById('totalPriceDisplay');
-    if (!input || !totalDisplay || !selectedEventForPurchase) return;
-    const qty = parseInt(input.value) || 1;
-    const price = selectedEventForPurchase.price || 0;
-    const subtotal = qty * price;
-    const serviceFeePercent = appSettings.serviceFeePercent || 2;
-    const serviceFee = subtotal * (serviceFeePercent / 100);
-    const total = subtotal + serviceFee;
-    if (subtotalDisplay) subtotalDisplay.textContent = subtotal.toFixed(6) + ' Pi';
-    if (serviceFeeDisplay) serviceFeeDisplay.textContent = serviceFee.toFixed(6) + ' Pi';
-    if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
-}
-
-function closeQuantityPopup() { document.getElementById('quantityPopup').classList.remove('show'); selectedEventForPurchase = null; }
-function updateQuantity(delta) {
-    const input = document.getElementById('ticketQuantity');
-    if (!input) return;
-    let val = parseInt(input.value) || 1;
-    const maxVal = parseInt(input.max) || 10;
-    val = Math.min(Math.max(val + delta, 1), maxVal);
-    input.value = val;
-    updateTicketTotal();
-}
-
 // ============================================================
 // CONFIRMATION D'ACHAT AVEC PI (AVEC FALLBACK LOCAL)
 // ============================================================
