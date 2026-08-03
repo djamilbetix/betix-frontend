@@ -1392,9 +1392,8 @@ function hidePremiumBanner() {
     }, 500);
     clearTimeout(premiumAutoHideTimer);
 }
-
 // ============================================================
-// RENDER TICKETS ET HISTORY
+// RENDER TICKETS (sans bouton "Use")
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1429,7 +1428,6 @@ function renderTickets() {
                     <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
                     <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
                     <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-                    <button class="btn-action btn-mark" onclick="markTicketAsUsed('${ticket.id}')"><i class="fas fa-check"></i> Use</button>
                 </div>`;
         html += `</div>`;
     });
@@ -1441,6 +1439,9 @@ function renderTickets() {
     }, 300);
 }
 
+// ============================================================
+// RENDER HISTORY (avec bouton de suppression)
+// ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
@@ -1474,6 +1475,7 @@ function renderHistory() {
                     <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
                     <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
                     <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                    <button class="btn-action btn-delete" onclick="deleteHistoryTicket('${ticket.id}')" style="background:#ef4444; color:white;"><i class="fas fa-trash"></i> Delete</button>
                 </div>`;
         html += `</div>`;
     });
@@ -1485,6 +1487,20 @@ function renderHistory() {
     }, 300);
 }
 
+// ============================================================
+// SUPPRIMER UN TICKET DE L'HISTORIQUE
+// ============================================================
+function deleteHistoryTicket(ticketId) {
+    if (!confirm('Delete this ticket from history?')) return;
+    tickets = tickets.filter(t => t.id !== ticketId);
+    usedTickets = usedTickets.filter(id => id !== ticketId);
+    saveTickets();
+    saveUsedTickets();
+    renderHistory();
+    renderTickets();
+    updateProfilePage();
+    addNotification('Ticket deleted from history.', 'info');
+}
 // ============================================================
 // EXPORT PNG ET PDF
 // ============================================================
