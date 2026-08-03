@@ -782,20 +782,15 @@ async function loadAllFromSupabase() {
     loadUsedTickets();
     updateSyncStatus('loading');
     
-    // 1. Charger les données locales actuelles
     const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
     const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
     
-    // 2. Sauvegarder une copie de sécurité
     saveBackupData(localEvents, localTickets);
-    
-    // 3. Initialiser events et tickets avec les données locales (sécurité)
     events = [...localEvents];
     tickets = [...localTickets];
     
     try {
-        // 4. Charger depuis Supabase
         const supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
         
@@ -808,25 +803,19 @@ async function loadAllFromSupabase() {
             console.warn("No user identifier, skipping Supabase tickets load.");
         }
         
-        // 5. Fusion intelligente : Supabase prévaut mais on garde les locaux si Supabase est vide
         if (supabaseEvents.length > 0 || supabaseTickets.length > 0) {
-            // Fusion événements : Supabase + locaux (uniques)
             const mergedEvents = mergeArraysById(localEvents, supabaseEvents);
-            // Fusion tickets
             const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
             events = mergedEvents;
             tickets = mergedTickets;
         } else {
-            // Si Supabase est vide, on garde les données locales (ne pas effacer)
             console.warn("Supabase returned no data, keeping local data.");
         }
         
-        // 6. Sauvegarder dans localStorage
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-        saveBackupData(events, tickets); // mettre à jour la sauvegarde
+        saveBackupData(events, tickets);
         
-        // 7. Tentative de sauvegarde des éléments manquants vers Supabase
         for (const e of events) {
             if (!supabaseEvents.some(se => se.id === e.id)) {
                 console.log("Saving missing event to Supabase:", e.id);
@@ -846,7 +835,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // 8. Notifications
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
         let supabaseNotifs = [];
         if (userIdentifier) {
@@ -861,14 +849,12 @@ async function loadAllFromSupabase() {
     } catch (error) {
         console.error('Erreur lors du chargement depuis Supabase :', error);
         updateSyncStatus('error');
-        // EN CAS D'ERREUR, ON CONSERVE LES DONNÉES LOCALES (sans les écraser)
         localStorage.setItem('betix_events', JSON.stringify(events));
         localStorage.setItem('betix_tickets', JSON.stringify(tickets));
         saveBackupData(events, tickets);
         console.warn("Supabase error, but keeping local data.");
     }
     
-    // 9. Rendre l'interface
     renderEventsByCategory();
     renderTickets();
     renderHistory();
@@ -877,7 +863,6 @@ async function loadAllFromSupabase() {
         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
     }, 300);
     
-    // 10. Retenter les tickets en attente
     await retryPendingTickets();
     console.log("=== LOAD COMPLETE ===");
 }
@@ -929,7 +914,6 @@ async function syncTicketsToSupabase() {
         if (saved) success++;
         if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
     }
-    // Si des tickets ont échoué, on les met en attente
     if (success < tickets.length) {
         const failed = tickets.slice(success);
         pendingTickets.push(...failed);
@@ -1244,18 +1228,39 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
+
 // ============================================================
-// GÉNÉRATION DU TICKET EN HTML
+// GÉNÉRATION DU TICKET HTML – NOUVELLE STRUCTURE VERTICALE
 // ============================================================
 function generateTicketHTML(ticket) {
-    // ... récupération des données ...
+    const dateEvent = new Date(ticket.eventDate);
+    const dateFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+        : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+        : 'Time to be defined';
+    
+    const durationDisplay = ticket.durationValue && ticket.durationUnit 
+        ? `${ticket.durationValue} ${ticket.durationUnit}` 
+        : 'N/A';
+    
+    const buyerName = ticket.buyerName || 'Not provided';
+    const userEmail = ticket.buyerEmail || 'Not provided';
+    const userPhone = ticket.buyerPhone || 'Not provided';
+    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
+    const price = (ticket.price || 0).toFixed(6) + ' Pi';
+    const eventTitle = ticket.eventTitle || 'Event';
+    const eventLocation = ticket.eventLocation || 'Online';
+    const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- Champs un par un -->
+            <!-- ===== CHAQUE CHAMP SUR DEUX LIGNES (LABEL + VALEUR) ===== -->
             <div class="ticket-field ticket-pos-1">
                 <div class="ticket-label">EVENT</div>
                 <div class="ticket-value">${escapeHtml(eventTitle)}</div>
@@ -1301,13 +1306,44 @@ function generateTicketHTML(ticket) {
                 <div class="ticket-value">#${ticketIdShort}</div>
             </div>
 
-            <!-- QR code et infos associées (placées à droite) -->
-            <div class="ticket-qr" id="qr-ticket-${ticket.id}" style="right:5%; top:15%; width:16%;"></div>
-            <div class="ticket-qr-id" style="right:5%; top:56%; width:16%; text-align:center; font-size:12px; color:#1a202c; font-family:'JetBrains Mono',monospace;">#${ticketIdShort}</div>
-            <div class="ticket-qr-date" style="right:5%; top:63%; width:16%; text-align:center; font-size:11px; color:#6b7280;">${purchaseDate}</div>
+            <!-- ===== QR CODE ET INFOS ASSOCIÉES ===== -->
+            <div class="ticket-qr" id="qr-ticket-${ticket.id}"></div>
+            <div class="ticket-qr-id">#${ticketIdShort}</div>
+            <div class="ticket-qr-date">${purchaseDate}</div>
         </div>
     `;
 }
+
+// ============================================================
+// GÉNÉRER LE QR CODE DANS LE CONTENEUR
+// ============================================================
+function generateTicketQR(ticketId) {
+    const container = document.getElementById(`qr-ticket-${ticketId}`);
+    if (!container) return;
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    try {
+        new QRCode(container, {
+            text: ticket.qrCode || ticket.id,
+            width: 100,
+            height: 100,
+            colorDark: "#0B1F5C",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch(e) {
+        container.innerHTML = '<span style="color:red;">QR Error</span>';
+    }
+}
+
+function generateAllQRCodes() {
+    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
+    ticketsList.forEach(container => {
+        const id = container.id.replace('ticket-', '');
+        if (id) generateTicketQR(id);
+    });
+}
+
 // ============================================================
 // RENDER TICKETS ET HISTORY
 // ============================================================
@@ -2534,7 +2570,6 @@ async function confirmPurchase(eventId, quantity) {
                     }
                     saveEvents();
                     saveTickets();
-                    // Sauvegarde dans Supabase avec fallback local
                     for (let j = 0; j < ticketsAdded.length; j++) {
                         const saved = await saveTicketToSupabase(ticketsAdded[j]);
                         if (!saved) {
@@ -2646,7 +2681,6 @@ function showSuccessPopup(event, ticketsList, quantity) {
             <div class="ticket-line"><span class="ticket-label">${t('total')}</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
             <div class="ticket-line"><span class="ticket-label">${t('code')}</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>`;
     }
-    // Le bouton "View my ticket" redirige vers la page My Tickets
     if (viewBtn) {
         viewBtn.onclick = function(e) {
             e.preventDefault();
@@ -3260,7 +3294,6 @@ async function connectToPi() {
             renderEventsByCategory();
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
             await loadProfileData();
-            // Tentative de sauvegarde des tickets en attente
             await retryPendingTickets();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
