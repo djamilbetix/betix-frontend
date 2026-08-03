@@ -1423,7 +1423,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET – STRUCTURE SIMPLE ET ROBUSTE
+   ===== TICKET - DEUX COLONNES AVEC POSITIONS AJUSTÉES =====
    ============================================================ */
 
 .ticket-overlay-container {
@@ -1449,7 +1449,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     display: block;
 }
 
-/* --- Styles de base pour chaque champ --- */
 .ticket-left,
 .ticket-right {
     position: absolute;
@@ -1459,11 +1458,11 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 
 .ticket-left {
     left: 8%;
-    width: 35%;
+    width: 38%;
 }
 
 .ticket-right {
-    left: 50%;
+    left: 52%;
     width: 40%;
 }
 
@@ -1486,7 +1485,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     white-space: normal;
 }
 
-/* --- Positions verticales (à ajuster avec l'inspecteur) --- */
 .ticket-line-1 { top: 22%; }
 .ticket-line-2 { top: 29%; }
 .ticket-line-3 { top: 36%; }
@@ -1494,7 +1492,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 .ticket-line-5 { top: 50%; }
 .ticket-line-6 { top: 57%; }
 
-/* --- QR code --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1531,6 +1528,158 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     font-size: 10px;
     color: #6b7280;
     top: 61%;
+}
+
+/* ============================================================
+   QUANTITY POPUP – STYLE PROFESSIONNEL (AJOUT)
+   ============================================================ */
+.quantity-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+.quantity-popup.show {
+    display: flex !important;
+}
+.quantity-popup-content {
+    background: white;
+    border-radius: 24px;
+    padding: 30px 25px 25px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.3s ease;
+    position: relative;
+}
+.quantity-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e6e6e6;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.quantity-popup-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+.quantity-popup-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+.quantity-popup-close:hover {
+    color: #1a1a2e;
+}
+.quantity-event-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 0 0 16px 0;
+}
+.quantity-selector-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.quantity-selector-wrapper .qty-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.quantity-selector-wrapper .qty-btn:hover {
+    background: #0B1F5C;
+    color: white;
+    border-color: #0B1F5C;
+}
+.quantity-selector-wrapper #ticketQuantity {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.quantity-receipt {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    text-align: left;
+}
+.quantity-receipt .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9rem;
+    color: #1f2937;
+}
+.quantity-receipt .receipt-row.total {
+    border-top: 1px solid #e6e6e6;
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+.quantity-max-info {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 8px 0 0;
+}
+.quantity-popup-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+.quantity-popup-footer .btn-secondary-modal {
+    background: #e6e6e6;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.quantity-popup-footer .btn-secondary-modal:hover {
+    background: #d1d5db;
+}
+.quantity-popup-footer .btn-primary {
+    background: #0B1F5C;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 40px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.quantity-popup-footer .btn-primary:hover {
+    background: #1a2a4a;
 }
 
 /* ============================================================
@@ -1629,7 +1778,6 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
-
 /* ============================================================
    MODALS, UPLOAD, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
    ============================================================ */
