@@ -1321,7 +1321,7 @@ function generateTicketHTML(ticket) {
 }
 
 // ============================================================
-// GÉNÉRER LE QR CODE DANS LE CONTENEUR
+// GÉNÉRER LE QR CODE DANS LE CONTENEUR (taille réduite)
 // ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
@@ -1331,8 +1331,8 @@ function generateTicketQR(ticketId) {
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
-            width: 100,
-            height: 100,
+            width: 80,          // Taille réduite (anciennement 100)
+            height: 80,         // Taille réduite
             colorDark: "#0B1F5C",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -1348,6 +1348,55 @@ function generateAllQRCodes() {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
+}
+
+// ============================================================
+// NOTIFICATION PREMIUM APRÈS 15 SECONDES (NOUVEAU)
+// ============================================================
+let premiumBannerTimer = null;
+let premiumAutoHideTimer = null;
+
+function schedulePremiumNotification() {
+    // Si l'utilisateur est déjà premium ou pas connecté, on ne fait rien
+    if (!currentUser.wallet || isUserPremium()) return;
+    // Annuler les éventuels timers précédents
+    clearTimeout(premiumBannerTimer);
+    clearTimeout(premiumAutoHideTimer);
+    // Planifier l'apparition après 15 secondes
+    premiumBannerTimer = setTimeout(() => {
+        showPremiumBanner();
+    }, 15000);
+}
+
+function showPremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    if (isUserPremium() || !currentUser.wallet) {
+        banner.style.display = 'none';
+        return;
+    }
+    banner.style.display = 'block';
+    // Animation slide down
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 10);
+    // Planifier la disparition automatique après 5 secondes
+    clearTimeout(premiumAutoHideTimer);
+    premiumAutoHideTimer = setTimeout(() => {
+        hidePremiumBanner();
+    }, 5000);
+}
+
+function hidePremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+        banner.style.display = 'none';
+        // Réinitialiser la transformation pour la prochaine fois
+        banner.style.transform = 'translateY(-100%)';
+    }, 500);
+    clearTimeout(premiumAutoHideTimer);
 }
 
 // ============================================================
@@ -2514,7 +2563,7 @@ async function confirmPurchase(eventId, quantity) {
                         const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
                         const existingInSupabase = supabaseTickets.filter(t => t.transaction_id === txid);
                         if (existingInSupabase.length > 0) {
-                            tickets = mergeArraysById(localTickets, supabaseTickets);
+                            tickets = mergeArraysById(tickets, supabaseTickets);
                             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
                             openTransactionProcessedPopup(5);
                             renderTickets();
@@ -3060,8 +3109,6 @@ function updateUITranslations() {
     if (socialTitle) socialTitle.textContent = t('followUs');
     const heroTitle = document.querySelector('.hero-text h1');
     if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
-    const heroDesc = document.querySelector('.hero-text p');
-    if (heroDesc) heroDesc.textContent = "Discover and book unique experiences. Pay with your Pi crypto.";
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.placeholder = t('searchEvent');
     const countryLabel = document.querySelector('.filter-country-select label');
@@ -3278,6 +3325,8 @@ async function connectToPi() {
                 renderEventsByCategory();
                 alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); 
                 await loadProfileData();
+                // Planifier la notification premium après connexion
+                schedulePremiumNotification();
                 return;
             }
             alert("Please open this page in Pi Browser"); return;
@@ -3298,6 +3347,8 @@ async function connectToPi() {
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
             await loadProfileData();
             await retryPendingTickets();
+            // Planifier la notification premium après connexion
+            schedulePremiumNotification();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
     finally { hideConnectSpinner(); }
@@ -3319,7 +3370,7 @@ function updatePremiumBanner() {
     if (isUserPremium()) {
         banner.style.display = 'none';
     } else {
-        banner.style.display = 'flex';
+        banner.style.display = 'none'; // On ne l'affiche que via schedulePremiumNotification
     }
 }
 
@@ -4039,6 +4090,10 @@ async function initApp() {
                 if (eventsSection) { eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             }, 300);
         });
+        // Si l'utilisateur est déjà connecté au chargement, planifier la notification
+        if (currentUser.wallet) {
+            schedulePremiumNotification();
+        }
     } catch (error) {
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
@@ -4083,6 +4138,9 @@ window.openQuantityPopup = openQuantityPopup;
 window.requireLogin = requireLogin;
 window.requireProfileComplete = requireProfileComplete;
 window.retryPendingTickets = retryPendingTickets;
+window.schedulePremiumNotification = schedulePremiumNotification;
+window.showPremiumBanner = showPremiumBanner;
+window.hidePremiumBanner = hidePremiumBanner;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
