@@ -1228,9 +1228,9 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-// ============================================================
-// GÉNÉRATION DU TICKET – VERSION SIMPLE ET ROBUSTE
-// ============================================================
+<!-- ============================================================
+     GÉNÉRATION DU TICKET – VERSION ALIGNÉE
+     ============================================================ -->
 function generateTicketHTML(ticket) {
     const dateEvent = new Date(ticket.eventDate);
     const dateFormatted = !isNaN(dateEvent.getTime()) 
@@ -1259,55 +1259,43 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- COLONNE GAUCHE -->
+            <!-- COLONNE GAUCHE (VALEURS SEULEMENT) -->
             <div class="ticket-left ticket-line-1">
-                <div class="ticket-label">EVENT</div>
                 <div class="ticket-value">${escapeHtml(eventTitle)}</div>
             </div>
             <div class="ticket-left ticket-line-2">
-                <div class="ticket-label">DURATION</div>
                 <div class="ticket-value">${durationDisplay}</div>
             </div>
             <div class="ticket-left ticket-line-3">
-                <div class="ticket-label">DATE</div>
                 <div class="ticket-value">${dateFormatted}</div>
             </div>
             <div class="ticket-left ticket-line-4">
-                <div class="ticket-label">TIME</div>
                 <div class="ticket-value">${timeFormatted}</div>
             </div>
             <div class="ticket-left ticket-line-5">
-                <div class="ticket-label">LOCATION</div>
                 <div class="ticket-value">${escapeHtml(eventLocation)}</div>
             </div>
             <div class="ticket-left ticket-line-6">
-                <div class="ticket-label">PRICE</div>
                 <div class="ticket-value">${price}</div>
             </div>
 
-            <!-- COLONNE DROITE -->
+            <!-- COLONNE DROITE (VALEURS SEULEMENT) -->
             <div class="ticket-right ticket-line-1">
-                <div class="ticket-label">NAME</div>
                 <div class="ticket-value">${escapeHtml(buyerName)}</div>
             </div>
             <div class="ticket-right ticket-line-2">
-                <div class="ticket-label">EMAIL</div>
                 <div class="ticket-value">${escapeHtml(userEmail)}</div>
             </div>
             <div class="ticket-right ticket-line-3">
-                <div class="ticket-label">PHONE</div>
                 <div class="ticket-value">${escapeHtml(userPhone)}</div>
             </div>
             <div class="ticket-right ticket-line-4">
-                <div class="ticket-label">PRICE PAID</div>
                 <div class="ticket-value">${price}</div>
             </div>
             <div class="ticket-right ticket-line-5">
-                <div class="ticket-label">DATE OF PURCHASE</div>
                 <div class="ticket-value">${purchaseDate}</div>
             </div>
             <div class="ticket-right ticket-line-6">
-                <div class="ticket-label">TICKET ID</div>
                 <div class="ticket-value">#${ticketIdShort}</div>
             </div>
 
@@ -1318,6 +1306,7 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
+
 // ============================================================
 // GÉNÉRER LE QR CODE DANS LE CONTENEUR
 // ============================================================
