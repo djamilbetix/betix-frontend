@@ -2422,15 +2422,9 @@ function openQuantityPopup(eventId) {
     popup.classList.add('show');
 }
 
-function confirmPurchaseFromPopup() {
-    if (!selectedEventForPurchase) { alert('No event selected'); return; }
-    const quantityInput = document.getElementById('ticketQuantity');
-    const quantity = parseInt(quantityInput.value) || 1;
-    if (quantity < 1) { alert('Please select at least 1 ticket'); return; }
-    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
-    if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
-    if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
-    confirmPurchase(selectedEventForPurchase.id, quantity);
+function closeQuantityPopup() {
+    document.getElementById('quantityPopup').classList.remove('show');
+    selectedEventForPurchase = null;
 }
 
 function updateQuantity(delta) {
@@ -2460,9 +2454,27 @@ function updateTicketTotal() {
     if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-function closeQuantityPopup() {
-    document.getElementById('quantityPopup').classList.remove('show');
-    selectedEventForPurchase = null;
+function confirmPurchaseFromPopup() {
+    if (!selectedEventForPurchase) { 
+        alert('No event selected'); 
+        return; 
+    }
+    const quantityInput = document.getElementById('ticketQuantity');
+    const quantity = parseInt(quantityInput.value) || 1;
+    if (quantity < 1) { 
+        alert('Please select at least 1 ticket'); 
+        return; 
+    }
+    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
+    if (quantity > availableSeats) { 
+        alert('No seats available. Remaining: ' + availableSeats); 
+        return; 
+    }
+    if (quantity > 10) { 
+        alert('Maximum 10 tickets per purchase'); 
+        return; 
+    }
+    confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
 // ============================================================
@@ -2472,18 +2484,22 @@ const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
 
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
+    const popup = document.getElementById('confirmPurchasePopup');
     document.getElementById('confirmPurchaseTitle').textContent = title;
     document.getElementById('confirmSubtotal').textContent = subtotal + ' Pi';
     document.getElementById('confirmServiceFee').textContent = serviceFee + ' Pi';
     document.getElementById('confirmTotal').textContent = total + ' Pi';
-    document.getElementById('confirmPurchasePopup').style.display = 'flex';
+    popup.classList.add('show');
+    popup.style.display = 'flex';
     return new Promise((resolve) => {
         confirmPurchaseResolve = resolve;
     });
 }
 
 function closeConfirmPurchasePopup() {
-    document.getElementById('confirmPurchasePopup').style.display = 'none';
+    const popup = document.getElementById('confirmPurchasePopup');
+    popup.classList.remove('show');
+    popup.style.display = 'none';
     if (confirmPurchaseResolve) {
         confirmPurchaseResolve(false);
         confirmPurchaseResolve = null;
@@ -2522,17 +2538,26 @@ async function confirmPurchase(eventId, quantity) {
 
     closeQuantityPopup();
     const confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) { confirmBtn.textContent = t('connecting'); confirmBtn.disabled = true; }
+    if (confirmBtn) { 
+        confirmBtn.textContent = t('connecting'); 
+        confirmBtn.disabled = true; 
+    }
     try {
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
-            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+            if (confirmBtn) { 
+                confirmBtn.textContent = t('confirmPurchase'); 
+                confirmBtn.disabled = false; 
+            }
             return;
         }
         
         if (!piUser || !piUser.username) {
             alert('Please connect your Pi account first with payments scope.');
-            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+            if (confirmBtn) { 
+                confirmBtn.textContent = t('confirmPurchase'); 
+                confirmBtn.disabled = false; 
+            }
             connectToPi();
             return;
         }
@@ -2561,7 +2586,10 @@ async function confirmPurchase(eventId, quantity) {
                         openTransactionProcessedPopup(5);
                         showPage('tickets');
                         processingTransactions.delete(txid);
-                        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                        if (confirmBtn) { 
+                            confirmBtn.textContent = t('confirmPurchase'); 
+                            confirmBtn.disabled = false; 
+                        }
                         return;
                     }
                     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -2576,7 +2604,10 @@ async function confirmPurchase(eventId, quantity) {
                             renderHistory();
                             showPage('tickets');
                             processingTransactions.delete(txid);
-                            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                            if (confirmBtn) { 
+                                confirmBtn.textContent = t('confirmPurchase'); 
+                                confirmBtn.disabled = false; 
+                            }
                             return;
                         }
                     }
@@ -2677,17 +2708,26 @@ async function confirmPurchase(eventId, quantity) {
             },
             onCancel: function() {
                 alert(t('paymentCancelled'));
-                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                if (confirmBtn) { 
+                    confirmBtn.textContent = t('confirmPurchase'); 
+                    confirmBtn.disabled = false; 
+                }
             },
             onError: function(error) {
                 alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                if (confirmBtn) { 
+                    confirmBtn.textContent = t('confirmPurchase'); 
+                    confirmBtn.disabled = false; 
+                }
             },
             onIncompletePaymentFound
         });
     } catch (error) {
         alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+        if (confirmBtn) { 
+            confirmBtn.textContent = t('confirmPurchase'); 
+            confirmBtn.disabled = false; 
+        }
     }
 }
 
@@ -4057,7 +4097,6 @@ async function initApp() {
         window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
-        // Le bouton scroll-top a été supprimé du HTML, donc plus besoin de le gérer
         document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
             document.getElementById('confirmPurchasePopup').style.display = 'none';
             if (confirmPurchaseResolve) {
