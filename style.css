@@ -1423,7 +1423,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   ===== TICKET - DEUX COLONNES AVEC POSITIONS AJUSTÉES =====
+   TICKET – STRUCTURE SIMPLE ET ROBUSTE
    ============================================================ */
 
 .ticket-overlay-container {
@@ -1449,28 +1449,25 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     display: block;
 }
 
-/* --- Chaque champ (label + valeur) sur deux lignes --- */
-.ticket-field {
+/* --- Styles de base pour chaque champ --- */
+.ticket-left,
+.ticket-right {
     position: absolute;
     text-align: left;
     pointer-events: none;
-    box-sizing: border-box;
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 
-/* Colonne gauche (EVENT, DURATION, DATE, TIME, LOCATION, PRICE) */
-.ticket-field-left {
+.ticket-left {
     left: 8%;
-    width: 38%;
+    width: 35%;
 }
 
-/* Colonne droite (NAME, EMAIL, PHONE, PRICE PAID, DATE OF PURCHASE, TICKET ID) */
-.ticket-field-right {
-    left: 52%;
+.ticket-right {
+    left: 50%;
     width: 40%;
 }
 
-.ticket-field .ticket-label {
+.ticket-label {
     font-size: 10px;
     font-weight: 600;
     color: #6b7280;
@@ -1480,7 +1477,7 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     line-height: 1.2;
 }
 
-.ticket-field .ticket-value {
+.ticket-value {
     font-size: 15px;
     font-weight: 700;
     color: #1a202c;
@@ -1489,15 +1486,15 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     white-space: normal;
 }
 
-/* --- Positions verticales (top) ajustées pour chaque ligne --- */
-.ticket-row-1 { top: 22%; }   /* EVENT / NAME */
-.ticket-row-2 { top: 29%; }   /* DURATION / EMAIL */
-.ticket-row-3 { top: 36%; }   /* DATE / PHONE */
-.ticket-row-4 { top: 43%; }   /* TIME / PRICE PAID */
-.ticket-row-5 { top: 50%; }   /* LOCATION / DATE OF PURCHASE */
-.ticket-row-6 { top: 57%; }   /* PRICE / TICKET ID */
+/* --- Positions verticales (à ajuster avec l'inspecteur) --- */
+.ticket-line-1 { top: 22%; }
+.ticket-line-2 { top: 29%; }
+.ticket-line-3 { top: 36%; }
+.ticket-line-4 { top: 43%; }
+.ticket-line-5 { top: 50%; }
+.ticket-line-6 { top: 57%; }
 
-/* --- QR code et informations associées (à droite) --- */
+/* --- QR code --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1540,37 +1537,36 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
    ADAPTATION MOBILE
    ============================================================ */
 @media (max-width: 640px) {
-    .ticket-field-left { left: 6%; width: 40%; }
-    .ticket-field-right { left: 50%; width: 42%; }
-    .ticket-field .ticket-label { font-size: 9px; }
-    .ticket-field .ticket-value { font-size: 13px; }
+    .ticket-left { left: 6%; width: 38%; }
+    .ticket-right { left: 48%; width: 42%; }
+    .ticket-label { font-size: 9px; }
+    .ticket-value { font-size: 13px; }
     .ticket-qr { right: 4%; width: 20%; top: 13%; }
     .ticket-qr-id { right: 4%; width: 20%; font-size: 10px; top: 52%; }
     .ticket-qr-date { right: 4%; width: 20%; font-size: 9px; top: 59%; }
-    .ticket-row-1 { top: 20%; }
-    .ticket-row-2 { top: 27%; }
-    .ticket-row-3 { top: 34%; }
-    .ticket-row-4 { top: 41%; }
-    .ticket-row-5 { top: 48%; }
-    .ticket-row-6 { top: 55%; }
+    .ticket-line-1 { top: 20%; }
+    .ticket-line-2 { top: 27%; }
+    .ticket-line-3 { top: 34%; }
+    .ticket-line-4 { top: 41%; }
+    .ticket-line-5 { top: 48%; }
+    .ticket-line-6 { top: 55%; }
 }
 
 @media (max-width: 480px) {
-    .ticket-field-left { left: 4%; width: 38%; }
-    .ticket-field-right { left: 48%; width: 44%; }
-    .ticket-field .ticket-label { font-size: 8px; }
-    .ticket-field .ticket-value { font-size: 11px; }
+    .ticket-left { left: 4%; width: 38%; }
+    .ticket-right { left: 46%; width: 46%; }
+    .ticket-label { font-size: 8px; }
+    .ticket-value { font-size: 11px; }
     .ticket-qr { right: 3%; width: 22%; top: 12%; }
     .ticket-qr-id { right: 3%; width: 22%; font-size: 8px; top: 50%; }
     .ticket-qr-date { right: 3%; width: 22%; font-size: 7px; top: 57%; }
-    .ticket-row-1 { top: 18%; }
-    .ticket-row-2 { top: 25%; }
-    .ticket-row-3 { top: 32%; }
-    .ticket-row-4 { top: 39%; }
-    .ticket-row-5 { top: 46%; }
-    .ticket-row-6 { top: 53%; }
+    .ticket-line-1 { top: 18%; }
+    .ticket-line-2 { top: 25%; }
+    .ticket-line-3 { top: 32%; }
+    .ticket-line-4 { top: 39%; }
+    .ticket-line-5 { top: 46%; }
+    .ticket-line-6 { top: 53%; }
 }
-
 /* ============================================================
    ===== FIN TICKET =====
    ============================================================ */
