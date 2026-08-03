@@ -1331,7 +1331,7 @@ function generateTicketQR(ticketId) {
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
-            width: 80,          // Taille réduite (anciennement 100)
+            width: 80,          // Taille réduite
             height: 80,         // Taille réduite
             colorDark: "#0B1F5C",
             colorLight: "#ffffff",
@@ -1351,18 +1351,15 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// NOTIFICATION PREMIUM APRÈS 15 SECONDES (NOUVEAU)
+// NOTIFICATION PREMIUM APRÈS 15 SECONDES
 // ============================================================
 let premiumBannerTimer = null;
 let premiumAutoHideTimer = null;
 
 function schedulePremiumNotification() {
-    // Si l'utilisateur est déjà premium ou pas connecté, on ne fait rien
     if (!currentUser.wallet || isUserPremium()) return;
-    // Annuler les éventuels timers précédents
     clearTimeout(premiumBannerTimer);
     clearTimeout(premiumAutoHideTimer);
-    // Planifier l'apparition après 15 secondes
     premiumBannerTimer = setTimeout(() => {
         showPremiumBanner();
     }, 15000);
@@ -1376,11 +1373,9 @@ function showPremiumBanner() {
         return;
     }
     banner.style.display = 'block';
-    // Animation slide down
     setTimeout(() => {
         banner.style.transform = 'translateY(0)';
     }, 10);
-    // Planifier la disparition automatique après 5 secondes
     clearTimeout(premiumAutoHideTimer);
     premiumAutoHideTimer = setTimeout(() => {
         hidePremiumBanner();
@@ -1393,7 +1388,6 @@ function hidePremiumBanner() {
     banner.style.transform = 'translateY(-100%)';
     setTimeout(() => {
         banner.style.display = 'none';
-        // Réinitialiser la transformation pour la prochaine fois
         banner.style.transform = 'translateY(-100%)';
     }, 500);
     clearTimeout(premiumAutoHideTimer);
@@ -2281,7 +2275,7 @@ function renderPremiumPage() {
                 ${badgeHtml}
                 <div class="plan-name">${name}</div>
                 <div class="plan-price">${price} <small>Pi</small></div>
-                <div style="font-size:0.8rem; color:#6b7280; text-align:center; margin-bottom:12px;">${priceLabel}</div>
+                <div style="font-size:0.7rem; color:#6b7280; text-align:center; margin-bottom:8px;">${priceLabel}</div>
                 <div class="plan-description">${id === 'free' ? 'Ideal for discovering Betix and starting to organize your events.' : 
                     id === 'monthly' ? 'The best choice for organizers looking to quickly grow their visibility.' :
                     'The best value for enjoying all Premium benefits for a full year.'}</div>
@@ -3325,7 +3319,6 @@ async function connectToPi() {
                 renderEventsByCategory();
                 alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); 
                 await loadProfileData();
-                // Planifier la notification premium après connexion
                 schedulePremiumNotification();
                 return;
             }
@@ -3347,7 +3340,6 @@ async function connectToPi() {
             alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
             await loadProfileData();
             await retryPendingTickets();
-            // Planifier la notification premium après connexion
             schedulePremiumNotification();
         } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
     } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
@@ -3370,7 +3362,7 @@ function updatePremiumBanner() {
     if (isUserPremium()) {
         banner.style.display = 'none';
     } else {
-        banner.style.display = 'none'; // On ne l'affiche que via schedulePremiumNotification
+        banner.style.display = 'none';
     }
 }
 
@@ -3523,7 +3515,6 @@ function updateProfilePage() {
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
 
-    // ---- AJOUT : compteur de publications restantes ----
     const remaining = getRemainingFreeEvents();
     const isPremium = isUserPremium();
     const statsGrid = document.querySelector('.profile-stats-grid');
@@ -3543,7 +3534,6 @@ function updateProfilePage() {
             statCard.querySelector('.stat-link').textContent = isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois';
         }
     }
-    // ---- FIN AJOUT ----
 
     updateUserInfo();
     updateScanButtonVisibility();
@@ -4090,7 +4080,6 @@ async function initApp() {
                 if (eventsSection) { eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             }, 300);
         });
-        // Si l'utilisateur est déjà connecté au chargement, planifier la notification
         if (currentUser.wallet) {
             schedulePremiumNotification();
         }
