@@ -1248,104 +1248,63 @@ function hideLoader() {
 // GÉNÉRATION DU TICKET EN HTML
 // ============================================================
 function generateTicketHTML(ticket) {
-    const dateEvent = new Date(ticket.eventDate);
-    const dateFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'Time to be defined';
-    
-    const durationDisplay = ticket.durationValue && ticket.durationUnit 
-        ? `${ticket.durationValue} ${ticket.durationUnit}` 
-        : 'N/A';
-    
-    const buyerName = ticket.buyerName || 'Not provided';
-    const userEmail = ticket.buyerEmail || 'Not provided';
-    const userPhone = ticket.buyerPhone || 'Not provided';
-    const ticketIdShort = ticket.id ? ticket.id.substring(0, 8).toUpperCase() : '00000000';
-    const price = (ticket.price || 0).toFixed(6) + ' Pi';
-    const eventTitle = ticket.eventTitle || 'Event';
-    const eventLocation = ticket.eventLocation || 'Online';
-    const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
-
-    // Tronquer le nom à 24 caractères
-    let shortName = buyerName;
-    if (shortName.length > 24) {
-        shortName = shortName.substring(0, 24) + '…';
-    }
-
+    // ... récupération des données ...
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
 
-            <!-- ===== COLONNE GAUCHE ===== -->
-            <!-- EVENT -->
-            <div class="ticket-text ticket-text-left ticket-row-1 ticket-text-large ticket-text-dark">
-                ${escapeHtml(eventTitle)}
+            <!-- Champs un par un -->
+            <div class="ticket-field ticket-pos-1">
+                <div class="ticket-label">EVENT</div>
+                <div class="ticket-value">${escapeHtml(eventTitle)}</div>
             </div>
-            <!-- DURATION -->
-            <div class="ticket-text ticket-text-left ticket-row-2 ticket-text-small ticket-text-muted">
-                ${durationDisplay}
+            <div class="ticket-field ticket-pos-2">
+                <div class="ticket-label">DURATION</div>
+                <div class="ticket-value">${durationDisplay}</div>
             </div>
-            <!-- DATE -->
-            <div class="ticket-text ticket-text-left ticket-row-3 ticket-text-small ticket-text-muted">
-                ${dateFormatted}
+            <div class="ticket-field ticket-pos-3">
+                <div class="ticket-label">DATE</div>
+                <div class="ticket-value">${dateFormatted}</div>
             </div>
-            <!-- TIME -->
-            <div class="ticket-text ticket-text-left ticket-row-4 ticket-text-small ticket-text-muted">
-                ${timeFormatted}
+            <div class="ticket-field ticket-pos-4">
+                <div class="ticket-label">TIME</div>
+                <div class="ticket-value">${timeFormatted}</div>
             </div>
-            <!-- LOCATION -->
-            <div class="ticket-text ticket-text-left ticket-row-5 ticket-text-small ticket-text-muted">
-                ${escapeHtml(eventLocation)}
+            <div class="ticket-field ticket-pos-5">
+                <div class="ticket-label">LOCATION</div>
+                <div class="ticket-value">${escapeHtml(eventLocation)}</div>
             </div>
-            <!-- PRICE -->
-            <div class="ticket-text ticket-text-left ticket-row-6 ticket-text-large ticket-text-dark">
-                ${price}
+            <div class="ticket-field ticket-pos-6">
+                <div class="ticket-label">PRICE</div>
+                <div class="ticket-value">${price}</div>
             </div>
-
-            <!-- ===== COLONNE DROITE ===== -->
-            <!-- NAME -->
-            <div class="ticket-text ticket-text-right ticket-row-1 ticket-text-medium ticket-text-dark">
-                ${escapeHtml(shortName)}
+            <div class="ticket-field ticket-pos-7">
+                <div class="ticket-label">NAME</div>
+                <div class="ticket-value">${escapeHtml(buyerName)}</div>
             </div>
-            <!-- EMAIL -->
-            <div class="ticket-text ticket-text-right ticket-row-2 ticket-text-small ticket-text-muted">
-                ${escapeHtml(userEmail)}
+            <div class="ticket-field ticket-pos-8">
+                <div class="ticket-label">EMAIL</div>
+                <div class="ticket-value">${escapeHtml(userEmail)}</div>
             </div>
-            <!-- PHONE -->
-            <div class="ticket-text ticket-text-right ticket-row-3 ticket-text-small ticket-text-muted">
-                ${escapeHtml(userPhone)}
+            <div class="ticket-field ticket-pos-9">
+                <div class="ticket-label">PHONE</div>
+                <div class="ticket-value">${escapeHtml(userPhone)}</div>
             </div>
-            <!-- PRICE PAID -->
-            <div class="ticket-text ticket-text-right ticket-row-4 ticket-text-medium ticket-text-dark">
-                ${price}
+            <div class="ticket-field ticket-pos-10">
+                <div class="ticket-label">DATE OF PURCHASE</div>
+                <div class="ticket-value">${purchaseDate}</div>
             </div>
-            <!-- DATE OF PURCHASE -->
-            <div class="ticket-text ticket-text-right ticket-row-5 ticket-text-small ticket-text-muted">
-                ${purchaseDate}
-            </div>
-            <!-- TICKET ID -->
-            <div class="ticket-text ticket-text-right ticket-row-6 ticket-text-small ticket-text-muted" style="font-family:'JetBrains Mono',monospace; font-weight:600;">
-                #${ticketIdShort}
+            <div class="ticket-field ticket-pos-11">
+                <div class="ticket-label">TICKET ID</div>
+                <div class="ticket-value">#${ticketIdShort}</div>
             </div>
 
-            <!-- ===== QR CODE ===== -->
-            <div class="ticket-qr" id="qr-ticket-${ticket.id}">
-            </div>
-
-            <!-- ===== TICKET ID SOUS QR ===== -->
-            <div class="ticket-qr-id">
-                #${ticketIdShort}
-            </div>
-
-            <!-- ===== DATE D'ACHAT SOUS QR ===== -->
-            <div class="ticket-qr-date">
-                ${purchaseDate}
-            </div>
+            <!-- QR code et infos associées (placées à droite) -->
+            <div class="ticket-qr" id="qr-ticket-${ticket.id}" style="right:5%; top:15%; width:16%;"></div>
+            <div class="ticket-qr-id" style="right:5%; top:56%; width:16%; text-align:center; font-size:12px; color:#1a202c; font-family:'JetBrains Mono',monospace;">#${ticketIdShort}</div>
+            <div class="ticket-qr-date" style="right:5%; top:63%; width:16%; text-align:center; font-size:11px; color:#6b7280;">${purchaseDate}</div>
         </div>
     `;
 }
