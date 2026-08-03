@@ -1069,19 +1069,25 @@ body {
 }
 
 /* ============================================================
-   PREMIUM – 3 CARTES COMPACTES
+   PREMIUM – 3 CARTES COMPACTES AVEC SCROLL HORIZONTAL
    ============================================================ */
 .premium-page-content {
     max-width: 1000px;
     margin: 0 auto;
 }
 .pricing-table {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
     gap: 16px;
     margin: 20px 0;
+    overflow-x: auto;
+    padding: 8px 4px 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
 }
 .pricing-card {
+    flex: 0 0 calc(100% / 3 - 12px);
+    min-width: 200px;
     background: #ffffff;
     border-radius: 14px;
     padding: 16px 14px 14px;
@@ -1091,6 +1097,7 @@ body {
     flex-direction: column;
     transition: all 0.3s ease;
     position: relative;
+    scroll-snap-align: start;
 }
 .pricing-card:hover {
     transform: translateY(-4px);
@@ -1183,6 +1190,18 @@ body {
     color: #6b7280;
     cursor: default;
 }
+@media (max-width: 640px) {
+    .pricing-card {
+        flex: 0 0 calc(100% / 2 - 12px);
+        min-width: 160px;
+    }
+}
+@media (max-width: 480px) {
+    .pricing-card {
+        flex: 0 0 calc(100% - 16px);
+        min-width: 140px;
+    }
+}
 
 /* ============================================================
    TICKET – STRUCTURE ORIGINALE RESTAURÉE
@@ -1227,8 +1246,7 @@ body {
 .ticket-actions-wrapper .btn-png:hover { background: #059669; }
 .ticket-actions-wrapper .btn-share { background: #3b82f6; color: white; }
 .ticket-actions-wrapper .btn-share:hover { background: #2563eb; }
-.ticket-actions-wrapper .btn-mark { background: #f59e0b; color: white; }
-.ticket-actions-wrapper .btn-mark:hover { background: #d97706; }
+/* Le bouton "Use" est supprimé */
 
 /* Conteneur principal du ticket */
 .ticket-overlay-container {
@@ -1291,7 +1309,7 @@ body {
     white-space: normal;
 }
 
-/* Position des lignes (inchangée) */
+/* Position des lignes */
 .ticket-line-1 { top: 22%; }
 .ticket-line-2 { top: 29%; }
 .ticket-line-3 { top: 36%; }
@@ -1299,7 +1317,7 @@ body {
 .ticket-line-5 { top: 50%; }
 .ticket-line-6 { top: 57%; }
 
-/* QR Code – taille réduite, positionné à droite (comme à l’origine) */
+/* QR Code – taille réduite, positionné à droite */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1371,62 +1389,186 @@ body {
 }
 
 /* ============================================================
-   NOTIFICATIONS
+   FOOTER – textes réduits, logos centrés
    ============================================================ */
-.notification-item {
+.betix-footer {
+    background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
+    color: #c8d4e6;
+    padding: 30px 5% 16px;
+    border-top: 1px solid rgba(245,180,0,0.15);
+    margin-top: 0;
+    width: 100%;
+}
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 16px;
+    width: 100%;
+}
+.footer-col h4 {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+    position: relative;
+    padding-bottom: 6px;
+}
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(90deg, #F5B400, #D89C00);
+    border-radius: 2px;
+}
+.footer-col ul li a {
+    color: #a0b4cc;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s, transform 0.2s;
+    cursor: pointer;
+    display: inline-block;
+    padding: 3px 0;
+}
+.footer-col ul li a:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+}
+.footer-col ul li {
+    margin-bottom: 4px;
+    list-style: none;
+}
+.footer-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.footer-slogan {
+    font-size: 14px;
+    color: #F5B400;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+.footer-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #a0b4cc;
+    margin-bottom: 10px;
+    max-width: 220px;
+}
+.footer-social {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    background: #f9fafb;
-    border-left: 4px solid var(--gray);
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
 }
-.notification-item.unread {
-    background: #f0f4ff;
-    border-left-color: #3b82f6;
-}
-.notification-item .notif-icon {
-    width: 36px;
-    height: 36px;
+.footer-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #1DA1F2;
+}
+.footer-social a[href*="t.me"] { color: #0088cc; }
+.footer-social a[href*="twitter"] { color: #1DA1F2; }
+.footer-social a[href*="discord"] { color: #5865F2; }
+.footer-social a[href*="facebook"] { color: #1877F2; }
+.footer-social a[href*="whatsapp"] { color: #25D366; }
+.footer-social a:hover {
+    background: rgba(255,255,255,0.15);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.footer-bottom {
+    max-width: 1400px;
+    margin: 16px auto 0;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    font-size: 12px;
+    color: #6a7f9a;
+}
+.footer-bottom .footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+}
+
+/* ============================================================
+   CHAT & SCROLL TOP – positions fixes
+   ============================================================ */
+.chat-float-btn {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    color: white;
+    font-size: 1.3rem;
+    transition: transform 0.2s;
+    z-index: 9998;
+}
+.chat-float-btn:hover { transform: scale(1.05); }
+
+.scroll-top-btn {
+    position: fixed;
+    bottom: 140px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #0B1F5C;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(11,31,92,0.3);
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+    z-index: 9997;
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    font-size: 1rem;
-    color: white;
 }
-.notification-item .notif-content {
-    flex: 1;
+.scroll-top-btn.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
 }
-.notification-item .notif-content .notif-msg {
-    font-size: 0.9rem;
-    color: #1f2937;
-    font-weight: 500;
+.scroll-top-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(11,31,92,0.4);
 }
-.notification-item .notif-content .notif-time {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-top: 2px;
-}
-.notification-item.type-purchase { border-left-color: var(--notif-purchase); }
-.notification-item.type-purchase .notif-icon { background: var(--notif-purchase); }
-.notification-item.type-event { border-left-color: var(--notif-event); }
-.notification-item.type-event .notif-icon { background: var(--notif-event); }
-.notification-item.type-info { border-left-color: var(--notif-info); }
-.notification-item.type-info .notif-icon { background: var(--notif-info); }
-.notification-item.type-warning { border-left-color: var(--notif-warning); }
-.notification-item.type-warning .notif-icon { background: var(--notif-warning); }
-.notification-item.type-success { border-left-color: var(--notif-success); }
-.notification-item.type-success .notif-icon { background: var(--notif-success); }
-.notification-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-}
+.scroll-top-btn:active { transform: scale(0.92); }
+
 /* ============================================================
    MODALS, UPLOAD, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
    ============================================================ */
