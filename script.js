@@ -1694,7 +1694,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// PAGE DE DÉTAIL (openEventDetails) - INTERFACE MODERNISÉE
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -2400,7 +2400,7 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT (avec vérifications et corrections)
+// QUANTITY POPUP ET ACHAT - UNIQUE POPUP
 // ============================================================
 function openQuantityPopup(eventId) {
     if (!requireLogin()) return;
@@ -2483,29 +2483,6 @@ function confirmPurchaseFromPopup() {
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
 
-function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
-    const popup = document.getElementById('confirmPurchasePopup');
-    document.getElementById('confirmPurchaseTitle').textContent = title;
-    document.getElementById('confirmSubtotal').textContent = subtotal + ' Pi';
-    document.getElementById('confirmServiceFee').textContent = serviceFee + ' Pi';
-    document.getElementById('confirmTotal').textContent = total + ' Pi';
-    popup.classList.add('show');
-    popup.style.display = 'flex';
-    return new Promise((resolve) => {
-        confirmPurchaseResolve = resolve;
-    });
-}
-
-function closeConfirmPurchasePopup() {
-    const popup = document.getElementById('confirmPurchasePopup');
-    popup.classList.remove('show');
-    popup.style.display = 'none';
-    if (confirmPurchaseResolve) {
-        confirmPurchaseResolve(false);
-        confirmPurchaseResolve = null;
-    }
-}
-
 async function confirmPurchase(eventId, quantity) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
@@ -2524,17 +2501,6 @@ async function confirmPurchase(eventId, quantity) {
     const serviceFeePercent = appSettings.serviceFeePercent || 2;
     const serviceFee = subtotal * (serviceFeePercent / 100);
     const totalPrice = subtotal + serviceFee;
-
-    const title = `Confirm purchase of ${quantity} ticket(s) for "${event.title}"`;
-    const confirmed = await openConfirmPurchasePopup(
-        title,
-        subtotal.toFixed(6),
-        serviceFee.toFixed(6),
-        totalPrice.toFixed(6)
-    );
-    if (!confirmed) {
-        return;
-    }
 
     closeQuantityPopup();
     const confirmBtn = document.getElementById('confirmBuyBtn');
@@ -2732,7 +2698,7 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// SUCCESS POPUP AVEC BOUTON VERS TICKETS
+// SUCCESS POPUP - MESSAGE DE FELICITATIONS AVEC 2 BOUTONS
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2740,16 +2706,16 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const message = document.getElementById('successMessage');
     const info = document.getElementById('successTicketInfo');
     const viewBtn = document.getElementById('viewTicketBtn');
+    const goHomeBtn = document.getElementById('goHomeBtn');
     const eventNameEl = document.getElementById('successEventName');
-    const closeBtn = document.getElementById('closeSuccessBtn');
-    if (!popup || popup.classList.contains('show')) return;
+    if (!popup) return;
     const qty = quantity || ticketsList.length;
     const ticket = ticketsList[0] || {};
     const price = event.price || 0;
     const totalPrice = qty * price;
-    if (title) title.textContent = t('purchaseSuccessful');
+    if (title) title.textContent = '🎉 ' + t('purchaseSuccessful');
     if (eventNameEl) eventNameEl.textContent = event.title || 'Blockchain Africa';
-    if (message) message.innerHTML = 'Thank you for purchasing your ticket for <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
+    if (message) message.innerHTML = 'You have successfully purchased your ticket for <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
     const dateEvent = new Date(event.date);
     const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US') : 'Date to be defined';
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
@@ -2774,9 +2740,14 @@ function showSuccessPopup(event, ticketsList, quantity) {
             closeSuccessPopup();
             showPage('tickets');
         };
-        viewBtn.style.display = 'inline-block';
     }
-    if (closeBtn) { closeBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); }; }
+    if (goHomeBtn) {
+        goHomeBtn.onclick = function(e) {
+            e.preventDefault();
+            closeSuccessPopup();
+            showPage('home');
+        };
+    }
     popup.style.display = 'flex';
     popup.classList.add('show');
 }
