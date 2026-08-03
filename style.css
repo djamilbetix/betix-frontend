@@ -795,7 +795,7 @@ body {
 }
 
 /* ============================================================
-   EVENTS GRID (design soigné)
+   EVENTS GRID
    ============================================================ */
 .events-container {
     padding: 0.5rem 5% 2rem;
@@ -933,7 +933,7 @@ body.dark-mode .event-card-classic .event-tickets-label .tickets-label-badge {
 }
 
 /* ============================================================
-   STYLES POUR LA CARTE D'ÉVÉNEMENT (design professionnel)
+   STYLES POUR LA CARTE D'ÉVÉNEMENT
    ============================================================ */
 .event-title-large {
     font-size: 1.3rem !important;
@@ -1423,92 +1423,9 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
 }
 
 /* ============================================================
-   TICKET - NOUVEAU DESIGN PRÉCIS AVEC TAILLE AUGMENTÉE
+   ===== TICKET STYLES - START (POSITIONS PRÉCISES) =====
    ============================================================ */
-.ticket-text {
-    position: absolute;
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-    font-weight: 600;
-    letter-spacing: .2px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    pointer-events: none;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-}
 
-.ticket-event,
-.ticket-location,
-.ticket-date,
-.ticket-time,
-.ticket-duration,
-.ticket-price,
-.ticket-name,
-.ticket-email,
-.ticket-phone,
-.ticket-paid,
-.ticket-purchase,
-.ticket-id {
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-
-.ticket-right-id {
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-}
-
-.ticket-qr {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    padding: 4px;
-    border-radius: 6px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-/* TAILLES DE TEXTE AUGMENTÉES */
-.ticket-text {
-    font-size: clamp(9px, 0.9vw, 12px) !important;
-}
-.ticket-name,
-.ticket-event {
-    font-size: clamp(10px, 1.1vw, 14px) !important;
-    font-weight: 700;
-}
-.ticket-price,
-.ticket-paid {
-    font-size: clamp(10px, 1.05vw, 13px) !important;
-    font-weight: 700;
-}
-.ticket-right-id {
-    font-size: clamp(9px, 0.85vw, 11px) !important;
-}
-.ticket-email,
-.ticket-purchase,
-.ticket-id,
-.ticket-right-date {
-    font-size: clamp(8px, 0.75vw, 10px) !important;
-}
-
-.ticket-text {
-    color: #1a202c;
-}
-.ticket-right-id {
-    color: #1a202c;
-}
-.ticket-qr canvas,
-.ticket-qr img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
-}
-
-/* Overlay background */
 .ticket-overlay-container {
     position: relative;
     max-width: 780px;
@@ -1517,7 +1434,9 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
+
 .ticket-overlay-bg {
     position: relative;
     width: 100%;
@@ -1530,48 +1449,145 @@ body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #
     display: block;
 }
 
+/* --- Classes de base du texte --- */
+.ticket-text {
+    position: absolute;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: .2px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    box-sizing: border-box;
+}
+
+/* --- Colonne gauche --- */
+.ticket-text-left {
+    left: 8%;
+    width: 55%;
+    text-align: left;
+    padding-left: 0;
+    box-sizing: border-box;
+}
+
+/* --- Colonne droite --- */
+.ticket-text-right {
+    right: 6%;
+    width: 30%;
+    text-align: right;
+    padding-right: 0;
+    box-sizing: border-box;
+}
+
+/* --- Positions verticales des lignes --- */
+.ticket-row-1 { top: 26%; }   /* EVENT / NAME */
+.ticket-row-2 { top: 33%; }   /* DURATION / EMAIL */
+.ticket-row-3 { top: 40%; }   /* DATE / PHONE */
+.ticket-row-4 { top: 47%; }   /* TIME / PRICE PAID */
+.ticket-row-5 { top: 54%; }   /* LOCATION / DATE OF PURCHASE */
+.ticket-row-6 { top: 61%; }   /* PRICE / TICKET ID */
+
+/* --- Tailles de police --- */
+.ticket-text-large {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.ticket-text-medium {
+    font-size: 18px;
+    font-weight: 600;
+}
+.ticket-text-small {
+    font-size: 15px;
+    font-weight: 500;
+    color: #6b7280;
+}
+.ticket-text-muted {
+    color: #6b7280;
+}
+.ticket-text-dark {
+    color: #1a202c;
+}
+
+/* --- QR code --- */
+.ticket-qr {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    right: 4%;
+    top: 14%;
+    width: 18%;
+    aspect-ratio: 1/1;
+}
+
+/* --- Texte sous le QR --- */
+.ticket-qr-id {
+    position: absolute;
+    right: 4%;
+    width: 18%;
+    text-align: center;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a202c;
+    letter-spacing: 0.5px;
+    top: 54%;
+}
+.ticket-qr-date {
+    position: absolute;
+    right: 4%;
+    width: 18%;
+    text-align: center;
+    font-size: 11px;
+    color: #6b7280;
+    top: 61%;
+}
+
 /* ============================================================
-   ADAPTATION MOBILE POUR TICKETS
+   ADAPTATION MOBILE
    ============================================================ */
 @media (max-width: 640px) {
-    .ticket-text {
-        font-size: clamp(6px, 0.6vw, 8px) !important;
-    }
-    .ticket-name,
-    .ticket-event {
-        font-size: clamp(7px, 0.7vw, 9px) !important;
-    }
-    .ticket-price,
-    .ticket-paid {
-        font-size: clamp(7px, 0.7vw, 9px) !important;
-    }
-    .ticket-right-id {
-        font-size: clamp(6px, 0.6vw, 8px) !important;
-    }
-    .ticket-qr {
-        padding: 2px !important;
-        border-radius: 3px !important;
-    }
-    .ticket-text {
-        letter-spacing: 0.1px !important;
-    }
+    .ticket-text-large { font-size: 16px !important; }
+    .ticket-text-medium { font-size: 14px !important; }
+    .ticket-text-small { font-size: 12px !important; }
+    .ticket-text { font-size: 12px !important; }
+    .ticket-text-left { left: 6%; width: 50%; }
+    .ticket-text-right { right: 4%; width: 35%; }
+    .ticket-qr { right: 3%; width: 20%; }
+    .ticket-qr-id { right: 3%; width: 20%; font-size: 10px; }
+    .ticket-qr-date { right: 3%; width: 20%; font-size: 9px; }
+    .ticket-row-1 { top: 24%; }
+    .ticket-row-2 { top: 31%; }
+    .ticket-row-3 { top: 38%; }
+    .ticket-row-4 { top: 45%; }
+    .ticket-row-5 { top: 52%; }
+    .ticket-row-6 { top: 59%; }
 }
+
 @media (max-width: 480px) {
-    .ticket-text {
-        font-size: clamp(5px, 0.5vw, 7px) !important;
-    }
-    .ticket-name,
-    .ticket-event {
-        font-size: clamp(6px, 0.6vw, 8px) !important;
-    }
-    .ticket-price,
-    .ticket-paid {
-        font-size: clamp(6px, 0.6vw, 8px) !important;
-    }
-    .ticket-right-id {
-        font-size: clamp(5px, 0.5vw, 7px) !important;
-    }
+    .ticket-text-large { font-size: 14px !important; }
+    .ticket-text-medium { font-size: 12px !important; }
+    .ticket-text-small { font-size: 10px !important; }
+    .ticket-text { font-size: 10px !important; }
+    .ticket-text-left { left: 4%; width: 45%; }
+    .ticket-text-right { right: 3%; width: 38%; }
+    .ticket-qr { right: 2%; width: 22%; }
+    .ticket-qr-id { right: 2%; width: 22%; font-size: 8px; }
+    .ticket-qr-date { right: 2%; width: 22%; font-size: 7px; }
 }
+
+/* ============================================================
+   ===== TICKET STYLES - END =====
+   ============================================================ */
 
 /* ============================================================
    NOTIFICATIONS
@@ -4279,4 +4295,3 @@ body.dark-mode .ticket-actions .btn-share {
     box-shadow: 0 6px 30px rgba(11,31,92,0.4);
 }
 .scroll-top-btn:active { transform: scale(0.92); }
-
