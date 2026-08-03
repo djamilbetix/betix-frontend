@@ -1,4 +1,24 @@
 // ============================================================
+// SAUVEGARDE : FORCER L'AFFICHAGE MÊME EN CAS D'ERREUR
+// ============================================================
+(function safeLoader() {
+    setTimeout(function() {
+        var loader = document.getElementById('loader');
+        var main = document.getElementById('main-content');
+        if (loader) { loader.style.display = 'none'; loader.classList.add('hidden'); }
+        if (main) { main.style.display = 'block'; }
+    }, 4000);
+    window.onerror = function(msg, url, line, col, error) {
+        console.error('Global error:', msg, error);
+        var loader = document.getElementById('loader');
+        var main = document.getElementById('main-content');
+        if (loader) { loader.style.display = 'none'; loader.classList.add('hidden'); }
+        if (main) { main.style.display = 'block'; }
+        return true;
+    };
+})();
+
+// ============================================================
 // CONFIGURATION SUPABASE
 // ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
