@@ -1331,8 +1331,8 @@ function generateTicketQR(ticketId) {
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
-            width: 80,          // Taille réduite
-            height: 80,         // Taille réduite
+            width: 80,
+            height: 80,
             colorDark: "#0B1F5C",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -1392,6 +1392,7 @@ function hidePremiumBanner() {
     }, 500);
     clearTimeout(premiumAutoHideTimer);
 }
+
 // ============================================================
 // RENDER TICKETS (sans bouton "Use")
 // ============================================================
@@ -1501,6 +1502,7 @@ function deleteHistoryTicket(ticketId) {
     updateProfilePage();
     addNotification('Ticket deleted from history.', 'info');
 }
+
 // ============================================================
 // EXPORT PNG ET PDF
 // ============================================================
@@ -1598,16 +1600,6 @@ function shareTicket(ticketId) {
         } else {
             prompt('Copy this link:', url);
         }
-    }
-}
-
-function markTicketAsUsed(ticketId) {
-    if (!confirm(t('markUsedConfirm'))) return;
-    if (usedTickets.indexOf(ticketId) === -1) {
-        usedTickets.push(ticketId);
-        for (let i = 0; i < tickets.length; i++) if (tickets[i].id === ticketId) { tickets[i].status = 'Used'; break; }
-        saveUsedTickets(); saveTickets(); addNotification(t('ticketMarkedUsed'), 'info');
-        renderTickets(); renderHistory(); updateProfilePage(); alert(t('ticketMarkedUsed'));
     }
 }
 
@@ -2406,6 +2398,7 @@ async function subscribePremiumWithDuration(durationDays) {
 function subscribePremium() {
     subscribePremiumWithDuration(appSettings.premiumDurationDays);
 }
+
 // ============================================================
 // QUANTITY POPUP ET ACHAT (avec vérifications et corrections)
 // ============================================================
@@ -2437,9 +2430,41 @@ function confirmPurchaseFromPopup() {
     const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
     if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
     if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
-    // Appeler la fonction d'achat qui ouvrira la popup de confirmation
     confirmPurchase(selectedEventForPurchase.id, quantity);
 }
+
+function updateQuantity(delta) {
+    const input = document.getElementById('ticketQuantity');
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    const maxVal = parseInt(input.max) || 10;
+    val = Math.min(Math.max(val + delta, 1), maxVal);
+    input.value = val;
+    updateTicketTotal();
+}
+
+function updateTicketTotal() {
+    const input = document.getElementById('ticketQuantity');
+    const subtotalDisplay = document.getElementById('subtotalDisplay');
+    const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
+    const totalDisplay = document.getElementById('totalPriceDisplay');
+    if (!input || !totalDisplay || !selectedEventForPurchase) return;
+    const qty = parseInt(input.value) || 1;
+    const price = selectedEventForPurchase.price || 0;
+    const subtotal = qty * price;
+    const serviceFeePercent = appSettings.serviceFeePercent || 2;
+    const serviceFee = subtotal * (serviceFeePercent / 100);
+    const total = subtotal + serviceFee;
+    if (subtotalDisplay) subtotalDisplay.textContent = subtotal.toFixed(6) + ' Pi';
+    if (serviceFeeDisplay) serviceFeeDisplay.textContent = serviceFee.toFixed(6) + ' Pi';
+    if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
+}
+
+function closeQuantityPopup() {
+    document.getElementById('quantityPopup').classList.remove('show');
+    selectedEventForPurchase = null;
+}
+
 // ============================================================
 // CONFIRMATION D'ACHAT AVEC PI (AVEC FALLBACK LOCAL)
 // ============================================================
@@ -2664,17 +2689,6 @@ async function confirmPurchase(eventId, quantity) {
         alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
         if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
     }
-}
-
-async function confirmPurchaseFromPopup() {
-    if (!selectedEventForPurchase) { alert('No event selected'); return; }
-    const quantityInput = document.getElementById('ticketQuantity');
-    const quantity = parseInt(quantityInput.value) || 1;
-    if (quantity < 1) { alert('Please select at least 1 ticket'); return; }
-    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
-    if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
-    if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
-    await confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
 // ============================================================
@@ -3926,8 +3940,6 @@ function showLegal(type) {
 function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.clear(); location.reload(); } }
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
 
-function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
 // ============================================================
 // INITIALISATION DE L'APPLICATION
 // ============================================================
@@ -4045,12 +4057,7 @@ async function initApp() {
         window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
-        const scrollBtn = document.getElementById('scrollTopBtn');
-        if (scrollBtn) {
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 300) { scrollBtn.classList.add('visible'); } else { scrollBtn.classList.remove('visible'); }
-            });
-        }
+        // Le bouton scroll-top a été supprimé du HTML, donc plus besoin de le gérer
         document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
             document.getElementById('confirmPurchasePopup').style.display = 'none';
             if (confirmPurchaseResolve) {
@@ -4109,7 +4116,6 @@ window.shareTicket = shareTicket;
 window.openConfirmPurchasePopup = openConfirmPurchasePopup;
 window.openTransactionProcessedPopup = openTransactionProcessedPopup;
 window.openPastEventPopup = openPastEventPopup;
-window.scrollToTop = scrollToTop;
 window.openQuantityPopup = openQuantityPopup;
 window.requireLogin = requireLogin;
 window.requireProfileComplete = requireProfileComplete;
