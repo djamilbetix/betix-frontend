@@ -1268,7 +1268,12 @@ function generateTicketHTML(ticket) {
     const eventTitle = ticket.eventTitle || 'Event';
     const eventLocation = ticket.eventLocation || 'Online';
     const purchaseDate = ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
-    const eventCategory = ticket.category || ticket.eventCategory || 'CONCERT';
+
+    // Tronquer le nom à 24 caractères
+    let shortName = buyerName;
+    if (shortName.length > 24) {
+        shortName = shortName.substring(0, 24) + '…';
+    }
 
     return `
         <div class="ticket-overlay-container" id="ticket-${ticket.id}">
@@ -1278,99 +1283,72 @@ function generateTicketHTML(ticket) {
 
             <!-- ===== COLONNE GAUCHE ===== -->
             <!-- EVENT -->
-            <div class="ticket-text ticket-event" style="left:27%; top:34.2%; width:20.5%; font-weight:700; font-size:clamp(10px,1.1vw,14px); color:#1a202c;">
+            <div class="ticket-text ticket-text-left ticket-row-1 ticket-text-large ticket-text-dark">
                 ${escapeHtml(eventTitle)}
             </div>
             <!-- DURATION -->
-            <div class="ticket-text ticket-duration" style="left:27%; top:40%; width:20.5%; color:#374151;">
+            <div class="ticket-text ticket-text-left ticket-row-2 ticket-text-small ticket-text-muted">
                 ${durationDisplay}
             </div>
-            <!-- DATE (maintenant en position TIME) -->
-            <div class="ticket-text ticket-date" style="left:27%; top:45.7%; width:20.5%; color:#374151;">
+            <!-- DATE -->
+            <div class="ticket-text ticket-text-left ticket-row-3 ticket-text-small ticket-text-muted">
                 ${dateFormatted}
             </div>
-            <!-- TIME (maintenant en position DATE) -->
-            <div class="ticket-text ticket-time" style="left:27%; top:51.4%; width:20.5%; color:#374151;">
+            <!-- TIME -->
+            <div class="ticket-text ticket-text-left ticket-row-4 ticket-text-small ticket-text-muted">
                 ${timeFormatted}
             </div>
             <!-- LOCATION -->
-            <div class="ticket-text ticket-location" style="left:27%; top:57.2%; width:20.5%; color:#374151;">
+            <div class="ticket-text ticket-text-left ticket-row-5 ticket-text-small ticket-text-muted">
                 ${escapeHtml(eventLocation)}
             </div>
             <!-- PRICE -->
-            <div class="ticket-text ticket-price" style="left:27%; top:63%; width:20.5%; font-weight:700; font-size:clamp(10px,1.05vw,13px); color:#1a202c;">
+            <div class="ticket-text ticket-text-left ticket-row-6 ticket-text-large ticket-text-dark">
                 ${price}
             </div>
 
             <!-- ===== COLONNE DROITE ===== -->
             <!-- NAME -->
-            <div class="ticket-text ticket-name" style="left:52.5%; top:34.2%; width:22%; font-weight:700; font-size:clamp(10px,1.1vw,14px); color:#1a202c;">
-                ${escapeHtml(buyerName)}
+            <div class="ticket-text ticket-text-right ticket-row-1 ticket-text-medium ticket-text-dark">
+                ${escapeHtml(shortName)}
             </div>
             <!-- EMAIL -->
-            <div class="ticket-text ticket-email" style="left:52.5%; top:40%; width:22%; color:#374151; font-size:clamp(8px,0.75vw,10px);">
+            <div class="ticket-text ticket-text-right ticket-row-2 ticket-text-small ticket-text-muted">
                 ${escapeHtml(userEmail)}
             </div>
             <!-- PHONE -->
-            <div class="ticket-text ticket-phone" style="left:52.5%; top:45.7%; width:22%; color:#374151;">
+            <div class="ticket-text ticket-text-right ticket-row-3 ticket-text-small ticket-text-muted">
                 ${escapeHtml(userPhone)}
             </div>
             <!-- PRICE PAID -->
-            <div class="ticket-text ticket-paid" style="left:52.5%; top:51.4%; width:22%; font-weight:700; font-size:clamp(10px,1.05vw,13px); color:#1a202c;">
+            <div class="ticket-text ticket-text-right ticket-row-4 ticket-text-medium ticket-text-dark">
                 ${price}
             </div>
-            <!-- PURCHASE DATE -->
-            <div class="ticket-text ticket-purchase" style="left:52.5%; top:57.2%; width:22%; color:#6b7280; font-size:clamp(8px,0.75vw,10px);">
+            <!-- DATE OF PURCHASE -->
+            <div class="ticket-text ticket-text-right ticket-row-5 ticket-text-small ticket-text-muted">
                 ${purchaseDate}
             </div>
             <!-- TICKET ID -->
-            <div class="ticket-text ticket-id" style="left:52.5%; top:63%; width:22%; color:#6b7280; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:clamp(8px,0.75vw,10px); letter-spacing:0.3px;">
+            <div class="ticket-text ticket-text-right ticket-row-6 ticket-text-small ticket-text-muted" style="font-family:'JetBrains Mono',monospace; font-weight:600;">
                 #${ticketIdShort}
             </div>
 
-            <!-- ===== QR CODE (UN SEUL, bien positionné) ===== -->
-            <div class="ticket-qr" id="qr-ticket-${ticket.id}" style="left:77.5%; top:17.8%; width:16%; aspect-ratio:1/1; background:white; padding:4px; border-radius:6px; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+            <!-- ===== QR CODE ===== -->
+            <div class="ticket-qr" id="qr-ticket-${ticket.id}">
             </div>
 
-            <!-- ===== TICKET ID DROIT (sous le QR) ===== -->
-            <div class="ticket-text ticket-right-id" style="left:77.5%; top:56%; width:16%; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(9px,0.85vw,11px); color:#1a202c; letter-spacing:0.5px;">
+            <!-- ===== TICKET ID SOUS QR ===== -->
+            <div class="ticket-qr-id">
                 #${ticketIdShort}
             </div>
 
-            <!-- ===== DATE D'ACHAT DROIT (sous l'ID) ===== -->
-            <div class="ticket-text ticket-right-date" style="left:77.5%; top:62%; width:16%; text-align:center; color:#6b7280; font-size:clamp(8px,0.75vw,10px);">
+            <!-- ===== DATE D'ACHAT SOUS QR ===== -->
+            <div class="ticket-qr-date">
                 ${purchaseDate}
             </div>
         </div>
     `;
 }
-function generateTicketQR(ticketId) {
-    const container = document.getElementById(`qr-ticket-${ticketId}`);
-    if (!container) return;
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-    try {
-        new QRCode(container, {
-            text: ticket.qrCode || ticket.id,
-            width: 100,
-            height: 100,
-            colorDark: "#0B1F5C",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    } catch(e) {
-        container.innerHTML = '<span style="color:red;">QR Error</span>';
-    }
-}
-
-function generateAllQRCodes() {
-    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
-    ticketsList.forEach(container => {
-        const id = container.id.replace('ticket-', '');
-        if (id) generateTicketQR(id);
-    });
-}
-
 // ============================================================
 // RENDER TICKETS ET HISTORY
 // ============================================================
