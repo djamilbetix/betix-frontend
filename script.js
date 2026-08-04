@@ -1437,6 +1437,8 @@ function renderTickets() {
 
     setTimeout(() => {
         uniqueTickets.forEach(ticket => generateTicketQR(ticket.id));
+        // Appliquer staggered animation après le rendu
+        applyStaggeredAnimation('#ticketsList .ticket-list-item');
     }, 300);
 }
 
@@ -1485,6 +1487,7 @@ function renderHistory() {
 
     setTimeout(() => {
         uniqueHistory.forEach(ticket => generateTicketQR(ticket.id));
+        applyStaggeredAnimation('#historyList .ticket-list-item');
     }, 300);
 }
 
@@ -2714,9 +2717,23 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// TOAST NOTIFICATION (message temporaire en bas à droite)
+// STAGGERED ANIMATION
 // ============================================================
-function showToast(message, type = 'success') {
+function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    const items = container.children;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        item.classList.add('stagger-item');
+        item.style.animationDelay = (i * delayIncrement) + 's';
+    }
+}
+
+// ============================================================
+// TOAST NOTIFICATION (amélioré avec titre)
+// ============================================================
+function showToast(title, message, type = 'success') {
     // Supprimer un toast existant
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
@@ -2725,24 +2742,38 @@ function showToast(message, type = 'success') {
     toast.className = `toast-notification toast-${type}`;
     toast.innerHTML = `
         <div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
-        <div class="toast-message">${escapeHtml(message)}</div>
+        <div class="toast-content">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     document.body.appendChild(toast);
+
+    // Fermeture manuelle
+    toast.querySelector('.toast-close').addEventListener('click', function() {
+        closeToast(toast);
+    });
 
     // Animation d'entrée
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
 
-    // Disparition automatique après 4 secondes
+    // Disparition automatique après 5 secondes
     setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400);
-    }, 4000);
+        closeToast(toast);
+    }, 5000);
+}
+
+function closeToast(toast) {
+    if (!toast) return;
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
 }
 
 // ============================================================
-// SUCCESS POPUP – VERSION AMÉLIORÉE (avec toast)
+// SUCCESS POPUP – VERSION PROFESSIONNELLE AVEC SCROLL
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2760,16 +2791,16 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const price = event.price || 0;
     const totalPrice = qty * price;
 
-    // Titre et message
-    title.textContent = 'Achat réussi !';
-    message.textContent = 'Félicitations ! Votre achat a été effectué avec succès.';
+    // Titre et message professionnels
+    title.textContent = '✅ Achat confirmé !';
+    message.textContent = `Félicitations ! Vous avez acheté ${qty} ticket(s) pour "${event.title}".`;
     const subMsg = document.querySelector('.success-submessage');
-    if (subMsg) subMsg.textContent = 'Vous allez recevoir votre ticket par e-mail et il est disponible dans votre espace.';
+    if (subMsg) subMsg.textContent = 'Votre ticket est disponible dans votre espace personnel. Vous recevrez également un e-mail de confirmation.';
 
     // Détails du ticket
     const dateEvent = new Date(event.date);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US') : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date à définir';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Heure à définir';
     const codeDisplay = ticket.qrCode || ticket.id || 'N/A';
     const paysDisplay = event.pays || event.country || 'France';
     const countryFlag = countryFlags[paysDisplay] || '';
@@ -2783,7 +2814,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
         <div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">${countryDisplay}</span></div>
         <div class="ticket-line"><span class="ticket-label">Quantité</span><span class="ticket-value">${qty}</span></div>
         <div class="ticket-line"><span class="ticket-label">Total payé</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
-        <div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Référence</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
     `;
 
     // Gestion des boutons
@@ -2791,11 +2822,32 @@ function showSuccessPopup(event, ticketsList, quantity) {
         e.preventDefault();
         closeSuccessPopup();
     };
+
+    // Retour à l'accueil avec scroll vers l'événement acheté
     homeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
         showPage('home');
+        // Scroll vers l'événement après un court délai
+        setTimeout(() => {
+            const eventCards = document.querySelectorAll('.event-card-classic');
+            for (let card of eventCards) {
+                if (card.textContent.includes(event.title)) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.transition = 'box-shadow 0.3s ease, transform 0.3s ease';
+                    card.style.boxShadow = '0 0 0 4px #F5B400, 0 8px 30px rgba(0,0,0,0.15)';
+                    card.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        card.style.boxShadow = '';
+                        card.style.transform = '';
+                    }, 2000);
+                    break;
+                }
+            }
+        }, 500);
     };
+
+    // Voir le ticket
     viewBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
@@ -2806,9 +2858,13 @@ function showSuccessPopup(event, ticketsList, quantity) {
     popup.style.display = 'flex';
     popup.classList.add('show');
 
-    // Afficher le toast de confirmation
+    // Afficher le toast de confirmation en plus
     const eventName = event.title || 'Événement';
-    showToast(`🎉 Achat réussi ! ${qty} ticket(s) pour "${eventName}"`, 'success');
+    showToast(
+        '🎉 Achat réussi !',
+        `Vous avez acheté ${qty} ticket(s) pour "${eventName}". Consultez vos tickets dans "Mes tickets".`,
+        'success'
+    );
 }
 
 function closeSuccessPopup() {
@@ -3112,6 +3168,9 @@ function renderMyRatings() {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
         return `<div class="ticket-card"><h3>${escapeHtml(r.eventTitle)}</h3><div>${t('rating')}: ${r.rating}/5 ${stars}</div>${r.comment ? `<p>"${escapeHtml(r.comment)}"</p>` : ''}<small>${new Date(r.date).toLocaleDateString()}</small></div>`;
     }).join('');
+    setTimeout(() => {
+        applyStaggeredAnimation('#myRatingsList');
+    }, 50);
 }
 
 function setupTicketTypesUI() { /* no-op */ }
@@ -3142,6 +3201,25 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
+    // Appliquer staggered animation sur les options
+    setTimeout(() => {
+        const filterSelect = document.getElementById('countrySelect');
+        if (filterSelect) {
+            const options = filterSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+        const eventSelect = document.getElementById('eventCountry');
+        if (eventSelect) {
+            const options = eventSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+    }, 50);
 }
 
 // ============================================================
@@ -3468,6 +3546,9 @@ function renderMyEvents() {
     }
     container.innerHTML = myEvents.map(e => renderMyEventCardModern(e)).join('');
     updateScanButtonVisibility();
+    setTimeout(() => {
+        applyStaggeredAnimation('#myEventsList');
+    }, 50);
 }
 
 function renderMyEventCardModern(event) {
@@ -3529,6 +3610,9 @@ function renderEventsByCategory() {
         });
     }
     container.innerHTML = html;
+    setTimeout(() => {
+        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+    }, 50);
 }
 
 function initFilters() {
