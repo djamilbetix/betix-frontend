@@ -1694,7 +1694,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// PAGE DE DÉTAIL (openEventDetails) – design amélioré
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1713,6 +1713,7 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
+    // Carrousel pour les images
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1764,6 +1765,7 @@ function openEventDetails(eventId) {
 
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
 
+    // Nouvelle structure de détail améliorée
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1774,11 +1776,11 @@ function openEventDetails(eventId) {
         ${carouselHtml}
         <div class="event-detail-body">
             <div class="detail-block description-block">
-                <h4>${t('fullDescription')}</h4>
+                <h4><i class="fas fa-align-left"></i> ${t('fullDescription')}</h4>
                 <p>${event.description || 'No description'}</p>
             </div>
             <div class="detail-block info-block">
-                <h4>${t('information')}</h4>
+                <h4><i class="fas fa-info-circle"></i> ${t('information')}</h4>
                 <div class="info-grid">
                     <div><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
                     <div><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
@@ -1793,10 +1795,11 @@ function openEventDetails(eventId) {
                 </div>
             </div>
             <div class="detail-block conditions-block">
-                <h4>${t('conditions')}</h4>
+                <h4><i class="fas fa-file-alt"></i> ${t('conditions')}</h4>
                 ${conditionsHtml}
             </div>
             <div class="detail-block meta-block">
+                <h4><i class="fas fa-ellipsis-h"></i> ${t('information')}</h4>
                 <div class="meta-grid">
                     <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${badgeHtml}</span></div>
                     <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
@@ -1805,7 +1808,7 @@ function openEventDetails(eventId) {
                 </div>
             </div>
             <div class="detail-block reviews-block">
-                <h4>${t('reviews')}</h4>
+                <h4><i class="fas fa-star"></i> ${t('reviews')}</h4>
                 <div class="reviews-list">${reviewsHtml}</div>
             </div>
         </div>
@@ -2732,7 +2735,7 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// SUCCESS POPUP AVEC BOUTON VERS TICKETS
+// SUCCESS POPUP – VERSION AMÉLIORÉE
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2740,16 +2743,23 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const message = document.getElementById('successMessage');
     const info = document.getElementById('successTicketInfo');
     const viewBtn = document.getElementById('viewTicketBtn');
-    const eventNameEl = document.getElementById('successEventName');
-    const closeBtn = document.getElementById('closeSuccessBtn');
+    const homeBtn = document.getElementById('successHomeBtn');
+    const closeBtn = document.getElementById('closeSuccessXBtn');
+
     if (!popup || popup.classList.contains('show')) return;
+
     const qty = quantity || ticketsList.length;
     const ticket = ticketsList[0] || {};
     const price = event.price || 0;
     const totalPrice = qty * price;
-    if (title) title.textContent = t('purchaseSuccessful');
-    if (eventNameEl) eventNameEl.textContent = event.title || 'Blockchain Africa';
-    if (message) message.innerHTML = 'Thank you for purchasing your ticket for <strong>' + escapeHtml(event.title || 'Blockchain Africa') + '</strong>';
+
+    // Titre et message
+    title.textContent = 'Achat réussi !';
+    message.textContent = 'Félicitations ! Votre achat a été effectué avec succès.';
+    const subMsg = document.querySelector('.success-submessage');
+    if (subMsg) subMsg.textContent = 'Vous allez recevoir votre ticket par e-mail et il est disponible dans votre espace.';
+
+    // Détails du ticket
     const dateEvent = new Date(event.date);
     const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US') : 'Date to be defined';
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
@@ -2757,33 +2767,48 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const paysDisplay = event.pays || event.country || 'France';
     const countryFlag = countryFlags[paysDisplay] || '';
     const countryDisplay = countryFlag + ' ' + paysDisplay;
-    if (info) {
-        info.innerHTML =
-            `<div class="ticket-line"><span class="ticket-label">${t('event')}</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('type')}</span><span class="ticket-value">Standard</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('eventDate')}</span><span class="ticket-value">${dateFormatted} at ${timeFormatted}</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('locationLabel')}</span><span class="ticket-value">${escapeHtml(event.location || 'Online')}</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('countryLabel')}</span><span class="ticket-value">${countryDisplay}</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('quantity')}</span><span class="ticket-value">${qty}</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('total')}</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
-            <div class="ticket-line"><span class="ticket-label">${t('code')}</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>`;
-    }
-    if (viewBtn) {
-        viewBtn.onclick = function(e) {
-            e.preventDefault();
-            closeSuccessPopup();
-            showPage('tickets');
-        };
-        viewBtn.style.display = 'inline-block';
-    }
-    if (closeBtn) { closeBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); }; }
+
+    info.innerHTML = `
+        <div class="ticket-line"><span class="ticket-label">Événement</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">Standard</span></div>
+        <div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">${dateFormatted} à ${timeFormatted}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">${escapeHtml(event.location || 'En ligne')}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">${countryDisplay}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Quantité</span><span class="ticket-value">${qty}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Total payé</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
+        <div class="ticket-line"><span class="ticket-label">Code</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
+    `;
+
+    // Gestion des boutons
+    // Fermeture par X
+    closeBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+    };
+    // Retour à l'accueil
+    homeBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+        showPage('home');
+    };
+    // Voir le ticket
+    viewBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+        showPage('tickets');
+    };
+
+    // Afficher la popup
     popup.style.display = 'flex';
     popup.classList.add('show');
 }
 
 function closeSuccessPopup() {
     const popup = document.getElementById('successPopup');
-    if (popup) { popup.classList.remove('show'); popup.style.display = 'none'; }
+    if (popup) {
+        popup.classList.remove('show');
+        popup.style.display = 'none';
+    }
     const info = document.getElementById('successTicketInfo');
     if (info) info.innerHTML = '';
     localStorage.removeItem('betix_success_popup_shown');
