@@ -822,17 +822,29 @@
     </div>
 </div>
 
-<!-- SUCCESS POPUP -->
+<!-- SUCCESS POPUP (version améliorée) -->
 <div id="successPopup" class="success-popup">
-    <div class="success-popup-content success-blue">
+    <div class="success-popup-content">
+        <!-- En-tête avec titre et bouton X -->
+        <div class="success-popup-header">
+            <h3 id="successTitle">Achat réussi !</h3>
+            <button class="success-popup-close" id="closeSuccessXBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <!-- Icône et message d'encouragement -->
         <div class="success-icon success-icon-blue"><i class="fas fa-check-circle"></i></div>
-        <h3 id="successTitle">Purchase successful!</h3>
-        <p id="successMessage" style="font-size:0.9rem; color:var(--gray);">Thank you for purchasing your ticket for <strong id="successEventName">Blockchain Africa</strong></p>
-        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue" style="text-align:left; font-size:0.85rem;"></div>
-        <button class="btn-primary success-btn-blue" id="viewTicketBtn" style="display:inline-block; text-align:center; text-decoration:none; margin-top:10px; padding:12px 20px; border-radius:40px; background:linear-gradient(135deg, #08143F, #1a1a2e); color:white; font-weight:600; width:100%; box-sizing:border-box; border:none; cursor:pointer;">
-            <i class="fas fa-eye"></i> View my ticket
-        </button>
-        <button class="btn-secondary" id="closeSuccessBtn" style="margin-top:10px; background:transparent; border:1px solid #e5e7eb; padding:10px; border-radius:40px; width:100%; cursor:pointer; font-weight:500; color:var(--gray);">Close</button>
+        <p id="successMessage" class="success-message">Félicitations ! Votre achat a été effectué avec succès.</p>
+        <p class="success-submessage">Vous allez recevoir votre ticket par e-mail et il est disponible dans votre espace.</p>
+        <!-- Détails du ticket -->
+        <div id="successTicketInfo" class="success-ticket-info success-ticket-blue"></div>
+        <!-- Boutons d'action -->
+        <div class="success-buttons">
+            <button class="btn-secondary success-home-btn" id="successHomeBtn">
+                <i class="fas fa-home"></i> Retour à l'accueil
+            </button>
+            <button class="btn-primary success-btn-blue" id="viewTicketBtn">
+                <i class="fas fa-eye"></i> Voir mon ticket
+            </button>
+        </div>
     </div>
 </div>
 
