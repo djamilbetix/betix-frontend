@@ -755,7 +755,7 @@ body {
 }
 
 /* ============================================================
-   FILTRES CATÉGORIES – Bleu Betix / Jaune (inactif)
+   FILTRES CATÉGORIES – Couleur Betix (bleu)
    ============================================================ */
 .filters-wrapper { padding: 0.2rem 5% 0.4rem; }
 .filters-horizontal {
@@ -768,8 +768,8 @@ body {
 .filters-horizontal::-webkit-scrollbar { display: none; }
 .filter-chip {
     flex: 0 0 auto;
-    background: transparent !important;
-    color: #F5B400 !important;
+    background: #0B1F5C !important;
+    color: #ffffff !important;
     border: 2px solid #0B1F5C !important;
     padding: 0.4rem 1rem !important;
     border-radius: 40px !important;
@@ -779,13 +779,13 @@ body {
     transition: all 0.2s ease !important;
 }
 .filter-chip:hover {
-    background: rgba(11,31,92,0.1) !important;
+    background: #1a2a4a !important;
     transform: translateY(-2px);
 }
 .filter-chip.active {
-    background: #0B1F5C !important;
+    background: #0a1a4f !important;
     color: #ffffff !important;
-    border-color: #0B1F5C !important;
+    border-color: #0a1a4f !important;
     box-shadow: 0 2px 8px rgba(11,31,92,0.3);
 }
 
@@ -4216,7 +4216,7 @@ body.dark-mode .filter-chip.active {
     border-color: #0B1F5C !important;
 }
 body.dark-mode .filter-chip {
-    color: #F5B400 !important;
+    color: #ffffff !important;
     border-color: #0B1F5C !important;
 }
 body.dark-mode input,
