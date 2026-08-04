@@ -389,7 +389,15 @@ setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
 
 async function ensurePiSDKReady() {
     let attempts = 0;
-    while (!piSDKReady && attempts < 15) { initPiSDK(); await new Promise(r => setTimeout(r, 500)); attempts++; }
+    const maxAttempts = 15;
+    const timeout = 5000;
+    const startTime = Date.now();
+
+    while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
+        initPiSDK();
+        await new Promise(r => setTimeout(r, 500));
+        attempts++;
+    }
     return piSDKReady;
 }
 
@@ -835,12 +843,9 @@ async function loadAllFromSupabase() {
             }
         }
         
+        // Gestion locale des notifications (pas de Supabase pour les notifs)
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-        let supabaseNotifs = [];
-        if (userIdentifier) {
-            supabaseNotifs = await loadNotificationsFromSupabase(userIdentifier);
-        }
-        notifications = mergeArraysById(localNotifs, supabaseNotifs);
+        notifications = localNotifs;
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
         
         updateSyncStatus('success');
@@ -889,7 +894,7 @@ function saveUser() {
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
     syncUserToSupabase(); 
 }
-function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); syncNotificationsToSupabase(); }
+function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
 function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
 function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
@@ -920,13 +925,6 @@ async function syncTicketsToSupabase() {
         localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
     }
 }
-async function syncNotificationsToSupabase() {
-    for (let i = 0; i < notifications.length; i++) {
-        const notif = notifications[i];
-        const receiverPiUid = notif.userWallet || currentUser.wallet;
-        await saveNotificationToSupabase({ ...notif, receiverPiUid, title: notif.type === 'purchase' ? 'Ticket Purchase' : notif.type === 'event' ? 'New Event' : 'Notification' });
-    }
-}
 async function syncAllToSupabase(retryCount = 0) {
     const maxRetries = 3;
     try {
@@ -934,7 +932,6 @@ async function syncAllToSupabase(retryCount = 0) {
         await syncUserToSupabase();
         await syncEventsToSupabase();
         await syncTicketsToSupabase();
-        await syncNotificationsToSupabase();
         updateSyncStatus('success');
         return { events: events.length, tickets: tickets.length };
     } catch (error) {
@@ -1331,8 +1328,8 @@ function generateTicketQR(ticketId) {
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
-            width: 80,
-            height: 80,
+            width: 105,
+            height: 105,
             colorDark: "#0B1F5C",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
@@ -2878,6 +2875,111 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
+// CONNEXION PI – CORRIGÉE AVEC TIMEOUT
+// ============================================================
+async function connectToPi() {
+    showConnectSpinner();
+
+    // Timeout global de 15 secondes pour toute la connexion
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Connexion timeout (15s)')), 15000);
+    });
+
+    try {
+        await Promise.race([
+            (async () => {
+                if (!piSDKReady) {
+                    const ready = await ensurePiSDKReady();
+                    if (!ready) {
+                        throw new Error('Pi SDK not available after waiting.');
+                    }
+                }
+                if (typeof Pi === 'undefined') {
+                    // Mode démo
+                    if (confirm("Pi Browser not detected. Use demo mode?")) {
+                        currentUser.wallet = 'demo_user';
+                        currentUser.piUid = 'demo_user';
+                        currentUser.name = 'Demo User';
+                        currentUser.memberSince = '2026';
+                        currentUser.loyaltyPoints = 0;
+                        saveUser();
+                        await syncUserToSupabase();
+                        updateActivity();
+                        updateUserInfo();
+                        updateProfilePage();
+                        trackUserConnection();
+                        renderEventsByCategory();
+                        updateConnectButtons();
+                        await loadAllFromSupabase();
+                        currentFilter = 'All';
+                        currentCountryFilter = 'All';
+                        initFilters();
+                        renderEventsByCategory();
+                        alert('Pi account connected (demo mode)! Welcome Demo User');
+                        closeSidebar();
+                        await loadProfileData();
+                        schedulePremiumNotification();
+                        hideConnectSpinner();
+                        return;
+                    }
+                    throw new Error('Pi Browser required.');
+                }
+
+                const scopes = ['username', 'payments'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                if (auth && auth.user) {
+                    piUser = auth.user;
+                    currentUser.wallet = piUser.username;
+                    currentUser.piUid = piUser.username;
+                    currentUser.name = piUser.username;
+                    if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+                    saveUser();
+                    await syncUserToSupabase();
+                    updateActivity();
+                    updateUserInfo();
+                    updateProfilePage();
+                    trackUserConnection();
+                    renderEventsByCategory();
+                    updateConnectButtons();
+                    await loadAllFromSupabase();
+                    currentFilter = 'All';
+                    currentCountryFilter = 'All';
+                    initFilters();
+                    renderEventsByCategory();
+                    alert('Pi account connected! Welcome ' + piUser.username);
+                    closeSidebar();
+                    await loadProfileData();
+                    await retryPendingTickets();
+                    schedulePremiumNotification();
+                    hideConnectSpinner();
+                    return;
+                } else {
+                    throw new Error(t('authenticationFailed'));
+                }
+            })(),
+            timeoutPromise
+        ]);
+    } catch (error) {
+        console.error('Connection error:', error);
+        let errorMsg = t('connectionError') + ': ' + (error.message || "Please try again");
+        if (error.message.includes('timeout')) {
+            errorMsg = 'Connection timeout. Please check your internet connection and try again.';
+        }
+        alert(errorMsg);
+        // Réinitialiser le bouton
+        const btn = document.getElementById('sidebarWalletBtn');
+        if (btn) {
+            btn.textContent = t('connectPi');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    } finally {
+        // S'assurer que le spinner est caché
+        hideConnectSpinner();
+    }
+}
+
+// ============================================================
 // CRÉATION D'ÉVÉNEMENT (avec vérifications)
 // ============================================================
 async function createEvent(e) {
@@ -3450,51 +3552,6 @@ function updateConnectButtons() {
         if (currentUser.wallet) { profilePageBtn.textContent = t('disconnect'); profilePageBtn.onclick = function() { disconnectPi(); }; }
         else { profilePageBtn.textContent = t('connectPi'); profilePageBtn.onclick = function() { connectToPi(); }; }
     }
-}
-
-async function connectToPi() {
-    showConnectSpinner();
-    try {
-        if (!piSDKReady) {
-            const ready = await ensurePiSDKReady();
-            if (!ready) { hideConnectSpinner(); alert("Pi Network SDK not available. Please make sure you are using the Pi Browser."); return; }
-        }
-        if (typeof Pi === 'undefined') {
-            hideConnectSpinner();
-            if (confirm("Pi Browser not detected. Use demo mode?")) {
-                currentUser.wallet = 'demo_user'; currentUser.piUid = 'demo_user'; currentUser.name = 'Demo User'; currentUser.memberSince = '2026'; currentUser.loyaltyPoints = 0;
-                saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
-                currentFilter = 'All';
-                currentCountryFilter = 'All';
-                initFilters();
-                renderEventsByCategory();
-                alert('Pi account connected (demo mode)! Welcome Demo User'); closeSidebar(); 
-                await loadProfileData();
-                schedulePremiumNotification();
-                return;
-            }
-            alert("Please open this page in Pi Browser"); return;
-        }
-        const scopes = ['username', 'payments'];
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        if (auth && auth.user) {
-            piUser = auth.user;
-            currentUser.wallet = piUser.username;
-            currentUser.piUid = piUser.username;
-            currentUser.name = piUser.username;
-            if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
-            saveUser(); await syncUserToSupabase(); updateActivity(); updateUserInfo(); updateProfilePage(); trackUserConnection(); renderEventsByCategory(); updateConnectButtons(); await loadAllFromSupabase();
-            currentFilter = 'All';
-            currentCountryFilter = 'All';
-            initFilters();
-            renderEventsByCategory();
-            alert('Pi account connected! Welcome ' + piUser.username); closeSidebar();
-            await loadProfileData();
-            await retryPendingTickets();
-            schedulePremiumNotification();
-        } else { hideConnectSpinner(); alert(t('authenticationFailed')); }
-    } catch (error) { hideConnectSpinner(); alert(t('connectionError') + ': ' + (error.message || "Please try again")); }
-    finally { hideConnectSpinner(); }
 }
 
 function showConnectSpinner() {
