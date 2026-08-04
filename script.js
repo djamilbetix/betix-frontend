@@ -1226,77 +1226,58 @@ function hideLoader() {
     if (loader) loader.style.display = 'none';
 }
 // ============================================================
-// GÉNÉRER LE QR CODE DANS LE CONTENEUR (taille réduite)
+// GÉNÉRATION DU TICKET HTML – STRUCTURE AVEC SÉPARATEUR (ROBUSTE)
 // ============================================================
-function generateTicketQR(ticketId) {
-    const container = document.getElementById(`qr-ticket-${ticketId}`);
-    if (!container) return;
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-    try {
-        new QRCode(container, {
-            text: ticket.qrCode || ticket.id,
-            width: 105,
-            height: 105,
-            colorDark: "#0B1F5C",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    } catch(e) {
-        container.innerHTML = '<span style="color:red;">QR Error</span>';
-    }
-}
+function generateTicketHTML(ticket) {
+    // Valeurs par défaut pour éviter les erreurs
+    const safeTicket = ticket || {};
+    const dateEvent = new Date(safeTicket.eventDate || Date.now());
+    const dateFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+        : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+        : 'Time to be defined';
+    
+    const durationValue = safeTicket.durationValue || '';
+    const durationUnit = safeTicket.durationUnit || '';
+    const durationDisplay = (durationValue && durationUnit) ? `${durationValue} ${durationUnit}` : 'N/A';
+    
+    const buyerName = safeTicket.buyerName || 'Not provided';
+    const userEmail = safeTicket.buyerEmail || 'Not provided';
+    const userPhone = safeTicket.buyerPhone || 'Not provided';
+    const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
+    const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
+    const eventTitle = safeTicket.eventTitle || 'Event';
+    const eventLocation = safeTicket.eventLocation || 'Online';
+    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
-function generateAllQRCodes() {
-    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
-    ticketsList.forEach(container => {
-        const id = container.id.replace('ticket-', '');
-        if (id) generateTicketQR(id);
-    });
+    return `
+        <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
+            <div class="ticket-overlay-bg">
+                <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+            </div>
+            <!-- colonne gauche -->
+            <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
+            <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
+            <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
+            <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
+            <!-- colonne droite -->
+            <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
+            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
+            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
+            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">PRICE PAID</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
+            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
+            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <!-- QR -->
+            <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
+            <div class="ticket-qr-id">#${escapeHtml(ticketIdShort)}</div>
+            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
+        </div>
+    `;
 }
-// ============================================================
-// NOTIFICATION PREMIUM APRÈS 15 SECONDES
-// ============================================================
-let premiumBannerTimer = null;
-let premiumAutoHideTimer = null;
-
-function schedulePremiumNotification() {
-    if (!currentUser.wallet || isUserPremium()) return;
-    clearTimeout(premiumBannerTimer);
-    clearTimeout(premiumAutoHideTimer);
-    premiumBannerTimer = setTimeout(() => {
-        showPremiumBanner();
-    }, 15000);
-}
-
-function showPremiumBanner() {
-    const banner = document.getElementById('premiumBanner');
-    if (!banner) return;
-    if (isUserPremium() || !currentUser.wallet) {
-        banner.style.display = 'none';
-        return;
-    }
-    banner.style.display = 'block';
-    setTimeout(() => {
-        banner.style.transform = 'translateY(0)';
-    }, 10);
-    clearTimeout(premiumAutoHideTimer);
-    premiumAutoHideTimer = setTimeout(() => {
-        hidePremiumBanner();
-    }, 5000);
-}
-
-function hidePremiumBanner() {
-    const banner = document.getElementById('premiumBanner');
-    if (!banner) return;
-    banner.style.transform = 'translateY(-100%)';
-    setTimeout(() => {
-        banner.style.display = 'none';
-        banner.style.transform = 'translateY(-100%)';
-    }, 500);
-    clearTimeout(premiumAutoHideTimer);
-}
-
 // ============================================================
 // RENDER TICKETS (sans bouton "Use")
 // ============================================================
