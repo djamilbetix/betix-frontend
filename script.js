@@ -1437,7 +1437,6 @@ function renderTickets() {
 
     setTimeout(() => {
         uniqueTickets.forEach(ticket => generateTicketQR(ticket.id));
-        // Appliquer staggered animation après le rendu
         applyStaggeredAnimation('#ticketsList .ticket-list-item');
     }, 300);
 }
