@@ -2481,32 +2481,18 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT AVEC PI (AVEC FALLBACK LOCAL)
+// CONFIRMATION D'ACHAT – DIRECT SANS POPUP INTERMÉDIAIRE
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
 
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
-    const popup = document.getElementById('confirmPurchasePopup');
-    document.getElementById('confirmPurchaseTitle').textContent = title;
-    document.getElementById('confirmSubtotal').textContent = subtotal + ' Pi';
-    document.getElementById('confirmServiceFee').textContent = serviceFee + ' Pi';
-    document.getElementById('confirmTotal').textContent = total + ' Pi';
-    popup.classList.add('show');
-    popup.style.display = 'flex';
-    return new Promise((resolve) => {
-        confirmPurchaseResolve = resolve;
-    });
+    // Cette fonction n'est plus utilisée, mais gardée pour compatibilité (elle ne fait rien)
+    return Promise.resolve(false);
 }
 
 function closeConfirmPurchasePopup() {
-    const popup = document.getElementById('confirmPurchasePopup');
-    popup.classList.remove('show');
-    popup.style.display = 'none';
-    if (confirmPurchaseResolve) {
-        confirmPurchaseResolve(false);
-        confirmPurchaseResolve = null;
-    }
+    // Ne fait rien
 }
 
 async function confirmPurchase(eventId, quantity) {
@@ -2528,23 +2514,15 @@ async function confirmPurchase(eventId, quantity) {
     const serviceFee = subtotal * (serviceFeePercent / 100);
     const totalPrice = subtotal + serviceFee;
 
-    const title = `Confirm purchase of ${quantity} ticket(s) for "${event.title}"`;
-    const confirmed = await openConfirmPurchasePopup(
-        title,
-        subtotal.toFixed(6),
-        serviceFee.toFixed(6),
-        totalPrice.toFixed(6)
-    );
-    if (!confirmed) {
-        return;
-    }
-
+    // Fermer la popup quantité
     closeQuantityPopup();
+
     const confirmBtn = document.getElementById('confirmBuyBtn');
     if (confirmBtn) { 
         confirmBtn.textContent = t('connecting'); 
         confirmBtn.disabled = true; 
     }
+
     try {
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
@@ -2565,6 +2543,7 @@ async function confirmPurchase(eventId, quantity) {
             return;
         }
 
+        // Lancer le paiement Pi directement
         const payment = await Pi.createPayment({
             amount: totalPrice,
             memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
