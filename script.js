@@ -2714,7 +2714,35 @@ async function confirmPurchase(eventId, quantity) {
 }
 
 // ============================================================
-// SUCCESS POPUP – VERSION AMÉLIORÉE
+// TOAST NOTIFICATION (message temporaire en bas à droite)
+// ============================================================
+function showToast(message, type = 'success') {
+    // Supprimer un toast existant
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
+        <div class="toast-message">${escapeHtml(message)}</div>
+    `;
+    document.body.appendChild(toast);
+
+    // Animation d'entrée
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Disparition automatique après 4 secondes
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
+}
+
+// ============================================================
+// SUCCESS POPUP – VERSION AMÉLIORÉE (avec toast)
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2759,18 +2787,15 @@ function showSuccessPopup(event, ticketsList, quantity) {
     `;
 
     // Gestion des boutons
-    // Fermeture par X
     closeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
     };
-    // Retour à l'accueil
     homeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
         showPage('home');
     };
-    // Voir le ticket
     viewBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
@@ -2780,6 +2805,10 @@ function showSuccessPopup(event, ticketsList, quantity) {
     // Afficher la popup
     popup.style.display = 'flex';
     popup.classList.add('show');
+
+    // Afficher le toast de confirmation
+    const eventName = event.title || 'Événement';
+    showToast(`🎉 Achat réussi ! ${qty} ticket(s) pour "${eventName}"`, 'success');
 }
 
 function closeSuccessPopup() {
