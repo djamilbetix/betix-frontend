@@ -1324,7 +1324,7 @@ body {
     overflow-wrap: break-word;
 }
 
-/* Troncature de l'email (colonne droite, ligne 2) */
+/* Troncature de l'email (colonne droite, ligne 2) – désormais inutile car supprimé, mais gardé pour cohérence */
 .ticket-right .ticket-line-2 .ticket-value {
     white-space: nowrap;
     overflow: hidden;
@@ -1363,15 +1363,9 @@ body {
     top: 68%;
 }
 
-/* Date sous le QR – en bas */
+/* Date sous le QR – supprimée (plus utilisée) */
 .ticket-qr-date {
-    position: absolute;
-    right: 9%;
-    width: 6%;
-    text-align: center;
-    font-size: 7px;
-    color: #6b7280;
-    top: 76%;
+    display: none;
 }
 
 /* ============================================================
@@ -1389,7 +1383,7 @@ body {
     .ticket-line-6 { top: 68%; }
     .ticket-qr { right: 6%; top: 15%; width: 10%; }
     .ticket-qr-id { right: 6%; width: 10%; top: 68%; font-size: 7px; }
-    .ticket-qr-date { right: 6%; width: 10%; top: 76%; font-size: 6px; }
+    .ticket-qr-date { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -1404,7 +1398,7 @@ body {
     .ticket-line-6 { top: 64%; }
     .ticket-qr { right: 5%; top: 13%; width: 14%; }
     .ticket-qr-id { right: 5%; width: 14%; top: 68%; font-size: 6px; }
-    .ticket-qr-date { right: 5%; width: 14%; top: 76%; font-size: 5px; }
+    .ticket-qr-date { display: none; }
 }
 
 /* ============================================================
