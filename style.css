@@ -1205,7 +1205,7 @@ body {
 }
 
 /* ============================================================
-   TICKET – STRUCTURE AVEC SÉPARATEUR (version finale pixel-perfect)
+   TICKET – STRUCTURE AVEC SÉPARATEUR (version finale repositionnée)
    ============================================================ */
 
 .ticket-list-item {
@@ -1275,7 +1275,7 @@ body {
     display: block;
 }
 
-/* Colonnes – positions ajustées (horizontal + vertical) */
+/* Colonnes – positions inchangées */
 .ticket-left {
     position: absolute;
     left: 18%;
@@ -1292,13 +1292,13 @@ body {
     pointer-events: none;
 }
 
-/* Positions des lignes – descendues de 2% par rapport à avant */
-.ticket-line-1 { top: 30%; }
-.ticket-line-2 { top: 37%; }
-.ticket-line-3 { top: 44%; }
-.ticket-line-4 { top: 51%; }
-.ticket-line-5 { top: 58%; }
-.ticket-line-6 { top: 65%; }
+/* Positions des lignes – NOUVELLES VALEURS (descentes) */
+.ticket-line-1 { top: 32%; }
+.ticket-line-2 { top: 39%; }
+.ticket-line-3 { top: 46%; }
+.ticket-line-4 { top: 53%; }
+.ticket-line-5 { top: 60%; }
+.ticket-line-6 { top: 67%; }
 
 /* Structure des lignes */
 .ticket-row {
@@ -1338,7 +1338,7 @@ body {
     text-overflow: ellipsis;
 }
 
-/* QR Code – réduit et recentré */
+/* QR Code – inchangé */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1354,7 +1354,7 @@ body {
     aspect-ratio: 1/1;
 }
 
-/* ID sous le QR */
+/* ID sous le QR – NOUVELLE POSITION */
 .ticket-qr-id {
     position: absolute;
     right: 5.5%;
@@ -1365,10 +1365,10 @@ body {
     font-size: 9px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 59%;
+    top: 64%;
 }
 
-/* Date sous le QR */
+/* Date sous le QR – NOUVELLE POSITION */
 .ticket-qr-date {
     position: absolute;
     right: 5.5%;
@@ -1376,7 +1376,7 @@ body {
     text-align: center;
     font-size: 8px;
     color: #6b7280;
-    top: 66%;
+    top: 72%;
 }
 
 /* ============================================================
