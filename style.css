@@ -1276,15 +1276,15 @@ body {
 /* Colonnes – décalées vers la droite (+1%) */
 .ticket-left {
     position: absolute;
-    left: 22%;        /* 18% → 19% */
-    width: 23%;
+    left: 25%;        /* 18% → 19% */
+    width: 20%;
     text-align: left;
     pointer-events: none;
 }
 .ticket-right {
     position: absolute;
-    left: 54%;        /* 50% → 51% */
-    width: 22%;
+    left: 57%;        /* 50% → 51% */
+    width: 20%;
     text-align: left;
     pointer-events: none;
 }
