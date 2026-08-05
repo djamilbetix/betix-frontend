@@ -1204,7 +1204,7 @@ body {
     }
 }
 /* ============================================================
-   TICKET – STRUCTURE AVEC SÉPARATEUR (version ajustée)
+   TICKET – STRUCTURE COMPLÈTE (version finale)
    ============================================================ */
 
 .ticket-list-item {
@@ -1274,7 +1274,9 @@ body {
     display: block;
 }
 
-/* Colonnes */
+/* ============================================================
+   COLONNES – positions horizontales
+   ============================================================ */
 .ticket-left {
     position: absolute;
     left: 18%;
@@ -1291,15 +1293,19 @@ body {
     pointer-events: none;
 }
 
-/* Positions des lignes – remontées de 3% */
-.ticket-line-1 { top: 41%; }
-.ticket-line-2 { top: 48%; }
-.ticket-line-3 { top: 55%; }
-.ticket-line-4 { top: 62%; }
-.ticket-line-5 { top: 69%; }
-.ticket-line-6 { top: 76%; }
+/* ============================================================
+   LIGNES – positions verticales (écart régulier de 7%)
+   ============================================================ */
+.ticket-line-1 { top: 41%; }   /* EVENT / NAME */
+.ticket-line-2 { top: 48%; }   /* DURATION / EMAIL */
+.ticket-line-3 { top: 55%; }   /* DATE / PHONE */
+.ticket-line-4 { top: 62%; }   /* TIME / PRICE PAID */
+.ticket-line-5 { top: 69%; }   /* LOCATION / PURCHASE DATE */
+.ticket-line-6 { top: 76%; }   /* PRICE / TICKET ID */
 
-/* Structure des lignes – espace réduit */
+/* ============================================================
+   STRUCTURE D'UNE LIGNE – label : valeur
+   ============================================================ */
 .ticket-row {
     display: flex;
     align-items: center;
@@ -1337,7 +1343,9 @@ body {
     text-overflow: ellipsis;
 }
 
-/* QR Code – remonté et décalé à gauche */
+/* ============================================================
+   QR CODE – positionné à droite
+   ============================================================ */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1353,7 +1361,7 @@ body {
     aspect-ratio: 1/1;
 }
 
-/* ID sous le QR – remonté */
+/* ID sous le QR */
 .ticket-qr-id {
     position: absolute;
     right: 7%;
@@ -1367,7 +1375,7 @@ body {
     top: 69%;
 }
 
-/* Date sous le QR – remontée */
+/* Date sous le QR */
 .ticket-qr-date {
     position: absolute;
     right: 7%;
