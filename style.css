@@ -1204,7 +1204,7 @@ body {
     }
 }
 /* ============================================================
-   TICKET – STRUCTURE RÉVISÉE (sans chevauchement)
+   TICKET – STRUCTURE RÉVISÉE (avec ID en haut, Date en bas)
    ============================================================ */
 
 .ticket-list-item {
@@ -1273,25 +1273,23 @@ body {
     display: block;
 }
 
-/* ---- COLONNES RÉVISÉES (SANS CHEVAUCHEMENT) ---- */
-/* Colonne gauche : de 4% à 46% */
+/* ---- COLONNES AJUSTÉES (décalées à droite) ---- */
 .ticket-left {
     position: absolute;
-    left: 4%;
+    left: 5%;
     width: 42%;
     text-align: left;
     pointer-events: none;
 }
-/* Colonne droite : de 54% à 92% */
 .ticket-right {
     position: absolute;
-    left: 54%;
-    width: 38%;
-    text-align: left;
+    left: 53%;
+    width: 40%;
+    text-align: right;  /* aligné à droite pour coller au bord */
     pointer-events: none;
 }
 
-/* Positions verticales des lignes (ajustées pour mieux épouser l'image) */
+/* Positions verticales des lignes */
 .ticket-line-1 { top: 39%; }
 .ticket-line-2 { top: 46%; }
 .ticket-line-3 { top: 53%; }
@@ -1299,24 +1297,29 @@ body {
 .ticket-line-5 { top: 67%; }
 .ticket-line-6 { top: 74%; }
 
-/* Structure d'une ligne – sans label, uniquement la valeur */
-.ticket-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    margin-bottom: 2px;
-}
-
-.ticket-value {
-    font-size: 10px;  /* légèrement plus grand */
+/* Valeurs des colonnes – décalage à droite renforcé */
+.ticket-left .ticket-value {
+    font-size: 10px;
     font-weight: 700;
     color: #1a202c;
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%;
+    padding-left: 12px !important;  /* décalage vers la droite */
+    display: block;
+}
+.ticket-right .ticket-value {
+    font-size: 10px;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 14px !important; /* décalage vers la droite */
+    text-align: right !important;
+    display: block;
 }
 
 /* Pour le lieu (colonne gauche, ligne 5) : autoriser le retour à la ligne */
@@ -1326,7 +1329,7 @@ body {
     overflow-wrap: break-word;
 }
 
-/* ---- QR CODE REPOSITIONNÉ (plus grand, bien isolé à droite) ---- */
+/* ---- QR CODE : bien dans le cadre (en haut à droite) ---- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1336,42 +1339,47 @@ body {
     padding: 4px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 4%;          /* collé à droite */
-    top: 16%;           /* calé en haut */
-    width: 8%;
+    right: 5%;
+    top: 14%;
+    width: 9%;
     aspect-ratio: 1/1;
     z-index: 2;
 }
 
-/* ---- ID DU TICKET SOUS LE QR ---- */
+/* ---- TICKET ID : juste en dessous du QR (en haut) ---- */
 .ticket-qr-id {
     position: absolute;
-    right: 4%;
-    width: 8%;
+    right: 5%;
+    width: 12%;
     text-align: center;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     font-weight: 700;
-    font-size: 8px;
-    color: #1a202c;
-    letter-spacing: 0.5px;
-    top: 27%;          /* juste en dessous du QR */
+    font-size: 9px;
+    color: #0B1F5C;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 4px;
+    border-radius: 4px;
+    top: 25%;          /* juste sous le QR */
     z-index: 2;
+    letter-spacing: 0.5px;
 }
 
-/* ---- DATE D'ACHAT AJOUTÉE SOUS L'ID (et non plus en ligne 5) ---- */
+/* ---- DATE D'ACHAT : en bas à droite (séparée du QR) ---- */
 .ticket-qr-date {
     position: absolute;
-    right: 4%;
-    width: 8%;
+    right: 5%;
+    width: 18%;
     text-align: center;
-    font-size: 7px;
-    font-weight: 600;
+    font-size: 8px;
+    font-weight: 700;
     color: #1a202c;
-    background: rgba(255, 255, 255, 0.7); /* léger fond pour lisibilité */
-    padding: 2px 0;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 3px 6px;
     border-radius: 4px;
-    top: 33%;          /* en dessous de l'ID */
+    top: 76%;          /* en bas du ticket */
     z-index: 2;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 /* ============================================================
@@ -1383,11 +1391,16 @@ body {
         width: 44%;
     }
     .ticket-right {
-        left: 52%;
-        width: 40%;
+        left: 51%;
+        width: 42%;
     }
-    .ticket-value {
+    .ticket-left .ticket-value {
         font-size: 8px;
+        padding-left: 8px !important;
+    }
+    .ticket-right .ticket-value {
+        font-size: 8px;
+        padding-right: 10px !important;
     }
     .ticket-line-1 { top: 33%; }
     .ticket-line-2 { top: 40%; }
@@ -1397,21 +1410,21 @@ body {
     .ticket-line-6 { top: 68%; }
     .ticket-qr {
         right: 4%;
-        top: 14%;
+        top: 13%;
         width: 10%;
         padding: 3px;
     }
     .ticket-qr-id {
         right: 4%;
-        width: 10%;
-        top: 27%;
-        font-size: 6px;
+        width: 14%;
+        top: 25%;
+        font-size: 7px;
     }
     .ticket-qr-date {
         right: 4%;
-        width: 10%;
-        top: 33%;
-        font-size: 6px;
+        width: 22%;
+        top: 76%;
+        font-size: 7px;
     }
 }
 
@@ -1421,11 +1434,16 @@ body {
         width: 46%;
     }
     .ticket-right {
-        left: 51%;
-        width: 42%;
+        left: 50%;
+        width: 44%;
     }
-    .ticket-value {
+    .ticket-left .ticket-value {
         font-size: 7px;
+        padding-left: 6px !important;
+    }
+    .ticket-right .ticket-value {
+        font-size: 7px;
+        padding-right: 8px !important;
     }
     .ticket-line-1 { top: 29%; }
     .ticket-line-2 { top: 36%; }
@@ -1435,21 +1453,21 @@ body {
     .ticket-line-6 { top: 64%; }
     .ticket-qr {
         right: 3%;
-        top: 12%;
+        top: 11%;
         width: 12%;
         padding: 2px;
     }
     .ticket-qr-id {
         right: 3%;
-        width: 12%;
-        top: 27%;
-        font-size: 5px;
+        width: 16%;
+        top: 25%;
+        font-size: 6px;
     }
     .ticket-qr-date {
         right: 3%;
-        width: 12%;
-        top: 33%;
-        font-size: 5px;
+        width: 26%;
+        top: 76%;
+        font-size: 6px;
     }
 }
 /* ============================================================
