@@ -1227,10 +1227,9 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – STRUCTURE AVEC SÉPARATEUR (ROBUSTE)
+// GÉNÉRATION DU TICKET HTML – STRUCTURE AVEC SÉPARATEUR (CORRIGÉE)
 // ============================================================
 function generateTicketHTML(ticket) {
-    // Valeurs par défaut pour éviter les erreurs
     const safeTicket = ticket || {};
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
     const dateFormatted = !isNaN(dateEvent.getTime()) 
@@ -1242,7 +1241,17 @@ function generateTicketHTML(ticket) {
     
     const durationValue = safeTicket.durationValue || '';
     const durationUnit = safeTicket.durationUnit || '';
-    const durationDisplay = (durationValue && durationUnit) ? `${durationValue} ${durationUnit}` : 'N/A';
+    let durationDisplay = 'N/A';
+    if (durationValue && durationUnit) {
+        const unitLabels = {
+            hours: durationValue === 1 ? 'Hour' : 'Hours',
+            days: durationValue === 1 ? 'Day' : 'Days',
+            weeks: durationValue === 1 ? 'Week' : 'Weeks',
+            months: durationValue === 1 ? 'Month' : 'Months',
+            years: durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
+    }
     
     const buyerName = safeTicket.buyerName || 'Not provided';
     const userEmail = safeTicket.buyerEmail || 'Not provided';
@@ -1258,14 +1267,14 @@ function generateTicketHTML(ticket) {
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- colonne gauche -->
+            <!-- colonne gauche : 6 lignes -->
             <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
             <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
             <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
             <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
             <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
             <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <!-- colonne droite -->
+            <!-- colonne droite : 6 lignes -->
             <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
             <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
             <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
