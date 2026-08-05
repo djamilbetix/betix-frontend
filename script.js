@@ -1281,13 +1281,15 @@ function generateTicketHTML(ticket) {
 }
 
 // ============================================================
-// GÉNÉRER LE QR CODE DANS LE CONTENEUR (taille agrandie)
+// GÉNÉRER LE QR CODE DANS LE CONTENEUR (CORRIGÉ)
 // ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
+    // ✅ Nettoyage pour éviter le double QR
+    container.innerHTML = '';
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
@@ -2449,13 +2451,10 @@ const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
 
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
-    // Cette fonction n'est plus utilisée, mais gardée pour compatibilité (elle ne fait rien)
     return Promise.resolve(false);
 }
 
-function closeConfirmPurchasePopup() {
-    // Ne fait rien
-}
+function closeConfirmPurchasePopup() {}
 
 async function confirmPurchase(eventId, quantity) {
     const event = events.find(e => e.id === eventId);
@@ -2476,7 +2475,6 @@ async function confirmPurchase(eventId, quantity) {
     const serviceFee = subtotal * (serviceFeePercent / 100);
     const totalPrice = subtotal + serviceFee;
 
-    // Fermer la popup quantité
     closeQuantityPopup();
 
     const confirmBtn = document.getElementById('confirmBuyBtn');
@@ -2505,7 +2503,6 @@ async function confirmPurchase(eventId, quantity) {
             return;
         }
 
-        // Lancer le paiement Pi directement
         const payment = await Pi.createPayment({
             amount: totalPrice,
             memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
@@ -2693,7 +2690,6 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
 // TOAST NOTIFICATION (amélioré avec titre)
 // ============================================================
 function showToast(title, message, type = 'success') {
-    // Supprimer un toast existant
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
 
@@ -2709,17 +2705,14 @@ function showToast(title, message, type = 'success') {
     `;
     document.body.appendChild(toast);
 
-    // Fermeture manuelle
     toast.querySelector('.toast-close').addEventListener('click', function() {
         closeToast(toast);
     });
 
-    // Animation d'entrée
     requestAnimationFrame(() => {
         toast.classList.add('show');
     });
 
-    // Disparition automatique après 5 secondes
     setTimeout(() => {
         closeToast(toast);
     }, 5000);
@@ -2750,13 +2743,11 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const price = event.price || 0;
     const totalPrice = qty * price;
 
-    // Titre et message professionnels
     title.textContent = '✅ Achat confirmé !';
     message.textContent = `Félicitations ! Vous avez acheté ${qty} ticket(s) pour "${event.title}".`;
     const subMsg = document.querySelector('.success-submessage');
     if (subMsg) subMsg.textContent = 'Votre ticket est disponible dans votre espace personnel. Vous recevrez également un e-mail de confirmation.';
 
-    // Détails du ticket
     const dateEvent = new Date(event.date);
     const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date à définir';
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Heure à définir';
@@ -2776,18 +2767,15 @@ function showSuccessPopup(event, ticketsList, quantity) {
         <div class="ticket-line"><span class="ticket-label">Référence</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
     `;
 
-    // Gestion des boutons
     closeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
     };
 
-    // Retour à l'accueil avec scroll vers l'événement acheté
     homeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
         showPage('home');
-        // Scroll vers l'événement après un court délai
         setTimeout(() => {
             const eventCards = document.querySelectorAll('.event-card-classic');
             for (let card of eventCards) {
@@ -2806,18 +2794,15 @@ function showSuccessPopup(event, ticketsList, quantity) {
         }, 500);
     };
 
-    // Voir le ticket
     viewBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
         showPage('tickets');
     };
 
-    // Afficher la popup
     popup.style.display = 'flex';
     popup.classList.add('show');
 
-    // Afficher le toast de confirmation en plus
     const eventName = event.title || 'Événement';
     showToast(
         '🎉 Achat réussi !',
@@ -2843,7 +2828,6 @@ function closeSuccessPopup() {
 async function connectToPi() {
     showConnectSpinner();
 
-    // Timeout global de 15 secondes pour toute la connexion
     const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Connexion timeout (15s)')), 15000);
     });
@@ -2858,7 +2842,6 @@ async function connectToPi() {
                     }
                 }
                 if (typeof Pi === 'undefined') {
-                    // Mode démo
                     if (confirm("Pi Browser not detected. Use demo mode?")) {
                         currentUser.wallet = 'demo_user';
                         currentUser.piUid = 'demo_user';
@@ -2929,7 +2912,6 @@ async function connectToPi() {
             errorMsg = 'Connection timeout. Please check your internet connection and try again.';
         }
         alert(errorMsg);
-        // Réinitialiser le bouton
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
@@ -2937,7 +2919,6 @@ async function connectToPi() {
             btn.classList.remove('loading');
         }
     } finally {
-        // S'assurer que le spinner est caché
         hideConnectSpinner();
     }
 }
@@ -3265,7 +3246,6 @@ function initCountrySelectors() {
             eventSelect.appendChild(option);
         });
     }
-    // Appliquer staggered animation sur les options
     setTimeout(() => {
         const filterSelect = document.getElementById('countrySelect');
         if (filterSelect) {
