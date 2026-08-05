@@ -1225,6 +1225,7 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
+
 // ============================================================
 // GÉNÉRATION DU TICKET HTML – STRUCTURE AVEC SÉPARATEUR (ROBUSTE)
 // ============================================================
@@ -1278,6 +1279,80 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
+
+// ============================================================
+// GÉNÉRER LE QR CODE DANS LE CONTENEUR (taille agrandie)
+// ============================================================
+function generateTicketQR(ticketId) {
+    const container = document.getElementById(`qr-ticket-${ticketId}`);
+    if (!container) return;
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    try {
+        new QRCode(container, {
+            text: ticket.qrCode || ticket.id,
+            width: 105,
+            height: 105,
+            colorDark: "#0B1F5C",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch(e) {
+        container.innerHTML = '<span style="color:red;">QR Error</span>';
+    }
+}
+
+function generateAllQRCodes() {
+    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
+    ticketsList.forEach(container => {
+        const id = container.id.replace('ticket-', '');
+        if (id) generateTicketQR(id);
+    });
+}
+
+// ============================================================
+// NOTIFICATION PREMIUM APRÈS 15 SECONDES
+// ============================================================
+let premiumBannerTimer = null;
+let premiumAutoHideTimer = null;
+
+function schedulePremiumNotification() {
+    if (!currentUser.wallet || isUserPremium()) return;
+    clearTimeout(premiumBannerTimer);
+    clearTimeout(premiumAutoHideTimer);
+    premiumBannerTimer = setTimeout(() => {
+        showPremiumBanner();
+    }, 15000);
+}
+
+function showPremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    if (isUserPremium() || !currentUser.wallet) {
+        banner.style.display = 'none';
+        return;
+    }
+    banner.style.display = 'block';
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 10);
+    clearTimeout(premiumAutoHideTimer);
+    premiumAutoHideTimer = setTimeout(() => {
+        hidePremiumBanner();
+    }, 5000);
+}
+
+function hidePremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+        banner.style.display = 'none';
+        banner.style.transform = 'translateY(-100%)';
+    }, 500);
+    clearTimeout(premiumAutoHideTimer);
+}
+
 // ============================================================
 // RENDER TICKETS (sans bouton "Use")
 // ============================================================
