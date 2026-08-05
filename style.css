@@ -1203,6 +1203,7 @@ body {
         min-width: 140px;
     }
 }
+
 /* ============================================================
    TICKET – STRUCTURE COMPLÈTE (version finale)
    ============================================================ */
@@ -1340,7 +1341,14 @@ body {
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; /* ✅ Tronque les valeurs trop longues (email, etc.) */
+}
+
+/* ✅ LOCALISATION : permet le retour à la ligne si le texte est long */
+.ticket-left .ticket-line-5 .ticket-value {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* ============================================================
@@ -1422,6 +1430,7 @@ body {
     .ticket-qr-id { right: 4%; width: 16%; top: 64%; font-size: 6px; }
     .ticket-qr-date { right: 4%; width: 16%; top: 57%; font-size: 5px; }
 }
+
 /* ============================================================
    FOOTER – textes réduits, logos centrés
    ============================================================ */
