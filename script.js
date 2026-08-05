@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (version complète)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -1227,7 +1227,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – STRUCTURE AVEC SÉPARATEUR (CORRIGÉE)
+// GÉNÉRATION DU TICKET HTML – CORRIGÉ (SANS DOUBLONS)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1253,12 +1253,16 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    const buyerName = safeTicket.buyerName || 'Not provided';
+    const buyerNameRaw = safeTicket.buyerName || 'Not provided';
+    const buyerName = buyerNameRaw.toUpperCase();
+    
     const userEmail = safeTicket.buyerEmail || 'Not provided';
     const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
-    const eventTitle = safeTicket.eventTitle || 'Event';
+    
+    const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
+    
     const eventLocation = safeTicket.eventLocation || 'Online';
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
@@ -1290,14 +1294,14 @@ function generateTicketHTML(ticket) {
 }
 
 // ============================================================
-// GÉNÉRER LE QR CODE DANS LE CONTENEUR (CORRIGÉ)
+// GÉNÉRER LE QR CODE – AVEC NETTOYAGE
 // ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
-    // ✅ Nettoyage pour éviter le double QR
+    // Supprimer tout contenu précédent pour éviter les doublons
     container.innerHTML = '';
     try {
         new QRCode(container, {
@@ -1667,7 +1671,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – design amélioré
+// PAGE DE DÉTAIL (openEventDetails)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1686,7 +1690,6 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel pour les images
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1738,7 +1741,6 @@ function openEventDetails(eventId) {
 
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
 
-    // Nouvelle structure de détail améliorée
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1976,7 +1978,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE ET VÉRIFICATION
+// PROFIL – FORMULAIRE AVEC REVUE
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -2376,7 +2378,7 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT (avec vérifications et corrections)
+// QUANTITY POPUP ET ACHAT
 // ============================================================
 function openQuantityPopup(eventId) {
     if (!requireLogin()) return;
@@ -2696,7 +2698,7 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
 }
 
 // ============================================================
-// TOAST NOTIFICATION (amélioré avec titre)
+// TOAST NOTIFICATION
 // ============================================================
 function showToast(title, message, type = 'success') {
     const existing = document.querySelector('.toast-notification');
@@ -2734,7 +2736,7 @@ function closeToast(toast) {
 }
 
 // ============================================================
-// SUCCESS POPUP – VERSION PROFESSIONNELLE AVEC SCROLL
+// SUCCESS POPUP
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2832,7 +2834,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI – CORRIGÉE AVEC TIMEOUT
+// CONNEXION PI
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -2933,7 +2935,7 @@ async function connectToPi() {
 }
 
 // ============================================================
-// CRÉATION D'ÉVÉNEMENT (avec vérifications)
+// CRÉATION D'ÉVÉNEMENT
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
@@ -3666,9 +3668,6 @@ function updateUserInfo() {
     updatePremiumBanner();
 }
 
-// ============================================================
-// UPDATE PROFILE PAGE – AJOUT DU COMPTEUR DE PUBLICATIONS
-// ============================================================
 function updateProfilePage() {
     const userId = currentUser.piUid || currentUser.wallet;
     const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
