@@ -1276,7 +1276,7 @@ body {
 /* Colonnes – décalées vers la droite (+1%) */
 .ticket-left {
     position: absolute;
-    left: 18%;        /* 18% → 19% */
+    left: 19%;        /* 18% → 19% */
     width: 24%;
     text-align: left;
     pointer-events: none;
