@@ -671,6 +671,7 @@ async function saveTicketToSupabase(ticketData) {
             organizer_pi_uid: ticketData.organizerPiUid || '',
             buyer_email: ticketData.buyerEmail || '',
             buyer_phone: ticketData.buyerPhone || '',
+            ticket_number: ticketData.ticketNumber || null,
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
@@ -712,7 +713,8 @@ async function loadTicketsFromSupabase(piUid) {
             durationUnit: t.duration_unit || null,
             organizerName: t.organizer_name || '',
             organizerPiUid: t.organizer_pi_uid || '',
-            pays: t.pays || 'France'
+            pays: t.pays || 'France',
+            ticketNumber: t.ticket_number
         }));
     } catch (error) { return []; }
 }
@@ -1204,10 +1206,8 @@ function redirectToProfileWithMessage(message) {
 // QR CODE SÉCURISÉ
 // ============================================================
 function generateSecureQRData(ticketId, userId, eventId) {
-    const timestamp = Date.now();
-    const data = `${ticketId}|${userId}|${eventId}|${timestamp}`;
-    const signature = btoa(data + SECURE_KEY);
-    return `${data}|${signature}`;
+    // Retourne simplement l'ID du ticket pour le QR code (vérification simplifiée)
+    return ticketId;
 }
 
 // ============================================================
@@ -1256,38 +1256,41 @@ function generateTicketHTML(ticket) {
     const buyerNameRaw = safeTicket.buyerName || 'Not provided';
     const buyerName = buyerNameRaw.toUpperCase();
     
-    const userEmail = safeTicket.buyerEmail || 'Not provided';
+    let userEmail = safeTicket.buyerEmail || 'Not provided';
+    if (userEmail.length > 20) {
+        userEmail = userEmail.substring(0, 18) + '…';
+    }
+    
     const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
-    
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
-    
     const eventLocation = safeTicket.eventLocation || 'Online';
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+    const ticketNumber = safeTicket.ticketNumber || 'N/A';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- colonne gauche : 6 lignes -->
+            <!-- Colonne gauche -->
             <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
             <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
             <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
             <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
             <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
             <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <!-- colonne droite : 6 lignes -->
+            <!-- Colonne droite -->
             <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
             <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
             <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
-            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">PRICE PAID</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
-            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">TICKET NUMBER</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div></div>
+            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
             <!-- QR -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
-            <div class="ticket-qr-id">#${escapeHtml(ticketIdShort)}</div>
+            <div class="ticket-qr-id">ID: ${escapeHtml(ticketIdShort)}</div>
             <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
         </div>
     `;
@@ -2568,10 +2571,16 @@ async function confirmPurchase(eventId, quantity) {
                     event.standardLeft = (event.standardSeats || 0) - event.standardSold;
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
+                    
+                    // Calcul du prochain numéro séquentiel pour cet événement
+                    const existingTicketsForEvent = tickets.filter(t => t.eventId === event.id && t.ticketNumber !== undefined);
+                    const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
+                    let nextNumber = lastNumber + 1;
+                    
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
-                        const qrData = generateSecureQRData(ticketId, currentUser.piUid || currentUser.wallet, event.id);
+                        const qrData = ticketId; // QR code contient l'ID unique pour vérification
                         
                         const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                          (currentUser.last_name ? ' ' + currentUser.last_name : '');
@@ -2591,7 +2600,7 @@ async function confirmPurchase(eventId, quantity) {
                             ticketType: 'standard',
                             pays: event.pays || event.country || 'France',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
-                            buyerName: (currentUser.first_name ? currentUser.first_name + ' ' + currentUser.last_name : currentUser.name) || 'Anonymous',
+                            buyerName: fullName || 'Anonymous',
                             buyerEmail: buyerEmail,
                             buyerPhone: buyerPhone,
                             userWallet: currentUser.wallet,
@@ -2604,7 +2613,8 @@ async function confirmPurchase(eventId, quantity) {
                             durationUnit: event.durationUnit || null,
                             organizerName: organizerName,
                             organizerPiUid: organizerPiUid,
-                            eventPays: event.pays || event.country || 'France'
+                            eventPays: event.pays || event.country || 'France',
+                            ticketNumber: nextNumber + i   // Numéro séquentiel
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
