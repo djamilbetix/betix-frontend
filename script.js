@@ -1291,8 +1291,8 @@ function generateTicketQR(ticketId) {
     try {
         new QRCode(container, {
             text: ticket.qrCode || ticket.id,
-            width: 82,
-            height: 82,
+            width: 78,
+            height: 78,
             colorDark: "#0B1F5C",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
