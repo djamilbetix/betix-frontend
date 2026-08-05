@@ -1204,7 +1204,7 @@ body {
     }
 }
 /* ============================================================
-   TICKET – STRUCTURE AVEC SÉPARATEUR (version finale alignée)
+   TICKET – STRUCTURE AVEC SÉPARATEUR (version remontée)
    ============================================================ */
 
 .ticket-list-item {
@@ -1291,19 +1291,19 @@ body {
     pointer-events: none;
 }
 
-/* Positions des lignes – descendues encore +2% */
-.ticket-line-1 { top: 44%; }
-.ticket-line-2 { top: 51%; }
-.ticket-line-3 { top: 58%; }
-.ticket-line-4 { top: 65%; }
-.ticket-line-5 { top: 72%; }
-.ticket-line-6 { top: 79%; }
+/* Positions des lignes – remontées */
+.ticket-line-1 { top: 32%; }
+.ticket-line-2 { top: 39%; }
+.ticket-line-3 { top: 46%; }
+.ticket-line-4 { top: 53%; }
+.ticket-line-5 { top: 60%; }
+.ticket-line-6 { top: 67%; }
 
 /* Structure des lignes – espace réduit */
 .ticket-row {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
     margin-bottom: 1px;
     width: 100%;
 }
@@ -1337,7 +1337,7 @@ body {
     text-overflow: ellipsis;
 }
 
-/* QR Code – descendu */
+/* QR Code – remonté */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1348,12 +1348,12 @@ body {
     border-radius: 6px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     right: 6%;
-    top: 20%;
+    top: 10%;
     width: 9.5%;
     aspect-ratio: 1/1;
 }
 
-/* ID sous le QR */
+/* ID sous le QR – remonté */
 .ticket-qr-id {
     position: absolute;
     right: 6%;
@@ -1364,10 +1364,10 @@ body {
     font-size: 9px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 72%;
+    top: 60%;
 }
 
-/* Date sous le QR */
+/* Date sous le QR – remontée */
 .ticket-qr-date {
     position: absolute;
     right: 6%;
@@ -1375,7 +1375,7 @@ body {
     text-align: center;
     font-size: 8px;
     color: #6b7280;
-    top: 80%;
+    top: 68%;
 }
 
 /* ============================================================
@@ -1387,15 +1387,15 @@ body {
     .ticket-label { font-size: 5px; width: 48px; }
     .ticket-value { font-size: 7px; }
     .ticket-separator { font-size: 5px; width: 3px; }
-    .ticket-line-1 { top: 36%; }
-    .ticket-line-2 { top: 43%; }
-    .ticket-line-3 { top: 50%; }
-    .ticket-line-4 { top: 57%; }
-    .ticket-line-5 { top: 64%; }
-    .ticket-line-6 { top: 71%; }
-    .ticket-qr { right: 4%; top: 18%; width: 14%; }
-    .ticket-qr-id { right: 4%; width: 14%; top: 60%; font-size: 8px; }
-    .ticket-qr-date { right: 4%; width: 14%; top: 67%; font-size: 7px; }
+    .ticket-line-1 { top: 28%; }
+    .ticket-line-2 { top: 35%; }
+    .ticket-line-3 { top: 42%; }
+    .ticket-line-4 { top: 49%; }
+    .ticket-line-5 { top: 56%; }
+    .ticket-line-6 { top: 63%; }
+    .ticket-qr { right: 4%; top: 12%; width: 14%; }
+    .ticket-qr-id { right: 4%; width: 14%; top: 54%; font-size: 8px; }
+    .ticket-qr-date { right: 4%; width: 14%; top: 61%; font-size: 7px; }
 }
 
 @media (max-width: 480px) {
@@ -1404,15 +1404,15 @@ body {
     .ticket-label { font-size: 4px; width: 38px; }
     .ticket-value { font-size: 6px; }
     .ticket-separator { font-size: 4px; width: 3px; }
-    .ticket-line-1 { top: 32%; }
-    .ticket-line-2 { top: 39%; }
-    .ticket-line-3 { top: 46%; }
-    .ticket-line-4 { top: 53%; }
-    .ticket-line-5 { top: 60%; }
-    .ticket-line-6 { top: 67%; }
-    .ticket-qr { right: 3%; top: 16%; width: 18%; }
-    .ticket-qr-id { right: 3%; width: 18%; top: 56%; font-size: 7px; }
-    .ticket-qr-date { right: 3%; width: 18%; top: 63%; font-size: 6px; }
+    .ticket-line-1 { top: 24%; }
+    .ticket-line-2 { top: 31%; }
+    .ticket-line-3 { top: 38%; }
+    .ticket-line-4 { top: 45%; }
+    .ticket-line-5 { top: 52%; }
+    .ticket-line-6 { top: 59%; }
+    .ticket-qr { right: 3%; top: 10%; width: 18%; }
+    .ticket-qr-id { right: 3%; width: 18%; top: 48%; font-size: 7px; }
+    .ticket-qr-date { right: 3%; width: 18%; top: 55%; font-size: 6px; }
 }
 /* ============================================================
    FOOTER – textes réduits, logos centrés
