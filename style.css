@@ -1292,7 +1292,7 @@ body {
     pointer-events: none;
 }
 
-/* Positions des lignes – descendues encore plus pour l'alignement */
+/* Positions des lignes – descendues encore plus */
 .ticket-line-1 { top: 36%; }
 .ticket-line-2 { top: 43%; }
 .ticket-line-3 { top: 50%; }
