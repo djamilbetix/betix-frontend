@@ -1204,7 +1204,7 @@ body {
     }
 }
 /* ============================================================
-   TICKET – STRUCTURE (valeurs uniquement, positions ajustées)
+   TICKET – STRUCTURE RÉVISÉE (sans chevauchement)
    ============================================================ */
 
 .ticket-list-item {
@@ -1273,29 +1273,31 @@ body {
     display: block;
 }
 
-/* Colonnes – décalées vers la droite (+1%) */
+/* ---- COLONNES RÉVISÉES (SANS CHEVAUCHEMENT) ---- */
+/* Colonne gauche : de 4% à 46% */
 .ticket-left {
     position: absolute;
-    left: 28%;        /* 18% → 19% */
-    width: 60%;
+    left: 4%;
+    width: 42%;
     text-align: left;
     pointer-events: none;
 }
+/* Colonne droite : de 54% à 92% */
 .ticket-right {
     position: absolute;
-    left: 30%;        /* 50% → 51% */
-    width: 62%;
+    left: 54%;
+    width: 38%;
     text-align: left;
     pointer-events: none;
 }
 
-/* Positions verticales des lignes (inchangées) */
-.ticket-line-1 { top: 41%; }
-.ticket-line-2 { top: 48%; }
-.ticket-line-3 { top: 55%; }
-.ticket-line-4 { top: 62%; }
-.ticket-line-5 { top: 69%; }
-.ticket-line-6 { top: 76%; }
+/* Positions verticales des lignes (ajustées pour mieux épouser l'image) */
+.ticket-line-1 { top: 39%; }
+.ticket-line-2 { top: 46%; }
+.ticket-line-3 { top: 53%; }
+.ticket-line-4 { top: 60%; }
+.ticket-line-5 { top: 67%; }
+.ticket-line-6 { top: 74%; }
 
 /* Structure d'une ligne – sans label, uniquement la valeur */
 .ticket-row {
@@ -1303,11 +1305,11 @@ body {
     align-items: center;
     justify-content: flex-start;
     width: 100%;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
 }
 
 .ticket-value {
-    font-size: 8px;
+    font-size: 10px;  /* légèrement plus grand */
     font-weight: 700;
     color: #1a202c;
     line-height: 1.2;
@@ -1317,85 +1319,138 @@ body {
     width: 100%;
 }
 
-/* Localisation : permet le retour à la ligne */
+/* Pour le lieu (colonne gauche, ligne 5) : autoriser le retour à la ligne */
 .ticket-left .ticket-line-5 .ticket-value {
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
 
-/* QR Code – décalé vers la gauche (+1% right) */
+/* ---- QR CODE REPOSITIONNÉ (plus grand, bien isolé à droite) ---- */
 .ticket-qr {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 2px;
-    border-radius: 6px;
+    padding: 4px;
+    border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 9%;          /* 8% → 9% (plus à gauche) */
-    top: 17%;
-    width: 6%;
+    right: 4%;          /* collé à droite */
+    top: 16%;           /* calé en haut */
+    width: 8%;
     aspect-ratio: 1/1;
+    z-index: 2;
 }
 
-/* ID sous le QR – en haut (proche du QR) */
+/* ---- ID DU TICKET SOUS LE QR ---- */
 .ticket-qr-id {
     position: absolute;
-    right: 9%;
-    width: 6%;
+    right: 4%;
+    width: 8%;
     text-align: center;
     font-family: 'JetBrains Mono', 'Courier New', monospace;
     font-weight: 700;
     font-size: 8px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 68%;           /* 76% → 68% (remonté) */
+    top: 27%;          /* juste en dessous du QR */
+    z-index: 2;
 }
 
-/* Date sous le QR – en bas */
+/* ---- DATE D'ACHAT AJOUTÉE SOUS L'ID (et non plus en ligne 5) ---- */
 .ticket-qr-date {
     position: absolute;
-    right: 9%;
-    width: 6%;
+    right: 4%;
+    width: 8%;
     text-align: center;
     font-size: 7px;
-    color: #6b7280;
-    top: 76%;           /* 69% → 76% (descendu) */
+    font-weight: 600;
+    color: #1a202c;
+    background: rgba(255, 255, 255, 0.7); /* léger fond pour lisibilité */
+    padding: 2px 0;
+    border-radius: 4px;
+    top: 33%;          /* en dessous de l'ID */
+    z-index: 2;
 }
 
 /* ============================================================
-   ADAPTATION MOBILE
+   ADAPTATION MOBILE (pour iPhone)
    ============================================================ */
 @media (max-width: 640px) {
-    .ticket-left { left: 15%; width: 28%; }
-    .ticket-right { left: 49%; width: 28%; }
-    .ticket-value { font-size: 7px; }
+    .ticket-left {
+        left: 4%;
+        width: 44%;
+    }
+    .ticket-right {
+        left: 52%;
+        width: 40%;
+    }
+    .ticket-value {
+        font-size: 8px;
+    }
     .ticket-line-1 { top: 33%; }
     .ticket-line-2 { top: 40%; }
     .ticket-line-3 { top: 47%; }
     .ticket-line-4 { top: 54%; }
     .ticket-line-5 { top: 61%; }
     .ticket-line-6 { top: 68%; }
-    .ticket-qr { right: 6%; top: 15%; width: 10%; }
-    .ticket-qr-id { right: 6%; width: 10%; top: 68%; font-size: 7px; }
-    .ticket-qr-date { right: 6%; width: 10%; top: 76%; font-size: 6px; }
+    .ticket-qr {
+        right: 4%;
+        top: 14%;
+        width: 10%;
+        padding: 3px;
+    }
+    .ticket-qr-id {
+        right: 4%;
+        width: 10%;
+        top: 27%;
+        font-size: 6px;
+    }
+    .ticket-qr-date {
+        right: 4%;
+        width: 10%;
+        top: 33%;
+        font-size: 6px;
+    }
 }
 
 @media (max-width: 480px) {
-    .ticket-left { left: 11%; width: 32%; }
-    .ticket-right { left: 47%; width: 32%; }
-    .ticket-value { font-size: 6px; }
+    .ticket-left {
+        left: 3%;
+        width: 46%;
+    }
+    .ticket-right {
+        left: 51%;
+        width: 42%;
+    }
+    .ticket-value {
+        font-size: 7px;
+    }
     .ticket-line-1 { top: 29%; }
     .ticket-line-2 { top: 36%; }
     .ticket-line-3 { top: 43%; }
     .ticket-line-4 { top: 50%; }
     .ticket-line-5 { top: 57%; }
     .ticket-line-6 { top: 64%; }
-    .ticket-qr { right: 5%; top: 13%; width: 14%; }
-    .ticket-qr-id { right: 5%; width: 14%; top: 68%; font-size: 6px; }
-    .ticket-qr-date { right: 5%; width: 14%; top: 76%; font-size: 5px; }
+    .ticket-qr {
+        right: 3%;
+        top: 12%;
+        width: 12%;
+        padding: 2px;
+    }
+    .ticket-qr-id {
+        right: 3%;
+        width: 12%;
+        top: 27%;
+        font-size: 5px;
+    }
+    .ticket-qr-date {
+        right: 3%;
+        width: 12%;
+        top: 33%;
+        font-size: 5px;
+    }
 }
 /* ============================================================
    FOOTER – textes réduits, logos centrés
