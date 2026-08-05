@@ -1227,8 +1227,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – VERSION MODIFIÉE
-// (avec colonnes séparées, QR repositionné, date d'achat ajoutée)
+// GÉNÉRATION DU TICKET HTML – CORRIGÉ (SANS DOUBLONS)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1263,33 +1262,29 @@ function generateTicketHTML(ticket) {
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
     
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
-    const eventLocation = safeTicket.eventLocation || 'Online';
     
-    // 👇 DATE D'ACHAT AJOUTÉE ICI (formattée lisiblement)
-    const purchaseDate = safeTicket.purchaseDate 
-        ? new Date(safeTicket.purchaseDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) 
-        : 'N/A';
+    const eventLocation = safeTicket.eventLocation || 'Online';
+    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
 
-    // ⚠️ Plus de labels, uniquement les valeurs !
     return `
         <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- colonne gauche : 6 lignes (valeurs uniquement) -->
-            <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
-            <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
-            <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
-            <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
-            <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
-            <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <!-- colonne droite : 6 lignes (valeurs uniquement) -->
-            <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
-            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
-            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
-            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
-            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <!-- colonne gauche : 6 lignes -->
+            <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
+            <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
+            <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
+            <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
+            <!-- colonne droite : 6 lignes -->
+            <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
+            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
+            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
+            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">PRICE PAID</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
+            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
+            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
             <!-- QR -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">#${escapeHtml(ticketIdShort)}</div>
@@ -1299,7 +1294,7 @@ function generateTicketHTML(ticket) {
 }
 
 // ============================================================
-// GÉNÉRER LE QR CODE – AVEC NETTOYAGE DU CONTENEUR
+// GÉNÉRER LE QR CODE – AVEC NETTOYAGE
 // ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
@@ -1676,7 +1671,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – design amélioré
+// PAGE DE DÉTAIL (openEventDetails)
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1695,7 +1690,6 @@ function openEventDetails(eventId) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel pour les images
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1747,7 +1741,6 @@ function openEventDetails(eventId) {
 
     const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
 
-    // Nouvelle structure de détail améliorée
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1985,7 +1978,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE ET VÉRIFICATION
+// PROFIL – FORMULAIRE AVEC REVUE
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
