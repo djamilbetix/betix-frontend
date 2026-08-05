@@ -1292,13 +1292,13 @@ body {
     pointer-events: none;
 }
 
-/* Positions des lignes – NOUVELLES VALEURS (descentes) */
-.ticket-line-1 { top: 32%; }
-.ticket-line-2 { top: 39%; }
-.ticket-line-3 { top: 46%; }
-.ticket-line-4 { top: 53%; }
-.ticket-line-5 { top: 60%; }
-.ticket-line-6 { top: 67%; }
+/* Positions des lignes – descendues pour s'aligner sur l'image */
+.ticket-line-1 { top: 34%; }
+.ticket-line-2 { top: 41%; }
+.ticket-line-3 { top: 48%; }
+.ticket-line-4 { top: 55%; }
+.ticket-line-5 { top: 62%; }
+.ticket-line-6 { top: 69%; }
 
 /* Structure des lignes */
 .ticket-row {
@@ -1354,7 +1354,7 @@ body {
     aspect-ratio: 1/1;
 }
 
-/* ID sous le QR – NOUVELLE POSITION */
+/* ID sous le QR – descendu pour correspondre à l'image */
 .ticket-qr-id {
     position: absolute;
     right: 5.5%;
@@ -1365,10 +1365,10 @@ body {
     font-size: 9px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 64%;
+    top: 66%;
 }
 
-/* Date sous le QR – NOUVELLE POSITION */
+/* Date sous le QR – descendue pour correspondre à l'image */
 .ticket-qr-date {
     position: absolute;
     right: 5.5%;
@@ -1376,7 +1376,7 @@ body {
     text-align: center;
     font-size: 8px;
     color: #6b7280;
-    top: 72%;
+    top: 74%;
 }
 
 /* ============================================================
@@ -1388,15 +1388,15 @@ body {
     .ticket-label { font-size: 5px; width: 60px; }
     .ticket-value { font-size: 7px; }
     .ticket-separator { font-size: 5px; width: 6px; }
-    .ticket-line-1 { top: 24%; }
-    .ticket-line-2 { top: 31%; }
-    .ticket-line-3 { top: 38%; }
-    .ticket-line-4 { top: 45%; }
-    .ticket-line-5 { top: 52%; }
-    .ticket-line-6 { top: 59%; }
+    .ticket-line-1 { top: 26%; }
+    .ticket-line-2 { top: 33%; }
+    .ticket-line-3 { top: 40%; }
+    .ticket-line-4 { top: 47%; }
+    .ticket-line-5 { top: 54%; }
+    .ticket-line-6 { top: 61%; }
     .ticket-qr { right: 4%; top: 12%; width: 16%; }
-    .ticket-qr-id { right: 4%; width: 16%; top: 52%; font-size: 8px; }
-    .ticket-qr-date { right: 4%; width: 16%; top: 59%; font-size: 7px; }
+    .ticket-qr-id { right: 4%; width: 16%; top: 54%; font-size: 8px; }
+    .ticket-qr-date { right: 4%; width: 16%; top: 61%; font-size: 7px; }
 }
 
 @media (max-width: 480px) {
@@ -1405,15 +1405,15 @@ body {
     .ticket-label { font-size: 4px; width: 50px; }
     .ticket-value { font-size: 6px; }
     .ticket-separator { font-size: 4px; width: 5px; }
-    .ticket-line-1 { top: 20%; }
-    .ticket-line-2 { top: 27%; }
-    .ticket-line-3 { top: 34%; }
-    .ticket-line-4 { top: 41%; }
-    .ticket-line-5 { top: 48%; }
-    .ticket-line-6 { top: 55%; }
+    .ticket-line-1 { top: 22%; }
+    .ticket-line-2 { top: 29%; }
+    .ticket-line-3 { top: 36%; }
+    .ticket-line-4 { top: 43%; }
+    .ticket-line-5 { top: 50%; }
+    .ticket-line-6 { top: 57%; }
     .ticket-qr { right: 3%; top: 10%; width: 20%; }
-    .ticket-qr-id { right: 3%; width: 20%; top: 48%; font-size: 7px; }
-    .ticket-qr-date { right: 3%; width: 20%; top: 55%; font-size: 6px; }
+    .ticket-qr-id { right: 3%; width: 20%; top: 50%; font-size: 7px; }
+    .ticket-qr-date { right: 3%; width: 20%; top: 57%; font-size: 6px; }
 }
 
 /* ============================================================
