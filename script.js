@@ -1227,7 +1227,8 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – CORRIGÉ (SANS LABELS, UNIQUEMENT LES VALEURS)
+// GÉNÉRATION DU TICKET HTML – VERSION MODIFIÉE
+// (avec colonnes séparées, QR repositionné, date d'achat ajoutée)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1263,7 +1264,11 @@ function generateTicketHTML(ticket) {
     
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
     const eventLocation = safeTicket.eventLocation || 'Online';
-    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+    
+    // 👇 DATE D'ACHAT AJOUTÉE ICI (formattée lisiblement)
+    const purchaseDate = safeTicket.purchaseDate 
+        ? new Date(safeTicket.purchaseDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) 
+        : 'N/A';
 
     // ⚠️ Plus de labels, uniquement les valeurs !
     return `
