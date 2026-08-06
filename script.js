@@ -1221,18 +1221,22 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – VERSION FINALE AVEC TOUTES LES INFOS
+// GÉNÉRATION DU TICKET HTML – VERSION FINALE CORRIGÉE
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
+    
+    // Formatage de la date et de l'heure de l'événement
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'Date to be defined';
+        : 'To be defined';
+        
     const timeFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'Time to be defined';
+        : 'To be defined';
     
+    // Formatage de la durée
     const durationValue = safeTicket.durationValue || '';
     const durationUnit = safeTicket.durationUnit || '';
     let durationDisplay = 'N/A';
@@ -1247,42 +1251,53 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
+    // Nettoyage et sécurisation des textes
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
     let userEmail = safeTicket.buyerEmail || 'Not provided';
-    if (userEmail.length > 20) userEmail = userEmail.substring(0, 18) + '…';
+    if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
+    
     const userPhone = safeTicket.buyerPhone || 'Not provided';
-    const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
-    const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
+    const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
+    const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
     const eventLocation = safeTicket.eventLocation || 'Online';
-    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+    
+    // Dates et numéros de ticket
+    const purchaseDate = safeTicket.purchaseDate 
+        ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') 
+        : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
 
     return `
         <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
             <div class="ticket-overlay-bg">
-                <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+                <img src="ticket-officiel.png" alt="Ticket officiel" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- Colonne gauche -->
+            
+            <!-- Colonne Gauche (Infos Événement) -->
             <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
             <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
             <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
             <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
-            <!-- Colonne droite -->
+
+            <!-- Colonne Droite (Infos Acheteur / Transaction) -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
             <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
             <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
-            <!-- QR Code et ID sur le coupon -->
+
+            <!-- Coupon Droite (QR Code, ID & Date d'achat) -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
+            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
         </div>
     `;
 }
+
 // ============================================================
 // GÉNÉRER LE QR CODE
 // ============================================================
