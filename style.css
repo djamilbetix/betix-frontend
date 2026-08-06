@@ -1203,9 +1203,8 @@ body {
         min-width: 140px;
     }
 }
-
 /* ============================================================
-   TICKET – POSITIONNEMENT PRÉCIS (SANS DOUBLONS)
+   TICKET – POSITIONNEMENT FINAL
    ============================================================ */
 
 .ticket-list-item {
@@ -1268,7 +1267,7 @@ body {
     display: block;
 }
 
-/* ===== Colonnes : positions absolues, sans libellés ===== */
+/* ===== Colonnes ===== */
 .ticket-left,
 .ticket-right {
     position: absolute;
@@ -1277,32 +1276,32 @@ body {
 
 /* Colonne gauche : alignée à droite des deux‑points */
 .ticket-left {
-    left: 26%;          /* <-- Ajusté pour correspondre à l'image */
+    left: 26%;          /* Ajustez selon votre image */
     width: 45%;
     text-align: right;
 }
 
 /* Colonne droite : alignée à gauche des deux‑points */
 .ticket-right {
-    left: 56%;          /* <-- Ajusté pour correspondre à l'image */
+    left: 56%;          /* Ajustez selon votre image */
     width: 35%;
     text-align: left;
 }
 
-/* Lignes verticales (top en %) – à affiner selon l'image */
-.ticket-left.line-1 { top: 41%; }
-.ticket-left.line-2 { top: 48%; }
-.ticket-left.line-3 { top: 55%; }
-.ticket-left.line-4 { top: 62%; }
-.ticket-left.line-5 { top: 69%; }
-.ticket-left.line-6 { top: 76%; }
+/* Lignes verticales (top en %) – À AFFINER */
+.ticket-left.line-1 { top: 41%; }   /* EVENT */
+.ticket-left.line-2 { top: 48%; }   /* DURATION */
+.ticket-left.line-3 { top: 55%; }   /* DATE */
+.ticket-left.line-4 { top: 62%; }   /* TIME */
+.ticket-left.line-5 { top: 69%; }   /* LOCATION */
+.ticket-left.line-6 { top: 76%; }   /* PRICE */
 
-.ticket-right.line-1 { top: 41%; }
-.ticket-right.line-2 { top: 48%; }
-.ticket-right.line-3 { top: 55%; }
-.ticket-right.line-4 { top: 62%; }
-.ticket-right.line-5 { top: 69%; }
-.ticket-right.line-6 { top: 76%; }
+.ticket-right.line-1 { top: 41%; }  /* NAME */
+.ticket-right.line-2 { top: 48%; }  /* EMAIL */
+.ticket-right.line-3 { top: 55%; }  /* PHONE */
+.ticket-right.line-4 { top: 62%; }  /* WALLET ID (numéro séquentiel) */
+.ticket-right.line-5 { top: 69%; }  /* TICKET PURCHASE DATE */
+.ticket-right.line-6 { top: 76%; }  /* TICKET NUMBER (ID unique) */
 
 /* Valeurs */
 .ticket-value {
@@ -1334,29 +1333,37 @@ body {
     padding: 2px;
     border-radius: 6px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 8%;          /* <-- Centré horizontalement */
-    top: 17%;           /* <-- Centré verticalement */
-    width: 16%;         /* <-- Taille adaptée au cadre */
+    right: 8%;          /* Ajustez */
+    top: 17%;           /* Ajustez */
+    width: 16%;         /* Ajustez */
     aspect-ratio: 1/1;
 }
 
 /* ===== Ticket ID sur le coupon jaune (ligne "TICKET ID :") ===== */
 .ticket-qr-id {
     position: absolute;
-    right: 8%;          /* <-- Aligné avec le QR */
-    width: 16%;         /* <-- Même largeur que le QR */
+    right: 8%;
+    width: 16%;
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 8px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 52%;           /* <-- Position sur la ligne "TICKET ID :" */
+    top: 52%;           /* Position sur la ligne "TICKET ID :" */
 }
 
-/* Suppression de la date sous le QR (déjà affichée dans colonne droite) */
+/* ===== DATE OF PURCHASE sur le coupon (ligne "DATE OF PURCHASE :") ===== */
 .ticket-qr-date {
-    display: none;
+    position: absolute;
+    right: 8%;
+    width: 16%;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 7px;
+    color: #1a202c;
+    top: 62%;           /* Position sur la ligne "DATE OF PURCHASE :" */
 }
 
 /* ============================================================
@@ -1380,6 +1387,7 @@ body {
     .ticket-right.line-6 { top: 68%; }
     .ticket-qr { right: 5%; top: 15%; width: 12%; }
     .ticket-qr-id { right: 5%; width: 12%; top: 52%; font-size: 6px; }
+    .ticket-qr-date { right: 5%; width: 12%; top: 62%; font-size: 5px; }
 }
 
 @media (max-width: 480px) {
@@ -1400,6 +1408,7 @@ body {
     .ticket-right.line-6 { top: 64%; }
     .ticket-qr { right: 4%; top: 13%; width: 14%; }
     .ticket-qr-id { right: 4%; width: 14%; top: 52%; font-size: 5px; }
+    .ticket-qr-date { right: 4%; width: 14%; top: 62%; font-size: 4px; }
 }
 /* ============================================================
    FOOTER – textes réduits, logos centrés
