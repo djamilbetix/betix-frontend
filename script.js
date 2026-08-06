@@ -665,6 +665,8 @@ async function saveTicketToSupabase(ticketData) {
             duration_unit: ticketData.durationUnit || null,
             organizer_name: ticketData.organizerName || '',
             organizer_pi_uid: ticketData.organizerPiUid || '',
+            buyer_email: ticketData.buyerEmail || '',
+            buyer_phone: ticketData.buyerPhone || '',
             ticket_number: ticketData.ticketNumber || null,
             updated_at: new Date().toISOString()
         };
@@ -697,6 +699,8 @@ async function loadTicketsFromSupabase(piUid) {
             category: t.category || '',
             price: t.price || 0,
             buyerName: t.buyer_name || 'Anonymous',
+            buyerEmail: t.buyer_email || '',
+            buyerPhone: t.buyer_phone || '',
             purchaseDate: t.purchase_date,
             transactionId: t.transaction_id,
             qrCode: t.qr_code,
@@ -837,7 +841,6 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Gestion locale des notifications (pas de Supabase pour les notifs)
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
         notifications = localNotifs;
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
@@ -1218,7 +1221,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – VERSION ÉPURÉE (SANS EMAIL, PHONE, PURCHASE DATE)
+// GÉNÉRATION DU TICKET HTML – VERSION FINALE AVEC TOUTES LES INFOS
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1247,10 +1250,17 @@ function generateTicketHTML(ticket) {
     const buyerNameRaw = safeTicket.buyerName || 'Not provided';
     const buyerName = buyerNameRaw.toUpperCase();
     
+    let userEmail = safeTicket.buyerEmail || 'Not provided';
+    if (userEmail.length > 20) {
+        userEmail = userEmail.substring(0, 18) + '…';
+    }
+    
+    const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
     const eventLocation = safeTicket.eventLocation || 'Online';
+    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
 
     return `
@@ -1265,10 +1275,13 @@ function generateTicketHTML(ticket) {
             <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
             <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
             <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
-            <!-- Colonne droite (épurée : NAME, TICKET NUMBER, TICKET ID uniquement) -->
+            <!-- Colonne droite -->
             <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
+            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
+            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
             <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">TICKET NUMBER</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div></div>
             <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
             <!-- QR -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">ID: ${escapeHtml(ticketIdShort)}</div>
@@ -1277,7 +1290,7 @@ function generateTicketHTML(ticket) {
 }
 
 // ============================================================
-// GÉNÉRER LE QR CODE – AVEC NETTOYAGE
+// GÉNÉRER LE QR CODE
 // ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
@@ -1351,7 +1364,7 @@ function hidePremiumBanner() {
 }
 
 // ============================================================
-// RENDER TICKETS (sans bouton "Use")
+// RENDER TICKETS
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1399,7 +1412,7 @@ function renderTickets() {
 }
 
 // ============================================================
-// RENDER HISTORY (avec bouton de suppression)
+// RENDER HISTORY
 // ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
@@ -1447,9 +1460,6 @@ function renderHistory() {
     }, 300);
 }
 
-// ============================================================
-// SUPPRIMER UN TICKET DE L'HISTORIQUE
-// ============================================================
 function deleteHistoryTicket(ticketId) {
     if (!confirm('Delete this ticket from history?')) return;
     tickets = tickets.filter(t => t.id !== ticketId);
@@ -2563,7 +2573,8 @@ async function confirmPurchase(eventId, quantity) {
                         
                         const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                          (currentUser.last_name ? ' ' + currentUser.last_name : '');
-                        // Ne plus stocker email et phone dans le ticket
+                        const buyerEmail = currentUser.email || 'Not provided';
+                        const buyerPhone = currentUser.phone_number || 'Not provided';
                         const organizerName = event.organizerName || event.organizer || 'Anonymous';
                         const organizerPiUid = event.organizerPiUid || event.organizer || '';
                         
@@ -2579,6 +2590,8 @@ async function confirmPurchase(eventId, quantity) {
                             pays: event.pays || event.country || 'France',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: fullName || 'Anonymous',
+                            buyerEmail: buyerEmail,
+                            buyerPhone: buyerPhone,
                             userWallet: currentUser.wallet,
                             status: 'Valid',
                             purchaseDate: purchaseDate,
