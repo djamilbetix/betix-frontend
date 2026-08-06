@@ -1,18 +1,67 @@
 // ============================================================
-// CONFIGURATION SUPABASE
+// CONFIGURATION SUPABASE (CHARGEMENT ROBUSTE)
 // ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    db: { schema: 'public' },
-    fetch: (url, options) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+let supabaseClient = null;
+
+function getSupabaseClient() {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+            db: { schema: 'public' },
+            fetch: (url, options) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+            }
+        });
     }
-});
+    if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+            db: { schema: 'public' },
+            fetch: (url, options) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+            }
+        });
+    }
+    return null;
+}
+
+function ensureSupabaseClient() {
+    if (supabaseClient) return supabaseClient;
+    supabaseClient = getSupabaseClient();
+    if (!supabaseClient) {
+        console.warn('Supabase client not ready, retrying in 500ms...');
+        setTimeout(() => { supabaseClient = getSupabaseClient(); }, 500);
+    }
+    return supabaseClient;
+}
+
+// Tentative initiale
+supabaseClient = getSupabaseClient();
+if (!supabaseClient) {
+    // Plan B : réessayer toutes les secondes pendant 5 secondes max
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        supabaseClient = getSupabaseClient();
+        if (supabaseClient || attempts > 5) {
+            clearInterval(interval);
+            if (!supabaseClient) {
+                console.error('Supabase client could not be loaded after multiple attempts.');
+                // Afficher un message à l'utilisateur (optionnel)
+                document.body.innerHTML = '<div style="text-align:center;padding:2rem;font-family:sans-serif;"><h1>Erreur de chargement</h1><p>Impossible de charger la bibliothèque Supabase. Veuillez rafraîchir la page.</p><button onclick="location.reload()">Rafraîchir</button></div>';
+            } else {
+                console.log('Supabase client loaded successfully.');
+            }
+        }
+    }, 1000);
+}
 
 // ============================================================
 // LISTES ET TRADUCTIONS (complètes)
@@ -342,7 +391,9 @@ let appSettings = {
     premiumDurationDays: 30,
     piRate: 1,
     badgeEnabled: true
-};// ============================================================
+};
+
+// ============================================================
 // VÉRIFICATIONS DE CONNEXION ET PROFIL
 // ============================================================
 function requireLogin() {
@@ -480,18 +531,22 @@ function initCharCounters() {
 // FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
+    const client = ensureSupabaseClient();
+    if (!client) { console.error('Supabase client not available'); return null; }
     try {
         const response = await fetch(base64Data);
         const blob = await response.blob();
         const filePath = eventId + '/image_' + index + '_' + Date.now() + '.webp';
-        const { data, error } = await supabaseClient.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
+        const { data, error } = await client.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
         if (error) throw error;
-        const { data: publicUrlData } = supabaseClient.storage.from('events-images').getPublicUrl(filePath);
+        const { data: publicUrlData } = client.storage.from('events-images').getPublicUrl(filePath);
         return publicUrlData.publicUrl;
-    } catch (error) { return null; }
+    } catch (error) { console.error('Upload image error:', error); return null; }
 }
 
 async function saveHeroSlideToSupabase(slideData, index) {
+    const client = ensureSupabaseClient();
+    if (!client) return false;
     try {
         const dbSlide = {
             image_url: slideData.image,
@@ -502,23 +557,25 @@ async function saveHeroSlideToSupabase(slideData, index) {
             updated_at: new Date().toISOString()
         };
         if (slideData.id) {
-            const { error } = await supabaseClient.from('hero_slides').update(dbSlide).eq('id', slideData.id);
+            const { error } = await client.from('hero_slides').update(dbSlide).eq('id', slideData.id);
             if (error) throw error;
         } else {
             dbSlide.created_at = new Date().toISOString();
-            const { error } = await supabaseClient.from('hero_slides').insert(dbSlide);
+            const { error } = await client.from('hero_slides').insert(dbSlide);
             if (error) throw error;
         }
         return true;
-    } catch (error) { return false; }
+    } catch (error) { console.error('Save hero slide error:', error); return false; }
 }
 
 async function deleteHeroSlideFromSupabase(id) {
+    const client = ensureSupabaseClient();
+    if (!client) return false;
     try {
-        const { error } = await supabaseClient.from('hero_slides').delete().eq('id', id);
+        const { error } = await client.from('hero_slides').delete().eq('id', id);
         if (error) throw error;
         return true;
-    } catch (error) { return false; }
+    } catch (error) { console.error('Delete hero slide error:', error); return false; }
 }
 
 async function migrateHeroSlides(slides) {
@@ -526,20 +583,40 @@ async function migrateHeroSlides(slides) {
 }
 
 async function uploadHeroImage(base64Data, filename) {
+    const client = ensureSupabaseClient();
+    if (!client) return null;
     try {
         const response = await fetch(base64Data);
         const blob = await response.blob();
         const filePath = 'hero/' + filename.replace(/\s+/g, '_') + '_' + Date.now() + '.webp';
-        const { data, error } = await supabaseClient.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
+        const { data, error } = await client.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
         if (error) throw error;
-        const { data: publicUrlData } = supabaseClient.storage.from('events-images').getPublicUrl(filePath);
+        const { data: publicUrlData } = client.storage.from('events-images').getPublicUrl(filePath);
         return publicUrlData.publicUrl;
-    } catch (error) { return null; }
+    } catch (error) { console.error('Upload hero image error:', error); return null; }
 }
 
 async function loadHeroSlides() {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        // Fallback local storage
+        let local = localStorage.getItem('betix_hero_slides');
+        if (local) try { heroSlides = JSON.parse(local); } catch(e) { heroSlides = []; }
+        else {
+            heroSlides = [
+                { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
+                { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
+                { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
+                { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
+                { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
+            ];
+        }
+        initHeroSlider();
+        renderAdminSlides();
+        return heroSlides;
+    }
     try {
-        const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
+        const { data, error } = await client.from('hero_slides').select('*').order('sort_order', { ascending: true });
         if (error) throw error;
         if (data && data.length > 0) {
             heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
@@ -563,13 +640,18 @@ async function loadHeroSlides() {
         renderAdminSlides();
         return heroSlides;
     } catch (error) {
+        console.error('Load hero slides error:', error);
         let local = localStorage.getItem('betix_hero_slides');
-        if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
+        if (local) try { heroSlides = JSON.parse(local); } catch(e) { heroSlides = []; }
+        initHeroSlider();
+        renderAdminSlides();
         return heroSlides;
     }
 }
 
 async function saveUserToSupabase(piUid, username, wallet, points) {
+    const client = ensureSupabaseClient();
+    if (!client) return false;
     points = points || 0;
     try {
         const now = new Date().toISOString();
@@ -592,24 +674,26 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             updated_at: now,
             last_seen: now
         };
-        const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
+        const { data: existing, error: checkError } = await client.from('users').select('pi_uid').eq('pi_uid', piUid).single();
         if (checkError && checkError.code !== 'PGRST116') throw checkError;
         if (existing) {
-            const { error } = await supabaseClient.from('users').update(userData).eq('pi_uid', piUid);
+            const { error } = await client.from('users').update(userData).eq('pi_uid', piUid);
             if (error) throw error;
         } else {
             userData.created_at = now;
-            const { error } = await supabaseClient.from('users').insert(userData);
+            const { error } = await client.from('users').insert(userData);
             if (error) throw error;
         }
         return true;
-    } catch (error) { return false; }
+    } catch (error) { console.error('Save user error:', error); return false; }
 }
 
 // ============================================================
 // SAVE EVENT ET TICKET (AVEC FALLBACK)
 // ============================================================
 async function saveEventToSupabase(eventData) {
+    const client = ensureSupabaseClient();
+    if (!client) return false;
     try {
         if (!eventData || !eventData.id) return false;
         const standardPrice = eventData.price || 0.0003;
@@ -637,13 +721,15 @@ async function saveEventToSupabase(eventData) {
             standard_sold: eventData.standardSold || 0,
             updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
+        const { error } = await client.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
         if (error) throw error;
         return true;
-    } catch (error) { return false; }
+    } catch (error) { console.error('Save event error:', error); return false; }
 }
 
 async function saveTicketToSupabase(ticketData) {
+    const client = ensureSupabaseClient();
+    if (!client) return false;
     try {
         if (!ticketData || !ticketData.id) return false;
         const dbTicket = {
@@ -671,7 +757,7 @@ async function saveTicketToSupabase(ticketData) {
             ticket_number: ticketData.ticketNumber || null,
             updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
+        const { error } = await client.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
         if (error) {
             console.error('Supabase error saving ticket:', error);
             return false;
@@ -687,9 +773,11 @@ async function saveTicketToSupabase(ticketData) {
 // CHARGEMENT DES TICKETS DEPUIS SUPABASE
 // ============================================================
 async function loadTicketsFromSupabase(piUid) {
+    const client = ensureSupabaseClient();
+    if (!client) return [];
     try {
         if (!piUid) return [];
-        const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
+        const { data, error } = await client.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
         if (error) throw error;
         return (data || []).map(t => ({
             id: t.id,
@@ -713,12 +801,14 @@ async function loadTicketsFromSupabase(piUid) {
             pays: t.pays || 'France',
             ticketNumber: t.ticket_number
         }));
-    } catch (error) { return []; }
+    } catch (error) { console.error('Load tickets error:', error); return []; }
 }
 
 async function loadEventsFromSupabase() {
+    const client = ensureSupabaseClient();
+    if (!client) return [];
     try {
-        const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
+        const { data, error } = await client.from('events').select('*').order('event_date', { ascending: true });
         if (error) throw error;
         return (data || []).map(e => {
             const imagesArray = e.image_urls ? (() => { try { return JSON.parse(e.image_urls); } catch(parseErr) { return []; } })() : [];
@@ -752,7 +842,7 @@ async function loadEventsFromSupabase() {
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-    } catch (error) { return []; }
+    } catch (error) { console.error('Load events error:', error); return []; }
 }
 
 // ============================================================
@@ -1039,8 +1129,16 @@ function mergeArraysById(localArray, supabaseArray) {
 // PARAMÈTRES DE L'APPLICATION
 // ============================================================
 async function loadAppSettings() {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        const local = localStorage.getItem('betix_app_settings');
+        if (local) {
+            try { Object.assign(appSettings, JSON.parse(local)); } catch(e) {}
+        }
+        return;
+    }
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('app_settings')
             .select('key, value');
         if (error) throw error;
@@ -1073,10 +1171,17 @@ async function loadAppSettings() {
 }
 
 async function saveAppSettings(settings) {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        // Sauvegarde locale
+        Object.assign(appSettings, settings);
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+        return true;
+    }
     try {
         for (const [key, value] of Object.entries(settings)) {
             const stringValue = typeof value === 'string' ? value : String(value);
-            const { error } = await supabaseClient
+            const { error } = await client
                 .from('app_settings')
                 .upsert({ key, value: stringValue }, { onConflict: 'key' });
             if (error) throw error;
@@ -1094,9 +1199,14 @@ async function saveAppSettings(settings) {
 // GESTION PREMIUM (AMÉLIORÉE)
 // ============================================================
 async function loadUserPremiumStatus(piUid) {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        // Utiliser les données locales
+        return;
+    }
     if (!piUid) return;
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('users')
             .select('account_type, premium_start, premium_end, premium_status, premium_receipt')
             .eq('pi_uid', piUid)
@@ -1124,6 +1234,13 @@ async function loadUserPremiumStatus(piUid) {
 }
 
 async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_receipt = null) {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        // Mettre en file d'attente
+        pendingPremiumUpdates.push({ piUid, account_type, premium_start, premium_end, premium_status, premium_receipt });
+        localStorage.setItem('betix_pending_premium', JSON.stringify(pendingPremiumUpdates));
+        return false;
+    }
     try {
         const updates = {
             account_type,
@@ -1133,7 +1250,7 @@ async function updateUserPremiumStatus(piUid, account_type, premium_start, premi
             updated_at: new Date().toISOString()
         };
         if (premium_receipt) updates.premium_receipt = premium_receipt;
-        const { error } = await supabaseClient
+        const { error } = await client
             .from('users')
             .update(updates)
             .eq('pi_uid', piUid);
@@ -1209,9 +1326,11 @@ function sendPremiumReceiptEmail(email, receipt) {
 // RECHERCHE D'UTILISATEURS POUR ADMIN PREMIUM
 // ============================================================
 async function searchUserByQuery(query) {
+    const client = ensureSupabaseClient();
+    if (!client) return [];
     if (!query || query.trim().length < 2) return [];
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('users')
             .select('*')
             .or(`username.ilike.%${query}%,pi_uid.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
@@ -1225,6 +1344,8 @@ async function searchUserByQuery(query) {
 }
 
 async function assignPremiumManually(userId, durationDays) {
+    const client = ensureSupabaseClient();
+    if (!client) return { success: false, message: 'Supabase non disponible' };
     if (!userId) return { success: false, message: 'ID utilisateur manquant' };
     const startDate = new Date();
     const endDate = new Date();
@@ -1239,13 +1360,13 @@ async function assignPremiumManually(userId, durationDays) {
             premium_receipt: receipt,
             updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient
+        const { error } = await client
             .from('users')
             .update(updates)
             .eq('pi_uid', userId);
         if (error) throw error;
         // Ajouter une trace dans l'historique (table premium_assignments)
-        await supabaseClient.from('premium_assignments').insert({
+        await client.from('premium_assignments').insert({
             user_id: userId,
             assigned_by: currentUser.wallet || 'admin',
             duration_days: durationDays,
@@ -1267,7 +1388,9 @@ function renderVerifiedBadge(userId, userName) {
         return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#0B1F5C; font-size:0.8rem; margin-left:4px;"></i></span>`;
     }
     return '';
-}// ============================================================
+}
+
+// ============================================================
 // VÉRIFICATION DU PROFIL COMPLET
 // ============================================================
 function checkProfileComplete() {
@@ -2101,8 +2224,10 @@ function populateProfileCountrySelect() {
 async function loadProfileData() {
     const piUid = currentUser.piUid || currentUser.wallet;
     if (!piUid) return;
+    const client = ensureSupabaseClient();
+    if (!client) return;
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('users')
             .select('first_name, last_name, country, address, email, phone_number')
             .eq('pi_uid', piUid)
@@ -2219,6 +2344,13 @@ async function confirmProfileSave() {
         return;
     }
 
+    const client = ensureSupabaseClient();
+    if (!client) {
+        alert('Supabase client not available. Please try again later.');
+        closeProfileReview();
+        return;
+    }
+
     try {
         const updates = {
             first_name: data.firstName,
@@ -2229,7 +2361,7 @@ async function confirmProfileSave() {
             phone_number: data.phone,
             updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient
+        const { error } = await client
             .from('users')
             .update(updates)
             .eq('pi_uid', piUid);
@@ -2620,7 +2752,9 @@ function closeSuccessPopup() {
     const info = document.getElementById('successTicketInfo');
     if (info) info.innerHTML = '';
     localStorage.removeItem('betix_success_popup_shown');
-}// ============================================================
+}
+
+// ============================================================
 // CONNEXION PI
 // ============================================================
 async function connectToPi() {
@@ -3674,7 +3808,7 @@ function loadAdminPage() {
     document.getElementById('adminBadgeEnabled').checked = appSettings.badgeEnabled;
     renderAdminEvents(); renderAdminSlides(); renderAdminUsers(); renderAdminLogs();
     initAdminTabs();
-    initAdminPremiumTab(); // NOUVEAU : initialiser l'onglet Premium
+    initAdminPremiumTab();
     if (!adminTimerInterval) startAdminSession();
     const userSearch = document.getElementById('adminUserSearch');
     if (userSearch) userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
@@ -3809,7 +3943,6 @@ function initAdminPremiumTab() {
             const result = await assignPremiumManually(userId, duration);
             if (result.success) {
                 messageP.innerHTML = `<span style="color:#10b981;">✅ Premium attribué ! Reçu : ${result.receipt}</span>`;
-                // Rafraîchir la liste
                 if (searchInput.value) searchBtn.click();
             } else {
                 messageP.innerHTML = `<span style="color:#ef4444;">❌ Erreur : ${result.message}</span>`;
