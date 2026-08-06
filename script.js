@@ -1219,9 +1219,8 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
-
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – VERSION FINALE CORRIGÉE
+// GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1251,7 +1250,7 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    // Nettoyage et sécurisation des textes
+    // Données client & événement
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
     let userEmail = safeTicket.buyerEmail || 'Not provided';
     if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
@@ -1262,7 +1261,6 @@ function generateTicketHTML(ticket) {
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
     const eventLocation = safeTicket.eventLocation || 'Online';
     
-    // Dates et numéros de ticket
     const purchaseDate = safeTicket.purchaseDate 
         ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') 
         : 'N/A';
@@ -1282,15 +1280,17 @@ function generateTicketHTML(ticket) {
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
 
-            <!-- Colonne Droite (Infos Acheteur / Transaction) -->
+            <!-- Colonne Droite (Infos Acheteur & Transaction) -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
-            <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
+            <!-- WALLET ID : affiche désormais l'ID du ticket (#17860255) -->
+            <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
+            <!-- TICKET NUMBER : affiche désormais le numéro séquentiel (#1) -->
+            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
 
-            <!-- Coupon Droite (QR Code, ID & Date d'achat) -->
+            <!-- Coupon Droite -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
             <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
