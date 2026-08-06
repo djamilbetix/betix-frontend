@@ -1204,53 +1204,9 @@ body {
     }
 }
 /* ============================================================
-   TICKET – POSITIONNEMENT FINAL (CORRIGÉ & ALIGNÉ SUR L'IMAGE)
+   TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
    ============================================================ */
 
-.ticket-list-item {
-    max-width: 820px;
-    margin: 0 auto 2rem auto;
-    background: transparent;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.ticket-actions-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-    padding: 0 8px;
-}
-
-.ticket-actions-wrapper .btn-action {
-    padding: 8px 18px;
-    border: none;
-    border-radius: 40px;
-    font-weight: 700;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    letter-spacing: 0.3px;
-}
-.ticket-actions-wrapper .btn-action:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-.ticket-actions-wrapper .btn-action:active { transform: scale(0.95); }
-.ticket-actions-wrapper .btn-pdf { background: #ef4444; color: white; }
-.ticket-actions-wrapper .btn-pdf:hover { background: #dc2626; }
-.ticket-actions-wrapper .btn-png { background: #10b981; color: white; }
-.ticket-actions-wrapper .btn-png:hover { background: #059669; }
-.ticket-actions-wrapper .btn-share { background: #3b82f6; color: white; }
-.ticket-actions-wrapper .btn-share:hover { background: #2563eb; }
-
-/* Conteneur principal */
 .ticket-overlay-container {
     position: relative;
     max-width: 780px;
@@ -1268,39 +1224,39 @@ body {
     display: block;
 }
 
-/* Base commune des zones de texte */
+/* Base commune */
 .ticket-left,
 .ticket-right {
     position: absolute;
     pointer-events: none;
-    text-align: left; /* Alignement propre à gauche de chaque colonne */
+    text-align: left;
 }
 
-/* Colonne gauche (Valeurs : Event, Duration, Date...) */
+/* Colonne gauche : placée juste après le ":" de EVENT/DURATION... */
 .ticket-left {
-    left: 25.5%;       /* Place la valeur juste après les 2 points ":" */
-    width: 17%;
+    left: 25.5%;
+    width: 19%;
 }
 
-/* Colonne droite (Valeurs : Name, Email, Phone...) */
+/* Colonne droite : placée juste après le ":" de NAME/EMAIL... */
 .ticket-right {
-    left: 47%;         /* Aligné exactement dans les champs de droite */
-    width: 22%;
+    left: 56.5%;
+    width: 19%;
 }
 
-/* ===== Alignement vertical des 6 lignes (Hauteur en %) ===== */
-.ticket-left.line-1, .ticket-right.line-1 { top: 35.5%; } /* EVENT & NAME */
-.ticket-left.line-2, .ticket-right.line-2 { top: 42.5%; } /* DURATION & EMAIL */
-.ticket-left.line-3, .ticket-right.line-3 { top: 49.5%; } /* DATE & PHONE */
-.ticket-left.line-4, .ticket-right.line-4 { top: 56.5%; } /* TIME & WALLET ID/NUMBER */
-.ticket-left.line-5, .ticket-right.line-5 { top: 63.5%; } /* LOCATION & PURCHASE DATE */
-.ticket-left.line-6, .ticket-right.line-6 { top: 70.5%; } /* PRICE & TICKET NUMBER */
+/* ===== Hauteurs exactes des 6 lignes (top en %) ===== */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; } /* EVENT & NAME */
+.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; } /* DURATION & EMAIL */
+.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; } /* DATE & PHONE */
+.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; } /* TIME & WALLET ID */
+.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; } /* LOCATION & PURCHASE DATE */
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; } /* PRICE & TICKET NUMBER */
 
-/* Mise en forme du texte */
+/* Style du texte */
 .ticket-value {
-    font-size: clamp(6px, 1.1vw, 11px); /* Ajustement fluide automatique selon l'écran */
+    font-size: clamp(6px, 1.05vw, 11px);
     font-weight: 700;
-    color: #000000;
+    color: #1a202c;
     line-height: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -1309,51 +1265,46 @@ body {
     width: 100%;
 }
 
-/* Gérer l'adresse si elle est trop longue */
-.ticket-left.line-5 .ticket-value {
-    white-space: nowrap;
-}
-
-/* ===== Coupon de droite (Partie Jaune) ===== */
+/* ===== QR CODE : Centré parfaitement dans le cadre [ ] ===== */
 .ticket-qr {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 2px;
+    padding: 3px;
     border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    right: 9.5%;
-    top: 15.5%;
-    width: 15.5%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    top: 14%;
+    right: 10.5%;
+    width: 14.5%;
     aspect-ratio: 1/1;
 }
 
-/* TICKET ID sur la ligne imprimable du coupon */
+/* Ticket ID sur la ligne sous "TICKET ID :" */
 .ticket-qr-id {
     position: absolute;
-    right: 8%;
-    width: 18%;
+    right: 9%;
+    width: 17%;
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
-    color: #000000;
-    top: 51.5%;
+    color: #1a202c;
+    top: 51%;
 }
 
-/* DATE OF PURCHASE sur le coupon */
+/* Date d'achat sous "DATE OF PURCHASE :" */
 .ticket-qr-date {
     position: absolute;
-    right: 8%;
-    width: 18%;
+    right: 9%;
+    width: 17%;
     text-align: center;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
-    color: #000000;
-    top: 61.5%;
+    color: #1a202c;
+    top: 64%;
 }
 
 /* ============================================================
