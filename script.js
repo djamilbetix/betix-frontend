@@ -1263,21 +1263,21 @@ function generateTicketHTML(ticket) {
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            <!-- Colonne gauche : uniquement les valeurs -->
+            <!-- Colonne gauche -->
             <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
             <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
             <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
             <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
-            <!-- Colonne droite : uniquement les valeurs -->
+            <!-- Colonne droite -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
             <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
-            <div class="ticket-right line-5"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
-            <div class="ticket-right line-6"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <!-- QR Code et informations sous le QR -->
+            <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
+            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
+            <!-- QR Code et ID sur le coupon -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
         </div>
