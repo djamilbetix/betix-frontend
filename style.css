@@ -1202,6 +1202,7 @@ body {
         flex: 0 0 calc(100% - 16px);
         min-width: 140px;
     }
+}
 
 /* ============================================================
    TICKET – POSITIONNEMENT FINAL AVEC CLASSES SPÉCIFIQUES
@@ -1284,13 +1285,13 @@ body {
 
 /* Colonne gauche : alignée à droite */
 .ticket-left {
-    left: 26%;          /* Ajustez selon votre image */
+    left: 26%;
     text-align: right;
 }
 
 /* Colonne droite : alignée à gauche */
 .ticket-right {
-    left: 56%;          /* Ajustez selon votre image */
+    left: 56%;
     text-align: left;
 }
 
@@ -1326,9 +1327,9 @@ body {
     padding: 2px;
     border-radius: 6px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 8%;          /* Ajustez pour centrer */
-    top: 17%;           /* Ajustez */
-    width: 16%;         /* Ajustez */
+    right: 8%;
+    top: 17%;
+    width: 16%;
     aspect-ratio: 1/1;
 }
 
@@ -1343,7 +1344,7 @@ body {
     font-size: 8px;
     color: #1a202c;
     letter-spacing: 0.5px;
-    top: 52%;           /* Position sur "TICKET ID :" */
+    top: 52%;
 }
 
 /* ===== Date of Purchase sur le coupon (ligne "DATE OF PURCHASE :") ===== */
@@ -1356,7 +1357,7 @@ body {
     font-weight: 600;
     font-size: 7px;
     color: #1a202c;
-    top: 62%;           /* Position sur "DATE OF PURCHASE :" */
+    top: 62%;
 }
 
 /* ============================================================
@@ -1401,6 +1402,7 @@ body {
     .ticket-qr-id { right: 4%; width: 14%; top: 52%; font-size: 5px; }
     .ticket-qr-date { right: 4%; width: 14%; top: 62%; font-size: 4px; }
 }
+
 /* ============================================================
    FOOTER – textes réduits, logos centrés
    ============================================================ */
@@ -1885,6 +1887,7 @@ body {
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
+
 /* ============================================================
    MODALS, UPLOAD, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
    ============================================================ */
