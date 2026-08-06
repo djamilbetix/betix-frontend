@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (complètes - gardez votre version)
+// TRADUCTIONS (complètes)
 // ============================================================
 const translations = {
     en: {
@@ -343,7 +343,7 @@ let appSettings = {
 };
 
 // ============================================================
-// FONCTIONS UTILITAIRES ET SUPABASE (gardez votre code existant)
+// FONCTIONS UTILITAIRES (DOIVENT ÊTRE DÉFINIES AVANT TOUTE UTILISATION)
 // ============================================================
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { 
@@ -357,46 +357,54 @@ function formatDateTime(dateStr) {
     return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Date to be defined'; 
 }
 
-const eventImagesList = {
-    Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
-    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
-    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
-    Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
-    Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
-    Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
-    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
-    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
-    Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
-    Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
-    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
-    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
-    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
-};
+// ============================================================
+// FONCTIONS DE VÉRIFICATION (DÉFINIES AVANT LEUR UTILISATION)
+// ============================================================
+function requireLogin() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        addNotification('Please connect your Pi account before performing this action.', 'warning');
+        alert('Please connect your Pi account first.');
+        return false;
+    }
+    return true;
+}
 
-function initCharCounters() {
-    const fields = [
-        { id: 'eventTitle', counterId: 'titleCharCounter', max: 25 },
-        { id: 'eventLocation', counterId: 'locationCharCounter', max: 30 },
-        { id: 'eventDescription', counterId: 'descCharCounter', max: 150 },
-        { id: 'eventConditions', counterId: 'condCharCounter', max: 40 }
-    ];
-    fields.forEach(field => {
-        const input = document.getElementById(field.id);
-        const counter = document.getElementById(field.counterId);
-        if (input && counter) {
-            input.addEventListener('input', function() {
-                const remaining = field.max - this.value.length;
-                counter.textContent = remaining + ' characters remaining';
-                counter.className = 'char-counter';
-                if (remaining < 5) counter.classList.add('warning');
-                else if (remaining > field.max * 0.7) counter.classList.add('good');
-            });
-            const rem = field.max - input.value.length;
-            counter.textContent = rem + ' characters remaining';
-            if (rem < 5) counter.classList.add('warning');
-            else if (rem > field.max * 0.7) counter.classList.add('good');
+function requireProfileComplete() {
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        const missing = check.missing.join(', ');
+        const msg = 'Please complete your profile before performing this action. Missing: ' + missing;
+        addNotification(msg, 'warning');
+        redirectToProfileWithMessage(msg);
+        return false;
+    }
+    return true;
+}
+
+function checkProfileComplete() {
+    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
+    const missing = [];
+    for (let field of required) {
+        if (!currentUser[field] || currentUser[field].trim() === '') {
+            missing.push(field.replace('_', ' '));
         }
-    });
+    }
+    if (missing.length > 0) {
+        return { complete: false, missing: missing };
+    }
+    return { complete: true, missing: [] };
+}
+
+function redirectToProfileWithMessage(message) {
+    alert(message);
+    showPage('profile');
+    const msgDiv = document.getElementById('profileSaveMessage');
+    if (msgDiv) {
+        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>`;
+        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
 }
 
 // ============================================================
@@ -444,10 +452,6 @@ async function deleteHeroSlideFromSupabase(id) {
     } catch (error) { return false; }
 }
 
-async function migrateHeroSlides(slides) {
-    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
-}
-
 async function uploadHeroImage(base64Data, filename) {
     try {
         const response = await fetch(base64Data);
@@ -490,6 +494,10 @@ async function loadHeroSlides() {
         if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
         return heroSlides;
     }
+}
+
+async function migrateHeroSlides(slides) {
+    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
 }
 
 async function saveUserToSupabase(piUid, username, wallet, points) {
@@ -860,28 +868,6 @@ async function syncAllToSupabase(retryCount = 0) {
     }
 }
 
-// ============================================================
-// RETRY PENDING TICKETS
-// ============================================================
-async function retryPendingTickets() {
-    if (!pendingTickets || pendingTickets.length === 0) return;
-    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
-    const remaining = [];
-    for (const ticket of pendingTickets) {
-        const success = await saveTicketToSupabase(ticket);
-        if (!success) {
-            remaining.push(ticket);
-        }
-    }
-    pendingTickets = remaining;
-    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-    if (pendingTickets.length === 0) {
-        console.log('All pending tickets saved successfully!');
-    } else {
-        console.log('Still', pendingTickets.length, 'tickets pending.');
-    }
-}
-
 function updateSyncStatus(status) {
     const indicator = document.getElementById('syncStatusIndicator');
     if (!indicator) return;
@@ -927,6 +913,28 @@ function mergeArraysById(localArray, supabaseArray) {
         }
     }
     return merged;
+}
+
+// ============================================================
+// RETRY PENDING TICKETS
+// ============================================================
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) {
+            remaining.push(ticket);
+        }
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) {
+        console.log('All pending tickets saved successfully!');
+    } else {
+        console.log('Still', pendingTickets.length, 'tickets pending.');
+    }
 }
 
 // ============================================================
@@ -1092,35 +1100,6 @@ function renderVerifiedBadge(userId, userName) {
 }
 
 // ============================================================
-// VÉRIFICATION DU PROFIL COMPLET
-// ============================================================
-function checkProfileComplete() {
-    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
-    const missing = [];
-    for (let field of required) {
-        if (!currentUser[field] || currentUser[field].trim() === '') {
-            missing.push(field.replace('_', ' '));
-        }
-    }
-    if (missing.length > 0) {
-        return { complete: false, missing: missing };
-    }
-    return { complete: true, missing: [] };
-}
-
-function redirectToProfileWithMessage(message) {
-    alert(message);
-    showPage('profile');
-    const msgDiv = document.getElementById('profileSaveMessage');
-    if (msgDiv) {
-        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
-            <i class="fas fa-exclamation-triangle"></i> ${message}
-        </div>`;
-        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
-    }
-}
-
-// ============================================================
 // QR CODE SÉCURISÉ
 // ============================================================
 function generateSecureQRData(ticketId, userId, eventId) {
@@ -1144,7 +1123,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// NOUVELLE FONCTION generateTicketHTML AVEC CLASSES SPÉCIFIQUES
+// GÉNÉRATION DU TICKET HTML – VERSION STABLE
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -4159,6 +4138,7 @@ async function initApp() {
             schedulePremiumNotification();
         }
     } catch (error) {
+        console.error('Erreur dans initApp:', error);
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
         if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
