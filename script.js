@@ -1247,14 +1247,9 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    const buyerNameRaw = safeTicket.buyerName || 'Not provided';
-    const buyerName = buyerNameRaw.toUpperCase();
-    
+    const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
     let userEmail = safeTicket.buyerEmail || 'Not provided';
-    if (userEmail.length > 20) {
-        userEmail = userEmail.substring(0, 18) + '…';
-    }
-    
+    if (userEmail.length > 20) userEmail = userEmail.substring(0, 18) + '…';
     const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
@@ -1269,26 +1264,25 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
             <!-- Colonne gauche -->
-            <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
-            <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
-            <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
-            <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
-            <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
-            <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
+            <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
+            <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
+            <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
+            <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
+            <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
+            <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
             <!-- Colonne droite -->
-            <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
-            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
-            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
-            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">TICKET NUMBER</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div></div>
-            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
-            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
-            <!-- QR -->
+            <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
+            <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
+            <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
+            <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
+            <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
+            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
+            <!-- QR Code et ID sur le coupon -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
-            <div class="ticket-qr-id">ID: ${escapeHtml(ticketIdShort)}</div>
+            <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
         </div>
     `;
 }
-
 // ============================================================
 // GÉNÉRER LE QR CODE
 // ============================================================
