@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (complètes)
+// TRADUCTIONS (abrégé – gardez votre version complète)
 // ============================================================
 const translations = {
     en: {
@@ -343,22 +343,7 @@ let appSettings = {
 };
 
 // ============================================================
-// FONCTIONS UTILITAIRES (DOIVENT ÊTRE DÉFINIES AVANT TOUTE UTILISATION)
-// ============================================================
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-function formatDate(dateStr) { 
-    if (!dateStr) return 'Date to be defined';
-    const d = new Date(dateStr); 
-    return !isNaN(d.getTime()) ? d.toLocaleDateString('en-US') : 'Date to be defined'; 
-}
-function formatDateTime(dateStr) { 
-    if (!dateStr) return 'Date to be defined';
-    const d = new Date(dateStr); 
-    return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Date to be defined'; 
-}
-
-// ============================================================
-// FONCTIONS DE VÉRIFICATION (DÉFINIES AVANT LEUR UTILISATION)
+// VÉRIFICATIONS DE CONNEXION ET PROFIL
 // ============================================================
 function requireLogin() {
     if (!currentUser.wallet && !currentUser.piUid) {
@@ -381,30 +366,114 @@ function requireProfileComplete() {
     return true;
 }
 
-function checkProfileComplete() {
-    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
-    const missing = [];
-    for (let field of required) {
-        if (!currentUser[field] || currentUser[field].trim() === '') {
-            missing.push(field.replace('_', ' '));
-        }
+// ============================================================
+// PI SDK
+// ============================================================
+let piSDKReady = false;
+function initPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
     }
-    if (missing.length > 0) {
-        return { complete: false, missing: missing };
+    return false;
+}
+initPiSDK();
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
+
+async function ensurePiSDKReady() {
+    let attempts = 0;
+    const maxAttempts = 15;
+    const timeout = 5000;
+    const startTime = Date.now();
+
+    while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
+        initPiSDK();
+        await new Promise(r => setTimeout(r, 500));
+        attempts++;
     }
-    return { complete: true, missing: [] };
+    return piSDKReady;
 }
 
-function redirectToProfileWithMessage(message) {
-    alert(message);
-    showPage('profile');
-    const msgDiv = document.getElementById('profileSaveMessage');
-    if (msgDiv) {
-        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
-            <i class="fas fa-exclamation-triangle"></i> ${message}
-        </div>`;
-        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
-    }
+const BACKEND_URL = "https://betix-backend.onrender.com";
+let isResolving = false;
+let resolveAttempts = 0;
+async function onIncompletePaymentFound(payment) {
+    if (isResolving || resolveAttempts > 3) return null;
+    isResolving = true;
+    resolveAttempts++;
+    try {
+        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier })
+        });
+        const result = await response.json();
+        if (result.status === 'completed' || result.status === 'cancelled') {
+            setTimeout(() => window.location.reload(), 2000);
+            return result;
+        }
+    } catch(e) {}
+    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
+    return null;
+}
+
+// ============================================================
+// FONCTIONS UTILITAIRES
+// ============================================================
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function formatDate(dateStr) { 
+    if (!dateStr) return 'Date to be defined';
+    const d = new Date(dateStr); 
+    return !isNaN(d.getTime()) ? d.toLocaleDateString('en-US') : 'Date to be defined'; 
+}
+function formatDateTime(dateStr) { 
+    if (!dateStr) return 'Date to be defined';
+    const d = new Date(dateStr); 
+    return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Date to be defined'; 
+}
+
+const eventImagesList = {
+    Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
+    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+    Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
+    Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
+    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
+    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
+    Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
+    Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
+    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
+    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
+    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
+};
+
+function initCharCounters() {
+    const fields = [
+        { id: 'eventTitle', counterId: 'titleCharCounter', max: 25 },
+        { id: 'eventLocation', counterId: 'locationCharCounter', max: 30 },
+        { id: 'eventDescription', counterId: 'descCharCounter', max: 150 },
+        { id: 'eventConditions', counterId: 'condCharCounter', max: 40 }
+    ];
+    fields.forEach(field => {
+        const input = document.getElementById(field.id);
+        const counter = document.getElementById(field.counterId);
+        if (input && counter) {
+            input.addEventListener('input', function() {
+                const remaining = field.max - this.value.length;
+                counter.textContent = remaining + ' characters remaining';
+                counter.className = 'char-counter';
+                if (remaining < 5) counter.classList.add('warning');
+                else if (remaining > field.max * 0.7) counter.classList.add('good');
+            });
+            const rem = field.max - input.value.length;
+            counter.textContent = rem + ' characters remaining';
+            if (rem < 5) counter.classList.add('warning');
+            else if (rem > field.max * 0.7) counter.classList.add('good');
+        }
+    });
 }
 
 // ============================================================
@@ -452,6 +521,10 @@ async function deleteHeroSlideFromSupabase(id) {
     } catch (error) { return false; }
 }
 
+async function migrateHeroSlides(slides) {
+    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
+}
+
 async function uploadHeroImage(base64Data, filename) {
     try {
         const response = await fetch(base64Data);
@@ -494,10 +567,6 @@ async function loadHeroSlides() {
         if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
         return heroSlides;
     }
-}
-
-async function migrateHeroSlides(slides) {
-    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
 }
 
 async function saveUserToSupabase(piUid, username, wallet, points) {
@@ -868,6 +937,28 @@ async function syncAllToSupabase(retryCount = 0) {
     }
 }
 
+// ============================================================
+// RETRY PENDING TICKETS
+// ============================================================
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) {
+            remaining.push(ticket);
+        }
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) {
+        console.log('All pending tickets saved successfully!');
+    } else {
+        console.log('Still', pendingTickets.length, 'tickets pending.');
+    }
+}
+
 function updateSyncStatus(status) {
     const indicator = document.getElementById('syncStatusIndicator');
     if (!indicator) return;
@@ -913,28 +1004,6 @@ function mergeArraysById(localArray, supabaseArray) {
         }
     }
     return merged;
-}
-
-// ============================================================
-// RETRY PENDING TICKETS
-// ============================================================
-async function retryPendingTickets() {
-    if (!pendingTickets || pendingTickets.length === 0) return;
-    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
-    const remaining = [];
-    for (const ticket of pendingTickets) {
-        const success = await saveTicketToSupabase(ticket);
-        if (!success) {
-            remaining.push(ticket);
-        }
-    }
-    pendingTickets = remaining;
-    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-    if (pendingTickets.length === 0) {
-        console.log('All pending tickets saved successfully!');
-    } else {
-        console.log('Still', pendingTickets.length, 'tickets pending.');
-    }
 }
 
 // ============================================================
@@ -1100,6 +1169,35 @@ function renderVerifiedBadge(userId, userName) {
 }
 
 // ============================================================
+// VÉRIFICATION DU PROFIL COMPLET
+// ============================================================
+function checkProfileComplete() {
+    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
+    const missing = [];
+    for (let field of required) {
+        if (!currentUser[field] || currentUser[field].trim() === '') {
+            missing.push(field.replace('_', ' '));
+        }
+    }
+    if (missing.length > 0) {
+        return { complete: false, missing: missing };
+    }
+    return { complete: true, missing: [] };
+}
+
+function redirectToProfileWithMessage(message) {
+    alert(message);
+    showPage('profile');
+    const msgDiv = document.getElementById('profileSaveMessage');
+    if (msgDiv) {
+        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>`;
+        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
+}
+
+// ============================================================
 // QR CODE SÉCURISÉ
 // ============================================================
 function generateSecureQRData(ticketId, userId, eventId) {
@@ -1123,7 +1221,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – VERSION STABLE
+// GÉNÉRATION DU TICKET HTML – VERSION FINALE AVEC TOUTES LES INFOS
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1149,9 +1247,14 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
+    const buyerNameRaw = safeTicket.buyerName || 'Not provided';
+    const buyerName = buyerNameRaw.toUpperCase();
+    
     let userEmail = safeTicket.buyerEmail || 'Not provided';
-    if (userEmail.length > 20) userEmail = userEmail.substring(0, 18) + '…';
+    if (userEmail.length > 20) {
+        userEmail = userEmail.substring(0, 18) + '…';
+    }
+    
     const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
     const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
@@ -1166,23 +1269,22 @@ function generateTicketHTML(ticket) {
                 <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
             <!-- Colonne gauche -->
-            <div class="ticket-event ticket-left">${escapeHtml(eventTitle)}</div>
-            <div class="ticket-duration ticket-left">${escapeHtml(durationDisplay)}</div>
-            <div class="ticket-date ticket-left">${escapeHtml(dateFormatted)}</div>
-            <div class="ticket-time ticket-left">${escapeHtml(timeFormatted)}</div>
-            <div class="ticket-location ticket-left">${escapeHtml(eventLocation)}</div>
-            <div class="ticket-price ticket-left">${escapeHtml(price)}</div>
+            <div class="ticket-left ticket-line-1"><div class="ticket-row"><span class="ticket-label">EVENT</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventTitle)}</span></div></div>
+            <div class="ticket-left ticket-line-2"><div class="ticket-row"><span class="ticket-label">DURATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div></div>
+            <div class="ticket-left ticket-line-3"><div class="ticket-row"><span class="ticket-label">DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-4"><div class="ticket-row"><span class="ticket-label">TIME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div></div>
+            <div class="ticket-left ticket-line-5"><div class="ticket-row"><span class="ticket-label">LOCATION</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(eventLocation)}</span></div></div>
+            <div class="ticket-left ticket-line-6"><div class="ticket-row"><span class="ticket-label">PRICE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(price)}</span></div></div>
             <!-- Colonne droite -->
-            <div class="ticket-name ticket-right">${escapeHtml(buyerName)}</div>
-            <div class="ticket-email ticket-right">${escapeHtml(userEmail)}</div>
-            <div class="ticket-phone ticket-right">${escapeHtml(userPhone)}</div>
-            <div class="ticket-wallet ticket-right">#${escapeHtml(String(ticketNumber))}</div>
-            <div class="ticket-purchase-date ticket-right">${escapeHtml(purchaseDate)}</div>
-            <div class="ticket-number ticket-right">#${escapeHtml(ticketIdShort)}</div>
-            <!-- QR Code et ID sur le coupon -->
+            <div class="ticket-right ticket-line-1"><div class="ticket-row"><span class="ticket-label">NAME</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(buyerName)}</span></div></div>
+            <div class="ticket-right ticket-line-2"><div class="ticket-row"><span class="ticket-label">EMAIL</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userEmail)}</span></div></div>
+            <div class="ticket-right ticket-line-3"><div class="ticket-row"><span class="ticket-label">PHONE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(userPhone)}</span></div></div>
+            <div class="ticket-right ticket-line-4"><div class="ticket-row"><span class="ticket-label">TICKET NUMBER</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div></div>
+            <div class="ticket-right ticket-line-5"><div class="ticket-row"><span class="ticket-label">TICKET ID</span><span class="ticket-separator">:</span><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div></div>
+            <div class="ticket-right ticket-line-6"><div class="ticket-row"><span class="ticket-label">PURCHASE DATE</span><span class="ticket-separator">:</span><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div></div>
+            <!-- QR -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
-            <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
-            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
+            <div class="ticket-qr-id">ID: ${escapeHtml(ticketIdShort)}</div>
         </div>
     `;
 }
@@ -4138,7 +4240,6 @@ async function initApp() {
             schedulePremiumNotification();
         }
     } catch (error) {
-        console.error('Erreur dans initApp:', error);
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
         if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
