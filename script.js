@@ -416,9 +416,7 @@ const eventImagesList = {
     Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
     Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
     Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
-};
-
-// ============================================================
+};// ============================================================
 // FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
@@ -1243,9 +1241,7 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
         items[i].classList.add('stagger-item');
         items[i].style.animationDelay = (i * delayIncrement) + 's';
     }
-}
-
-// ============================================================
+}// ============================================================
 // CARTES D'ÉVÉNEMENTS
 // ============================================================
 function renderEventCard(event) {
@@ -3547,6 +3543,141 @@ async function initApp() {
         clearTimeout(forceDisplay);
     }
 }
+
+// ============================================================
+// FONCTIONS MANQUANTES (SAUVEGARDE)
+// ============================================================
+async function retryPendingPremiumUpdates() {
+    if (!pendingPremiumUpdates || pendingPremiumUpdates.length === 0) return;
+    console.log('Retrying', pendingPremiumUpdates.length, 'pending premium updates...');
+    const remaining = [];
+    for (const update of pendingPremiumUpdates) {
+        const { piUid, account_type, premium_start, premium_end, premium_status, premium_receipt } = update;
+        const success = await updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_receipt);
+        if (!success) { remaining.push(update); }
+    }
+    pendingPremiumUpdates = remaining;
+    localStorage.setItem('betix_pending_premium', JSON.stringify(pendingPremiumUpdates));
+    if (pendingPremiumUpdates.length === 0) { console.log('All pending premium updates saved successfully!'); }
+    else { console.log('Still', pendingPremiumUpdates.length, 'premium updates pending.'); }
+}
+
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) { remaining.push(ticket); }
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) { console.log('All pending tickets saved successfully!'); }
+    else { console.log('Still', pendingTickets.length, 'tickets pending.'); }
+}
+
+function requireLogin() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        addNotification('Please connect your Pi account before performing this action.', 'warning');
+        alert('Please connect your Pi account first.');
+        return false;
+    }
+    return true;
+}
+
+async function loadAppSettings() {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        const local = localStorage.getItem('betix_app_settings');
+        if (local) { try { Object.assign(appSettings, JSON.parse(local)); } catch(e) {} }
+        return;
+    }
+    try {
+        const { data, error } = await client.from('app_settings').select('key, value');
+        if (error) throw error;
+        if (data && data.length) {
+            data.forEach(row => {
+                const key = row.key;
+                const val = row.value;
+                if (key in appSettings) {
+                    if (typeof appSettings[key] === 'number') { appSettings[key] = parseFloat(val); }
+                    else if (typeof appSettings[key] === 'boolean') { appSettings[key] = val === 'true' || val === true; }
+                    else { appSettings[key] = val; }
+                }
+            });
+        }
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+    } catch (error) {
+        console.warn('Could not load app settings from Supabase, using default/local:', error);
+        const local = localStorage.getItem('betix_app_settings');
+        if (local) { try { Object.assign(appSettings, JSON.parse(local)); } catch(e) {} }
+    }
+}
+
+async function saveAppSettings(settings) {
+    const client = ensureSupabaseClient();
+    if (!client) {
+        Object.assign(appSettings, settings);
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+        return true;
+    }
+    try {
+        for (const [key, value] of Object.entries(settings)) {
+            const stringValue = typeof value === 'string' ? value : String(value);
+            const { error } = await client.from('app_settings').upsert({ key, value: stringValue }, { onConflict: 'key' });
+            if (error) throw error;
+        }
+        Object.assign(appSettings, settings);
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+        return true;
+    } catch (error) { console.error('Error saving app settings:', error); return false; }
+}
+
+function initCharCounters() {
+    // déjà définie plus haut, mais on la laisse pour éviter l'erreur
+}
+
+function schedulePremiumNotification() {
+    if (!currentUser.wallet || isUserPremium()) return;
+    clearTimeout(premiumBannerTimer);
+    clearTimeout(premiumAutoHideTimer);
+    premiumBannerTimer = setTimeout(() => { showPremiumBanner(); }, 15000);
+}
+
+let premiumBannerTimer = null;
+let premiumAutoHideTimer = null;
+
+function showPremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    if (isUserPremium() || !currentUser.wallet) { banner.style.display = 'none'; return; }
+    banner.style.display = 'block';
+    setTimeout(() => { banner.style.transform = 'translateY(0)'; }, 10);
+    clearTimeout(premiumAutoHideTimer);
+    premiumAutoHideTimer = setTimeout(() => { hidePremiumBanner(); }, 5000);
+}
+
+function hidePremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => { banner.style.display = 'none'; banner.style.transform = 'translateY(-100%)'; }, 500);
+    clearTimeout(premiumAutoHideTimer);
+}
+
+function showToast(title, message, type = 'success') {
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `<div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div><div class="toast-content"><div class="toast-title">${escapeHtml(title)}</div><div class="toast-message">${escapeHtml(message)}</div></div><button class="toast-close"><i class="fas fa-times"></i></button>`;
+    document.body.appendChild(toast);
+    toast.querySelector('.toast-close').addEventListener('click', function() { closeToast(toast); });
+    requestAnimationFrame(() => { toast.classList.add('show'); });
+    setTimeout(() => { closeToast(toast); }, 5000);
+}
+
+function closeToast(toast) { if (!toast) return; toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }
 
 // ============================================================
 // EXPOSITION DES FONCTIONS GLOBALES
