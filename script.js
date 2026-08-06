@@ -1,4838 +1,4215 @@
-/* ============================================================
-   STYLES COMPLETS POUR BETIX
-   ============================================================ */
+// ============================================================
+// CONFIGURATION SUPABASE
+// ============================================================
+const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    max-width: 100%;
-}
-
-html {
-    overflow-x: hidden;
-    max-width: 100%;
-    scroll-behavior: smooth;
-    scroll-padding-top: 70px;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f5f7fa;
-    color: #1e1e1e;
-    line-height: 1.5;
-    transition: background-color 0.3s, color 0.3s;
-    overflow-x: hidden;
-    max-width: 100vw;
-    padding-bottom: 80px;
-    padding-top: 65px;
-}
-
-:root {
-    --primary: #0B1F5C;
-    --primary-light: #1a2a4a;
-    --accent: #F5B400;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --dark: #1e1e1e;
-    --light: #f9fafb;
-    --gray: #6b7280;
-    --gray-light: #e6e6e6;
-    --card-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    --card-hover-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
-    --radius-lg: 20px;
-    --radius-md: 14px;
-    --radius-sm: 10px;
-    --notif-purchase: #3b82f6;
-    --notif-event: #f59e0b;
-    --notif-info: #10b981;
-    --notif-warning: #ef4444;
-    --notif-success: #10b981;
-}
-
-/* ============================================================
-   HEADER FIXE
-   ============================================================ */
-.header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    padding: 0.4rem 4%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 20px rgba(11,31,92,0.3);
-    z-index: 99999;
-    border-bottom: 2px solid rgba(255,255,255,0.15);
-    gap: 8px;
-    flex-wrap: wrap;
-    height: 60px;
-    min-height: 60px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.logo {
-    font-size: 1.6rem;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
-    padding: 2px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-.logo .logo-img {
-    height: 40px;
-    width: auto;
-    border-radius: 8px;
-    filter: brightness(0) invert(1);
-}
-.logo .logo-text {
-    font-size: 1.6rem;
-}
-@media (max-width: 480px) {
-    .logo { font-size: 1.2rem; gap: 6px; }
-    .logo .logo-img { height: 32px; }
-    .logo .logo-text { font-size: 1.2rem; }
-}
-.back-btn {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    cursor: pointer;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 30px;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    z-index: 99999;
-    position: relative;
-    pointer-events: auto !important;
-    min-width: 60px;
-    height: 36px;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.1);
-    font-weight: 500;
-}
-.back-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: scale(1.05);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-}
-.back-btn:active { transform: scale(0.95); }
-.back-btn svg {
-    width: 16px;
-    height: 16px;
-    stroke: white;
-    flex-shrink: 0;
-}
-.back-btn .back-btn-label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: white;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-}
-.back-btn.hidden { display: none !important; }
-.back-btn:not(.hidden) { display: flex !important; }
-
-/* ============================================================
-   LOADER
-   ============================================================ */
-.loader-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 999999;
-    transition: opacity 0.8s ease;
-}
-.loader-container.hidden { opacity: 0; pointer-events: none; }
-.loader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-}
-.loader-logo {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    animation: logoFloat 2s ease-in-out infinite;
-}
-@keyframes logoFloat {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-.loader-balls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: center;
-}
-.loader-ball {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    animation: ballBounce 1.4s ease-in-out infinite;
-}
-.loader-ball:nth-child(1) { background: #0B1F5C; animation-delay: 0s; }
-.loader-ball:nth-child(2) { background: #F5B400; animation-delay: 0.16s; }
-.loader-ball:nth-child(3) { background: #0B1F5C; animation-delay: 0.32s; }
-.loader-ball:nth-child(4) { background: #F5B400; animation-delay: 0.48s; }
-.loader-ball:nth-child(5) { background: #0B1F5C; animation-delay: 0.64s; }
-@keyframes ballBounce {
-    0%,80%,100% { transform: translateY(0) scale(1); opacity: 0.6; }
-    40% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-}
-.loader-text {
-    color: #6b7280;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 2px;
-    animation: textPulse 1.8s ease-in-out infinite;
-}
-@keyframes textPulse {
-    0%,100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-/* ============================================================
-   COMPTEURS DE CARACTÈRES
-   ============================================================ */
-.char-counter {
-    font-size: 0.7rem;
-    color: #6b7280;
-    display: block;
-    margin-top: 2px;
-    text-align: right;
-    transition: color 0.3s ease;
-}
-.char-counter.warning { color: #6b7280; }
-.char-counter.good { color: #6b7280; }
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-.sidebar-header {
-    padding: 1.5rem;
-    text-align: center;
-    border-bottom: 1px solid #e6e6e6;
-    flex-shrink: 0;
-    position: relative;
-}
-.settings-lang-select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    background: white;
-    color: var(--dark);
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
-}
-.settings-lang-select:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-.settings-group {
-    margin-bottom: 20px;
-    padding: 16px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e6e6e6;
-}
-.settings-group p { font-weight: 600; margin-bottom: 8px; color: var(--dark); }
-.settings-group label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    color: var(--dark);
-    cursor: pointer;
-}
-.settings-group input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #0B1F5C;
-    cursor: pointer;
-}
-
-/* ============================================================
-   BOTTOM NAVIGATION
-   ============================================================ */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    border-top: 1px solid rgba(0,0,0,0.06);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 8px 0 env(safe-area-inset-bottom,8px) 0;
-    z-index: 9999;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(255,255,255,0.95);
-}
-.bottom-nav .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 16px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    min-width: 60px;
-    position: relative;
-    color: #8892b0;
-}
-.bottom-nav .nav-item i { font-size: 1.5rem; transition: all 0.3s ease; display: block !important; }
-.bottom-nav .nav-item span { font-size: 0.6rem; font-weight: 500; margin-top: 2px; transition: all 0.3s ease; }
-.bottom-nav .nav-item.active { color: #0B1F5C; }
-.bottom-nav .nav-item.active i { transform: translateY(-2px); color: #0B1F5C; }
-.bottom-nav .nav-item.active span { color: #0B1F5C; font-weight: 600; }
-.bottom-nav .nav-item:hover { color: #0B1F5C; }
-.bottom-nav .nav-item:hover i { transform: translateY(-2px) scale(1.05); }
-
-/* ============================================================
-   SIDEBAR (suite)
-   ============================================================ */
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -320px;
-    width: 300px;
-    height: 100%;
-    background: white;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    z-index: 99999;
-    transition: right 0.3s ease;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
-.sidebar.open { right: 0; }
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 99998;
-    display: none;
-}
-.overlay.active { display: block; }
-
-.close-sidebar {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.3rem;
-    cursor: pointer;
-    color: var(--gray);
-    transition: color 0.2s;
-}
-.close-sidebar:hover { color: var(--dark); }
-
-.sidebar-notif-icon-top {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(11,31,92,0.1);
-    border: 2px solid #e6e6e6;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    color: var(--dark);
-    transition: all 0.3s ease;
-    z-index: 5;
-}
-.sidebar-notif-icon-top:hover {
-    background: rgba(11,31,92,0.15);
-    border-color: #F5B400;
-    transform: scale(1.05);
-}
-.sidebar-notif-icon-top .sidebar-notif-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: #ef4444;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 0.55rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(239,68,68,0.3);
-}
-.sidebar-notif-icon-top .sidebar-notif-badge.hidden { display: none; }
-
-.sidebar-avatar-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 0.5rem;
-}
-.sidebar-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    font-weight: bold;
-    font-size: 2rem;
-    box-shadow: 0 4px 15px rgba(11,31,92,0.3);
-    overflow: hidden;
-    position: relative;
-    flex-shrink: 0;
-}
-.sidebar-header h3 { font-size: 1.1rem; color: var(--dark); margin-top: 4px; }
-.sidebar-header p { font-size: 0.8rem; color: var(--gray); margin-bottom: 8px; }
-
-.wallet-sidebar-btn {
-    background: linear-gradient(135deg, #F5B400, #D89C00);
-    color: #1a1a2e;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: opacity 0.2s;
-    font-size: 0.85rem;
-    margin-top: 4px;
-    position: relative;
-}
-.wallet-sidebar-btn:hover { opacity: 0.85; }
-.wallet-sidebar-btn.disconnect { background: #ef4444; color: white; }
-.wallet-sidebar-btn.disconnect:hover { background: #dc2626; }
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem 1rem 0.5rem 1rem;
-    flex: 1;
-    overflow-y: auto;
-}
-.sidebar-item {
-    background: none;
-    border: none;
-    padding: 0.8rem 1rem;
-    text-align: left;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border-radius: 10px;
-    margin-bottom: 0.15rem;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.sidebar-item i {
-    font-size: 1.1rem;
-    width: 22px;
-    text-align: center;
-    color: #8892b0;
-    transition: color 0.2s;
-}
-.sidebar-item:hover {
-    background: #0B1F5C;
-    color: white;
-    transform: translateX(4px);
-}
-.sidebar-item:hover i { color: white; }
-.sidebar-item#scanMenuItem {
-    background: #0B1F5C !important;
-    color: white !important;
-    border-radius: 8px !important;
-}
-.sidebar-item#scanMenuItem i { color: white !important; }
-.sidebar-item#scanMenuItem:hover { background: #0a1a4f !important; transform: translateX(4px) !important; }
-
-.sidebar-social {
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
-    border-top: 1px solid #e6e6e6;
-    margin-top: auto;
-    flex-shrink: 0;
-    background: #f9fafb;
-}
-.sidebar-social-title {
-    font-size: 0.7rem;
-    color: var(--gray);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 0.8rem;
-    text-align: center;
-    font-weight: 600;
-}
-.sidebar-social-icons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.social-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: white;
-    color: var(--gray);
-    transition: all 0.3s ease;
-    border: 1px solid #e6e6e6;
-    text-decoration: none;
-    font-size: 1rem;
-}
-.social-link:hover {
-    background: #0B1F5C;
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(11,31,92,0.3);
-}
-
-/* ============================================================
-   HERO – SLIDER RÉDUIT
-   ============================================================ */
-.hero {
-    width: 100%;
-    background: #ffffff;
-    color: #1f2937;
-    overflow: hidden;
-}
-.hero-slider-container {
-    width: 100%;
-    height: 160px;
-    overflow: hidden;
-    position: relative;
-    background: #0F172A;
-}
-.hero-slider-container::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: rgba(255,255,255,0.25);
-    z-index: 3;
-}
-.hero-slider {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-.hero-slides {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
-}
-.hero-slide {
-    flex: 0 0 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-}
-.hero-slide-bg {
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transform: scale(1.05);
-    transition: transform 8s ease;
-}
-.hero-slide.active .hero-slide-bg { transform: scale(1); }
-.hero-slide-bg::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(15,23,42,0.6) 0%, rgba(11,31,92,0.5) 50%, rgba(26,115,232,0.3) 100%);
-}
-.hero-slide-content { display: none !important; }
-.hero-slider-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    z-index: 5;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 300;
-}
-.hero-slider-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-50%) scale(1.05);
-}
-.hero-slider-btn.prev { left: 10px; }
-.hero-slider-btn.next { right: 10px; }
-
-.hero-dots {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 5;
-}
-.hero-dots .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.35);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    padding: 0;
-}
-.hero-dots .dot.active {
-    background: #F5B400;
-    width: 18px;
-    border-radius: 4px;
-}
-.hero-dots .dot:hover { background: rgba(255,255,255,0.7); }
-
-.hero-divider {
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #0B1F5C, #F5B400, #1a2a4a);
-    box-shadow: 0 0 20px rgba(245,180,0,0.3);
-    position: relative;
-    z-index: 2;
-}
-.hero-divider::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-    animation: shimmer 3s infinite;
-}
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-}
-.hero-content-bottom {
-    padding: 0.8rem 2rem 0.4rem 2rem;
-    text-align: center;
-    background: #ffffff;
-}
-.hero-text h1 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 0.2rem;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    color: #1f2937;
-}
-.hero-text p { display: none; }
-
-/* ============================================================
-   SEARCH & FILTERS – marges réduites
-   ============================================================ */
-.search-bar { padding: 0.4rem 5% 0.2rem; }
-.search-bar input {
-    width: 100%;
-    padding: 0.6rem 1.2rem;
-    border: 2px solid #e6e6e6;
-    border-radius: 40px;
-    background: white;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-}
-.search-bar input:focus { outline: none; border-color: #F5B400; }
-
-.filter-country-wrapper { padding: 0.2rem 5% 0.2rem; }
-.filter-country-select {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    background: #f8fafc;
-    padding: 4px 12px;
-    border-radius: 12px;
-    border: 1px solid #e6e6e6;
-}
-.filter-country-select label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--dark);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-}
-.filter-country-select label i { color: #F5B400; }
-.filter-country-select select {
-    flex: 1;
-    min-width: 140px;
-    padding: 4px 10px;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    background: white;
-    color: var(--dark);
-    cursor: pointer;
-    transition: border 0.2s;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
-}
-.filter-country-select select:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-
-/* ============================================================
-   FILTRES CATÉGORIES – Texte bleu, fond blanc, bordure bleue
-   Actif : fond jaune
-   ============================================================ */
-.filters-wrapper { padding: 0.2rem 5% 0.4rem; }
-.filters-horizontal {
-    display: flex;
-    gap: 0.6rem;
-    overflow-x: auto;
-    padding-bottom: 0.3rem;
-    scrollbar-width: none;
-}
-.filters-horizontal::-webkit-scrollbar { display: none; }
-.filter-chip {
-    flex: 0 0 auto;
-    background: #ffffff !important;
-    color: #0B1F5C !important;
-    border: 2px solid #0B1F5C !important;
-    padding: 0.4rem 1rem !important;
-    border-radius: 40px !important;
-    font-size: 0.8rem !important;
-    font-weight: 600 !important;
-    cursor: pointer;
-    transition: all 0.2s ease !important;
-}
-.filter-chip:hover {
-    background: #f0f4ff !important;
-    transform: translateY(-2px);
-}
-.filter-chip.active {
-    background: #F5B400 !important;
-    color: #0B1F5C !important;
-    border-color: #F5B400 !important;
-    box-shadow: 0 2px 8px rgba(245,180,0,0.3);
-}
-
-/* ============================================================
-   EVENTS GRID
-   ============================================================ */
-.events-container {
-    padding: 0.4rem 5% 2rem;
-    overflow: hidden;
-}
-.events-title {
-    font-size: 1.4rem;
-    margin-bottom: 0.3rem;
-    background: linear-gradient(135deg, #0B1F5C, #F5B400);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-.events-sub {
-    color: var(--gray);
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-}
-.category-section { margin-bottom: 1.5rem; overflow: hidden; }
-.category-header {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-    padding-bottom: 0.3rem;
-    border-bottom: 3px solid #F5B400;
-    display: inline-block;
-}
-.events-grid-centered {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    overflow: hidden;
-}
-@media (min-width: 1200px) { .events-grid-centered { grid-template-columns: repeat(3,1fr); gap: 1.5rem; } }
-@media (min-width: 768px) and (max-width: 1199px) { .events-grid-centered { grid-template-columns: repeat(2,1fr); gap: 1.2rem; } }
-@media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; gap: 1rem; } }
-
-/* ============================================================
-   CARTE ÉVÉNEMENT (version compacte)
-   ============================================================ */
-.event-card-classic {
-    background: #ffffff;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.04);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    position: relative;
-    max-width: 100%;
-}
-.event-card-classic:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.10);
-}
-.event-card-classic .poster-wrapper-classic {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    background: #f3f4f6;
-    aspect-ratio: auto;
-    min-height: 160px;
-    max-height: 300px;
-}
-.event-card-classic .poster-grid {
-    display: grid;
-    width: 100%;
-    height: 100%;
-    gap: 2px;
-    background: #1a1a2e;
-    min-height: 160px;
-}
-.event-card-classic .poster-grid .grid-item {
-    overflow: hidden;
-    position: relative;
-    background: #2d3748;
-}
-.event-card-classic .poster-grid .grid-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.4s ease;
-    background: #1a1a2e;
-}
-.event-card-classic:hover .poster-grid .grid-item img { transform: scale(1.02); }
-.event-card-classic .poster-grid.grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-.event-card-classic .poster-grid.grid-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-.event-card-classic .poster-grid.grid-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
-.event-card-classic .poster-grid.grid-3 .grid-item:first-child { grid-row: 1/3; grid-column: 1/2; }
-.event-card-classic .poster-grid.grid-3 .grid-item:nth-child(2) { grid-row: 1/2; grid-column: 2/3; }
-.event-card-classic .poster-grid.grid-3 .grid-item:nth-child(3) { grid-row: 2/3; grid-column: 2/3; }
-.event-card-classic .poster-grid.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.event-card-classic .category-badge-classic {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: #fff;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-size: 0.5rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    z-index: 5;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-    backdrop-filter: blur(4px);
-}
-.event-card-classic .card-content-classic {
-    padding: 10px 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-}
-.event-title-large {
-    font-size: 1.1rem !important;
-    font-weight: 700;
-    color: #1a1a2e;
-    line-height: 1.3;
-    margin-bottom: 2px;
-}
-.event-description-full {
-    font-size: 0.8rem;
-    color: #4b5563;
-    line-height: 1.4;
-    margin: 2px 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.event-info-box {
-    background: #f3f4f6;
-    border-radius: 8px;
-    padding: 6px 10px;
-    margin: 2px 0 4px;
-    border: 1px solid #e6e6e6;
-}
-.event-location-line,
-.event-datetime-line {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.7rem;
-    color: #1f2937;
-    margin: 1px 0;
-    flex-wrap: wrap;
-}
-.event-location-line i,
-.event-datetime-line i {
-    color: #F5B400 !important;
-    width: 14px;
-    text-align: center;
-    font-size: 0.65rem;
-}
-.event-meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 4px;
-    margin: 2px 0;
-    flex-wrap: wrap;
-}
-.event-rating-classic {
-    font-size: 0.65rem;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.event-rating-classic .stars { color: #F5B400; letter-spacing: 0.5px; }
-.event-tickets-price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 4px 0 6px;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-.event-tickets-label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.6rem;
-    color: #1f2937;
-    font-weight: 500;
-}
-.event-tickets-label .tickets-label-badge {
-    background: #ef4444 !important;
-    color: #ffffff !important;
-    padding: 1px 8px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.55rem;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(239,68,68,0.2);
-}
-.event-price-right {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 3px;
-    flex-wrap: wrap;
-}
-.price-label-badge {
-    background: #0B1F5C;
-    color: #ffffff;
-    padding: 1px 8px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.55rem;
-    letter-spacing: 0.3px;
-    display: inline-block;
-    box-shadow: 0 2px 8px rgba(11,31,92,0.2);
-}
-.price-amount-green {
-    color: #10b981;
-    font-weight: 800;
-    font-size: 0.9rem;
-    line-height: 1.2;
-}
-.price-currency-gray {
-    color: #6b7280;
-    font-weight: 700;
-    font-size: 0.9rem !important;
-}
-.buy-btn-classic {
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: #fff;
-    margin-top: 4px;
-    text-align: center;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 16px rgba(11,31,92,0.15);
-}
-.buy-btn-classic:hover {
-    opacity: 0.95;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(11,31,92,0.25);
-}
-.buy-btn-classic:active { transform: scale(0.97); }
-.event-organizer-classic {
-    text-align: left;
-    font-size: 0.65rem;
-    color: #1a1a2e;
-    margin-top: 4px;
-    padding-top: 4px;
-    border-top: 1px solid #f0f0f0;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.event-organizer-classic .org-icon { font-size: 0.7rem; color: #1a1a2e !important; }
-.event-publish-date {
-    font-size: 0.55rem;
-    color: #9ca3af;
-    margin-top: 2px;
-    padding-top: 4px;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-/* ============================================================
-   PREMIUM – 3 CARTES COMPACTES AVEC SCROLL HORIZONTAL
-   ============================================================ */
-.premium-page-content {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-.pricing-table {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 16px;
-    margin: 20px 0;
-    overflow-x: auto;
-    padding: 8px 4px 16px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-}
-.pricing-card {
-    flex: 0 0 calc(100% / 3 - 12px);
-    min-width: 200px;
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 16px 14px 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    border: 1px solid #e6e6e6;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease;
-    position: relative;
-    scroll-snap-align: start;
-}
-.pricing-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-}
-.pricing-card.recommended {
-    border-color: #F5B400;
-    background: linear-gradient(145deg, #ffffff, #fef8f0);
-}
-.pricing-card .plan-badge {
-    position: absolute;
-    top: -8px;
-    right: 10px;
-    background: #F5B400;
-    color: #1a1a2e;
-    font-size: 0.55rem;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.3px;
-}
-.pricing-card .plan-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    text-align: center;
-    margin-bottom: 2px;
-}
-.pricing-card .plan-price {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #F5B400;
-    text-align: center;
-    margin: 4px 0;
-}
-.pricing-card .plan-price small {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #6b7280;
-}
-.pricing-card .plan-description {
-    font-size: 0.7rem;
-    color: #6b7280;
-    text-align: center;
-    margin: 4px 0 8px;
-}
-.pricing-card .plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 10px 0;
-    flex: 1;
-}
-.pricing-card .plan-features li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 0;
-    font-size: 0.7rem;
-    color: #1f2937;
-    border-bottom: 1px solid #f0f0f0;
-}
-.pricing-card .plan-features li:last-child { border-bottom: none; }
-.pricing-card .plan-features li i { width: 16px; text-align: center; font-size: 0.65rem; }
-.pricing-card .plan-features li .fa-check-circle { color: #10b981; }
-.pricing-card .plan-features li .fa-times-circle { color: #ef4444; }
-.pricing-card .btn-subscribe {
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    padding: 8px 0;
-    border-radius: 40px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    margin-top: 4px;
-}
-.pricing-card .btn-subscribe:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(11,31,92,0.3);
-}
-.pricing-card .btn-subscribe:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-}
-.pricing-card.free .btn-subscribe {
-    background: #e5e7eb;
-    color: #6b7280;
-    cursor: default;
-}
-@media (max-width: 640px) {
-    .pricing-card {
-        flex: 0 0 calc(100% / 2 - 12px);
-        min-width: 160px;
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    db: { schema: 'public' },
+    fetch: (url, options) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
     }
-}
-@media (max-width: 480px) {
-    .pricing-card {
-        flex: 0 0 calc(100% - 16px);
-        min-width: 140px;
+});
+
+// ============================================================
+// LISTES ET TRADUCTIONS (complètes)
+// ============================================================
+const countriesList = [
+    'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
+    'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain',
+    'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
+    'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso',
+    'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic',
+    'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Congo-Brazzaville)',
+    'Congo (DRC)', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark',
+    'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador',
+    'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland',
+    'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada',
+    'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary',
+    'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy',
+    'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Korea (North)',
+    'Korea (South)', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho',
+    'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar',
+    'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania',
+    'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro',
+    'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands',
+    'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Macedonia', 'Norway', 'Oman',
+    'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru',
+    'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda',
+    'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa',
+    'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia',
+    'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands',
+    'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname',
+    'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand',
+    'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey',
+    'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates',
+    'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City',
+    'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+];
+
+const countryFlags = {
+    'All': '',
+    'Afghanistan': '🇦🇫', 'Albania': '🇦🇱', 'Algeria': '🇩🇿', 'Andorra': '🇦🇩',
+    'Angola': '🇦🇴', 'Antigua and Barbuda': '🇦🇬', 'Argentina': '🇦🇷',
+    'Armenia': '🇦🇲', 'Australia': '🇦🇺', 'Austria': '🇦🇹', 'Azerbaijan': '🇦🇿',
+    'Bahamas': '🇧🇸', 'Bahrain': '🇧🇭', 'Bangladesh': '🇧🇩', 'Barbados': '🇧🇧',
+    'Belarus': '🇧🇾', 'Belgium': '🇧🇪', 'Belize': '🇧🇿', 'Benin': '🇧🇯',
+    'Bhutan': '🇧🇹', 'Bolivia': '🇧🇴', 'Bosnia and Herzegovina': '🇧🇦',
+    'Botswana': '🇧🇼', 'Brazil': '🇧🇷', 'Brunei': '🇧🇳', 'Bulgaria': '🇧🇬',
+    'Burkina Faso': '🇧🇫', 'Burundi': '🇧🇮', 'Cabo Verde': '🇨🇻',
+    'Cambodia': '🇰🇭', 'Cameroon': '🇨🇲', 'Canada': '🇨🇦',
+    'Central African Republic': '🇨🇫', 'Chad': '🇹🇩', 'Chile': '🇨🇱',
+    'China': '🇨🇳', 'Colombia': '🇨🇴', 'Comoros': '🇰🇲',
+    'Congo (Congo-Brazzaville)': '🇨🇬', 'Congo (DRC)': '🇨🇩',
+    'Costa Rica': '🇨🇷', 'Croatia': '🇭🇷', 'Cuba': '🇨🇺', 'Cyprus': '🇨🇾',
+    'Czechia': '🇨🇿', 'Denmark': '🇩🇰', 'Djibouti': '🇩🇯', 'Dominica': '🇩🇲',
+    'Dominican Republic': '🇩🇴', 'Ecuador': '🇪🇨', 'Egypt': '🇪🇬',
+    'El Salvador': '🇸🇻', 'Equatorial Guinea': '🇬🇶', 'Eritrea': '🇪🇷',
+    'Estonia': '🇪🇪', 'Eswatini': '🇸🇿', 'Ethiopia': '🇪🇹', 'Fiji': '🇫🇯',
+    'Finland': '🇫🇮', 'France': '🇫🇷', 'Gabon': '🇬🇦', 'Gambia': '🇬🇲',
+    'Georgia': '🇬🇪', 'Germany': '🇩🇪', 'Ghana': '🇬🇭', 'Greece': '🇬🇷',
+    'Grenada': '🇬🇩', 'Guatemala': '🇬🇹', 'Guinea': '🇬🇳',
+    'Guinea-Bissau': '🇬🇼', 'Guyana': '🇬🇾', 'Haiti': '🇭🇹',
+    'Honduras': '🇭🇳', 'Hungary': '🇭🇺', 'Iceland': '🇮🇸', 'India': '🇮🇳',
+    'Indonesia': '🇮🇩', 'Iran': '🇮🇷', 'Iraq': '🇮🇶', 'Ireland': '🇮🇪',
+    'Israel': '🇮🇱', 'Italy': '🇮🇹', 'Jamaica': '🇯🇲', 'Japan': '🇯🇵',
+    'Jordan': '🇯🇴', 'Kazakhstan': '🇰🇿', 'Kenya': '🇰🇪', 'Kiribati': '🇰🇮',
+    'Korea (North)': '🇰🇵', 'Korea (South)': '🇰🇷', 'Kuwait': '🇰🇼',
+    'Kyrgyzstan': '🇰🇬', 'Laos': '🇱🇦', 'Latvia': '🇱🇻', 'Lebanon': '🇱🇧',
+    'Lesotho': '🇱🇸', 'Liberia': '🇱🇷', 'Libya': '🇱🇾', 'Liechtenstein': '🇱🇮',
+    'Lithuania': '🇱🇹', 'Luxembourg': '🇱🇺', 'Madagascar': '🇲🇬',
+    'Malawi': '🇲🇼', 'Malaysia': '🇲🇾', 'Maldives': '🇲🇻', 'Mali': '🇲🇱',
+    'Malta': '🇲🇹', 'Marshall Islands': '🇲🇭', 'Mauritania': '🇲🇷',
+    'Mauritius': '🇲🇺', 'Mexico': '🇲🇽', 'Micronesia': '🇫🇲',
+    'Moldova': '🇲🇩', 'Monaco': '🇲🇨', 'Mongolia': '🇲🇳',
+    'Montenegro': '🇲🇪', 'Morocco': '🇲🇦', 'Mozambique': '🇲🇿',
+    'Myanmar': '🇲🇲', 'Namibia': '🇳🇦', 'Nauru': '🇳🇷', 'Nepal': '🇳🇵',
+    'Netherlands': '🇳🇱', 'New Zealand': '🇳🇿', 'Nicaragua': '🇳🇮',
+    'Niger': '🇳🇪', 'Nigeria': '🇳🇬', 'North Macedonia': '🇲🇰',
+    'Norway': '🇳🇴', 'Oman': '🇴🇲', 'Pakistan': '🇵🇰', 'Palau': '🇵🇼',
+    'Palestine': '🇵🇸', 'Panama': '🇵🇦', 'Papua New Guinea': '🇵🇬',
+    'Paraguay': '🇵🇾', 'Peru': '🇵🇪', 'Philippines': '🇵🇭', 'Poland': '🇵🇱',
+    'Portugal': '🇵🇹', 'Qatar': '🇶🇦', 'Romania': '🇷🇴', 'Russia': '🇷🇺',
+    'Rwanda': '🇷🇼', 'Saint Kitts and Nevis': '🇰🇳', 'Saint Lucia': '🇱🇨',
+    'Saint Vincent and the Grenadines': '🇻🇨', 'Samoa': '🇼🇸',
+    'San Marino': '🇸🇲', 'Sao Tome and Principe': '🇸🇹',
+    'Saudi Arabia': '🇸🇦', 'Senegal': '🇸🇳', 'Serbia': '🇷🇸',
+    'Seychelles': '🇸🇨', 'Sierra Leone': '🇸🇱', 'Singapore': '🇸🇬',
+    'Slovakia': '🇸🇰', 'Slovenia': '🇸🇮', 'Solomon Islands': '🇸🇧',
+    'Somalia': '🇸🇴', 'South Africa': '🇿🇦', 'South Sudan': '🇸🇸',
+    'Spain': '🇪🇸', 'Sri Lanka': '🇱🇰', 'Sudan': '🇸🇩', 'Suriname': '🇸🇷',
+    'Sweden': '🇸🇪', 'Switzerland': '🇨🇭', 'Syria': '🇸🇾', 'Taiwan': '🇹🇼',
+    'Tajikistan': '🇹🇯', 'Tanzania': '🇹🇿', 'Thailand': '🇹🇭',
+    'Timor-Leste': '🇹🇱', 'Togo': '🇹🇬', 'Tonga': '🇹🇴',
+    'Trinidad and Tobago': '🇹🇹', 'Tunisia': '🇹🇳', 'Turkey': '🇹🇷',
+    'Turkmenistan': '🇹🇲', 'Tuvalu': '🇹🇻', 'Uganda': '🇺🇬',
+    'Ukraine': '🇺🇦', 'United Arab Emirates': '🇦🇪',
+    'United Kingdom': '🇬🇧', 'United States': '🇺🇸', 'Uruguay': '🇺🇾',
+    'Uzbekistan': '🇺🇿', 'Vanuatu': '🇻🇺', 'Vatican City': '🇻🇦',
+    'Venezuela': '🇻🇪', 'Vietnam': '🇻🇳', 'Yemen': '🇾🇪', 'Zambia': '🇿🇲',
+    'Zimbabwe': '🇿🇼'
+};
+
+// ============================================================
+// TRADUCTIONS (complètes - gardez votre version)
+// ============================================================
+const translations = {
+    en: {
+        appName: 'Betix', home: 'Home', myEvents: 'My Events', profile: 'Profile', settings: 'Settings',
+        myTickets: 'My Tickets', ticketHistory: 'Ticket History', faq: 'FAQ', administration: 'Administration',
+        followUs: 'Follow us', notifications: 'Notifications', noNotifications: 'No notifications',
+        connectPi: 'Connect Pi', disconnect: 'Disconnect', chooseLanguage: 'Choose Language:',
+        selectLanguage: 'Select language', guest: 'Guest', notConnected: 'Not connected',
+        connecting: 'Connecting...', welcome: 'Welcome', memberSince: 'Member since',
+        ratings: 'ratings', points: 'points', myEventsCount: 'My Events', myTicketsCount: 'My Tickets',
+        history: 'History', rated: 'Rated', viewAll: 'View all', createEvent: 'Create Event',
+        searchEvent: 'Search event...', chooseCountry: 'Choose Country:',
+        upcomingEvents: 'Upcoming Events', joinCommunity: 'Join the community and live unique experiences',
+        noEvents: 'No events found', buyTicket: 'Buy Ticket', ticketsAvailable: 'tickets available',
+        back: 'Back', title: 'Title', category: 'Category', country: 'Country', dateTime: 'Date & Time',
+        duration: 'Duration', location: 'Location', description: 'Description', conditions: 'Conditions',
+        totalSeats: 'Total Seats', ticketTypes: 'Ticket Types',
+        enableAtLeastOne: 'Enable at least one ticket type and set its price',
+        standard: 'Standard', price: 'Price', active: 'Active', inactive: 'Inactive',
+        photos: 'Photos', imagesRequired: '2 images required', dropImage: 'Drop your image here',
+        orClick: 'or click to browse', compressed: 'Compressed',
+        imagesAutoCompressed: 'Images automatically compressed to WebP format for better performance',
+        publishEvent: 'Publish Event', confirmPublication: 'Confirm Publication',
+        reviewInfo: 'Please review all information before publishing your event',
+        cancel: 'Cancel', publishing: 'Publishing...',
+        eventPublished: 'Event has been successfully published!',
+        editEvent: 'Edit Event', modifyFields: 'Modify the fields below to update your event',
+        saveChanges: 'Save Changes', chooseQuantity: 'Choose quantity',
+        maximumTickets: 'Maximum tickets available', total: 'Total',
+        confirmPurchase: 'Confirm purchase', purchaseSuccessful: 'Purchase successful!',
+        ticketsAdded: 'ticket(s) added successfully.', event: 'Event', type: 'Type',
+        quantity: 'Quantity', code: 'Code', ok: 'OK',
+        pendingPaymentFound: 'Pending Payment Found',
+        pendingPaymentMessage: 'You already have a pending payment on this app. You can either cancel the pending payment and try again, or wait for it to complete.',
+        ignore: 'Ignore', cancelAndRetry: 'Cancel & Retry',
+        paymentError: 'Payment error',
+        pendingPaymentError: 'A pending payment was found. Please complete or cancel the previous payment in your Pi wallet, then try again.',
+        paymentCancelled: 'Payment cancelled',
+        noSeatsAvailable: 'No seats available for this event',
+        pleaseConnect: 'Please connect your Pi account first',
+        authenticationFailed: 'Authentication failed. Please try again.',
+        connectionError: 'Connection error',
+        sessionExpired: 'Session expired due to inactivity. Please reconnect.',
+        disconnected: 'You are disconnected',
+        eventNotFound: 'Event not found', ticketNotFound: 'Ticket not found',
+        downloadTicket: 'Download ticket', ticketDownloaded: 'Ticket downloaded',
+        markUsed: 'Mark as used',
+        markUsedConfirm: 'Mark this ticket as used? This action cannot be undone.',
+        ticketMarkedUsed: 'Ticket marked as used successfully!',
+        noActiveTickets: 'No active tickets', noTicketHistory: 'No ticket history',
+        clearData: 'Clear my data', clearDataConfirm: 'Delete all your data?',
+        darkMode: 'Dark mode', all: 'All', concert: 'Concert', sport: 'Sport',
+        conference: 'Conference', training: 'Training', cinema: 'Cinema',
+        festival: 'Festival', theatre: 'Theatre', dance: 'Dance',
+        exhibition: 'Exhibition', gala: 'Gala', seminar: 'Seminar',
+        formation: 'Formation', fullDescription: 'Full description',
+        information: 'Information', organizer: 'Organizer', createdOn: 'Created on',
+        seatsLeft: 'Seats left', rating: 'Rating', notYetRated: 'Not yet rated',
+        noReviews: 'No reviews yet', noConditions: 'No conditions specified',
+        by: 'By', new: 'New', soldOut: 'Sold Out', ended: 'Ended',
+        tickets: 'tickets', views: 'views',
+        footerTitleInfo: 'Info', footerTitleBetix: 'Betix', footerTitlePartners: 'Partners',
+        footerTermsSale: 'Terms of sale', footerTermsUse: 'Terms of use',
+        footerPrivacy: 'Privacy policy', footerAccessibility: 'Accessibility statement',
+        footerPrivacyChoices: 'Privacy choices', footerFanGuide: 'Fan ticket guide',
+        footerLegal: 'Legal notices', footerCookies: 'Cookie preferences',
+        footerAbout: 'About us', footerContact: 'Contact us', footerFeedback: 'Your feedback',
+        footerHelp: 'Help', footerJoinCommunity: 'Join the Betix community',
+        footerPiNetwork: 'Pi Network', footerSecure: 'Secure',
+        footerRights: 'All rights reserved.',
+        footerBuiltOn: 'Built on Pi Network | Secured by Blockchain',
+        footerSlogan: 'The first decentralized ticketing platform on Pi Network',
+        footerDesc: 'Secure platform to buy and sell event tickets with Pi payment.'
+    },
+    fr: {
+        appName: 'Betix', home: 'Accueil', myEvents: 'Mes Événements', profile: 'Profil',
+        settings: 'Paramètres', myTickets: 'Mes Tickets', ticketHistory: 'Historique des Tickets',
+        faq: 'FAQ', administration: 'Administration', followUs: 'Suivez-nous',
+        notifications: 'Notifications', noNotifications: 'Aucune notification',
+        connectPi: 'Connecter Pi', disconnect: 'Déconnecter',
+        chooseLanguage: 'Choisir la langue :', selectLanguage: 'Sélectionner la langue',
+        guest: 'Invité', notConnected: 'Non connecté', connecting: 'Connexion...',
+        welcome: 'Bienvenue', memberSince: 'Membre depuis', ratings: 'avis',
+        points: 'points', myEventsCount: 'Mes Événements', myTicketsCount: 'Mes Tickets',
+        history: 'Historique', rated: 'Évalués', viewAll: 'Voir tout',
+        createEvent: 'Créer un Événement', searchEvent: 'Rechercher un événement...',
+        chooseCountry: 'Choisir le pays :', upcomingEvents: 'Événements à Venir',
+        joinCommunity: 'Rejoignez la communauté et vivez des expériences uniques',
+        noEvents: 'Aucun événement trouvé', buyTicket: 'Acheter un Ticket',
+        ticketsAvailable: 'tickets disponibles', back: 'Retour',
+        title: 'Titre', category: 'Catégorie', country: 'Pays',
+        dateTime: 'Date et Heure', duration: 'Durée', location: 'Lieu',
+        description: 'Description', conditions: 'Conditions', totalSeats: 'Places Totales',
+        ticketTypes: 'Types de Billets',
+        enableAtLeastOne: 'Activez au moins un type de billet et définissez son prix',
+        standard: 'Standard', price: 'Prix', active: 'Actif', inactive: 'Inactif',
+        photos: 'Photos', imagesRequired: '2 images requises',
+        dropImage: 'Déposez votre image ici', orClick: 'ou cliquez pour parcourir',
+        compressed: 'Compressée',
+        imagesAutoCompressed: 'Images automatiquement compressées au format WebP pour de meilleures performances',
+        publishEvent: 'Publier l\'Événement', confirmPublication: 'Confirmer la Publication',
+        reviewInfo: 'Veuillez vérifier toutes les informations avant de publier votre événement',
+        cancel: 'Annuler', publishing: 'Publication...',
+        eventPublished: 'L\'événement a été publié avec succès !',
+        editEvent: 'Modifier l\'Événement',
+        modifyFields: 'Modifiez les champs ci-dessous pour mettre à jour votre événement',
+        saveChanges: 'Enregistrer les Modifications',
+        chooseQuantity: 'Choisir la quantité', maximumTickets: 'Maximum de tickets disponibles',
+        total: 'Total', confirmPurchase: 'Confirmer l\'achat',
+        purchaseSuccessful: 'Achat réussi !',
+        ticketsAdded: 'ticket(s) ajouté(s) avec succès.',
+        event: 'Événement', type: 'Type', quantity: 'Quantité', code: 'Code', ok: 'OK',
+        pendingPaymentFound: 'Paiement en Attente Trouvé',
+        pendingPaymentMessage: 'Vous avez déjà un paiement en attente sur cette application. Vous pouvez annuler le paiement en attente et réessayer, ou attendre qu\'il se termine.',
+        ignore: 'Ignorer', cancelAndRetry: 'Annuler et Réessayer',
+        paymentError: 'Erreur de paiement',
+        pendingPaymentError: 'Un paiement en attente a été trouvé. Veuillez compléter ou annuler le paiement précédent dans votre portefeuille Pi, puis réessayer.',
+        paymentCancelled: 'Paiement annulé',
+        noSeatsAvailable: 'Aucune place disponible pour cet événement',
+        pleaseConnect: 'Veuillez d\'abord connecter votre compte Pi',
+        authenticationFailed: 'Échec de l\'authentification. Veuillez réessayer.',
+        connectionError: 'Erreur de connexion',
+        sessionExpired: 'Session expirée en raison d\'inactivité. Veuillez vous reconnecter.',
+        disconnected: 'Vous êtes déconnecté',
+        eventNotFound: 'Événement non trouvé', ticketNotFound: 'Ticket non trouvé',
+        downloadTicket: 'Télécharger le ticket', ticketDownloaded: 'Ticket téléchargé',
+        markUsed: 'Marquer comme utilisé',
+        markUsedConfirm: 'Marquer ce ticket comme utilisé ? Cette action est irréversible.',
+        ticketMarkedUsed: 'Ticket marqué comme utilisé avec succès !',
+        noActiveTickets: 'Aucun ticket actif', noTicketHistory: 'Aucun historique de tickets',
+        clearData: 'Effacer mes données', clearDataConfirm: 'Supprimer toutes vos données ?',
+        darkMode: 'Mode sombre', all: 'Tous',
+        concert: 'Concert', sport: 'Sport', conference: 'Conférence',
+        training: 'Formation', cinema: 'Cinéma', festival: 'Festival',
+        theatre: 'Théâtre', dance: 'Danse', exhibition: 'Exposition',
+        gala: 'Gala', seminar: 'Séminaire', formation: 'Formation',
+        fullDescription: 'Description complète', information: 'Informations',
+        organizer: 'Organisateur', createdOn: 'Créé le',
+        seatsLeft: 'Places restantes', rating: 'Évaluation',
+        notYetRated: 'Pas encore évalué', noReviews: 'Aucun avis pour le moment',
+        noConditions: 'Aucune condition spécifiée', by: 'Par',
+        new: 'Nouveau', soldOut: 'Complet', ended: 'Terminé',
+        tickets: 'tickets', views: 'vues',
+        footerTitleInfo: 'Infos', footerTitleBetix: 'Betix', footerTitlePartners: 'Partenaires',
+        footerTermsSale: 'Conditions de vente', footerTermsUse: 'Conditions d\'utilisation',
+        footerPrivacy: 'Politique de confidentialité',
+        footerAccessibility: 'Déclaration d\'accessibilité',
+        footerPrivacyChoices: 'Choix de confidentialité',
+        footerFanGuide: 'Guide du billet fan',
+        footerLegal: 'Mentions légales', footerCookies: 'Préférences de cookies',
+        footerAbout: 'À propos de nous', footerContact: 'Contactez-nous',
+        footerFeedback: 'Votre avis', footerHelp: 'Aide',
+        footerJoinCommunity: 'Rejoignez la communauté Betix',
+        footerPiNetwork: 'Réseau Pi', footerSecure: 'Sécurisé',
+        footerRights: 'Tous droits réservés.',
+        footerBuiltOn: 'Construit sur Pi Network | Sécurisé par Blockchain',
+        footerSlogan: 'La première plateforme de billetterie décentralisée sur Pi Network',
+        footerDesc: 'Plateforme sécurisée pour acheter et vendre des billets avec paiement en Pi.'
     }
+};
 
-/* ============================================================
-   TICKET – POSITIONNEMENT FINAL AVEC CLASSES SPÉCIFIQUES
-   ============================================================ */
-
-.ticket-list-item {
-    max-width: 820px;
-    margin: 0 auto 2rem auto;
-    background: transparent;
-    border-radius: 16px;
-    overflow: hidden;
+let currentLang = 'en';
+function t(key) {
+    let lang = currentLang || 'en';
+    if (translations[lang] && translations[lang][key] !== undefined) return translations[lang][key];
+    if (translations.en && translations.en[key] !== undefined) return translations.en[key];
+    return key;
 }
 
-.ticket-actions-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-    padding: 0 8px;
+// ============================================================
+// VARIABLES GLOBALES
+// ============================================================
+let events = [];
+let tickets = [];
+let usedTickets = [];
+let currentUser = { 
+    name: 'Guest', 
+    wallet: null, 
+    piUid: null, 
+    memberSince: '2026', 
+    loyaltyPoints: 0,
+    first_name: '',
+    last_name: '',
+    country: '',
+    address: '',
+    email: '',
+    phone_number: '',
+    account_type: 'free',
+    premium_start: null,
+    premium_end: null,
+    premium_status: 'inactive'
+};
+let currentFilter = 'All';
+let currentCountryFilter = 'All';
+let searchQuery = '';
+let piUser = null;
+let ratings = [];
+let chatMessages = [];
+let connectedUsers = [];
+let notifications = [];
+let adminPassword = localStorage.getItem('betix_admin_password') || 'Betix@2026#';
+let lastActivity = localStorage.getItem('betix_last_activity') || Date.now();
+let pageHistory = ['home'];
+let logoClickCount = 0;
+let pendingEventData = null;
+let editingEventId = null;
+let selectedEventForPurchase = null;
+let uploadedImages = {};
+let adminSessionTimer = 1800;
+let adminTimerInterval = null;
+let adminLogs = [];
+let heroSlides = [];
+const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
+let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
+
+// ============================================================
+// PARAMÈTRES DE L'APPLICATION
+// ============================================================
+let appSettings = {
+    premiumPriceUSD: 5,
+    commissionPercent: 5,
+    serviceFeePercent: 2,
+    premiumDurationDays: 30,
+    piRate: 1,
+    badgeEnabled: true
+};
+
+// ============================================================
+// FONCTIONS UTILITAIRES ET SUPABASE (gardez votre code existant)
+// ============================================================
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function formatDate(dateStr) { 
+    if (!dateStr) return 'Date to be defined';
+    const d = new Date(dateStr); 
+    return !isNaN(d.getTime()) ? d.toLocaleDateString('en-US') : 'Date to be defined'; 
+}
+function formatDateTime(dateStr) { 
+    if (!dateStr) return 'Date to be defined';
+    const d = new Date(dateStr); 
+    return !isNaN(d.getTime()) ? d.toLocaleString('en-US') : 'Date to be defined'; 
 }
 
-.ticket-actions-wrapper .btn-action {
-    padding: 8px 18px;
-    border: none;
-    border-radius: 40px;
-    font-weight: 700;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    letter-spacing: 0.3px;
-}
-.ticket-actions-wrapper .btn-action:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-.ticket-actions-wrapper .btn-action:active { transform: scale(0.95); }
-.ticket-actions-wrapper .btn-pdf { background: #ef4444; color: white; }
-.ticket-actions-wrapper .btn-pdf:hover { background: #dc2626; }
-.ticket-actions-wrapper .btn-png { background: #10b981; color: white; }
-.ticket-actions-wrapper .btn-png:hover { background: #059669; }
-.ticket-actions-wrapper .btn-share { background: #3b82f6; color: white; }
-.ticket-actions-wrapper .btn-share:hover { background: #2563eb; }
+const eventImagesList = {
+    Concert: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop',
+    Sport: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Football: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop',
+    Conference: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop',
+    Training: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop',
+    Cinema: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&h=400&fit=crop',
+    Festival: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&h=400&fit=crop',
+    Theatre: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&h=400&fit=crop',
+    Dance: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&h=400&fit=crop',
+    Exhibition: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&h=400&fit=crop',
+    Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
+    Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
+    Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
+};
 
-.ticket-overlay-container {
-    position: relative;
-    max-width: 780px;
-    margin: 0 auto;
-    background: #0a1628;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-
-.ticket-overlay-bg img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* ===== Classes communes aux deux colonnes ===== */
-.ticket-left,
-.ticket-right {
-    position: absolute;
-    pointer-events: none;
-    font-size: 8px;
-    font-weight: 700;
-    color: #1a202c;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 45%;
+function initCharCounters() {
+    const fields = [
+        { id: 'eventTitle', counterId: 'titleCharCounter', max: 25 },
+        { id: 'eventLocation', counterId: 'locationCharCounter', max: 30 },
+        { id: 'eventDescription', counterId: 'descCharCounter', max: 150 },
+        { id: 'eventConditions', counterId: 'condCharCounter', max: 40 }
+    ];
+    fields.forEach(field => {
+        const input = document.getElementById(field.id);
+        const counter = document.getElementById(field.counterId);
+        if (input && counter) {
+            input.addEventListener('input', function() {
+                const remaining = field.max - this.value.length;
+                counter.textContent = remaining + ' characters remaining';
+                counter.className = 'char-counter';
+                if (remaining < 5) counter.classList.add('warning');
+                else if (remaining > field.max * 0.7) counter.classList.add('good');
+            });
+            const rem = field.max - input.value.length;
+            counter.textContent = rem + ' characters remaining';
+            if (rem < 5) counter.classList.add('warning');
+            else if (rem > field.max * 0.7) counter.classList.add('good');
+        }
+    });
 }
 
-/* Colonne gauche : alignée à droite */
-.ticket-left {
-    left: 26%;          /* Ajustez selon votre image */
-    text-align: right;
+// ============================================================
+// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
+// ============================================================
+async function uploadEventImage(eventId, base64Data, index) {
+    try {
+        const response = await fetch(base64Data);
+        const blob = await response.blob();
+        const filePath = eventId + '/image_' + index + '_' + Date.now() + '.webp';
+        const { data, error } = await supabaseClient.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
+        if (error) throw error;
+        const { data: publicUrlData } = supabaseClient.storage.from('events-images').getPublicUrl(filePath);
+        return publicUrlData.publicUrl;
+    } catch (error) { return null; }
 }
 
-/* Colonne droite : alignée à gauche */
-.ticket-right {
-    left: 56%;          /* Ajustez selon votre image */
-    text-align: left;
+async function saveHeroSlideToSupabase(slideData, index) {
+    try {
+        const dbSlide = {
+            image_url: slideData.image,
+            badge: slideData.badge || '',
+            title: slideData.title,
+            description: slideData.description || '',
+            sort_order: (index !== undefined && index >= 0) ? index : 0,
+            updated_at: new Date().toISOString()
+        };
+        if (slideData.id) {
+            const { error } = await supabaseClient.from('hero_slides').update(dbSlide).eq('id', slideData.id);
+            if (error) throw error;
+        } else {
+            dbSlide.created_at = new Date().toISOString();
+            const { error } = await supabaseClient.from('hero_slides').insert(dbSlide);
+            if (error) throw error;
+        }
+        return true;
+    } catch (error) { return false; }
 }
 
-/* ===== Positions verticales individuelles ===== */
-.ticket-event    { top: 41%; }   /* EVENT */
-.ticket-duration { top: 48%; }   /* DURATION */
-.ticket-date     { top: 55%; }   /* DATE */
-.ticket-time     { top: 62%; }   /* TIME */
-.ticket-location { top: 69%; }   /* LOCATION / ADDRESS */
-.ticket-price    { top: 76%; }   /* PRICE */
-
-.ticket-name          { top: 41%; }  /* NAME */
-.ticket-email         { top: 48%; }  /* EMAIL */
-.ticket-phone         { top: 55%; }  /* PHONE */
-.ticket-wallet        { top: 62%; }  /* WALLET ID (numéro séquentiel) */
-.ticket-purchase-date { top: 69%; }  /* TICKET PURCHASE DATE */
-.ticket-number        { top: 76%; }  /* TICKET NUMBER (ID unique) */
-
-/* ===== Localisation : retour à la ligne si trop longue ===== */
-.ticket-location {
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+async function deleteHeroSlideFromSupabase(id) {
+    try {
+        const { error } = await supabaseClient.from('hero_slides').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) { return false; }
 }
 
-/* ===== QR Code : centré dans le cadre jaune ===== */
-.ticket-qr {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    padding: 2px;
-    border-radius: 6px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 8%;          /* Ajustez pour centrer */
-    top: 17%;           /* Ajustez */
-    width: 16%;         /* Ajustez */
-    aspect-ratio: 1/1;
+async function migrateHeroSlides(slides) {
+    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
 }
 
-/* ===== Ticket ID sur le coupon (ligne "TICKET ID :") ===== */
-.ticket-qr-id {
-    position: absolute;
-    right: 8%;
-    width: 16%;
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 8px;
-    color: #1a202c;
-    letter-spacing: 0.5px;
-    top: 52%;           /* Position sur "TICKET ID :" */
+async function uploadHeroImage(base64Data, filename) {
+    try {
+        const response = await fetch(base64Data);
+        const blob = await response.blob();
+        const filePath = 'hero/' + filename.replace(/\s+/g, '_') + '_' + Date.now() + '.webp';
+        const { data, error } = await supabaseClient.storage.from('events-images').upload(filePath, blob, { contentType: blob.type, cacheControl: '3600', upsert: true });
+        if (error) throw error;
+        const { data: publicUrlData } = supabaseClient.storage.from('events-images').getPublicUrl(filePath);
+        return publicUrlData.publicUrl;
+    } catch (error) { return null; }
 }
 
-/* ===== Date of Purchase sur le coupon (ligne "DATE OF PURCHASE :") ===== */
-.ticket-qr-date {
-    position: absolute;
-    right: 8%;
-    width: 16%;
-    text-align: center;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 7px;
-    color: #1a202c;
-    top: 62%;           /* Position sur "DATE OF PURCHASE :" */
-}
-
-/* ============================================================
-   ADAPTATION MOBILE
-   ============================================================ */
-@media (max-width: 640px) {
-    .ticket-left { left: 18%; width: 30%; font-size: 6px; }
-    .ticket-right { left: 50%; width: 30%; font-size: 6px; }
-    .ticket-event    { top: 33%; }
-    .ticket-duration { top: 40%; }
-    .ticket-date     { top: 47%; }
-    .ticket-time     { top: 54%; }
-    .ticket-location { top: 61%; }
-    .ticket-price    { top: 68%; }
-    .ticket-name          { top: 33%; }
-    .ticket-email         { top: 40%; }
-    .ticket-phone         { top: 47%; }
-    .ticket-wallet        { top: 54%; }
-    .ticket-purchase-date { top: 61%; }
-    .ticket-number        { top: 68%; }
-    .ticket-qr { right: 5%; top: 15%; width: 12%; }
-    .ticket-qr-id { right: 5%; width: 12%; top: 52%; font-size: 6px; }
-    .ticket-qr-date { right: 5%; width: 12%; top: 62%; font-size: 5px; }
-}
-
-@media (max-width: 480px) {
-    .ticket-left { left: 12%; width: 35%; font-size: 5px; }
-    .ticket-right { left: 48%; width: 35%; font-size: 5px; }
-    .ticket-event    { top: 29%; }
-    .ticket-duration { top: 36%; }
-    .ticket-date     { top: 43%; }
-    .ticket-time     { top: 50%; }
-    .ticket-location { top: 57%; }
-    .ticket-price    { top: 64%; }
-    .ticket-name          { top: 29%; }
-    .ticket-email         { top: 36%; }
-    .ticket-phone         { top: 43%; }
-    .ticket-wallet        { top: 50%; }
-    .ticket-purchase-date { top: 57%; }
-    .ticket-number        { top: 64%; }
-    .ticket-qr { right: 4%; top: 13%; width: 14%; }
-    .ticket-qr-id { right: 4%; width: 14%; top: 52%; font-size: 5px; }
-    .ticket-qr-date { right: 4%; width: 14%; top: 62%; font-size: 4px; }
-}
-/* ============================================================
-   FOOTER – textes réduits, logos centrés
-   ============================================================ */
-.betix-footer {
-    background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
-    color: #c8d4e6;
-    padding: 30px 5% 16px;
-    border-top: 1px solid rgba(245,180,0,0.15);
-    margin-top: 0;
-    width: 100%;
-}
-.footer-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px 16px;
-    width: 100%;
-}
-.footer-col h4 {
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.3px;
-    margin-bottom: 12px;
-    position: relative;
-    padding-bottom: 6px;
-}
-.footer-col h4::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 24px;
-    height: 2px;
-    background: linear-gradient(90deg, #F5B400, #D89C00);
-    border-radius: 2px;
-}
-.footer-col ul li a {
-    color: #a0b4cc;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s, transform 0.2s;
-    cursor: pointer;
-    display: inline-block;
-    padding: 3px 0;
-}
-.footer-col ul li a:hover {
-    color: #ffffff;
-    transform: translateX(3px);
-}
-.footer-col ul li {
-    margin-bottom: 4px;
-    list-style: none;
-}
-.footer-logo {
-    font-size: 24px;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 4px;
-}
-.footer-slogan {
-    font-size: 14px;
-    color: #F5B400;
-    font-weight: 500;
-    margin-bottom: 6px;
-}
-.footer-desc {
-    font-size: 13px;
-    line-height: 1.5;
-    color: #a0b4cc;
-    margin-bottom: 10px;
-    max-width: 220px;
-}
-.footer-social {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-}
-.footer-social a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    font-size: 14px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    color: #1DA1F2;
-}
-.footer-social a[href*="t.me"] { color: #0088cc; }
-.footer-social a[href*="twitter"] { color: #1DA1F2; }
-.footer-social a[href*="discord"] { color: #5865F2; }
-.footer-social a[href*="facebook"] { color: #1877F2; }
-.footer-social a[href*="whatsapp"] { color: #25D366; }
-.footer-social a:hover {
-    background: rgba(255,255,255,0.15);
-    color: #ffffff !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.footer-bottom {
-    max-width: 1400px;
-    margin: 16px auto 0;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    font-size: 12px;
-    color: #6a7f9a;
-}
-.footer-bottom .footer-social {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 0;
-}
-
-/* ============================================================
-   CHAT – position fixe en bas à droite
-   ============================================================ */
-.chat-float-btn {
-    position: fixed;
-    bottom: 80px;
-    right: 16px;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    color: white;
-    font-size: 1.3rem;
-    transition: transform 0.2s;
-    z-index: 9998;
-}
-.chat-float-btn:hover { transform: scale(1.05); }
-
-/* BOUTON FLÈCHE VERS LE HAUT : DÉSACTIVÉ ET CACHÉ */
-.scroll-top-btn {
-    display: none !important;
-}
-
-/* ============================================================
-   CONFIRM PURCHASE POPUP – CENTRÉE ET AU-DESSUS DE TOUT
-   ============================================================ */
-.confirm-purchase-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 99999 !important;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-.confirm-purchase-popup.show {
-    display: flex !important;
-}
-.confirm-purchase-popup-content {
-    background: white;
-    border-radius: 24px;
-    padding: 30px 28px 24px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    animation: popIn 0.3s ease;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-    position: relative;
-    margin: auto;
-}
-.confirm-purchase-popup-content .confirm-purchase-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e6e6e6;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-.confirm-purchase-popup-content .confirm-purchase-header h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0;
-}
-.confirm-purchase-popup-content .confirm-purchase-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #6b7280;
-    padding: 0 6px;
-}
-.confirm-purchase-popup-content .confirm-purchase-close:hover {
-    color: #1a1a2e;
-}
-.confirm-purchase-popup-content .confirm-purchase-body {
-    margin-bottom: 16px;
-}
-.confirm-purchase-popup-content .confirm-purchase-title {
-    font-weight: 600;
-    color: #1a1a2e;
-    margin-bottom: 12px;
-    font-size: 1rem;
-}
-.confirm-purchase-popup-content .confirm-purchase-receipt {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 14px 16px;
-    text-align: left;
-}
-.confirm-purchase-popup-content .confirm-purchase-receipt .receipt-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    font-size: 0.9rem;
-    color: #1f2937;
-}
-.confirm-purchase-popup-content .confirm-purchase-receipt .receipt-row.total {
-    border-top: 1px solid #e6e6e6;
-    margin-top: 6px;
-    padding-top: 10px;
-    font-weight: 700;
-    font-size: 1rem;
-}
-.confirm-purchase-popup-content .confirm-purchase-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-    justify-content: flex-end;
-}
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-secondary-modal {
-    background: #e6e6e6;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 40px;
-    font-weight: 600;
-    color: #1f2937;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex: 1;
-}
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-secondary-modal:hover {
-    background: #d1d5db;
-}
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-primary {
-    background: #0B1F5C;
-    border: none;
-    padding: 10px 28px;
-    border-radius: 40px;
-    font-weight: 700;
-    color: white;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex: 2;
-}
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-primary:hover {
-    background: #1a2a4a;
-}
-
-/* ============================================================
-   QUANTITY POPUP – CORRECTION DU BOUTON
-   ============================================================ */
-.quantity-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 3000;
-    justify-content: center;
-    align-items: center;
-}
-.quantity-popup.show {
-    display: flex !important;
-}
-.quantity-popup-content {
-    background: white;
-    border-radius: 24px;
-    padding: 30px 25px 25px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    animation: popIn 0.3s ease;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-    position: relative;
-}
-.quantity-popup-content .quantity-popup-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e6e6e6;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-.quantity-popup-content .quantity-popup-header h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0;
-}
-.quantity-popup-content .quantity-popup-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #6b7280;
-}
-.quantity-popup-content .quantity-popup-close:hover {
-    color: #1a1a2e;
-}
-.quantity-popup-content .quantity-event-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin: 0 0 16px 0;
-}
-.quantity-popup-content .quantity-selector-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.quantity-popup-content .quantity-selector-wrapper .qty-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid #d1d5db;
-    background: #f3f4f6;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.quantity-popup-content .quantity-selector-wrapper .qty-btn:hover {
-    background: #0B1F5C;
-    color: white;
-    border-color: #0B1F5C;
-}
-.quantity-popup-content .quantity-selector-wrapper #ticketQuantity {
-    width: 60px;
-    height: 40px;
-    text-align: center;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-.quantity-popup-content .quantity-receipt {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin: 12px 0;
-    text-align: left;
-}
-.quantity-popup-content .quantity-receipt .receipt-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    font-size: 0.9rem;
-    color: #1f2937;
-}
-.quantity-popup-content .quantity-receipt .receipt-row.total {
-    border-top: 1px solid #e6e6e6;
-    margin-top: 6px;
-    padding-top: 10px;
-    font-weight: 700;
-    font-size: 1rem;
-}
-.quantity-popup-content .quantity-max-info {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin: 8px 0 0;
-}
-.quantity-popup-content .quantity-popup-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-    justify-content: flex-end;
-}
-.quantity-popup-content .quantity-popup-footer .btn-secondary-modal {
-    background: #e6e6e6;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 40px;
-    font-weight: 600;
-    color: #1f2937;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.quantity-popup-content .quantity-popup-footer .btn-secondary-modal:hover {
-    background: #d1d5db;
-}
-.quantity-popup-content .quantity-popup-footer .btn-primary {
-    background: #0B1F5C;
-    border: none;
-    padding: 10px 28px;
-    border-radius: 40px;
-    font-weight: 700;
-    color: white;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.quantity-popup-content .quantity-popup-footer .btn-primary:hover {
-    background: #1a2a4a;
-}
-
-/* ============================================================
-   NOTIFICATIONS
-   ============================================================ */
-.notification-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    background: #f9fafb;
-    border-left: 4px solid var(--gray);
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.notification-item.unread {
-    background: #f0f4ff;
-    border-left-color: #3b82f6;
-}
-.notification-item .notif-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 1rem;
-    color: white;
-}
-.notification-item .notif-content {
-    flex: 1;
-}
-.notification-item .notif-content .notif-msg {
-    font-size: 0.9rem;
-    color: #1f2937;
-    font-weight: 500;
-}
-.notification-item .notif-content .notif-time {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-top: 2px;
-}
-.notification-item.type-purchase { border-left-color: var(--notif-purchase); }
-.notification-item.type-purchase .notif-icon { background: var(--notif-purchase); }
-.notification-item.type-event { border-left-color: var(--notif-event); }
-.notification-item.type-event .notif-icon { background: var(--notif-event); }
-.notification-item.type-info { border-left-color: var(--notif-info); }
-.notification-item.type-info .notif-icon { background: var(--notif-info); }
-.notification-item.type-warning { border-left-color: var(--notif-warning); }
-.notification-item.type-warning .notif-icon { background: var(--notif-warning); }
-.notification-item.type-success { border-left-color: var(--notif-success); }
-.notification-item.type-success .notif-icon { background: var(--notif-success); }
-.notification-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-}
-/* ============================================================
-   MODALS, UPLOAD, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
-   ============================================================ */
-.image-upload-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 6px;
-}
-.upload-box-modern {
-    position: relative;
-    border: 2px dashed #e6e6e6;
-    border-radius: 14px;
-    background: #fefaf0;
-    transition: all 0.3s ease;
-    min-height: 180px;
-    overflow: hidden;
-    cursor: pointer;
-}
-.upload-box-modern:hover {
-    border-color: #F5B400;
-    background: #fef8f0;
-    box-shadow: 0 4px 20px rgba(245,180,0,0.08);
-}
-.upload-box-modern.dragover {
-    border-color: #F5B400;
-    background: #fef8f0;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.15);
-}
-.upload-box-modern.has-image {
-    border-style: solid;
-    border-color: #10b981;
-    background: #f0fdf4;
-    min-height: 180px;
-}
-.upload-box-modern.compress {
-    border-color: #F5B400;
-    background: #fef8f0;
-}
-.upload-box-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 180px;
-    padding: 20px;
-    text-align: center;
-}
-.upload-box-modern.has-image .upload-box-inner { display: none; }
-.upload-icon-modern {
-    font-size: 2.5rem;
-    color: #d4911e;
-    margin-bottom: 10px;
-    opacity: 0.8;
-}
-.upload-text {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin: 0;
-    line-height: 1.6;
-}
-.upload-text span {
-    color: #F5B400;
-    font-weight: 500;
-}
-.upload-text span:hover { text-decoration: underline; }
-.upload-help {
-    font-size: 0.7rem;
-    color: #9ca3af;
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.upload-help i { color: #F5B400; }
-.image-input-modern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-.upload-progress {
-    width: 100%;
-    max-width: 180px;
-    margin: 10px auto 0;
-}
-.progress-bar {
-    width: 100%;
-    height: 5px;
-    background: #e6e6e6;
-    border-radius: 4px;
-    overflow: hidden;
-}
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #F5B400, #D89C00);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-    width: 0%;
-}
-.progress-text {
-    font-size: 0.7rem;
-    color: #6b7280;
-    margin-top: 4px;
-    display: block;
-}
-.preview-modern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-.preview-modern img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 12px;
-    background: #1a1a2e;
-}
-.remove-image-modern {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(239,68,68,0.9);
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 3;
-}
-.remove-image-modern:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
-.preview-badge {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(16,185,129,0.9);
-    color: white;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.6rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    z-index: 3;
-    backdrop-filter: blur(4px);
-}
-.preview-badge i { font-size: 0.55rem; }
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-.modal.show { display: flex !important; }
-.modal-content {
-    background: white;
-    border-radius: 24px;
-    max-width: 500px;
-    width: 90%;
-    padding: 24px;
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: modalFadeIn 0.3s ease;
-}
-.modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    color: var(--gray);
-    background: none;
-    border: none;
-}
-.modal-close:hover { color: var(--dark); }
-
-.modal-edit-event .modal-content {
-    max-width: 560px;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-.modal-edit-event .form-group { margin-bottom: 1rem; }
-.modal-edit-event .form-group label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--dark);
-}
-.modal-edit-event .form-group input,
-.modal-edit-event .form-group textarea,
-.modal-edit-event .form-group select {
-    width: 100%;
-    padding: 0.6rem 0.8rem;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    transition: border 0.2s;
-    background: white;
-    font-family: inherit;
-}
-.modal-edit-event .form-group input:focus,
-.modal-edit-event .form-group textarea:focus,
-.modal-edit-event .form-group select:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-.modal-edit-event .form-group textarea { resize: vertical; min-height: 60px; }
-.modal-edit-event .modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-}
-.modal-edit-event .modal-actions .btn-primary { flex: 2; margin: 0; }
-.modal-edit-event .modal-actions .btn-secondary-modal {
-    flex: 1;
-    padding: 0.9rem;
-    border-radius: 40px;
-    border: 2px solid #e6e6e6;
-    background: transparent;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--gray);
-    transition: all 0.2s;
-}
-.modal-edit-event .modal-actions .btn-secondary-modal:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-.modal-edit-event .btn-back {
-    margin-top: 12px;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--gray);
-    border: 2px solid #e6e6e6;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    text-align: center;
-}
-.modal-edit-event .btn-back:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-
-.quantity-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 3000;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(4px);
-}
-.quantity-popup.show { display: flex; }
-.quantity-popup-content {
-    background: white;
-    border-radius: 24px;
-    padding: 30px 25px 25px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-    position: relative;
-}
-.close-popup {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 26px;
-    cursor: pointer;
-    color: var(--gray);
-    background: none;
-    border: none;
-    transition: color 0.2s;
-}
-.close-popup:hover { color: var(--dark); }
-@keyframes popIn {
-    0% { transform: scale(0.7); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.quantity-popup-content h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 6px;
-}
-.quantity-popup-content h3 i {
-    color: #F5B400;
-    margin-right: 6px;
-}
-#quantityEventTitle {
-    font-weight: 600;
-    color: #F5B400;
-    margin-bottom: 4px;
-}
-#quantityEventInfo {
-    font-size: 0.8rem;
-    color: var(--gray);
-    margin-bottom: 12px;
-}
-.quantity-selector {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    margin: 12px 0;
-}
-.qty-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #e6e6e6;
-    background: white;
-    font-size: 1.3rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--dark);
-}
-.qty-btn:hover {
-    border-color: #F5B400;
-    background: linear-gradient(135deg, #F5B400, #D89C00);
-    color: white;
-}
-#ticketQuantity {
-    width: 60px;
-    height: 44px;
-    text-align: center;
-    font-size: 1.3rem;
-    font-weight: 700;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    background: white;
-    color: var(--dark);
-}
-#ticketQuantity:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-#subtotalDisplay {
-    font-weight: 700;
-    color: var(--primary);
-}
-#serviceFeeDisplay {
-    font-weight: 700;
-    color: var(--primary);
-}
-#totalPriceDisplay {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-#maxQuantityInfo {
-    font-size: 0.7rem;
-    color: var(--gray);
-    margin-top: 4px;
-}
-#confirmBuyBtn { margin-top: 14px; }
-
-/* SUCCESS POPUP – VERSION AMÉLIORÉE */
-.success-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 4000;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-.success-popup.show {
-    display: flex;
-}
-.success-popup-content {
-    background: #ffffff;
-    border-radius: 28px;
-    padding: 30px 28px 24px;
-    max-width: 440px;
-    width: 100%;
-    text-align: center;
-    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(245, 180, 0, 0.15);
-    position: relative;
-}
-.success-popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-.success-popup-header h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0;
-}
-.success-popup-close {
-    background: none;
-    border: none;
-    font-size: 1.6rem;
-    cursor: pointer;
-    color: #6b7280;
-    padding: 0 4px;
-    transition: color 0.2s;
-}
-.success-popup-close:hover {
-    color: #1a1a2e;
-}
-.success-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #D89C00, #F5B400);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px;
-    box-shadow: 0 4px 20px rgba(245, 180, 0, 0.3);
-}
-.success-icon i {
-    font-size: 2.5rem;
-    color: white;
-}
-.success-message {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin: 8px 0 4px;
-}
-.success-submessage {
-    font-size: 0.85rem;
-    color: #6b7280;
-    margin-bottom: 16px;
-}
-.success-ticket-info {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin: 12px 0 20px;
-    text-align: left;
-    border-left: 4px solid #F5B400;
-}
-.success-ticket-info .ticket-line {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 0.85rem;
-    border-bottom: 1px solid rgba(245, 180, 0, 0.08);
-}
-.success-ticket-info .ticket-line:last-child {
-    border-bottom: none;
-}
-.success-ticket-info .ticket-label {
-    color: #6b7280;
-    font-weight: 500;
-}
-.success-ticket-info .ticket-value {
-    color: #1a1a2e;
-    font-weight: 600;
-}
-.success-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 6px;
-}
-.success-buttons .btn-secondary {
-    flex: 1;
-    background: #f3f4f6;
-    border: none;
-    padding: 12px 0;
-    border-radius: 40px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #1f2937;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-.success-buttons .btn-secondary:hover {
-    background: #e5e7eb;
-    transform: translateY(-2px);
-}
-.success-buttons .btn-primary {
-    flex: 2;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    border: none;
-    padding: 12px 0;
-    border-radius: 40px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(11, 31, 92, 0.25);
-}
-.success-buttons .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(11, 31, 92, 0.35);
-}
-body.dark-mode .success-popup-content {
-    background: #1f2937;
-    border-color: rgba(245, 180, 0, 0.2);
-}
-body.dark-mode .success-popup-header h3 {
-    color: #f3f4f6;
-}
-body.dark-mode .success-popup-close {
-    color: #9ca3af;
-}
-body.dark-mode .success-popup-close:hover {
-    color: #f3f4f6;
-}
-body.dark-mode .success-message {
-    color: #f3f4f6;
-}
-body.dark-mode .success-submessage {
-    color: #9ca3af;
-}
-body.dark-mode .success-ticket-info {
-    background: #2d3748;
-}
-body.dark-mode .success-ticket-info .ticket-line {
-    border-bottom-color: #374151;
-}
-body.dark-mode .success-ticket-info .ticket-label {
-    color: #9ca3af;
-}
-body.dark-mode .success-ticket-info .ticket-value {
-    color: #f3f4f6;
-}
-body.dark-mode .success-buttons .btn-secondary {
-    background: #374151;
-    color: #f3f4f6;
-}
-body.dark-mode .success-buttons .btn-secondary:hover {
-    background: #4b5563;
-}
-
-/* ============================================================
-   PUBLISH CONFIRM
-   ============================================================ */
-.publish-confirm {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    z-index: 3500;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-    animation: fadeIn 0.3s ease;
-}
-.publish-confirm.show { display: flex; }
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-.publish-confirm-professional {
-    background: white;
-    border-radius: 28px;
-    max-width: 650px;
-    width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: slideUpPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
-    position: relative;
-}
-@keyframes slideUpPop {
-    0% { transform: translateY(40px) scale(0.95); opacity: 0; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-.publish-confirm-header {
-    padding: 24px 28px 18px;
-    text-align: center;
-    border-bottom: 1px solid #f0f0f0;
-    position: relative;
-}
-.publish-confirm-close {
-    position: absolute;
-    top: 14px;
-    right: 18px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--gray);
-    cursor: pointer;
-    transition: color 0.2s;
-    padding: 6px;
-    border-radius: 50%;
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.publish-confirm-close:hover {
-    color: var(--dark);
-    background: #f3f4f6;
-}
-.publish-confirm-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 10px;
-    box-shadow: 0 4px 25px rgba(11,31,92,0.25);
-}
-.publish-confirm-icon i { font-size: 2.2rem; color: white; }
-.publish-confirm-header h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 4px;
-}
-.publish-confirm-sub {
-    color: var(--gray);
-    font-size: 0.85rem;
-    margin: 0;
-}
-.publish-confirm-body {
-    padding: 18px 28px 18px;
-    max-height: 55vh;
-    overflow-y: auto;
-}
-.publish-summary {
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 14px 18px;
-}
-.publish-summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-}
-.publish-summary-item {
-    display: flex;
-    flex-direction: column;
-    padding: 5px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.publish-summary-item.full { grid-column: 1 / -1; }
-.publish-label {
-    font-size: 0.65rem;
-    color: var(--gray);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-.publish-value {
-    font-size: 0.9rem;
-    color: var(--dark);
-    font-weight: 500;
-    margin-top: 2px;
-    word-break: break-word;
-}
-.publish-summary-full { grid-column: 1 / -1; }
-.publish-images-preview {
-    display: flex;
-    gap: 10px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-}
-.publish-images-preview img {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    border-radius: 10px;
-    border: 2px solid #e6e6e6;
-    background: #1a1a2e;
-    transition: transform 0.2s;
-}
-.publish-images-preview img:hover {
-    transform: scale(1.05);
-    border-color: #F5B400;
-}
-.publish-confirm-footer {
-    padding: 14px 28px 24px;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-.publish-btn {
-    padding: 10px 28px;
-    border: none;
-    border-radius: 40px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 100px;
-}
-.publish-btn.cancel {
-    background: #f3f4f6;
-    color: var(--gray);
-}
-.publish-btn.cancel:hover {
-    background: #e5e7eb;
-    transform: translateY(-2px);
-}
-.publish-btn.confirm {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    box-shadow: 0 4px 20px rgba(11,31,92,0.3);
-}
-.publish-btn.confirm:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(11,31,92,0.4);
-}
-.publish-btn.confirm:active { transform: scale(0.97); }
-.publish-btn.confirm.loading {
-    opacity: 0.7;
-    pointer-events: none;
-    position: relative;
-    color: transparent !important;
-}
-.publish-btn.confirm.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 22px;
-    height: 22px;
-    margin-top: -11px;
-    margin-left: -11px;
-    border: 3px solid rgba(255,255,255,0.2);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: btn-spin 0.8s linear infinite;
-}
-@keyframes btn-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 40px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: opacity 0.2s, transform 0.2s;
-    margin-top: 0.5rem;
-}
-.btn-primary:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-.btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.btn-secondary {
-    background: #e5e7eb;
-    color: #1f2937;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: background 0.2s;
-}
-.btn-secondary:hover { background: #d1d5db; }
-.btn-back {
-    background: none;
-    border: 1px solid #e6e6e6;
-    padding: 0.5rem;
-    border-radius: 40px;
-    cursor: pointer;
-    margin-top: 1rem;
-    width: 100%;
-    transition: all 0.2s ease;
-}
-.btn-back:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-.btn-danger {
-    background: var(--danger);
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-.btn-danger:hover { opacity: 0.9; }
-
-.create-form {
-    background: white;
-    padding: 1.8rem;
-    border-radius: 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.form-group { margin-bottom: 1rem; }
-.form-group label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--dark);
-}
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 0.65rem 0.9rem;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    transition: border 0.2s, box-shadow 0.2s;
-    background: white;
-    font-family: inherit;
-}
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-#eventConditions { resize: vertical; min-height: 80px; }
-
-.ticket-types-container {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 14px 16px;
-    border: 1px solid #e6e6e6;
-    margin-bottom: 14px;
-}
-.ticket-types-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.ticket-types-title i { color: #F5B400; }
-.ticket-types-subtitle {
-    font-size: 0.75rem;
-    color: var(--gray);
-    margin-bottom: 12px;
-}
-.ticket-type-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-}
-.ticket-type-row:last-child { margin-bottom: 0; }
-.ticket-type-row .type-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    min-width: 90px;
-}
-.ticket-type-row .type-toggle .type-name {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--dark);
-    white-space: nowrap;
-}
-.ticket-type-row .type-toggle .type-icon { font-size: 1rem; }
-.ticket-type-row .type-price-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    min-width: 120px;
-    transition: all 0.3s ease;
-}
-.ticket-type-row .type-price-group.hidden { display: none !important; }
-.ticket-type-row .type-price-group .price-label {
-    font-size: 0.7rem;
-    color: var(--gray);
-    font-weight: 500;
-    white-space: nowrap;
-}
-.ticket-type-row .type-price-group input[type="number"] {
-    width: 100px;
-    padding: 5px 8px;
-    border: 2px solid #e6e6e6;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    background: white;
-    color: var(--dark);
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.ticket-type-row .type-price-group input[type="number"]:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-.ticket-type-row .type-price-group .price-suffix {
-    font-size: 0.7rem;
-    color: var(--gray);
-    font-weight: 500;
-    white-space: nowrap;
-}
-.switch {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    flex-shrink: 0;
-}
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.switch .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #d1d5db;
-    transition: 0.3s;
-    border-radius: 34px;
-}
-.switch .slider:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background: white;
-    transition: 0.3s;
-    border-radius: 50%;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-}
-.switch input:checked + .slider {
-    background: #0B1F5C;
-}
-.switch input:checked + .slider:before { transform: translateX(18px); }
-.type-status-badge {
-    font-size: 0.55rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 12px;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-}
-.type-status-badge.active {
-    background: #10b98122;
-    color: #10b981;
-}
-.type-status-badge.inactive {
-    background: #ef444422;
-    color: #ef4444;
-}
-.btn-publish-wrapper {
-    position: relative;
-    width: 100%;
-}
-.btn-publish-wrapper .btn-primary {
-    width: 100%;
-    padding: 0.8rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: 40px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
-}
-.btn-publish-wrapper .btn-primary:hover:not(.loading):not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(11,31,92,0.3);
-}
-.btn-publish-wrapper .btn-primary:active:not(.loading):not(:disabled) { transform: scale(0.97); }
-.btn-publish-wrapper .btn-primary:disabled { cursor: not-allowed; }
-.btn-publish-wrapper .btn-primary.loading {
-    color: transparent !important;
-    pointer-events: none;
-    cursor: wait;
-    opacity: 0.75;
-}
-.btn-publish-wrapper .btn-primary.loading .btn-text { visibility: hidden; }
-.btn-publish-wrapper .btn-primary.loading .btn-icon { visibility: hidden; }
-.btn-publish-wrapper .btn-primary.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 24px;
-    height: 24px;
-    margin-top: -12px;
-    margin-left: -12px;
-    border: 3px solid rgba(255,255,255,0.2);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: btn-spin 0.8s linear infinite;
-}
-.btn-publish-wrapper .btn-primary .btn-icon { font-size: 1rem; }
-.btn-publish-wrapper .btn-primary .btn-text { display: inline-block; }
-
-.duration-row-modern {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    background: #f8fafc !important;
-    border-radius: 12px !important;
-    padding: 4px 4px 4px 12px !important;
-    border: 2px solid #e6e6e6 !important;
-    transition: border-color 0.2s, box-shadow 0.2s !important;
-    width: 100% !important;
-}
-.duration-row-modern:focus-within {
-    border-color: #F5B400 !important;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1) !important;
-}
-.duration-row-modern .duration-input-group {
-    flex: 1 !important;
-    min-width: 60px !important;
-}
-.duration-row-modern .duration-number-input {
-    width: 100% !important;
-    padding: 10px 4px 10px 0 !important;
-    border: none !important;
-    background: transparent !important;
-    font-size: 0.95rem !important;
-    color: var(--dark) !important;
-    outline: none !important;
-    font-weight: 600 !important;
-}
-.duration-row-modern .duration-number-input:focus { outline: none !important; }
-.duration-row-modern .duration-number-input::-webkit-inner-spin-button,
-.duration-row-modern .duration-number-input::-webkit-outer-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
-}
-.duration-row-modern .duration-number-input[type="number"] {
-    -moz-appearance: textfield !important;
-}
-.duration-row-modern .duration-select-group {
-    flex: 0 0 auto !important;
-    min-width: 90px !important;
-}
-.duration-row-modern .duration-unit-select {
-    width: 100% !important;
-    padding: 10px 14px 10px 8px !important;
-    border: none !important;
-    background: transparent !important;
-    font-size: 0.9rem !important;
-    color: var(--dark) !important;
-    cursor: pointer !important;
-    outline: none !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 8px center !important;
-    padding-right: 26px !important;
-    font-weight: 500 !important;
-}
-.duration-row-modern .duration-unit-select:focus { outline: none !important; }
-.duration-row-modern .duration-unit-select option {
-    padding: 8px !important;
-    background: white !important;
-    color: var(--dark) !important;
-}
-.duration-help-text {
-    font-size: 0.7rem !important;
-    color: var(--gray) !important;
-    margin-top: 6px !important;
-}
-.duration-help-text i { color: #F5B400 !important; }
-
-.ticket-seats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-.ticket-seats-item {
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 14px 16px;
-    border: 1px solid #e6e6e6;
-    transition: all 0.3s ease;
-}
-.ticket-seats-item:hover {
-    border-color: #F5B400;
-    box-shadow: 0 2px 12px rgba(245,180,0,0.08);
-}
-.ticket-seats-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 6px;
-}
-.ticket-seats-item input[type="number"] {
-    width: 100%;
-    padding: 8px 12px;
-    border: 2px solid #e6e6e6;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    background: white;
-    color: var(--dark);
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.ticket-seats-item input[type="number"]:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-.ticket-seats-help {
-    font-size: 0.7rem;
-    color: var(--gray);
-    margin-top: 6px;
-}
-.ticket-seats-help i { color: #F5B400; }
-
-.hidden-page { display: none; }
-.page-content {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    overflow: hidden;
-}
-.profile-page-content {
-    max-width: 800px !important;
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    margin: 1.5rem auto !important;
-}
-
-/* ============================================================
-   PROFIL
-   ============================================================ */
-.profile-header-card {
-    background: linear-gradient(145deg, #0f1a3a, #1a2a4a);
-    border-radius: 24px;
-    padding: 28px 28px 22px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    box-shadow: 0 8px 40px rgba(11,31,92,0.25);
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
-.profile-header-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: rgba(245,180,0,0.08);
-    border-radius: 50%;
-}
-.profile-header-card::after {
-    content: '';
-    position: absolute;
-    bottom: -40%;
-    left: -10%;
-    width: 200px;
-    height: 200px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 50%;
-}
-.profile-header-avatar {
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-}
-.profile-avatar-placeholder-large {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    border: 3px solid rgba(255,255,255,0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    color: white;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease;
-}
-.profile-avatar-placeholder-large:hover { transform: scale(1.05); }
-.profile-avatar-placeholder-large i { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15)); }
-.profile-header-info {
-    flex: 1;
-    z-index: 1;
-    color: white;
-}
-.profile-header-info h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 0 0 4px 0;
-    letter-spacing: -0.3px;
-}
-.profile-header-info h2 .verified-badge { color: #F5B400; }
-.profile-header-info p {
-    margin: 2px 0;
-    font-size: 0.8rem;
-    opacity: 0.85;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.profile-header-info p i {
-    font-size: 0.7rem;
-    opacity: 0.7;
-    width: 18px;
-}
-.profile-badges {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-.profile-badge {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(8px);
-    padding: 3px 12px 3px 8px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    border: 1px solid rgba(255,255,255,0.08);
-}
-.profile-badge i { font-size: 0.65rem; }
-.profile-badge:first-child i { color: #F5B400; }
-.profile-badge:last-child i { color: #F5B400; }
-
-.profile-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 18px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-    border: 1px solid rgba(0,0,0,0.04);
-}
-.profile-stats-grid .stat-card {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 14px 12px;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid transparent;
-    position: relative;
-    overflow: hidden;
-}
-.profile-stats-grid .stat-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #0B1F5C, #F5B400);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.profile-stats-grid .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    border-color: rgba(245,180,0,0.15);
-}
-.profile-stats-grid .stat-card:hover::after { opacity: 1; }
-.profile-stats-grid .stat-card:active { transform: scale(0.97); }
-.profile-stats-grid .stat-number {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    display: block;
-    line-height: 1.2;
-    margin-bottom: 2px;
-}
-.profile-stats-grid .stat-label {
-    font-size: 0.65rem;
-    color: #6b7280;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-}
-.profile-stats-grid .stat-label i {
-    font-size: 0.6rem;
-    color: #F5B400;
-}
-.profile-stats-grid .stat-link {
-    font-size: 0.55rem;
-    color: #0B1F5C;
-    font-weight: 600;
-    display: block;
-    margin-top: 4px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-.profile-stats-grid .stat-card:hover .stat-link { opacity: 1; }
-
-.profile-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.profile-actions .btn-primary {
-    flex: 2;
-    min-width: 140px;
-    margin: 0;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    box-shadow: 0 4px 20px rgba(11,31,92,0.25);
-    transition: all 0.3s ease;
-}
-.profile-actions .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(11,31,92,0.35);
-}
-.profile-actions .btn-primary:active { transform: scale(0.97); }
-.profile-actions .btn-secondary {
-    flex: 1;
-    min-width: 80px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: #f1f3f5;
-    color: #1a1a2e;
-    border: 1px solid #e6e6e6;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-.profile-actions .btn-secondary:hover {
-    background: #e5e7eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-}
-.profile-actions .btn-secondary:active { transform: scale(0.97); }
-
-.profile-form-section {
-    background: #f9fafb;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid #e6e6e6;
-}
-.profile-form-section h3 {
-    margin-bottom: 12px;
-    font-size: 1.1rem;
-    color: #1a1a2e;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.profile-form-section h3 i { color: #F5B400; }
-.profile-form .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-.profile-form .form-group { margin-bottom: 12px; }
-.profile-form .form-group label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: #1f2937;
-}
-.profile-form .form-group input,
-.profile-form .form-group select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: white;
-    color: #1f2937;
-    font-family: inherit;
-}
-.profile-form .form-group input:focus,
-.profile-form .form-group select:focus {
-    outline: none;
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-
-.input-with-verify {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-.input-with-verify input { flex: 1; }
-.verify-btn {
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: opacity 0.2s;
-}
-.verify-btn:hover { opacity: 0.85; }
-.verify-btn.verified {
-    background: #10b981;
-    pointer-events: none;
-}
-.verification-status {
-    font-size: 0.75rem;
-    margin-top: 4px;
-    color: #6b7280;
-}
-.verification-status .success { color: #10b981; }
-.verification-status .error { color: #ef4444; }
-
-.profile-form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-.profile-form-actions .btn-primary { flex: 2; margin: 0; }
-.profile-form-actions .btn-secondary {
-    flex: 1;
-    padding: 10px 20px;
-    border-radius: 40px;
-    border: 2px solid #e6e6e6;
-    background: transparent;
-    font-weight: 600;
-    color: var(--gray);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.profile-form-actions .btn-secondary:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-
-#profileReviewContent {
-    background: #f9fafb;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-#profileReviewContent .review-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid #e6e6e6;
-}
-#profileReviewContent .review-item:last-child { border-bottom: none; }
-#profileReviewContent .review-label {
-    color: #6b7280;
-    font-weight: 500;
-}
-#profileReviewContent .review-value {
-    color: #1a1a2e;
-    font-weight: 600;
-}
-body.dark-mode #profileReviewContent {
-    background: #2d3748;
-}
-body.dark-mode #profileReviewContent .review-item {
-    border-bottom-color: #4b5563;
-}
-body.dark-mode #profileReviewContent .review-label {
-    color: #9ca3af;
-}
-body.dark-mode #profileReviewContent .review-value {
-    color: #f3f4f6;
-}
-
-/* ============================================================
-   MY EVENTS
-   ============================================================ */
-.my-events-container {
-    padding: 0.5rem 5% 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-.my-events-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-.my-event-card-modern {
-    background: #ffffff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    border: 1px solid rgba(0,0,0,0.04);
-    transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
-    position: relative;
-    cursor: default;
-}
-.my-event-card-modern:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
-    border-color: rgba(245,180,0,0.15);
-}
-.my-event-card-modern .event-image-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: #f3f4f6;
-}
-.my-event-card-modern .event-image-wrapper .event-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-    background: #1a1a2e;
-}
-.my-event-card-modern:hover .event-image-wrapper .event-image { transform: scale(1.02); }
-.my-event-card-modern .event-status-badge-modern {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    padding: 5px 14px;
-    border-radius: 30px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    z-index: 2;
-    background: rgba(16,185,129,0.92);
-    color: white;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-.my-event-card-modern .event-status-badge-modern.sold-out {
-    background: rgba(239,68,68,0.92);
-}
-.my-event-card-modern .event-status-badge-modern.draft {
-    background: rgba(245,180,0,0.92);
-}
-.my-event-card-modern .event-status-badge-modern.ended {
-    background: rgba(107,114,128,0.92);
-}
-.my-event-card-modern .event-body-modern {
-    padding: 18px 20px 20px;
-}
-.my-event-card-modern .event-title-modern {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    line-height: 1.3;
-    margin-bottom: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.my-event-card-modern .event-details-modern {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 14px;
-    background: #f8fafc;
-    padding: 12px 14px;
-    border-radius: 10px;
-    margin: 6px 0 12px;
-}
-.my-event-card-modern .event-details-modern .detail-item-modern {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    color: #4b5563;
-}
-.my-event-card-modern .event-details-modern .detail-item-modern i {
-    color: #F5B400;
-    font-size: 0.7rem;
-    width: 14px;
-    text-align: center;
-    flex-shrink: 0;
-}
-.my-event-card-modern .event-details-modern .detail-item-modern .detail-label {
-    font-weight: 500;
-    color: #9ca3af;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-.my-event-card-modern .event-details-modern .detail-item-modern .detail-value {
-    font-weight: 600;
-    color: #1a1a2e;
-}
-.my-event-card-modern .event-footer-modern {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.my-event-card-modern .event-footer-modern .event-stats-modern {
-    display: flex;
-    gap: 14px;
-    font-size: 0.7rem;
-    color: #6b7280;
-}
-.my-event-card-modern .event-footer-modern .event-stats-modern span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.my-event-card-modern .event-footer-modern .event-stats-modern i {
-    font-size: 0.65rem;
-    color: #F5B400;
-}
-.my-event-card-modern .event-actions-modern {
-    display: flex;
-    gap: 6px;
-}
-.my-event-card-modern .btn-edit-modern {
-    background: linear-gradient(135deg, #F5B400, #D89C00);
-    color: #1a1a2e;
-    border: none;
-    padding: 6px 16px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.my-event-card-modern .btn-edit-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245,180,0,0.3);
-}
-.my-event-card-modern .btn-edit-modern:active { transform: scale(0.95); }
-.my-event-card-modern .btn-edit-modern i { font-size: 0.65rem; }
-body.dark-mode .my-event-card-modern {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .my-event-card-modern .event-title-modern { color: #f3f4f6; }
-body.dark-mode .my-event-card-modern .event-details-modern { background: #2d3748; }
-body.dark-mode .my-event-card-modern .event-details-modern .detail-item-modern { color: #d1d5db; }
-body.dark-mode .my-event-card-modern .event-details-modern .detail-item-modern .detail-value { color: #f3f4f6; }
-body.dark-mode .my-event-card-modern .event-footer-modern { border-top-color: #374151; }
-body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { color: #9ca3af; }
-
-/* ============================================================
-   CHAT WIDGET
-   ============================================================ */
-.chat-widget {
-    position: fixed;
-    bottom: 135px;
-    right: 16px;
-    width: 300px;
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-    z-index: 9997;
-}
-.chat-widget.open { display: flex; }
-.chat-header {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-}
-.chat-messages {
-    height: 260px;
-    overflow-y: auto;
-    padding: 10px;
-    background: #f9fafb;
-}
-.chat-message { margin-bottom: 8px; }
-.chat-message.user { text-align: right; }
-.message-bubble {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 16px;
-    max-width: 85%;
-    font-size: 0.8rem;
-}
-.chat-message.user .message-bubble {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-}
-.chat-message.support .message-bubble {
-    background: white;
-    color: #1f2937;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-.message-time {
-    font-size: 0.55rem;
-    color: var(--gray);
-    margin-top: 4px;
-    display: block;
-}
-.chat-input-area {
-    display: flex;
-    padding: 10px;
-    gap: 6px;
-    border-top: 1px solid #e6e6e6;
-}
-.chat-input-area input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #e6e6e6;
-    border-radius: 25px;
-    font-size: 0.8rem;
-}
-.chat-input-area input:focus {
-    outline: none;
-    border-color: #F5B400;
-}
-.chat-input-area button {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    padding: 0 14px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-.chat-input-area button:hover { opacity: 0.9; }
-
-/* ============================================================
-   GALLERY
-   ============================================================ */
-.gallery-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    z-index: 5000;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-.gallery-modal.show { display: flex; }
-.gallery-modal img {
-    max-width: 90%;
-    max-height: 80%;
-    object-fit: contain;
-    border-radius: 8px;
-}
-.gallery-close {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-}
-.gallery-nav {
-    position: absolute;
-    bottom: 20px;
-    display: flex;
-    gap: 20px;
-}
-.gallery-nav button {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.gallery-nav button:hover { background: rgba(255,255,255,0.3); }
-
-/* ============================================================
-   ADMIN
-   ============================================================ */
-.admin-content {
-    max-width: 1000px !important;
-}
-.admin-subtitle {
-    color: var(--gray);
-    margin-bottom: 16px;
-}
-.admin-session-timer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #1f2937;
-    padding: 8px 14px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    color: #f3f4f6;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.admin-session-timer span { font-size: 0.8rem; }
-.admin-session-timer #adminSessionTimer {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #F5B400;
-    font-family: monospace;
-}
-.admin-logout-btn {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 5px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: opacity 0.2s;
-}
-.admin-logout-btn:hover { opacity: 0.85; }
-.admin-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 16px 0;
-}
-.admin-stats .stat-card {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    padding: 16px;
-    border-radius: 14px;
-    text-align: center;
-}
-.admin-stats .stat-card h3 { font-size: 0.75rem; opacity: 0.9; }
-.admin-stats .stat-card p { font-size: 1.6rem; font-weight: bold; }
-
-.sync-indicator-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 16px 0;
-    padding: 12px 16px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e6e6e6;
-}
-.sync-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: #f1f3f5;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #1f2937;
-}
-.sync-indicator .sync-icon { font-size: 1rem; }
-.sync-indicator .sync-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #6b7280;
-    transition: background 0.3s ease;
-}
-.sync-indicator.success .sync-dot { background: #10b981; }
-.sync-indicator.success .sync-icon { color: #10b981; }
-.sync-indicator.error .sync-dot { background: #ef4444; }
-.sync-indicator.error .sync-icon { color: #ef4444; }
-.sync-indicator.syncing .sync-dot {
-    background: #f59e0b;
-    animation: pulse-dot 0.8s ease-in-out infinite;
-}
-.sync-indicator.syncing .sync-icon { color: #f59e0b; }
-@keyframes pulse-dot {
-    0%,100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.5); opacity: 0.6; }
-}
-.admin-refresh-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 12px rgba(11,31,92,0.25);
-}
-.admin-refresh-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(11,31,92,0.35);
-}
-.admin-refresh-btn:active:not(:disabled) { transform: scale(0.96); }
-.admin-refresh-btn:disabled {
-    opacity: 0.7;
-    cursor: wait;
-    transform: none !important;
-}
-.admin-refresh-btn i { font-size: 0.9rem; }
-
-.admin-tabs {
-    display: flex;
-    gap: 4px;
-    margin: 16px 0 12px 0;
-    border-bottom: 2px solid #e6e6e6;
-    padding-bottom: 2px;
-    flex-wrap: wrap;
-}
-.admin-tab {
-    padding: 6px 14px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.8rem;
-    color: var(--gray);
-    border-radius: 8px 8px 0 0;
-    transition: all 0.2s;
-}
-.admin-tab:hover {
-    color: var(--dark);
-    background: #f3f4f6;
-}
-.admin-tab.active {
-    color: #F5B400;
-    border-bottom: 3px solid #F5B400;
-}
-.admin-tab-content {
-    display: none;
-    padding: 12px 0;
-}
-.admin-tab-content.active { display: block; }
-
-.admin-actions {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-}
-.admin-event-item {
-    background: #f3f4f6;
-    padding: 10px 14px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.admin-event-item .event-info {
-    flex: 1;
-    padding: 0;
-    gap: 0;
-}
-.admin-event-item .event-info strong { font-size: 0.9rem; }
-.admin-event-item .event-info small {
-    color: var(--gray);
-    font-size: 0.75rem;
-    display: block;
-}
-.admin-event-item .event-actions {
-    display: flex;
-    gap: 6px;
-}
-.admin-delete-btn {
-    background: var(--danger);
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: opacity 0.2s;
-}
-.admin-delete-btn:hover { opacity: 0.85; }
-
-.admin-upload-box {
-    position: relative;
-    border: 2px dashed #e6e6e6;
-    border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: #f9fafb;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-.admin-upload-box:hover {
-    border-color: #F5B400;
-    background: #fef8f0;
-}
-.admin-upload-box .upload-icon {
-    font-size: 2.2rem;
-    color: var(--gray);
-    margin-bottom: 6px;
-}
-.admin-upload-box p {
-    color: var(--gray);
-    font-size: 0.85rem;
-    margin: 0;
-}
-.admin-upload-box input[type="file"] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
-.admin-upload-box .preview-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 10px;
-    background: #1a1a2e;
-}
-.admin-upload-box.has-image {
-    border-style: solid;
-    border-color: var(--success);
-    background: transparent;
-    min-height: 180px;
-}
-.admin-upload-box.has-image .upload-icon,
-.admin-upload-box.has-image p { display: none; }
-
-#adminSlidesList { margin-top: 12px; }
-.admin-slide-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    background: #f9fafb;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    border: 1px solid #e6e6e6;
-}
-.admin-slide-item .slide-preview {
-    width: 70px;
-    height: 45px;
-    border-radius: 6px;
-    object-fit: contain;
-    flex-shrink: 0;
-    background: #e5e7eb;
-}
-.admin-slide-item .slide-info { flex: 1; }
-.admin-slide-item .slide-info h4 { font-size: 0.85rem; margin-bottom: 2px; }
-.admin-slide-item .slide-info p {
-    font-size: 0.7rem;
-    color: var(--gray);
-    margin: 0;
-}
-.admin-slide-item .slide-actions {
-    display: flex;
-    gap: 6px;
-}
-.admin-slide-item .slide-actions button {
-    padding: 3px 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: opacity 0.2s;
-}
-.admin-slide-item .slide-actions .edit-btn {
-    background: #F5B400;
-    color: #1a1a2e;
-}
-.admin-slide-item .slide-actions .delete-btn {
-    background: var(--danger);
-    color: white;
-}
-.admin-slide-item .slide-actions button:hover { opacity: 0.8; }
-
-.admin-users-filters { margin-bottom: 12px; }
-.admin-users-filters input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.85rem;
-}
-.admin-users-filters input:focus {
-    outline: none;
-    border-color: #F5B400;
-}
-#adminUsersList { overflow-x: auto; }
-#adminUsersList table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8rem;
-}
-#adminUsersList th,
-#adminUsersList td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e6e6e6;
-}
-#adminUsersList th {
-    background: #f3f4f6;
-    font-weight: 600;
-}
-#adminLogsList {
-    max-height: 450px;
-    overflow-y: auto;
-}
-.admin-log-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f9fafb;
-    border-radius: 8px;
-    margin-bottom: 4px;
-    border-left: 3px solid #F5B400;
-    font-size: 0.8rem;
-}
-.admin-log-item .log-time {
-    color: var(--gray);
-    font-size: 0.7rem;
-}
-.admin-log-item .log-user { font-weight: 600; }
-.admin-log-item .log-action { color: var(--primary-dark); }
-
-.admin-settings hr {
-    border-color: #e6e6e6;
-    margin: 16px 0;
-}
-.admin-settings p {
-    margin: 4px 0;
-    font-size: 0.85rem;
-}
-.admin-settings .btn-primary {
-    width: auto;
-    padding: 8px 24px;
-}
-#adminPasswordMessage {
-    margin-top: 8px;
-    font-size: 0.85rem;
-}
-
-/* ============================================================
-   DARK MODE ADAPTATIONS (compléments généraux)
-   ============================================================ */
-body.dark-mode .header {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode .header .logo { color: white; }
-body.dark-mode .header .back-btn { background: rgba(255,255,255,0.15); }
-body.dark-mode .header .back-btn:hover { background: rgba(255,255,255,0.3); }
-body.dark-mode .sidebar,
-body.dark-mode .event-card-classic,
-body.dark-mode .event-card,
-body.dark-mode .page-content,
-body.dark-mode .ticket-card,
-body.dark-mode .create-form,
-body.dark-mode .modal-content,
-body.dark-mode .admin-event-item,
-body.dark-mode .admin-slide-item,
-body.dark-mode .quantity-popup-content,
-body.dark-mode .publish-confirm-professional,
-body.dark-mode .my-event-card {
-    background-color: #1f2937;
-    color: #f3f4f6;
-}
-body.dark-mode .event-card-classic .event-title-classic { color: #f3f4f6; }
-body.dark-mode .event-card-classic .event-desc-classic { color: #9ca3af; }
-body.dark-mode .event-card-classic .info-grid-classic {
-    background: #2d3748;
-    color: #d1d5db;
-}
-body.dark-mode .event-card-classic .card-footer-classic { border-top-color: #374151; }
-body.dark-mode .event-card-classic .poster-wrapper-classic { background: #374151; }
-body.dark-mode .event-card-classic .event-organizer-classic {
-    color: #d1d5db;
-    border-top-color: #374151;
-}
-body.dark-mode .event-card-classic .event-organizer-classic .org-icon { color: #d1d5db !important; }
-body.dark-mode .ticket-types-container {
-    background: #2d3748;
-    border-color: #4b5563;
-}
-body.dark-mode .switch .slider { background: #4b5563; }
-body.dark-mode .type-status-badge.active {
-    background: #10b98133;
-    color: #6ee7b7;
-}
-body.dark-mode .type-status-badge.inactive {
-    background: #ef444433;
-    color: #fca5a5;
-}
-body.dark-mode .sidebar-notif-icon-top {
-    background: rgba(255,255,255,0.1);
-    border-color: #4b5563;
-    color: #f3f4f6;
-}
-body.dark-mode .sidebar-notif-icon-top:hover {
-    background: rgba(255,255,255,0.2);
-    border-color: #F5B400;
-}
-body.dark-mode .sidebar-notif-icon-top .sidebar-notif-badge { border-color: #1f2937; }
-body.dark-mode .publish-summary { background: #2d3748; }
-body.dark-mode .publish-summary-item { border-bottom-color: #374151; }
-body.dark-mode .publish-label { color: #9ca3af; }
-body.dark-mode .publish-value { color: #f3f4f6; }
-body.dark-mode .publish-confirm-header { border-bottom-color: #374151; }
-body.dark-mode .publish-confirm-footer { border-top-color: #374151; }
-body.dark-mode .publish-btn.cancel {
-    background: #374151;
-    color: #9ca3af;
-}
-body.dark-mode .publish-btn.cancel:hover { background: #4b5563; }
-body.dark-mode .success-popup-content.success-blue {
-    background: linear-gradient(145deg, #1f2937, #1a2332);
-    border-color: rgba(245,180,0,0.2);
-}
-body.dark-mode .success-ticket-blue { background: #1a2332; }
-body.dark-mode .success-ticket-blue .ticket-label { color: #9ca3af; }
-body.dark-mode .success-ticket-blue .ticket-value { color: #f3f4f6; }
-body.dark-mode .success-popup-content h3 { color: #f3f4f6; }
-body.dark-mode .success-popup-content p { color: #9ca3af; }
-body.dark-mode .hero { background: #111827; }
-body.dark-mode .hero-content-bottom { background: #111827; }
-body.dark-mode .hero-text h1 { color: #f3f4f6; }
-body.dark-mode .hero-text p { color: #9ca3af; }
-body.dark-mode .filter-chip,
-body.dark-mode .filter-country-select {
-    background-color: #374151;
-    border-color: #4b5563;
-}
-body.dark-mode .filter-country-select label { color: #f3f4f6; }
-body.dark-mode .filter-country-select select {
-    background-color: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-body.dark-mode .filter-chip.active {
-    background: #F5B400 !important;
-    color: #0B1F5C !important;
-    border-color: #F5B400 !important;
-}
-body.dark-mode .filter-chip {
-    background: #ffffff !important;
-    color: #0B1F5C !important;
-    border-color: #0B1F5C !important;
-}
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-    background-color: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-body.dark-mode .upload-box-modern {
-    background: #2d3748;
-    border-color: #4b5563;
-}
-body.dark-mode .upload-box-modern:hover {
-    background: #374151;
-    border-color: #F5B400;
-}
-body.dark-mode .upload-icon-modern { color: #6b7280; }
-body.dark-mode .upload-text { color: #9ca3af; }
-body.dark-mode .upload-text span { color: #6b7280; }
-body.dark-mode .upload-help { color: #9ca3af; }
-body.dark-mode .progress-bar { background: #4b5563; }
-body.dark-mode .progress-text { color: #9ca3af; }
-body.dark-mode .upload-box-modern.has-image { border-color: #10b981; }
-body.dark-mode .sidebar-item { color: #c8d4e6; }
-body.dark-mode .sidebar-item:hover {
-    background: #0B1F5C;
-    color: white;
-}
-body.dark-mode .sidebar-social {
-    background: #1f2937;
-    border-top-color: #374151;
-}
-body.dark-mode .social-link {
-    background: #374151;
-    color: #9ca3af;
-    border-color: #4b5563;
-}
-body.dark-mode .social-link:hover {
-    background: #0B1F5C;
-    color: white;
-    border-color: transparent;
-}
-body.dark-mode .admin-session-timer { background: #374151; }
-body.dark-mode .admin-tabs { border-bottom-color: #374151; }
-body.dark-mode .admin-tab { color: #9ca3af; }
-body.dark-mode .admin-tab:hover {
-    color: #f3f4f6;
-    background: #374151;
-}
-body.dark-mode .admin-tab.active {
-    color: #F5B400;
-    border-bottom-color: #F5B400;
-}
-body.dark-mode .admin-event-item { background: #374151; }
-body.dark-mode .admin-log-item { background: #374151; }
-body.dark-mode .admin-users-filters input {
-    background: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-body.dark-mode #adminUsersList th { background: #374151; }
-body.dark-mode #adminUsersList td { border-bottom-color: #374151; }
-body.dark-mode .admin-settings hr { border-color: #374151; }
-body.dark-mode .betix-footer {
-    background: linear-gradient(145deg, #0b1120, #0f1a2e);
-}
-body.dark-mode .betix-footer .footer-col h4 { color: #ffffff; }
-body.dark-mode .betix-footer .footer-col ul li a { color: #a0b4cc; }
-body.dark-mode .betix-footer .footer-col ul li a:hover { color: #ffffff; }
-body.dark-mode .quantity-popup-content h3 { color: #f3f4f6; }
-body.dark-mode #quantityEventTitle { color: #F5B400; }
-body.dark-mode #quantityEventInfo { color: #9ca3af; }
-body.dark-mode .qty-btn {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f3f4f6;
-}
-body.dark-mode .qty-btn:hover {
-    border-color: #F5B400;
-    background: linear-gradient(135deg, #F5B400, #D89C00);
-    color: white;
-}
-body.dark-mode #ticketQuantity {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f3f4f6;
-}
-body.dark-mode #ticketQuantity:focus { border-color: #F5B400; }
-body.dark-mode .profile-stats-grid {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .profile-stats-grid .stat-card { background: #2d3748; }
-body.dark-mode .profile-stats-grid .stat-number { color: #f3f4f6; }
-body.dark-mode .profile-stats-grid .stat-label { color: #9ca3af; }
-body.dark-mode .profile-stats-grid .stat-link { color: #F5B400; }
-body.dark-mode .profile-header-card {
-    background: linear-gradient(145deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode .sidebar-avatar {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode #notificationsList .notification-item { background: #2d3748; }
-body.dark-mode #notificationsList .notification-item .notif-content .notif-msg { color: #f3f4f6; }
-body.dark-mode #notificationsList .notification-item.unread {
-    background: #1a2332;
-    border-left-color: #F5B400;
-}
-body.dark-mode .ticket-card {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .ticket-card .ticket-title { color: #f3f4f6; }
-body.dark-mode .ticket-card .ticket-subtitle { color: #9ca3af; }
-body.dark-mode .ticket-card .ticket-info-grid { background: #2d3748; }
-body.dark-mode .ticket-card .ticket-info-grid .info-item .label { color: #9ca3af; }
-body.dark-mode .ticket-card .ticket-info-grid .info-item .value { color: #f3f4f6; }
-body.dark-mode .ticket-card .ticket-footer { border-top-color: #374151; }
-body.dark-mode .ticket-card .ticket-footer .ticket-participant { color: #9ca3af; }
-body.dark-mode .ticket-card .ticket-footer .ticket-participant strong { color: #4fc3f7; }
-body.dark-mode .ticket-card .btn-download-ticket {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode .ticket-card .btn-download-ticket:hover { background: #0a1a4f; }
-
-body.dark-mode .profile-form-section {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .profile-form-section h3 {
-    color: #f3f4f6;
-}
-body.dark-mode .profile-form .form-group label {
-    color: #d1d5db;
-}
-body.dark-mode .profile-form .form-group input,
-body.dark-mode .profile-form .form-group select {
-    background: #374151;
-    color: #f3f4f6;
-    border-color: #4b5563;
-}
-body.dark-mode .profile-form .form-group input:focus,
-body.dark-mode .profile-form .form-group select:focus {
-    border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
-}
-body.dark-mode #profileSaveMessage {
-    color: #34d399;
-}
-body.dark-mode #profileReviewContent {
-    background: #2d3748;
-}
-body.dark-mode #profileReviewContent .review-item {
-    border-bottom-color: #4b5563;
-}
-body.dark-mode #profileReviewContent .review-label {
-    color: #9ca3af;
-}
-body.dark-mode #profileReviewContent .review-value {
-    color: #f3f4f6;
-}
-body.dark-mode .pricing-card {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .pricing-card .plan-name {
-    color: #f3f4f6;
-}
-body.dark-mode .pricing-card .plan-price {
-    color: #F5B400;
-}
-body.dark-mode .pricing-card .plan-features li {
-    color: #d1d5db;
-    border-bottom-color: #374151;
-}
-body.dark-mode .pricing-card.free {
-    background: #2d3748;
-}
-body.dark-mode .pricing-card.recommended {
-    border-color: #F5B400;
-}
-body.dark-mode .premium-banner {
-    background: #F5B400 !important;
-    color: #1a1a2e !important;
-}
-body.dark-mode .premium-banner strong {
-    color: #1a1a2e;
-}
-body.dark-mode .premium-banner-btn {
-    background: #1a1a2e !important;
-    color: white !important;
-}
-body.dark-mode .verify-btn {
-    background: #0a1a4f;
-}
-body.dark-mode .verify-btn.verified {
-    background: #0d9488;
-}
-body.dark-mode .ticket-preview-container {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .ticket-preview-container .ticket-body .event-info h2 {
-    color: #f3f4f6;
-}
-body.dark-mode .ticket-preview-container .ticket-body .event-info .description {
-    color: #d1d5db;
-}
-body.dark-mode .ticket-preview-container .ticket-body .event-info .details-grid {
-    color: #e5e7eb;
-}
-body.dark-mode .ticket-preview-container .ticket-body .event-info .details-grid .label {
-    color: #9ca3af;
-}
-body.dark-mode .ticket-preview-container .ticket-footer {
-    border-top-color: #374151;
-}
-body.dark-mode .ticket-preview-container .ticket-order-info {
-    border-top-color: #374151;
-    color: #6b7280;
-}
-body.dark-mode .ticket-preview-container .ticket-header {
-    border-bottom-color: #F5B400;
-}
-body.dark-mode .ticket-actions .btn-view {
-    background: #0a1a4f;
-}
-body.dark-mode .ticket-actions .btn-pdf {
-    background: #dc2626;
-}
-body.dark-mode .ticket-actions .btn-png {
-    background: #0d9488;
-}
-body.dark-mode .ticket-actions .btn-share {
-    background: #2563eb;
-}
-
-/* ============================================================
-   PAGE DE DÉTAIL D'ÉVÉNEMENT – DESIGN AMÉLIORÉ
-   ============================================================ */
-.event-detail-modal .modal-content {
-    max-width: 700px;
-    width: 95%;
-    padding: 0;
-    border-radius: 28px;
-    overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-}
-.event-detail-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-.event-detail-header .back-btn-detail,
-.event-detail-header .modal-close-detail {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    transition: all 0.2s;
-}
-.event-detail-header .back-btn-detail:hover,
-.event-detail-header .modal-close-detail:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-.event-detail-header .detail-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    flex: 1;
-    margin: 0 12px;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.event-detail-header .detail-category {
-    font-size: 0.7rem;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.event-detail-body {
-    padding: 20px 24px 16px;
-    max-height: 65vh;
-    overflow-y: auto;
-}
-.event-detail-body .detail-block {
-    margin-bottom: 24px;
-}
-.event-detail-body .detail-block h4 {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 6px;
-}
-.event-detail-body .detail-block h4 i {
-    color: #F5B400;
-    font-size: 1rem;
-}
-.event-detail-body .description-block p {
-    font-size: 0.95rem;
-    color: #4b5563;
-    line-height: 1.6;
-}
-.event-detail-body .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-    background: #f8fafc;
-    padding: 14px 16px;
-    border-radius: 12px;
-}
-.event-detail-body .info-grid div {
-    font-size: 0.85rem;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.event-detail-body .info-grid div i {
-    color: #F5B400;
-    width: 18px;
-    text-align: center;
-}
-.event-detail-body .price-seats-block {
-    background: #fef8f0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    border: 1px solid rgba(245, 180, 0, 0.15);
-}
-.event-detail-body .price-seats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-.event-detail-body .price-seats .price {
-    color: #0B1F5C;
-}
-.event-detail-body .price-seats .seats {
-    color: #6b7280;
-}
-.event-detail-body .conditions-block ul {
-    padding-left: 20px;
-    margin: 4px 0;
-}
-.event-detail-body .conditions-block ul li {
-    font-size: 0.85rem;
-    color: #4b5563;
-    margin-bottom: 4px;
-}
-.event-detail-body .meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-    background: #f8fafc;
-    padding: 14px 16px;
-    border-radius: 12px;
-}
-.event-detail-body .meta-grid .meta-label {
-    font-size: 0.7rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: block;
-}
-.event-detail-body .meta-grid .meta-value {
-    font-size: 0.85rem;
-    color: #1a1a2e;
-    font-weight: 500;
-}
-.event-detail-body .reviews-list {
-    max-height: 160px;
-    overflow-y: auto;
-}
-.event-detail-body .review-item {
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.event-detail-body .review-item:last-child {
-    border-bottom: none;
-}
-.event-detail-body .review-item .review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.event-detail-body .review-item .review-user {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #1a1a2e;
-}
-.event-detail-body .review-item .review-stars {
-    color: #F5B400;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-}
-.event-detail-body .review-item .review-text {
-    font-size: 0.85rem;
-    color: #4b5563;
-    margin: 4px 0;
-}
-.event-detail-body .review-item .review-date {
-    font-size: 0.7rem;
-    color: #6b7280;
-}
-.event-detail-footer {
-    padding: 14px 24px 20px;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
-}
-.event-detail-footer .btn-buy {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 40px;
-    font-size: 1rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(11, 31, 92, 0.25);
-}
-.event-detail-footer .btn-buy:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(11, 31, 92, 0.35);
-}
-body.dark-mode .event-detail-modal .modal-content {
-    background: #1f2937;
-}
-body.dark-mode .event-detail-header {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode .event-detail-body .detail-block h4 {
-    color: #f3f4f6;
-    border-bottom-color: #374151;
-}
-body.dark-mode .event-detail-body .description-block p {
-    color: #d1d5db;
-}
-body.dark-mode .event-detail-body .info-grid {
-    background: #2d3748;
-}
-body.dark-mode .event-detail-body .info-grid div {
-    color: #e5e7eb;
-}
-body.dark-mode .event-detail-body .price-seats-block {
-    background: #2d3748;
-    border-color: #4b5563;
-}
-body.dark-mode .event-detail-body .price-seats .price {
-    color: #F5B400;
-}
-body.dark-mode .event-detail-body .price-seats .seats {
-    color: #9ca3af;
-}
-body.dark-mode .event-detail-body .conditions-block ul li {
-    color: #d1d5db;
-}
-body.dark-mode .event-detail-body .meta-grid {
-    background: #2d3748;
-}
-body.dark-mode .event-detail-body .meta-grid .meta-value {
-    color: #f3f4f6;
-}
-body.dark-mode .event-detail-body .review-item {
-    border-bottom-color: #374151;
-}
-body.dark-mode .event-detail-body .review-item .review-user {
-    color: #f3f4f6;
-}
-body.dark-mode .event-detail-body .review-item .review-text {
-    color: #d1d5db;
-}
-body.dark-mode .event-detail-footer {
-    border-top-color: #374151;
-    background: #1a2332;
-}
-
-/* ============================================================
-   STAGGERED ANIMATION
-   ============================================================ */
-.stagger-item {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.5s ease forwards;
-}
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
+async function loadHeroSlides() {
+    try {
+        const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
+        if (error) throw error;
+        if (data && data.length > 0) {
+            heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        } else {
+            let local = localStorage.getItem('betix_hero_slides');
+            if (local) try { heroSlides = JSON.parse(local); await migrateHeroSlides(heroSlides); } catch(e) { heroSlides = []; }
+            else {
+                heroSlides = [
+                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
+                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
+                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
+                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
+                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
+                ];
+                await migrateHeroSlides(heroSlides);
+            }
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        }
+        initHeroSlider();
+        renderAdminSlides();
+        return heroSlides;
+    } catch (error) {
+        let local = localStorage.getItem('betix_hero_slides');
+        if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
+        return heroSlides;
     }
 }
 
-/* ============================================================
-   TOAST NOTIFICATION
-   ============================================================ */
-.toast-notification {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    max-width: 380px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 16px 20px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    z-index: 99999;
-    transform: translateY(120px);
-    opacity: 0;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border-left: 6px solid #10b981;
+async function saveUserToSupabase(piUid, username, wallet, points) {
+    points = points || 0;
+    try {
+        const now = new Date().toISOString();
+        const userData = {
+            pi_uid: piUid,
+            username,
+            wallet,
+            points,
+            first_name: currentUser.first_name || '',
+            last_name: currentUser.last_name || '',
+            country: currentUser.country || '',
+            address: currentUser.address || '',
+            email: currentUser.email || '',
+            phone_number: currentUser.phone_number || '',
+            account_type: currentUser.account_type || 'free',
+            premium_start: currentUser.premium_start || null,
+            premium_end: currentUser.premium_end || null,
+            premium_status: currentUser.premium_status || 'inactive',
+            updated_at: now,
+            last_seen: now
+        };
+        const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
+        if (checkError && checkError.code !== 'PGRST116') throw checkError;
+        if (existing) {
+            const { error } = await supabaseClient.from('users').update(userData).eq('pi_uid', piUid);
+            if (error) throw error;
+        } else {
+            userData.created_at = now;
+            const { error } = await supabaseClient.from('users').insert(userData);
+            if (error) throw error;
+        }
+        return true;
+    } catch (error) { return false; }
 }
-.toast-notification.show {
-    transform: translateY(0);
-    opacity: 1;
+
+// ============================================================
+// SAVE EVENT ET TICKET (AVEC FALLBACK)
+// ============================================================
+async function saveEventToSupabase(eventData) {
+    try {
+        if (!eventData || !eventData.id) return false;
+        const standardPrice = eventData.price || 0.0003;
+        const imageUrls = eventData.images && eventData.images.length > 0 ? JSON.stringify(eventData.images) : null;
+        const dbEvent = {
+            id: eventData.id,
+            organizer_pi_uid: eventData.organizerPiUid || eventData.organizer || currentUser.wallet || 'unknown',
+            organizer_name: eventData.organizerName || eventData.organizer || currentUser.name || 'Anonymous',
+            title: eventData.title || 'Untitled',
+            description: eventData.description || '',
+            image_url: eventData.coverImage || (eventData.images && eventData.images[0]) || '',
+            image_urls: imageUrls,
+            location: eventData.location || '',
+            pays: eventData.pays || eventData.country || 'France',
+            event_date: eventData.date || new Date().toISOString(),
+            category: eventData.category || '',
+            ticket_price_standard: standardPrice,
+            ticket_standard_enabled: true,
+            max_tickets: eventData.seatsTotal || 0,
+            created_at: eventData.createdAt || new Date().toISOString(),
+            conditions: eventData.conditions || '',
+            duration_value: eventData.durationValue || null,
+            duration_unit: eventData.durationUnit || null,
+            standard_seats: eventData.seatsTotal || 0,
+            standard_sold: eventData.standardSold || 0,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
+        if (error) throw error;
+        return true;
+    } catch (error) { return false; }
 }
-.toast-notification .toast-icon {
-    font-size: 1.8rem;
-    color: #10b981;
-    flex-shrink: 0;
+
+async function saveTicketToSupabase(ticketData) {
+    try {
+        if (!ticketData || !ticketData.id) return false;
+        const dbTicket = {
+            id: ticketData.id,
+            event_id: ticketData.eventId || '',
+            buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet || currentUser.wallet || 'unknown',
+            buyer_name: ticketData.buyerName || ticketData.buyerWallet || currentUser.name || 'Anonymous',
+            ticket_type: 'standard',
+            price: parseFloat(ticketData.price) || 0,
+            qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
+            status: ticketData.status || 'Valid',
+            purchase_date: ticketData.purchaseDate || new Date().toISOString(),
+            expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
+            event_title: ticketData.eventTitle || 'Event',
+            event_location: ticketData.eventLocation || 'Online',
+            pays: ticketData.pays || ticketData.eventPays || 'France',
+            transaction_id: ticketData.transactionId || '',
+            category: ticketData.category || '',
+            duration_value: ticketData.durationValue || null,
+            duration_unit: ticketData.durationUnit || null,
+            organizer_name: ticketData.organizerName || '',
+            organizer_pi_uid: ticketData.organizerPiUid || '',
+            buyer_email: ticketData.buyerEmail || '',
+            buyer_phone: ticketData.buyerPhone || '',
+            ticket_number: ticketData.ticketNumber || null,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
+        if (error) {
+            console.error('Supabase error saving ticket:', error);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error saving ticket to Supabase:', error);
+        return false;
+    }
 }
-.toast-notification .toast-content {
-    flex: 1;
+
+// ============================================================
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE
+// ============================================================
+async function loadTicketsFromSupabase(piUid) {
+    try {
+        if (!piUid) return [];
+        const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
+        if (error) throw error;
+        return (data || []).map(t => ({
+            id: t.id,
+            eventId: t.event_id,
+            eventTitle: t.event_title || 'Event',
+            eventDate: t.expiration_date || t.purchase_date,
+            eventLocation: t.event_location || 'Online',
+            category: t.category || '',
+            price: t.price || 0,
+            buyerName: t.buyer_name || 'Anonymous',
+            buyerEmail: t.buyer_email || '',
+            buyerPhone: t.buyer_phone || '',
+            purchaseDate: t.purchase_date,
+            transactionId: t.transaction_id,
+            qrCode: t.qr_code,
+            status: t.status || 'Valid',
+            durationValue: t.duration_value || null,
+            durationUnit: t.duration_unit || null,
+            organizerName: t.organizer_name || '',
+            organizerPiUid: t.organizer_pi_uid || '',
+            pays: t.pays || 'France',
+            ticketNumber: t.ticket_number
+        }));
+    } catch (error) { return []; }
 }
-.toast-notification .toast-title {
-    font-weight: 700;
-    font-size: 1rem;
-    color: #1a1a2e;
-    margin-bottom: 2px;
+
+async function loadEventsFromSupabase() {
+    try {
+        const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
+        if (error) throw error;
+        return (data || []).map(e => {
+            const imagesArray = e.image_urls ? (() => { try { return JSON.parse(e.image_urls); } catch(parseErr) { return []; } })() : [];
+            if (imagesArray.length === 0 && e.image_url) imagesArray.push(e.image_url);
+            const standardSeats = e.standard_seats || 0;
+            const standardSold = e.standard_sold || 0;
+            return {
+                id: e.id,
+                title: e.title || 'Untitled',
+                category: e.category || '',
+                pays: e.pays || 'France',
+                country: e.pays || 'France',
+                date: e.event_date || new Date().toISOString(),
+                location: e.location || '',
+                description: e.description || '',
+                conditions: e.conditions || '',
+                price: e.ticket_price_standard || 0,
+                seatsTotal: e.max_tickets || 0,
+                seatsLeft: (e.max_tickets || 0) - standardSold,
+                images: imagesArray,
+                coverImage: (imagesArray.length > 0) ? imagesArray[0] : (e.image_url || ''),
+                organizer: e.organizer_pi_uid || '',
+                organizerName: e.organizer_name || '',
+                organizerPiUid: e.organizer_pi_uid || '',
+                createdAt: e.created_at || new Date().toISOString(),
+                durationValue: e.duration_value || null,
+                durationUnit: e.duration_unit || null,
+                standardSeats,
+                standardSold,
+                standardLeft: standardSeats - standardSold,
+                ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
+            };
+        });
+    } catch (error) { return []; }
 }
-.toast-notification .toast-message {
-    font-size: 0.85rem;
-    color: #4b5563;
-    line-height: 1.4;
+
+// ============================================================
+// SAUVEGARDE PERMANENTE (backup)
+// ============================================================
+function saveBackupData(eventsData, ticketsData) {
+    try {
+        localStorage.setItem('betix_backup_events', JSON.stringify(eventsData));
+        localStorage.setItem('betix_backup_tickets', JSON.stringify(ticketsData));
+        localStorage.setItem('betix_backup_timestamp', Date.now().toString());
+    } catch (e) {
+        console.warn("Could not save backup data:", e);
+    }
 }
-.toast-notification .toast-close {
-    background: none;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 4px;
-    transition: color 0.2s;
+
+function restoreBackupData() {
+    try {
+        const events = JSON.parse(localStorage.getItem('betix_backup_events') || '[]');
+        const tickets = JSON.parse(localStorage.getItem('betix_backup_tickets') || '[]');
+        if (events.length === 0 && tickets.length === 0) {
+            return null;
+        }
+        return { events, tickets };
+    } catch (e) {
+        return null;
+    }
 }
-.toast-notification .toast-close:hover {
-    color: #1f2937;
+
+// ============================================================
+// LOAD ALL FROM SUPABASE (version robuste)
+// ============================================================
+async function loadAllFromSupabase() {
+    console.log("=== LOAD ALL FROM SUPABASE ===");
+    loadUsedTickets();
+    updateSyncStatus('loading');
+    
+    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+    const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+    console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
+    
+    saveBackupData(localEvents, localTickets);
+    events = [...localEvents];
+    tickets = [...localTickets];
+    
+    try {
+        const supabaseEvents = await loadEventsFromSupabase();
+        console.log("Supabase events:", supabaseEvents.length);
+        
+        const userIdentifier = currentUser.piUid || currentUser.wallet;
+        let supabaseTickets = [];
+        if (userIdentifier) {
+            supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            console.log("Supabase tickets for user:", supabaseTickets.length);
+        } else {
+            console.warn("No user identifier, skipping Supabase tickets load.");
+        }
+        
+        if (supabaseEvents.length > 0 || supabaseTickets.length > 0) {
+            const mergedEvents = mergeArraysById(localEvents, supabaseEvents);
+            const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
+            events = mergedEvents;
+            tickets = mergedTickets;
+        } else {
+            console.warn("Supabase returned no data, keeping local data.");
+        }
+        
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        saveBackupData(events, tickets);
+        
+        for (const e of events) {
+            if (!supabaseEvents.some(se => se.id === e.id)) {
+                console.log("Saving missing event to Supabase:", e.id);
+                await saveEventToSupabase(e);
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        for (const t of tickets) {
+            if (!supabaseTickets.some(st => st.id === t.id)) {
+                console.log("Saving missing ticket to Supabase:", t.id);
+                const saved = await saveTicketToSupabase(t);
+                if (!saved) {
+                    pendingTickets.push(t);
+                    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+                }
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        
+        const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+        notifications = localNotifs;
+        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+        
+        updateSyncStatus('success');
+        console.log("Load completed successfully. Events:", events.length, "Tickets:", tickets.length);
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement depuis Supabase :', error);
+        updateSyncStatus('error');
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        saveBackupData(events, tickets);
+        console.warn("Supabase error, but keeping local data.");
+    }
+    
+    renderEventsByCategory();
+    renderTickets();
+    renderHistory();
+    updateProfilePage();
+    setTimeout(() => {
+        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+    }, 300);
+    
+    await retryPendingTickets();
+    console.log("=== LOAD COMPLETE ===");
 }
-.toast-notification.toast-error {
-    border-left-color: #ef4444;
+
+// ============================================================
+// SYNCHRONISATION
+// ============================================================
+function saveEvents() {
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    saveBackupData(events, tickets);
+    syncEventsToSupabase();
 }
-.toast-notification.toast-error .toast-icon {
-    color: #ef4444;
+
+function saveTickets() {
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    saveUsedTickets();
+    saveBackupData(events, tickets);
+    syncTicketsToSupabase().catch(() => {});
 }
-.toast-notification.toast-info {
-    border-left-color: #3b82f6;
+
+function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
+function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
+    syncUserToSupabase(); 
 }
-.toast-notification.toast-info .toast-icon {
-    color: #3b82f6;
+function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
+function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
+function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
+function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
+
+async function syncUserToSupabase() {
+    if (!currentUser.piUid && !currentUser.wallet) return;
+    const piUid = currentUser.piUid || currentUser.wallet;
+    await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
 }
-body.dark-mode .toast-notification {
-    background: #1f2937;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+async function syncEventsToSupabase() {
+    let success = 0;
+    for (let i = 0; i < events.length; i++) {
+        const saved = await saveEventToSupabase(events[i]);
+        if (saved) success++;
+        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
+    }
 }
-body.dark-mode .toast-notification .toast-title {
-    color: #f3f4f6;
+async function syncTicketsToSupabase() {
+    let success = 0;
+    for (let i = 0; i < tickets.length; i++) {
+        const saved = await saveTicketToSupabase(tickets[i]);
+        if (saved) success++;
+        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
+    }
+    if (success < tickets.length) {
+        const failed = tickets.slice(success);
+        pendingTickets.push(...failed);
+        localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    }
 }
-body.dark-mode .toast-notification .toast-message {
-    color: #d1d5db;
+async function syncAllToSupabase(retryCount = 0) {
+    const maxRetries = 3;
+    try {
+        updateSyncStatus('syncing');
+        await syncUserToSupabase();
+        await syncEventsToSupabase();
+        await syncTicketsToSupabase();
+        updateSyncStatus('success');
+        return { events: events.length, tickets: tickets.length };
+    } catch (error) {
+        if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
+        else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
+    }
 }
-body.dark-mode .toast-notification .toast-close {
-    color: #6b7280;
+
+// ============================================================
+// RETRY PENDING TICKETS
+// ============================================================
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) {
+            remaining.push(ticket);
+        }
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) {
+        console.log('All pending tickets saved successfully!');
+    } else {
+        console.log('Still', pendingTickets.length, 'tickets pending.');
+    }
 }
-body.dark-mode .toast-notification .toast-close:hover {
-    color: #f3f4f6;
+
+function updateSyncStatus(status) {
+    const indicator = document.getElementById('syncStatusIndicator');
+    if (!indicator) return;
+    const icon = indicator.querySelector('.sync-icon'), text = indicator.querySelector('.sync-text'), dot = indicator.querySelector('.sync-dot');
+    if (!icon || !text || !dot) return;
+    indicator.className = 'sync-indicator';
+    switch(status) {
+        case 'loading': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-spinner fa-spin'; text.textContent = 'Chargement...'; dot.className = 'sync-dot'; break;
+        case 'syncing': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-sync fa-spin'; text.textContent = 'Synchronisation...'; dot.className = 'sync-dot'; break;
+        case 'success': indicator.classList.add('success'); icon.className = 'sync-icon fas fa-check-circle'; text.textContent = 'Synchronisé'; dot.className = 'sync-dot'; break;
+        case 'error': indicator.classList.add('error'); icon.className = 'sync-icon fas fa-exclamation-circle'; text.textContent = 'Erreur de sync'; dot.className = 'sync-dot'; break;
+        default: icon.className = 'sync-icon fas fa-cloud'; text.textContent = 'Prêt'; dot.className = 'sync-dot';
+    }
+}
+
+async function forceRefreshData() {
+    const btn = document.getElementById('refreshDataBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...'; }
+    try {
+        await loadAllFromSupabase();
+        await loadHeroSlides();
+        await syncAllToSupabase();
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
+        updateProfilePage();
+        if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> Synchronisé !'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> Rafraîchir'; btn.disabled = false; }, 2000); }
+        updateSyncStatus('success');
+    } catch (error) {
+        updateSyncStatus('error');
+        if (btn) { btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> Rafraîchir'; btn.disabled = false; }, 2000); }
+    }
+}
+
+function mergeArraysById(localArray, supabaseArray) {
+    const merged = [...localArray];
+    for (const item of supabaseArray) {
+        const idx = merged.findIndex(l => l.id === item.id);
+        if (idx !== -1) {
+            merged[idx] = item;
+        } else {
+            merged.push(item);
+        }
+    }
+    return merged;
+}
+
+// ============================================================
+// PARAMÈTRES DE L'APPLICATION
+// ============================================================
+async function loadAppSettings() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('app_settings')
+            .select('key, value');
+        if (error) throw error;
+        if (data && data.length) {
+            data.forEach(row => {
+                const key = row.key;
+                const val = row.value;
+                if (key in appSettings) {
+                    if (typeof appSettings[key] === 'number') {
+                        appSettings[key] = parseFloat(val);
+                    } else if (typeof appSettings[key] === 'boolean') {
+                        appSettings[key] = val === 'true' || val === true;
+                    } else {
+                        appSettings[key] = val;
+                    }
+                }
+            });
+        }
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+    } catch (error) {
+        console.warn('Could not load app settings from Supabase, using default/local:', error);
+        const local = localStorage.getItem('betix_app_settings');
+        if (local) {
+            try {
+                const parsed = JSON.parse(local);
+                Object.assign(appSettings, parsed);
+            } catch (e) {}
+        }
+    }
+}
+
+async function saveAppSettings(settings) {
+    try {
+        for (const [key, value] of Object.entries(settings)) {
+            const stringValue = typeof value === 'string' ? value : String(value);
+            const { error } = await supabaseClient
+                .from('app_settings')
+                .upsert({ key, value: stringValue }, { onConflict: 'key' });
+            if (error) throw error;
+        }
+        Object.assign(appSettings, settings);
+        localStorage.setItem('betix_app_settings', JSON.stringify(appSettings));
+        return true;
+    } catch (error) {
+        console.error('Error saving app settings:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// GESTION PREMIUM
+// ============================================================
+async function loadUserPremiumStatus(piUid) {
+    if (!piUid) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('account_type, premium_start, premium_end, premium_status')
+            .eq('pi_uid', piUid)
+            .single();
+        if (error) throw error;
+        if (data) {
+            currentUser.account_type = data.account_type || 'free';
+            currentUser.premium_start = data.premium_start || null;
+            currentUser.premium_end = data.premium_end || null;
+            currentUser.premium_status = data.premium_status || 'inactive';
+            if (currentUser.premium_status === 'active' && currentUser.premium_end) {
+                const endDate = new Date(currentUser.premium_end);
+                if (endDate < new Date()) {
+                    currentUser.premium_status = 'expired';
+                    currentUser.account_type = 'free';
+                    await updateUserPremiumStatus(piUid, 'free', null, null, 'expired');
+                }
+            }
+            saveUser();
+        }
+    } catch (error) {
+        console.warn('Could not load premium status:', error);
+    }
+}
+
+async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status) {
+    try {
+        const updates = {
+            account_type,
+            premium_start,
+            premium_end,
+            premium_status,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error updating premium status:', error);
+        return false;
+    }
+}
+
+function isUserPremium() {
+    if (currentUser.account_type === 'premium' && currentUser.premium_status === 'active') {
+        if (currentUser.premium_end) {
+            const end = new Date(currentUser.premium_end);
+            if (end > new Date()) {
+                return true;
+            } else {
+                currentUser.premium_status = 'expired';
+                currentUser.account_type = 'free';
+                saveUser();
+                if (currentUser.piUid) {
+                    updateUserPremiumStatus(currentUser.piUid, 'free', null, null, 'expired');
+                }
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+function countFreeEventsThisMonth() {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const userId = currentUser.piUid || currentUser.wallet;
+    if (!userId) return 0;
+    return events.filter(e => {
+        const created = new Date(e.createdAt);
+        return created >= monthStart && (e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+    }).length;
+}
+
+function canPublishEvent() {
+    if (isUserPremium()) return true;
+    const count = countFreeEventsThisMonth();
+    return count < 3;
+}
+
+function getRemainingFreeEvents() {
+    if (isUserPremium()) return Infinity;
+    const count = countFreeEventsThisMonth();
+    return Math.max(0, 3 - count);
+}
+
+// ============================================================
+// BADGE VERIFIED
+// ============================================================
+function renderVerifiedBadge(userId, userName) {
+    if (!appSettings.badgeEnabled) return '';
+    if (isUserPremium() && (userId === currentUser.piUid || userId === currentUser.wallet || userName === currentUser.name)) {
+        return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#0B1F5C; font-size:0.8rem; margin-left:4px;"></i></span>`;
+    }
+    return '';
+}
+
+// ============================================================
+// VÉRIFICATION DU PROFIL COMPLET
+// ============================================================
+function checkProfileComplete() {
+    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
+    const missing = [];
+    for (let field of required) {
+        if (!currentUser[field] || currentUser[field].trim() === '') {
+            missing.push(field.replace('_', ' '));
+        }
+    }
+    if (missing.length > 0) {
+        return { complete: false, missing: missing };
+    }
+    return { complete: true, missing: [] };
+}
+
+function redirectToProfileWithMessage(message) {
+    alert(message);
+    showPage('profile');
+    const msgDiv = document.getElementById('profileSaveMessage');
+    if (msgDiv) {
+        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>`;
+        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
+}
+
+// ============================================================
+// QR CODE SÉCURISÉ
+// ============================================================
+function generateSecureQRData(ticketId, userId, eventId) {
+    return ticketId;
+}
+
+// ============================================================
+// SPINNER GLOBAL
+// ============================================================
+function showLoader(text = 'Loading...') {
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+        document.getElementById('loaderText').textContent = text;
+        loader.style.display = 'flex';
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) loader.style.display = 'none';
+}
+
+// ============================================================
+// NOUVELLE FONCTION generateTicketHTML AVEC CLASSES SPÉCIFIQUES
+// ============================================================
+function generateTicketHTML(ticket) {
+    const safeTicket = ticket || {};
+    const dateEvent = new Date(safeTicket.eventDate || Date.now());
+    const dateFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+        : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) 
+        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+        : 'Time to be defined';
+    
+    const durationValue = safeTicket.durationValue || '';
+    const durationUnit = safeTicket.durationUnit || '';
+    let durationDisplay = 'N/A';
+    if (durationValue && durationUnit) {
+        const unitLabels = {
+            hours: durationValue === 1 ? 'Hour' : 'Hours',
+            days: durationValue === 1 ? 'Day' : 'Days',
+            weeks: durationValue === 1 ? 'Week' : 'Weeks',
+            months: durationValue === 1 ? 'Month' : 'Months',
+            years: durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
+    }
+    
+    const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
+    let userEmail = safeTicket.buyerEmail || 'Not provided';
+    if (userEmail.length > 20) userEmail = userEmail.substring(0, 18) + '…';
+    const userPhone = safeTicket.buyerPhone || 'Not provided';
+    const ticketIdShort = safeTicket.id ? safeTicket.id.substring(0, 8).toUpperCase() : '00000000';
+    const price = (safeTicket.price || 0).toFixed(6) + ' Pi';
+    const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
+    const eventLocation = safeTicket.eventLocation || 'Online';
+    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
+    const ticketNumber = safeTicket.ticketNumber || 'N/A';
+
+    return `
+        <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
+            <div class="ticket-overlay-bg">
+                <img src="ticket-officiel.png" alt="Ticket officiel Betix" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+            </div>
+            <!-- Colonne gauche -->
+            <div class="ticket-event ticket-left">${escapeHtml(eventTitle)}</div>
+            <div class="ticket-duration ticket-left">${escapeHtml(durationDisplay)}</div>
+            <div class="ticket-date ticket-left">${escapeHtml(dateFormatted)}</div>
+            <div class="ticket-time ticket-left">${escapeHtml(timeFormatted)}</div>
+            <div class="ticket-location ticket-left">${escapeHtml(eventLocation)}</div>
+            <div class="ticket-price ticket-left">${escapeHtml(price)}</div>
+            <!-- Colonne droite -->
+            <div class="ticket-name ticket-right">${escapeHtml(buyerName)}</div>
+            <div class="ticket-email ticket-right">${escapeHtml(userEmail)}</div>
+            <div class="ticket-phone ticket-right">${escapeHtml(userPhone)}</div>
+            <div class="ticket-wallet ticket-right">#${escapeHtml(String(ticketNumber))}</div>
+            <div class="ticket-purchase-date ticket-right">${escapeHtml(purchaseDate)}</div>
+            <div class="ticket-number ticket-right">#${escapeHtml(ticketIdShort)}</div>
+            <!-- QR Code et ID sur le coupon -->
+            <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
+            <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
+            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
+        </div>
+    `;
+}
+
+// ============================================================
+// GÉNÉRER LE QR CODE
+// ============================================================
+function generateTicketQR(ticketId) {
+    const container = document.getElementById(`qr-ticket-${ticketId}`);
+    if (!container) return;
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    container.innerHTML = '';
+    try {
+        new QRCode(container, {
+            text: ticket.qrCode || ticket.id,
+            width: 78,
+            height: 78,
+            colorDark: "#0B1F5C",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch(e) {
+        container.innerHTML = '<span style="color:red;">QR Error</span>';
+    }
+}
+
+function generateAllQRCodes() {
+    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
+    ticketsList.forEach(container => {
+        const id = container.id.replace('ticket-', '');
+        if (id) generateTicketQR(id);
+    });
+}
+
+// ============================================================
+// NOTIFICATION PREMIUM APRÈS 15 SECONDES
+// ============================================================
+let premiumBannerTimer = null;
+let premiumAutoHideTimer = null;
+
+function schedulePremiumNotification() {
+    if (!currentUser.wallet || isUserPremium()) return;
+    clearTimeout(premiumBannerTimer);
+    clearTimeout(premiumAutoHideTimer);
+    premiumBannerTimer = setTimeout(() => {
+        showPremiumBanner();
+    }, 15000);
+}
+
+function showPremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    if (isUserPremium() || !currentUser.wallet) {
+        banner.style.display = 'none';
+        return;
+    }
+    banner.style.display = 'block';
+    setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+    }, 10);
+    clearTimeout(premiumAutoHideTimer);
+    premiumAutoHideTimer = setTimeout(() => {
+        hidePremiumBanner();
+    }, 5000);
+}
+
+function hidePremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+        banner.style.display = 'none';
+        banner.style.transform = 'translateY(-100%)';
+    }, 500);
+    clearTimeout(premiumAutoHideTimer);
+}
+
+// ============================================================
+// RENDER TICKETS
+// ============================================================
+function renderTickets() {
+    const container = document.getElementById('ticketsList');
+    if (!container) return;
+
+    const validTickets = tickets.filter(t => {
+        const isUsed = usedTickets.indexOf(t.id) !== -1;
+        const isExpired = new Date(t.eventDate) <= new Date();
+        const isStatusUsed = t.status === 'Used';
+        return !isUsed && !isExpired && !isStatusUsed;
+    });
+
+    const uniqueTickets = [];
+    const seenIds = new Set();
+    for (const t of validTickets) {
+        if (!seenIds.has(t.id)) {
+            seenIds.add(t.id);
+            uniqueTickets.push(t);
+        }
+    }
+
+    if (uniqueTickets.length === 0) {
+        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noActiveTickets')}</p>`;
+        return;
+    }
+
+    let html = '';
+    uniqueTickets.forEach(ticket => {
+        html += `<div class="ticket-list-item">`;
+        html += generateTicketHTML(ticket);
+        html += `<div class="ticket-actions-wrapper">
+                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                </div>`;
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+
+    setTimeout(() => {
+        uniqueTickets.forEach(ticket => generateTicketQR(ticket.id));
+        applyStaggeredAnimation('#ticketsList .ticket-list-item');
+    }, 300);
+}
+
+// ============================================================
+// RENDER HISTORY
+// ============================================================
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+
+    const historyTickets = tickets.filter(t => {
+        const isUsed = usedTickets.indexOf(t.id) !== -1;
+        const isExpired = new Date(t.eventDate) <= new Date();
+        const isStatusUsed = t.status === 'Used';
+        return isUsed || isExpired || isStatusUsed;
+    });
+
+    const uniqueHistory = [];
+    const seenIds = new Set();
+    for (const t of historyTickets) {
+        if (!seenIds.has(t.id)) {
+            seenIds.add(t.id);
+            uniqueHistory.push(t);
+        }
+    }
+
+    if (uniqueHistory.length === 0) {
+        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noTicketHistory')}</p>`;
+        return;
+    }
+
+    let html = '';
+    uniqueHistory.forEach(ticket => {
+        html += `<div class="ticket-list-item">`;
+        html += generateTicketHTML(ticket);
+        html += `<div class="ticket-actions-wrapper">
+                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                    <button class="btn-action btn-delete" onclick="deleteHistoryTicket('${ticket.id}')" style="background:#ef4444; color:white;"><i class="fas fa-trash"></i> Delete</button>
+                </div>`;
+        html += `</div>`;
+    });
+
+    container.innerHTML = html;
+
+    setTimeout(() => {
+        uniqueHistory.forEach(ticket => generateTicketQR(ticket.id));
+        applyStaggeredAnimation('#historyList .ticket-list-item');
+    }, 300);
+}
+
+function deleteHistoryTicket(ticketId) {
+    if (!confirm('Delete this ticket from history?')) return;
+    tickets = tickets.filter(t => t.id !== ticketId);
+    usedTickets = usedTickets.filter(id => id !== ticketId);
+    saveTickets();
+    saveUsedTickets();
+    renderHistory();
+    renderTickets();
+    updateProfilePage();
+    addNotification('Ticket deleted from history.', 'info');
+}
+
+// ============================================================
+// EXPORT PNG ET PDF
+// ============================================================
+async function downloadTicketPNG(ticketId) {
+    const ticketEl = document.getElementById(`ticket-${ticketId}`);
+    if (!ticketEl) { alert('Ticket not found'); return; }
+    showLoader('Génération du ticket PNG...');
+    try {
+        const canvas = await html2canvas(ticketEl, {
+            scale: 2.5,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#0a1628',
+            allowTaint: true,
+            width: ticketEl.scrollWidth,
+            height: ticketEl.scrollHeight
+        });
+        const link = document.createElement('a');
+        link.download = `BETIX_TICKET_${ticketId.substring(0, 8)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        hideLoader();
+        addNotification('Ticket PNG téléchargé avec succès !', 'success');
+    } catch (error) {
+        console.error(error);
+        alert('Erreur lors du téléchargement PNG.');
+        hideLoader();
+    }
+}
+
+async function downloadTicketPDF(ticketId) {
+    const ticketEl = document.getElementById(`ticket-${ticketId}`);
+    if (!ticketEl) { alert('Ticket not found'); return; }
+    showLoader('Génération du ticket PDF...');
+    try {
+        const canvas = await html2canvas(ticketEl, {
+            scale: 2.5,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#0a1628',
+            allowTaint: true,
+            width: ticketEl.scrollWidth,
+            height: ticketEl.scrollHeight
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        doc.save(`BETIX_TICKET_${ticketId.substring(0, 8)}.pdf`);
+        hideLoader();
+        addNotification('Ticket PDF téléchargé avec succès !', 'success');
+    } catch (error) {
+        console.error(error);
+        alert('Erreur lors du téléchargement PDF.');
+        hideLoader();
+    }
+}
+
+// ============================================================
+// VIEW TICKET MODAL
+// ============================================================
+function viewTicketWithImage(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) { alert('Ticket not found'); return; }
+    const modal = document.getElementById('eventDetailModal');
+    const content = document.getElementById('eventDetailContent');
+    content.innerHTML = generateTicketHTML(ticket);
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => generateTicketQR(ticket.id), 300);
+}
+
+function viewTicketModal(ticketId) { viewTicketWithImage(ticketId); }
+
+function shareTicket(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    if (navigator.share) {
+        navigator.share({
+            title: `Ticket for ${ticket.eventTitle}`,
+            text: `My ticket for ${ticket.eventTitle} on Betix`,
+            url: window.location.href + '?ticket=' + ticket.id
+        }).catch(() => {});
+    } else {
+        const url = window.location.href + '?ticket=' + ticket.id;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this link:', url);
+            });
+        } else {
+            prompt('Copy this link:', url);
+        }
+    }
+}
+
+// ============================================================
+// CARTE D'ÉVÉNEMENT
+// ============================================================
+function renderEventCard(event) {
+    const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
+    const dateEvent = new Date(event.date);
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+    const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
+    const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
+    let posterHtml = '';
+    if (images.length === 1) posterHtml = `<div class="poster-grid grid-1"><div class="grid-item"><img src="${images[0]}" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"></div></div>`;
+    else if (images.length === 2) posterHtml = `<div class="poster-grid grid-2">${images.map(img => `<div class="grid-item"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`).join('')}</div>`;
+    else if (images.length === 3) posterHtml = `<div class="poster-grid grid-3"><div class="grid-item"><img src="${images[0]}" alt="Image 1" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[1]}" alt="Image 2" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[2]}" alt="Image 3" onerror="this.src='${fallbackImage}'"></div></div>`;
+    else if (images.length >= 4) posterHtml = `<div class="poster-grid grid-4">${images.slice(0,4).map(img => `<div class="grid-item"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`).join('')}</div>${images.length > 4 ? `<span class="more-badge"><i class="fas fa-plus"></i> ${images.length - 4}</span>` : ''}`;
+    else posterHtml = `<div class="poster-grid grid-1"><div class="grid-item"><img src="${fallbackImage}" alt="${escapeHtml(event.title)}"></div></div>`;
+
+    const countryFlag = countryFlags[event.pays || event.country] || '';
+    const countryDisplay = event.pays || event.country || 'International';
+    const locationDisplay = event.location ? ` · ${escapeHtml(event.location)}` : '';
+    let desc = event.description || '';
+    let organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
+    if (organizerDisplay.length > 20) organizerDisplay = organizerDisplay.substring(0, 18) + '...';
+    if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
+
+    let publishDateDisplay = '';
+    if (event.createdAt) {
+        const pd = new Date(event.createdAt), now = new Date();
+        const diffMs = now - pd, diffMins = Math.floor(diffMs / 60000), diffHours = Math.floor(diffMs / 3600000), diffDays = Math.floor(diffMs / 86400000), diffWeeks = Math.floor(diffDays / 7), diffMonths = Math.floor(diffDays / 30), diffYears = Math.floor(diffDays / 365);
+        if (diffMins < 1) publishDateDisplay = 'Just now';
+        else if (diffMins < 60) publishDateDisplay = diffMins + ' min ago';
+        else if (diffHours < 24) publishDateDisplay = diffHours + ' h ago';
+        else if (diffDays < 7) publishDateDisplay = diffDays + ' d ago';
+        else if (diffWeeks < 4) publishDateDisplay = diffWeeks + ' w ago';
+        else if (diffMonths < 12) publishDateDisplay = diffMonths + ' month ago';
+        else publishDateDisplay = pd.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
+    const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? `<span class="stars">${ratingStars}</span> ${avgRating.toFixed(1)} (${ratings.filter(r => r.eventId === event.id).length})` : '';
+
+    const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
+
+    const priceRightHtml = `<div class="event-price-right">
+        <span class="price-label-badge">Price</span>
+        <span class="price-amount-green">${(event.price || 0).toFixed(6)}</span>
+        <span class="price-currency-gray">Pi</span>
+    </div>`;
+
+    let durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        const unitLabels = {
+            hours: event.durationValue === 1 ? 'Hour' : 'Hours',
+            days: event.durationValue === 1 ? 'Day' : 'Days',
+            weeks: event.durationValue === 1 ? 'Week' : 'Weeks',
+            months: event.durationValue === 1 ? 'Month' : 'Months',
+            years: event.durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
+    }
+
+    const infoBoxHtml = `
+        <div class="event-info-box">
+            <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
+            <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#F5B400;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ${durationDisplay}` : ''}</div>
+        </div>
+    `;
+
+    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
+
+    return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
+        <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
+        <div class="card-content-classic">
+            <div class="event-title-large">${escapeHtml(event.title)}</div>
+            ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
+            ${infoBoxHtml}
+            <div class="event-meta-row">
+                ${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}
+            </div>
+            <div class="event-tickets-price-row">
+                ${ticketsLabelHtml}
+                ${priceRightHtml}
+            </div>
+            <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
+            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${badgeHtml}</div>
+            ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}` : ''}
+        </div>
+    </div>`;
+}
+
+// ============================================================
+// PAGE DE DÉTAIL (openEventDetails)
+// ============================================================
+function openEventDetails(eventId) {
+    const event = events.find(e => e.id === eventId);
+    if (!event) { alert(t('eventNotFound')); return; }
+    const modal = document.getElementById('eventDetailModal');
+    const content = document.getElementById('eventDetailContent');
+    const currentPage = pageHistory[pageHistory.length - 1] || 'home';
+    if (currentPage !== 'eventDetail') pageHistory.push('eventDetail');
+
+    const dateEvent = new Date(event.date);
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+    const countryFlag = countryFlags[event.pays || event.country] || '';
+    const countryDisplay = event.pays || event.country || 'International';
+    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
+    const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+    const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
+    
+    let carouselHtml = '';
+    if (images.length > 0) {
+        const trackId = 'carousel-track-' + event.id;
+        const dotsId = 'carousel-dots-' + event.id;
+        carouselHtml = `<div class="event-detail-carousel" id="carousel-${event.id}">
+            <div class="carousel-track" id="${trackId}">`;
+        images.forEach(img => {
+            carouselHtml += `<div class="carousel-slide"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
+        });
+        carouselHtml += '</div>';
+        if (images.length > 1) {
+            carouselHtml += `<button class="carousel-btn prev" onclick="carouselPrev('${event.id}')">‹</button>
+                             <button class="carousel-btn next" onclick="carouselNext('${event.id}')">›</button>
+                             <div class="carousel-dots" id="${dotsId}">`;
+            for (let d = 0; d < images.length; d++) {
+                carouselHtml += `<button class="cdot${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
+            }
+            carouselHtml += '</div>';
+        }
+        carouselHtml += '</div>';
+    }
+
+    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
+
+    const eventRatings = ratings.filter(r => r.eventId === event.id);
+    let reviewsHtml = eventRatings.length ? eventRatings.map(r => {
+        const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
+        return `<div class="review-item"><div class="review-header"><span class="review-user">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars">${stars}</span></div>${r.comment ? `<div class="review-text">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
+    }).join('') : `<p>${t('noReviews')}</p>`;
+
+    const avgRating = eventRatings.length ? eventRatings.reduce((a,r) => a + r.rating, 0) / eventRatings.length : 0;
+    const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
+    const ratingDisplay = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' ' + t('reviews') + ')' : t('notYetRated');
+
+    let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
+    if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
+
+    let durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        const unitLabels = {
+            hours: event.durationValue === 1 ? 'Hour' : 'Hours',
+            days: event.durationValue === 1 ? 'Day' : 'Days',
+            weeks: event.durationValue === 1 ? 'Week' : 'Weeks',
+            months: event.durationValue === 1 ? 'Month' : 'Months',
+            years: event.durationValue === 1 ? 'Year' : 'Years'
+        };
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
+    }
+
+    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
+
+    content.innerHTML = `
+        <div class="event-detail-header">
+            <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
+            <span class="detail-title">${escapeHtml(event.title)}</span>
+            <span class="detail-category">${escapeHtml(event.category)}</span>
+            <button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
+        </div>
+        ${carouselHtml}
+        <div class="event-detail-body">
+            <div class="detail-block description-block">
+                <h4><i class="fas fa-align-left"></i> ${t('fullDescription')}</h4>
+                <p>${event.description || 'No description'}</p>
+            </div>
+            <div class="detail-block info-block">
+                <h4><i class="fas fa-info-circle"></i> ${t('information')}</h4>
+                <div class="info-grid">
+                    <div><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? ` · ${escapeHtml(event.location)}` : ''}</div>
+                    <div><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
+                    <div><i class="fas fa-clock"></i> ${timeFormatted}</div>
+                    ${durationDisplay ? `<div><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
+                </div>
+            </div>
+            <div class="detail-block price-seats-block">
+                <div class="price-seats">
+                    <span class="price"><i class="fas fa-tag"></i> ${priceDisplay}</span>
+                    <span class="seats"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</span>
+                </div>
+            </div>
+            <div class="detail-block conditions-block">
+                <h4><i class="fas fa-file-alt"></i> ${t('conditions')}</h4>
+                ${conditionsHtml}
+            </div>
+            <div class="detail-block meta-block">
+                <h4><i class="fas fa-ellipsis-h"></i> ${t('information')}</h4>
+                <div class="meta-grid">
+                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${badgeHtml}</span></div>
+                    <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+                    <div><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
+                    <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
+                </div>
+            </div>
+            <div class="detail-block reviews-block">
+                <h4><i class="fas fa-star"></i> ${t('reviews')}</h4>
+                <div class="reviews-list">${reviewsHtml}</div>
+            </div>
+        </div>
+        <div class="event-detail-footer">
+            <button class="btn-buy" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
+        </div>
+    `;
+
+    document.getElementById('detailBuyBtn').onclick = function() {
+        closeEventDetailModalAndGoBack();
+        setTimeout(() => openQuantityPopup(event.id), 300);
+    };
+
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
+
+    if (images.length > 1) {
+        window._carousels = window._carousels || {};
+        window._carousels[event.id] = { currentIndex: 0, totalSlides: images.length, trackId: 'carousel-track-' + event.id, dotsId: 'carousel-dots-' + event.id, eventId: event.id };
+    }
+}
+
+function carouselGoTo(eventId, index) {
+    const carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    const track = document.getElementById(carousel.trackId);
+    if (!track) return;
+    const total = carousel.totalSlides;
+    if (index < 0) index = total - 1;
+    if (index >= total) index = 0;
+    carousel.currentIndex = index;
+    track.style.transform = 'translateX(' + (-index * 100) + '%)';
+    document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+}
+
+function carouselPrev(eventId) {
+    const carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    carouselGoTo(eventId, carousel.currentIndex - 1);
+}
+function carouselNext(eventId) {
+    const carousel = window._carousels && window._carousels[eventId];
+    if (!carousel) return;
+    carouselGoTo(eventId, carousel.currentIndex + 1);
+}
+
+function closeEventDetailModalAndGoBack() {
+    const modal = document.getElementById('eventDetailModal');
+    if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
+    if (window._carousels) { for (let key in window._carousels) delete window._carousels[key]; }
+    setTimeout(() => {
+        if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
+    }, 50);
+}
+
+// ============================================================
+// SLIDER PRINCIPAL (HERO)
+// ============================================================
+function initHeroSlider() {
+    const slidesContainer = document.getElementById('heroSlides');
+    if (!slidesContainer) return;
+    slidesContainer.innerHTML = '';
+    heroSlides.forEach((slide, index) => {
+        const div = document.createElement('div');
+        div.className = 'hero-slide' + (index === 0 ? ' active' : '');
+        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>`;
+        slidesContainer.appendChild(div);
+    });
+    const dotsContainer = document.getElementById('heroDots');
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        heroSlides.forEach((slide, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', function() { const idx = parseInt(this.getAttribute('data-index')); stopAutoPlay(); goToSlide(idx); setTimeout(startAutoPlay, 3000); });
+            dotsContainer.appendChild(dot);
+        });
+    }
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dots .dot');
+    const prevBtn = document.getElementById('heroPrev');
+    const nextBtn = document.getElementById('heroNext');
+    let currentIndex = 0;
+    const totalSlides = heroSlides.length;
+    let autoPlayInterval = null;
+    let isTransitioning = false;
+    function goToSlide(index) {
+        if (isTransitioning || totalSlides === 0) return;
+        isTransitioning = true;
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        currentIndex = index;
+        slidesContainer.style.transition = 'transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        slidesContainer.style.transform = 'translateX(' + (-currentIndex * 100) + '%)';
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active');
+            if (i === currentIndex) {
+                slide.classList.add('active');
+                const bg = slide.querySelector('.hero-slide-bg');
+                if (bg) { bg.style.transition = 'none'; bg.style.transform = 'scale(1.05)'; setTimeout(() => { bg.style.transition = 'transform 8s ease'; bg.style.transform = 'scale(1)'; }, 50); }
+            }
+        });
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+        setTimeout(() => { isTransitioning = false; }, 750);
+    }
+    function nextSlide() { if (totalSlides > 0) goToSlide(currentIndex + 1); }
+    function prevSlide() { if (totalSlides > 0) goToSlide(currentIndex - 1); }
+    function startAutoPlay() {
+        stopAutoPlay();
+        if (totalSlides > 1) autoPlayInterval = setInterval(() => { if (!isTransitioning) nextSlide(); }, 4000);
+    }
+    function stopAutoPlay() { if (autoPlayInterval) { clearInterval(autoPlayInterval); autoPlayInterval = null; } }
+    if (prevBtn) prevBtn.onclick = function() { stopAutoPlay(); prevSlide(); setTimeout(startAutoPlay, 3000); };
+    if (nextBtn) nextBtn.onclick = function() { stopAutoPlay(); nextSlide(); setTimeout(startAutoPlay, 3000); };
+    const hero = document.querySelector('.hero');
+    if (hero) { hero.onmouseenter = stopAutoPlay; hero.onmouseleave = startAutoPlay; }
+    startAutoPlay();
+}
+
+function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
+
+// ============================================================
+// ADMIN CAROUSEL
+// ============================================================
+function renderAdminSlides() {
+    const container = document.getElementById('adminSlidesList');
+    if (!container) return;
+    if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
+    container.innerHTML = heroSlides.map((slide, index) =>
+        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Image ${index+1}</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(${index})">Delete</button></div></div>`
+    ).join('');
+}
+
+function adminShowSlideForm(index) {
+    const container = document.getElementById('adminSlideFormContainer');
+    container.style.display = 'block';
+    document.getElementById('adminEditSlideIndex').value = index >= 0 ? index : -1;
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function adminSaveSlide() {
+    const imageInput = document.getElementById('adminSlideImageInput');
+    const editIndex = document.getElementById('adminEditSlideIndex');
+    let imageData = null;
+    if (imageInput.files && imageInput.files[0]) {
+        const file = imageInput.files[0];
+        if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('Image too large (max 5MB)'); return; }
+        const compressedData = await compressImage(file);
+        const url = await uploadHeroImage(compressedData, 'slide_' + Date.now());
+        if (!url) { alert('Error uploading image'); return; }
+        imageData = url;
+    } else {
+        const index = parseInt(editIndex.value);
+        if (index >= 0 && index < heroSlides.length) imageData = heroSlides[index].image;
+        else { alert('Please select an image'); return; }
+    }
+    const slideData = { image: imageData, badge: '', title: 'Slide', description: '' };
+    const indexToSave = parseInt(editIndex.value);
+    if (indexToSave >= 0 && indexToSave < heroSlides.length) slideData.id = heroSlides[indexToSave].id;
+    const saved = await saveHeroSlideToSupabase(slideData, indexToSave);
+    if (!saved) { alert('Error saving slide'); return; }
+    await loadHeroSlides();
+    adminCancelSlideForm();
+    alert('Slide saved successfully!');
+}
+
+async function adminDeleteSlide(index) {
+    if (!confirm('Delete this carousel image?')) return;
+    const slide = heroSlides[index];
+    if (!slide) return;
+    const deleted = await deleteHeroSlideFromSupabase(slide.id);
+    if (!deleted) { alert('Error deleting slide'); return; }
+    await loadHeroSlides();
+    addAdminLog('Slide deleted', 'Image deleted');
+}
+
+function adminCancelSlideForm() {
+    document.getElementById('adminSlideFormContainer').style.display = 'none';
+    document.getElementById('adminEditSlideIndex').value = '-1';
+    document.getElementById('adminSlideImageInput').value = '';
+    document.getElementById('adminSlidePreview').style.display = 'none';
+    document.getElementById('adminSlidePreview').src = '';
+    document.getElementById('adminUploadBox').classList.remove('has-image');
+}
+
+// ============================================================
+// PROFIL – FORMULAIRE AVEC REVUE
+// ============================================================
+let profileDataForReview = {};
+let isEditingProfile = false;
+
+function populateProfileCountrySelect() {
+    const select = document.getElementById('profileCountry');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select your country</option>';
+    countriesList.forEach(country => {
+        if (country === 'All') return;
+        const flag = countryFlags[country] || '';
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = flag + ' ' + country;
+        select.appendChild(option);
+    });
+}
+
+async function loadProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('first_name, last_name, country, address, email, phone_number')
+            .eq('pi_uid', piUid)
+            .single();
+        if (error) throw error;
+        if (data) {
+            document.getElementById('profileFirstName').value = data.first_name || '';
+            document.getElementById('profileLastName').value = data.last_name || '';
+            document.getElementById('profileCountry').value = data.country || '';
+            document.getElementById('profileAddress').value = data.address || '';
+            document.getElementById('profileEmail').value = data.email || '';
+            document.getElementById('profilePhone').value = data.phone_number || '';
+            if (data.first_name) currentUser.first_name = data.first_name;
+            if (data.last_name) currentUser.last_name = data.last_name;
+            if (data.country) currentUser.country = data.country;
+            if (data.address) currentUser.address = data.address;
+            if (data.email) currentUser.email = data.email;
+            if (data.phone_number) currentUser.phone_number = data.phone_number;
+            updateUserInfo();
+            enableEditMode(false);
+        } else {
+            enableEditMode(true);
+        }
+    } catch (error) {
+        console.log('No profile data yet or error:', error.message);
+        enableEditMode(true);
+    }
+}
+
+function enableEditMode(edit) {
+    const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+    const saveBtn = document.getElementById('saveProfileBtn');
+    const editBtn = document.getElementById('editProfileBtn');
+    inputs.forEach(inp => inp.disabled = !edit);
+    if (edit) {
+        saveBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        document.getElementById('emailVerificationStatus').innerHTML = '';
+        document.getElementById('phoneVerificationStatus').innerHTML = '';
+        document.querySelectorAll('.verify-btn').forEach(btn => btn.classList.remove('verified'));
+    } else {
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        if (currentUser.email) {
+            document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        }
+        if (currentUser.phone_number) {
+            document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        }
+    }
+}
+
+function fillProfileReview() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    const country = document.getElementById('profileCountry').value;
+    const address = document.getElementById('profileAddress').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+
+    profileDataForReview = { firstName, lastName, country, address, email, phone };
+
+    const content = document.getElementById('profileReviewContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div class="review-item"><span class="review-label">First Name</span><span class="review-value">${escapeHtml(firstName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Last Name</span><span class="review-value">${escapeHtml(lastName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Country</span><span class="review-value">${escapeHtml(country) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Address</span><span class="review-value">${escapeHtml(address) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Email</span><span class="review-value">${escapeHtml(email) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Phone</span><span class="review-value">${escapeHtml(phone) || '—'}</span></div>
+    `;
+}
+
+function openProfileReview() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    if (!firstName || !lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    fillProfileReview();
+    document.getElementById('profileReviewModal').classList.add('show');
+    document.getElementById('profileReviewLoading').style.display = 'none';
+    document.getElementById('profileReviewConfirmBtn').style.display = 'inline-block';
+    document.getElementById('profileReviewEditBtn').style.display = 'inline-block';
+}
+
+function closeProfileReview() {
+    document.getElementById('profileReviewModal').classList.remove('show');
+}
+
+async function confirmProfileSave() {
+    const data = profileDataForReview;
+    if (!data.firstName || !data.lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    if (data.email && !data.email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    document.getElementById('profileReviewConfirmBtn').style.display = 'none';
+    document.getElementById('profileReviewEditBtn').style.display = 'none';
+    document.getElementById('profileReviewLoading').style.display = 'block';
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert('Please connect your Pi account first.');
+        closeProfileReview();
+        return;
+    }
+
+    try {
+        const updates = {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', piUid);
+        if (error) throw error;
+
+        Object.assign(currentUser, {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone
+        });
+        saveUser();
+
+        document.getElementById('profileFirstName').value = data.firstName;
+        document.getElementById('profileLastName').value = data.lastName;
+        document.getElementById('profileCountry').value = data.country;
+        document.getElementById('profileAddress').value = data.address;
+        document.getElementById('profileEmail').value = data.email;
+        document.getElementById('profilePhone').value = data.phone;
+
+        closeProfileReview();
+        const msg = document.getElementById('profileSaveMessage');
+        msg.innerHTML = `
+            <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>
+                <div>
+                    <strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>
+                    <p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>
+                </div>
+            </div>
+        `;
+        setTimeout(() => { msg.innerHTML = ''; }, 5000);
+
+        updateUserInfo();
+        updateProfilePage();
+        enableEditMode(false);
+    } catch (error) {
+        alert('Error saving profile: ' + error.message);
+        closeProfileReview();
+    }
+}
+
+function verifyEmail() {
+    const email = document.getElementById('profileEmail').value.trim();
+    if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${email}.\nCode: ${code} (demo)`);
+    document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyEmailBtn').classList.add('verified');
+}
+
+function verifyPhone() {
+    const phone = document.getElementById('profilePhone').value.trim();
+    if (!phone || phone.length < 6) {
+        alert('Please enter a valid phone number.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
+    document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyPhoneBtn').classList.add('verified');
+}
+
+// ============================================================
+// PAGE PREMIUM – 3 CARTES AVEC ABONNEMENT ANNUEL
+// ============================================================
+function renderPremiumPage() {
+    const container = document.getElementById('premiumContent');
+    if (!container) return;
+    const isPremium = isUserPremium();
+
+    if (isPremium) {
+        const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
+        container.innerHTML = `
+            <div class="premium-status-card" style="max-width:500px; margin:0 auto; text-align:center; padding:30px; background:#f8fafc; border-radius:16px; border:1px solid #e6e6e6;">
+                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#F5B400; font-size:3rem;"></i></div>
+                <h3>You are a Premium member!</h3>
+                <p>Your subscription is active until <strong>${endDate}</strong>.</p>
+                <p>Enjoy unlimited events and exclusive benefits.</p>
+                <button class="btn-secondary" onclick="showPage('home')" style="margin-top:10px;">Go to Home</button>
+            </div>
+        `;
+        return;
+    }
+
+    const monthlyPrice = appSettings.premiumPriceUSD || 5;
+    const yearlyPrice = monthlyPrice * 10;
+    const piRate = appSettings.piRate || 1;
+    const monthlyPi = monthlyPrice / piRate;
+    const yearlyPi = yearlyPrice / piRate;
+
+    const featuresFree = [
+        { icon: 'fa-check-circle', text: 'Publish up to 3 events per month' },
+        { icon: 'fa-check-circle', text: 'Buy tickets without limits' },
+        { icon: 'fa-times-circle', text: 'No Betix Verified badge' },
+        { icon: 'fa-times-circle', text: 'No event promotion' },
+        { icon: 'fa-times-circle', text: 'No priority in searches' },
+        { icon: 'fa-times-circle', text: 'No advanced statistics' },
+        { icon: 'fa-times-circle', text: 'Standard support' }
+    ];
+    const featuresMonthly = [
+        { icon: 'fa-check-circle', text: 'Unlimited publications' },
+        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
+        { icon: 'fa-check-circle', text: 'Automatic promotion on homepage' },
+        { icon: 'fa-check-circle', text: 'Priority in searches' },
+        { icon: 'fa-check-circle', text: 'More visibility to buyers' },
+        { icon: 'fa-check-circle', text: 'Advanced statistics' },
+        { icon: 'fa-check-circle', text: 'Priority support' }
+    ];
+    const featuresYearly = [
+        { icon: 'fa-check-circle', text: 'All Monthly Premium benefits' },
+        { icon: 'fa-check-circle', text: 'Unlimited publications' },
+        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
+        { icon: 'fa-check-circle', text: 'Maximum priority' },
+        { icon: 'fa-check-circle', text: 'Complete advanced statistics' },
+        { icon: 'fa-check-circle', text: 'Priority support' },
+        { icon: 'fa-check-circle', text: 'Save money vs monthly payment' }
+    ];
+
+    const card = (id, name, price, priceLabel, features, recommended, btnText, btnDisabled, badgeText = '') => {
+        const badgeHtml = badgeText ? `<div class="plan-badge">${badgeText}</div>` : '';
+        const btnClass = btnDisabled ? 'btn-subscribe disabled' : 'btn-subscribe';
+        return `
+            <div class="pricing-card ${recommended ? 'recommended' : ''} ${id === 'free' ? 'free' : ''}">
+                ${badgeHtml}
+                <div class="plan-name">${name}</div>
+                <div class="plan-price">${price} <small>Pi</small></div>
+                <div style="font-size:0.7rem; color:#6b7280; text-align:center; margin-bottom:8px;">${priceLabel}</div>
+                <div class="plan-description">${id === 'free' ? 'Ideal for discovering Betix and starting to organize your events.' : 
+                    id === 'monthly' ? 'The best choice for organizers looking to quickly grow their visibility.' :
+                    'The best value for enjoying all Premium benefits for a full year.'}</div>
+                <ul class="plan-features">
+                    ${features.map(f => `<li><i class="fas ${f.icon}"></i><span class="feature-text">${f.text}</span></li>`).join('')}
+                </ul>
+                <button class="${btnClass}" data-plan="${id}" ${btnDisabled ? 'disabled' : ''}>
+                    ${btnText}
+                </button>
+            </div>
+        `;
+    };
+
+    const plansHtml = `<div class="pricing-table">
+        ${card('free', 'Free', '0', 'Free', featuresFree, false, 'Current Plan', true)}
+        ${card('monthly', 'Monthly Premium', monthlyPi.toFixed(6), `≈ $${monthlyPrice} / month`, featuresMonthly, true, 'Upgrade to Premium', false, 'RECOMMENDED')}
+        ${card('yearly', 'Yearly Premium', yearlyPi.toFixed(6), `≈ $${yearlyPrice} / year`, featuresYearly, false, 'Choose Yearly Plan', false, 'BEST VALUE')}
+    </div>`;
+
+    container.innerHTML = plansHtml;
+
+    container.querySelectorAll('.btn-subscribe:not(.disabled)').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const plan = this.dataset.plan || 'monthly';
+            let duration = appSettings.premiumDurationDays;
+            if (plan === 'yearly') duration = 365;
+            subscribePremiumWithDuration(duration);
+        });
+    });
+}
+
+async function subscribePremiumWithDuration(durationDays) {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return;
+    }
+    if (isUserPremium()) {
+        alert('You are already a Premium member.');
+        return;
+    }
+    const usdPrice = appSettings.premiumPriceUSD || 5;
+    let priceUSD = usdPrice;
+    if (durationDays && durationDays !== appSettings.premiumDurationDays) {
+        priceUSD = usdPrice * (durationDays / appSettings.premiumDurationDays);
+    }
+    const piRate = appSettings.piRate || 1;
+    const priceInPi = priceUSD / piRate;
+    if (priceInPi <= 0) {
+        alert('Premium price not configured. Please contact admin.');
+        return;
+    }
+    if (!confirm(`Subscribe to Betix Premium for ${priceInPi.toFixed(6)} Pi (≈ $${priceUSD}) for ${durationDays} days?`)) return;
+    try {
+        if (typeof Pi === 'undefined') {
+            alert('Pi SDK not available. Please use Pi Browser.');
+            return;
+        }
+        const payment = await Pi.createPayment({
+            amount: priceInPi,
+            memo: `Betix Premium Subscription (${durationDays} days)`,
+            metadata: { type: 'premium_subscription', duration: durationDays }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                }).catch(() => {});
+            },
+            onReadyForServerCompletion: async function(paymentId, txid) {
+                try {
+                    const startDate = new Date();
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + durationDays);
+                    const piUid = currentUser.piUid || currentUser.wallet;
+                    if (piUid) {
+                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active');
+                        if (success) {
+                            currentUser.account_type = 'premium';
+                            currentUser.premium_start = startDate.toISOString();
+                            currentUser.premium_end = endDate.toISOString();
+                            currentUser.premium_status = 'active';
+                            saveUser();
+                            addNotification('You are now a Betix Premium member!', 'info');
+                            alert('Subscription successful! Welcome to Betix Premium.');
+                            renderPremiumPage();
+                            updateProfilePage();
+                            updateUserInfo();
+                            renderEventsByCategory();
+                        } else {
+                            alert('Error updating premium status. Please contact support.');
+                        }
+                    }
+                } catch (error) {
+                    alert('Error during premium subscription: ' + error.message);
+                }
+            },
+            onCancel: function() {
+                alert('Payment cancelled.');
+            },
+            onError: function(error) {
+                alert('Payment error: ' + error.message);
+            },
+            onIncompletePaymentFound
+        });
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+function subscribePremium() {
+    subscribePremiumWithDuration(appSettings.premiumDurationDays);
+}
+
+// ============================================================
+// QUANTITY POPUP ET ACHAT
+// ============================================================
+function openQuantityPopup(eventId) {
+    if (!requireLogin()) return;
+    if (!requireProfileComplete()) return;
+    const event = events.find(e => e.id === eventId);
+    if (!event) { alert(t('eventNotFound')); return; }
+    if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
+    const standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+    if (standardLeft <= 0) { alert('All tickets are sold out for this event'); return; }
+    selectedEventForPurchase = event;
+    const popup = document.getElementById('quantityPopup');
+    const titleEl = document.getElementById('quantityEventTitle');
+    const maxInfo = document.getElementById('maxQuantityInfo');
+    const quantityInput = document.getElementById('ticketQuantity');
+    if (titleEl) titleEl.textContent = event.title;
+    if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; quantityInput.max = Math.min(standardLeft, 10); }
+    if (maxInfo) maxInfo.textContent = 'Maximum: ' + Math.min(standardLeft, 10) + ' ticket(s) available';
+    updateTicketTotal();
+    popup.classList.add('show');
+}
+
+function closeQuantityPopup() {
+    document.getElementById('quantityPopup').classList.remove('show');
+    selectedEventForPurchase = null;
+}
+
+function updateQuantity(delta) {
+    const input = document.getElementById('ticketQuantity');
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    const maxVal = parseInt(input.max) || 10;
+    val = Math.min(Math.max(val + delta, 1), maxVal);
+    input.value = val;
+    updateTicketTotal();
+}
+
+function updateTicketTotal() {
+    const input = document.getElementById('ticketQuantity');
+    const subtotalDisplay = document.getElementById('subtotalDisplay');
+    const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
+    const totalDisplay = document.getElementById('totalPriceDisplay');
+    if (!input || !totalDisplay || !selectedEventForPurchase) return;
+    const qty = parseInt(input.value) || 1;
+    const price = selectedEventForPurchase.price || 0;
+    const subtotal = qty * price;
+    const serviceFeePercent = appSettings.serviceFeePercent || 2;
+    const serviceFee = subtotal * (serviceFeePercent / 100);
+    const total = subtotal + serviceFee;
+    if (subtotalDisplay) subtotalDisplay.textContent = subtotal.toFixed(6) + ' Pi';
+    if (serviceFeeDisplay) serviceFeeDisplay.textContent = serviceFee.toFixed(6) + ' Pi';
+    if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
+}
+
+function confirmPurchaseFromPopup() {
+    if (!selectedEventForPurchase) { 
+        alert('No event selected'); 
+        return; 
+    }
+    const quantityInput = document.getElementById('ticketQuantity');
+    const quantity = parseInt(quantityInput.value) || 1;
+    if (quantity < 1) { 
+        alert('Please select at least 1 ticket'); 
+        return; 
+    }
+    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
+    if (quantity > availableSeats) { 
+        alert('No seats available. Remaining: ' + availableSeats); 
+        return; 
+    }
+    if (quantity > 10) { 
+        alert('Maximum 10 tickets per purchase'); 
+        return; 
+    }
+    confirmPurchase(selectedEventForPurchase.id, quantity);
+}
+
+// ============================================================
+// CONFIRMATION D'ACHAT – DIRECT SANS POPUP INTERMÉDIAIRE
+// ============================================================
+const processingTransactions = new Set();
+let confirmPurchaseResolve = null;
+
+function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
+    return Promise.resolve(false);
+}
+
+function closeConfirmPurchasePopup() {}
+
+async function confirmPurchase(eventId, quantity) {
+    const event = events.find(e => e.id === eventId);
+    if (!event) { alert(t('eventNotFound')); return; }
+    const eventDate = new Date(event.date);
+    if (eventDate < new Date()) {
+        openPastEventPopup();
+        return;
+    }
+    const price = event.price || 0;
+    const availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+    if (quantity > availableSeats) {
+        alert('No seats available. Remaining: ' + availableSeats);
+        return;
+    }
+    const subtotal = quantity * price;
+    const serviceFeePercent = appSettings.serviceFeePercent || 2;
+    const serviceFee = subtotal * (serviceFeePercent / 100);
+    const totalPrice = subtotal + serviceFee;
+
+    closeQuantityPopup();
+
+    const confirmBtn = document.getElementById('confirmBuyBtn');
+    if (confirmBtn) { 
+        confirmBtn.textContent = t('connecting'); 
+        confirmBtn.disabled = true; 
+    }
+
+    try {
+        if (typeof Pi === 'undefined') {
+            alert('Pi SDK not available. Please use Pi Browser.');
+            if (confirmBtn) { 
+                confirmBtn.textContent = t('confirmPurchase'); 
+                confirmBtn.disabled = false; 
+            }
+            return;
+        }
+        
+        if (!piUser || !piUser.username) {
+            alert('Please connect your Pi account first with payments scope.');
+            if (confirmBtn) { 
+                confirmBtn.textContent = t('confirmPurchase'); 
+                confirmBtn.disabled = false; 
+            }
+            connectToPi();
+            return;
+        }
+
+        const payment = await Pi.createPayment({
+            amount: totalPrice,
+            memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
+            metadata: { eventId: event.id, eventTitle: event.title, quantity, subtotal, serviceFee }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId })
+                }).catch(() => {});
+            },
+            onReadyForServerCompletion: async function(paymentId, txid) {
+                if (processingTransactions.has(txid)) {
+                    console.log('Transaction already in progress:', txid);
+                    return;
+                }
+                processingTransactions.add(txid);
+                try {
+                    const existingTickets = tickets.filter(t => t.transactionId === txid);
+                    if (existingTickets.length > 0) {
+                        openTransactionProcessedPopup(5);
+                        showPage('tickets');
+                        processingTransactions.delete(txid);
+                        if (confirmBtn) { 
+                            confirmBtn.textContent = t('confirmPurchase'); 
+                            confirmBtn.disabled = false; 
+                        }
+                        return;
+                    }
+                    const userIdentifier = currentUser.piUid || currentUser.wallet;
+                    if (userIdentifier) {
+                        const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+                        const existingInSupabase = supabaseTickets.filter(t => t.transaction_id === txid);
+                        if (existingInSupabase.length > 0) {
+                            tickets = mergeArraysById(tickets, supabaseTickets);
+                            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+                            openTransactionProcessedPopup(5);
+                            renderTickets();
+                            renderHistory();
+                            showPage('tickets');
+                            processingTransactions.delete(txid);
+                            if (confirmBtn) { 
+                                confirmBtn.textContent = t('confirmPurchase'); 
+                                confirmBtn.disabled = false; 
+                            }
+                            return;
+                        }
+                    }
+                    const purchaseDate = new Date().toISOString();
+                    event.standardSold = (event.standardSold || 0) + quantity;
+                    event.standardLeft = (event.standardSeats || 0) - event.standardSold;
+                    event.seatsLeft -= quantity;
+                    event.boosts = (event.boosts || 0) + quantity;
+                    
+                    // Calcul du prochain numéro séquentiel pour cet événement
+                    const existingTicketsForEvent = tickets.filter(t => t.eventId === event.id && t.ticketNumber !== undefined);
+                    const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
+                    let nextNumber = lastNumber + 1;
+                    
+                    const ticketsAdded = [];
+                    for (let i = 0; i < quantity; i++) {
+                        const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
+                        const qrData = ticketId; // QR code contient l'ID unique pour vérification
+                        
+                        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
+                                         (currentUser.last_name ? ' ' + currentUser.last_name : '');
+                        const buyerEmail = currentUser.email || 'Not provided';
+                        const buyerPhone = currentUser.phone_number || 'Not provided';
+                        const organizerName = event.organizerName || event.organizer || 'Anonymous';
+                        const organizerPiUid = event.organizerPiUid || event.organizer || '';
+                        
+                        const ticket = {
+                            id: ticketId,
+                            eventId: event.id,
+                            eventTitle: event.title || 'Event',
+                            eventDate: event.date || new Date().toISOString(),
+                            eventLocation: event.location || 'Online',
+                            category: event.category || '',
+                            price: price,
+                            ticketType: 'standard',
+                            pays: event.pays || event.country || 'France',
+                            buyerWallet: piUser ? piUser.username : currentUser.wallet,
+                            buyerName: fullName || 'Anonymous',
+                            buyerEmail: buyerEmail,
+                            buyerPhone: buyerPhone,
+                            userWallet: currentUser.wallet,
+                            status: 'Valid',
+                            purchaseDate: purchaseDate,
+                            transactionId: txid || 'tx-' + Date.now(),
+                            qrCode: qrData,
+                            quantity: quantity,
+                            durationValue: event.durationValue || null,
+                            durationUnit: event.durationUnit || null,
+                            organizerName: organizerName,
+                            organizerPiUid: organizerPiUid,
+                            eventPays: event.pays || event.country || 'France',
+                            ticketNumber: nextNumber + i   // Numéro séquentiel
+                        };
+                        tickets.push(ticket);
+                        ticketsAdded.push(ticket);
+                    }
+                    saveEvents();
+                    saveTickets();
+                    for (let j = 0; j < ticketsAdded.length; j++) {
+                        const saved = await saveTicketToSupabase(ticketsAdded[j]);
+                        if (!saved) {
+                            pendingTickets.push(ticketsAdded[j]);
+                            localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+                            console.warn('Ticket', ticketsAdded[j].id, 'saved locally, will retry later.');
+                        }
+                        await new Promise(r => setTimeout(r, 200));
+                    }
+                    await saveEventToSupabase(event);
+                    const commission = subtotal * (appSettings.commissionPercent / 100);
+                    await saveTransactionToSupabase({
+                        id: 'tx-' + Date.now(),
+                        buyerWallet: currentUser.wallet,
+                        buyerPiUid: currentUser.piUid || currentUser.wallet,
+                        eventId: event.id,
+                        amount: totalPrice,
+                        txid: txid || 'tx-' + Date.now(),
+                        status: 'completed',
+                        date: new Date().toISOString(),
+                        subtotal: subtotal,
+                        serviceFee: serviceFee,
+                        commission: commission
+                    });
+                    addNotification('New sale! ' + quantity + ' ticket(s) purchased for "' + event.title + '"', 'purchase');
+                    addNotification('Purchase successful! ' + quantity + ' ticket(s) for "' + event.title + '"', 'purchase');
+                    renderEventsByCategory();
+                    renderTickets();
+                    renderHistory();
+                    updateProfilePage();
+                    setTimeout(() => {
+                        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+                    }, 300);
+                    await syncUserToSupabase();
+                    showSuccessPopup(event, ticketsAdded, quantity);
+                    processingTransactions.delete(txid);
+                } catch (error) {
+                    console.error('Error finalizing payment:', error);
+                    alert('Payment was successful but an error occurred while saving tickets. Please contact support.');
+                    processingTransactions.delete(txid);
+                } finally {
+                    if (confirmBtn) {
+                        confirmBtn.textContent = t('confirmPurchase');
+                        confirmBtn.disabled = false;
+                    }
+                }
+            },
+            onCancel: function() {
+                alert(t('paymentCancelled'));
+                if (confirmBtn) { 
+                    confirmBtn.textContent = t('confirmPurchase'); 
+                    confirmBtn.disabled = false; 
+                }
+            },
+            onError: function(error) {
+                alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+                if (confirmBtn) { 
+                    confirmBtn.textContent = t('confirmPurchase'); 
+                    confirmBtn.disabled = false; 
+                }
+            },
+            onIncompletePaymentFound
+        });
+    } catch (error) {
+        alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+        if (confirmBtn) { 
+            confirmBtn.textContent = t('confirmPurchase'); 
+            confirmBtn.disabled = false; 
+        }
+    }
+}
+
+// ============================================================
+// STAGGERED ANIMATION
+// ============================================================
+function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    const items = container.children;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        item.classList.add('stagger-item');
+        item.style.animationDelay = (i * delayIncrement) + 's';
+    }
+}
+
+// ============================================================
+// TOAST NOTIFICATION
+// ============================================================
+function showToast(title, message, type = 'success') {
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
+        <div class="toast-content">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+    document.body.appendChild(toast);
+
+    toast.querySelector('.toast-close').addEventListener('click', function() {
+        closeToast(toast);
+    });
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        closeToast(toast);
+    }, 5000);
+}
+
+function closeToast(toast) {
+    if (!toast) return;
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+}
+
+// ============================================================
+// SUCCESS POPUP
+// ============================================================
+function showSuccessPopup(event, ticketsList, quantity) {
+    const popup = document.getElementById('successPopup');
+    const title = document.getElementById('successTitle');
+    const message = document.getElementById('successMessage');
+    const info = document.getElementById('successTicketInfo');
+    const viewBtn = document.getElementById('viewTicketBtn');
+    const homeBtn = document.getElementById('successHomeBtn');
+    const closeBtn = document.getElementById('closeSuccessXBtn');
+
+    if (!popup || popup.classList.contains('show')) return;
+
+    const qty = quantity || ticketsList.length;
+    const ticket = ticketsList[0] || {};
+    const price = event.price || 0;
+    const totalPrice = qty * price;
+
+    title.textContent = '✅ Achat confirmé !';
+    message.textContent = `Félicitations ! Vous avez acheté ${qty} ticket(s) pour "${event.title}".`;
+    const subMsg = document.querySelector('.success-submessage');
+    if (subMsg) subMsg.textContent = 'Votre ticket est disponible dans votre espace personnel. Vous recevrez également un e-mail de confirmation.';
+
+    const dateEvent = new Date(event.date);
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date à définir';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Heure à définir';
+    const codeDisplay = ticket.qrCode || ticket.id || 'N/A';
+    const paysDisplay = event.pays || event.country || 'France';
+    const countryFlag = countryFlags[paysDisplay] || '';
+    const countryDisplay = countryFlag + ' ' + paysDisplay;
+
+    info.innerHTML = `
+        <div class="ticket-line"><span class="ticket-label">Événement</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">Standard</span></div>
+        <div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">${dateFormatted} à ${timeFormatted}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">${escapeHtml(event.location || 'En ligne')}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">${countryDisplay}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Quantité</span><span class="ticket-value">${qty}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Total payé</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
+        <div class="ticket-line"><span class="ticket-label">Référence</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
+    `;
+
+    closeBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+    };
+
+    homeBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+        showPage('home');
+        setTimeout(() => {
+            const eventCards = document.querySelectorAll('.event-card-classic');
+            for (let card of eventCards) {
+                if (card.textContent.includes(event.title)) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.transition = 'box-shadow 0.3s ease, transform 0.3s ease';
+                    card.style.boxShadow = '0 0 0 4px #F5B400, 0 8px 30px rgba(0,0,0,0.15)';
+                    card.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        card.style.boxShadow = '';
+                        card.style.transform = '';
+                    }, 2000);
+                    break;
+                }
+            }
+        }, 500);
+    };
+
+    viewBtn.onclick = function(e) {
+        e.preventDefault();
+        closeSuccessPopup();
+        showPage('tickets');
+    };
+
+    popup.style.display = 'flex';
+    popup.classList.add('show');
+
+    const eventName = event.title || 'Événement';
+    showToast(
+        '🎉 Achat réussi !',
+        `Vous avez acheté ${qty} ticket(s) pour "${eventName}". Consultez vos tickets dans "Mes tickets".`,
+        'success'
+    );
+}
+
+function closeSuccessPopup() {
+    const popup = document.getElementById('successPopup');
+    if (popup) {
+        popup.classList.remove('show');
+        popup.style.display = 'none';
+    }
+    const info = document.getElementById('successTicketInfo');
+    if (info) info.innerHTML = '';
+    localStorage.removeItem('betix_success_popup_shown');
+}
+
+// ============================================================
+// CONNEXION PI
+// ============================================================
+async function connectToPi() {
+    showConnectSpinner();
+
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Connexion timeout (15s)')), 15000);
+    });
+
+    try {
+        await Promise.race([
+            (async () => {
+                if (!piSDKReady) {
+                    const ready = await ensurePiSDKReady();
+                    if (!ready) {
+                        throw new Error('Pi SDK not available after waiting.');
+                    }
+                }
+                if (typeof Pi === 'undefined') {
+                    if (confirm("Pi Browser not detected. Use demo mode?")) {
+                        currentUser.wallet = 'demo_user';
+                        currentUser.piUid = 'demo_user';
+                        currentUser.name = 'Demo User';
+                        currentUser.memberSince = '2026';
+                        currentUser.loyaltyPoints = 0;
+                        saveUser();
+                        await syncUserToSupabase();
+                        updateActivity();
+                        updateUserInfo();
+                        updateProfilePage();
+                        trackUserConnection();
+                        renderEventsByCategory();
+                        updateConnectButtons();
+                        await loadAllFromSupabase();
+                        currentFilter = 'All';
+                        currentCountryFilter = 'All';
+                        initFilters();
+                        renderEventsByCategory();
+                        alert('Pi account connected (demo mode)! Welcome Demo User');
+                        closeSidebar();
+                        await loadProfileData();
+                        schedulePremiumNotification();
+                        hideConnectSpinner();
+                        return;
+                    }
+                    throw new Error('Pi Browser required.');
+                }
+
+                const scopes = ['username', 'payments'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                if (auth && auth.user) {
+                    piUser = auth.user;
+                    currentUser.wallet = piUser.username;
+                    currentUser.piUid = piUser.username;
+                    currentUser.name = piUser.username;
+                    if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+                    saveUser();
+                    await syncUserToSupabase();
+                    updateActivity();
+                    updateUserInfo();
+                    updateProfilePage();
+                    trackUserConnection();
+                    renderEventsByCategory();
+                    updateConnectButtons();
+                    await loadAllFromSupabase();
+                    currentFilter = 'All';
+                    currentCountryFilter = 'All';
+                    initFilters();
+                    renderEventsByCategory();
+                    alert('Pi account connected! Welcome ' + piUser.username);
+                    closeSidebar();
+                    await loadProfileData();
+                    await retryPendingTickets();
+                    schedulePremiumNotification();
+                    hideConnectSpinner();
+                    return;
+                } else {
+                    throw new Error(t('authenticationFailed'));
+                }
+            })(),
+            timeoutPromise
+        ]);
+    } catch (error) {
+        console.error('Connection error:', error);
+        let errorMsg = t('connectionError') + ': ' + (error.message || "Please try again");
+        if (error.message.includes('timeout')) {
+            errorMsg = 'Connection timeout. Please check your internet connection and try again.';
+        }
+        alert(errorMsg);
+        const btn = document.getElementById('sidebarWalletBtn');
+        if (btn) {
+            btn.textContent = t('connectPi');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    } finally {
+        hideConnectSpinner();
+    }
+}
+
+// ============================================================
+// CRÉATION D'ÉVÉNEMENT
+// ============================================================
+async function createEvent(e) {
+    e.preventDefault();
+    if (!requireLogin()) return;
+    if (!requireProfileComplete()) return;
+    const publishBtn = document.getElementById('publishEventBtn');
+    if (publishBtn.classList.contains('loading')) return;
+    if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
+    if (!canPublishEvent()) {
+        alert('You have reached the limit of 3 free events per month. Please upgrade to Premium to publish unlimited events.');
+        document.getElementById('freeLimitMessage').style.display = 'block';
+        return;
+    }
+    const title = document.getElementById('eventTitle').value.trim();
+    const category = document.getElementById('eventCategory').value;
+    const pays = document.getElementById('eventCountry').value;
+    const date = document.getElementById('eventDate').value;
+    const location = document.getElementById('eventLocation').value.trim();
+    const description = document.getElementById('eventDescription').value.trim();
+    const conditions = document.getElementById('eventConditions').value.trim();
+    const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
+    const durationValue = document.getElementById('eventDurationValue').value;
+    const durationUnit = document.getElementById('eventDurationUnit').value;
+    const durationValueNum = durationValue ? parseInt(durationValue) : null;
+    if (!title) { alert(t('title') + ' ' + t('required')); return; }
+    if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
+    if (!location) { alert(t('location') + ' ' + t('required')); return; }
+    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
+    if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
+    const images = getUploadedImages();
+    if (images.length < 1) { alert(t('imagesRequired')); return; }
+    publishBtn.classList.add('loading');
+    publishBtn.disabled = true;
+    try {
+        const newEvent = {
+            id: Date.now().toString(),
+            title, category, pays, country: pays, date, location,
+            description: description || '',
+            conditions,
+            price: 0.0003,
+            seatsTotal,
+            seatsLeft: seatsTotal,
+            standardSeats: seatsTotal,
+            standardSold: 0,
+            standardLeft: seatsTotal,
+            images,
+            coverImage: images[0],
+            organizer: currentUser.wallet,
+            organizerPiUid: currentUser.piUid || currentUser.wallet,
+            organizerName: currentUser.name,
+            createdAt: new Date().toISOString(),
+            boosts: 0,
+            durationValue: durationValueNum,
+            durationUnit,
+            ticketTypes: { standard: { enabled: true, price: 0.0003 } }
+        };
+        openPublishConfirm(newEvent);
+    } catch (error) { alert(t('paymentError') + ': ' + error.message); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
+}
+
+function openPublishConfirm(eventData) {
+    pendingEventData = eventData;
+    document.getElementById('confirmTitle').textContent = eventData.title || 'Untitled';
+    document.getElementById('confirmCategory').textContent = eventData.category || 'Uncategorized';
+    document.getElementById('confirmCountry').textContent = eventData.pays || eventData.country || 'Not specified';
+    document.getElementById('confirmDate').textContent = new Date(eventData.date).toLocaleDateString('en-US') + ' at ' + new Date(eventData.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
+    document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
+    document.getElementById('confirmSeats').textContent = eventData.seatsTotal || 0;
+    document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet || 'Unknown';
+    document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
+    document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
+    const confirmTicketTypes = document.getElementById('confirmTicketTypes');
+    if (confirmTicketTypes) confirmTicketTypes.textContent = 'Standard: ' + (eventData.price || 0).toFixed(6) + ' Pi';
+    const confirmDuration = document.getElementById('confirmDuration');
+    if (confirmDuration) {
+        if (eventData.durationValue && eventData.durationUnit) {
+            const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
+            confirmDuration.textContent = eventData.durationValue + ' ' + (unitLabels[eventData.durationUnit] || eventData.durationUnit);
+            confirmDuration.style.display = 'block';
+        } else { confirmDuration.style.display = 'none'; }
+    }
+    const confirmImages = document.getElementById('confirmImages');
+    if (confirmImages) {
+        confirmImages.innerHTML = '';
+        if (eventData.images && eventData.images.length > 0) {
+            eventData.images.forEach(img => {
+                const imgEl = document.createElement('img');
+                imgEl.src = img; imgEl.alt = 'Event image'; imgEl.style.objectFit = 'contain'; imgEl.style.width = '70px'; imgEl.style.height = '70px'; imgEl.style.background = '#1a1a2e';
+                confirmImages.appendChild(imgEl);
+            });
+        }
+    }
+    document.getElementById('publishConfirmPopup').classList.add('show');
+}
+
+function closePublishConfirmPopup() {
+    document.getElementById('publishConfirmPopup').classList.remove('show');
+    const publishBtn = document.getElementById('publishEventBtn');
+    if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
+    pendingEventData = null;
+}
+
+async function confirmPublishEvent() {
+    if (!pendingEventData) { alert('Event not found'); return; }
+    const publishBtn = document.getElementById('publishEventBtn');
+    const confirmBtn = document.getElementById('confirmPublishBtn');
+    if (confirmBtn) { confirmBtn.classList.add('loading'); confirmBtn.disabled = true; confirmBtn.textContent = t('publishing'); }
+    try {
+        const newEvent = pendingEventData;
+        const uploadedUrls = [];
+        if (newEvent.images && newEvent.images.length > 0) {
+            for (let i = 0; i < newEvent.images.length; i++) {
+                const url = await uploadEventImage(newEvent.id, newEvent.images[i], i);
+                uploadedUrls.push(url || newEvent.images[i]);
+            }
+        }
+        newEvent.images = uploadedUrls;
+        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
+        newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
+        newEvent.organizerName = currentUser.name;
+        events.push(newEvent);
+        saveEvents();
+        await saveEventToSupabase(newEvent);
+        await syncUserToSupabase();
+        document.getElementById('eventForm').reset();
+        for (let i = 0; i < 2; i++) removeImageModern(i);
+        uploadedImages = {};
+        addNotification(t('eventPublished') + ' "' + newEvent.title + '"', 'event');
+        closePublishConfirmPopup();
+        document.getElementById('publishConfirmPopup').classList.remove('show');
+        renderEventsByCategory();
+        updateProfilePage();
+        if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
+        if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); }
+        alert(t('eventPublished'));
+        showPage('home');
+    } catch (error) { alert(t('paymentError') + ': ' + error.message); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) { reject(new Error('Not an image')); return; }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width, height = img.height;
+                const maxWidth = 1200, maxHeight = 1200;
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * ratio); height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+                let format = 'image/webp';
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 1; testCanvas.height = 1;
+                if (!testCanvas.toDataURL('image/webp').includes('image/webp')) format = 'image/jpeg';
+                resolve(canvas.toDataURL(format, 0.7));
+            };
+            img.onerror = function() { reject(new Error('Failed to load image')); };
+            img.src = ev.target.result;
+        };
+        reader.onerror = function() { reject(new Error('Failed to read file')); };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleImageUploadModern(file, index) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('Image is too large (max 10MB)'); return; }
+    const box = document.getElementById('uploadBox' + (index + 1));
+    const progress = document.getElementById('progress' + (index + 1));
+    const progressFill = document.getElementById('progressFill' + (index + 1));
+    const progressText = document.getElementById('progressText' + (index + 1));
+    const previewContainer = document.getElementById('previewContainer' + index);
+    const previewImage = document.getElementById('previewImage' + index);
+    progress.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = '0%';
+    box.classList.add('compress');
+    try {
+        let interval = setInterval(() => {
+            let cur = parseInt(progressFill.style.width) || 0;
+            if (cur < 90) { let nw = cur + Math.random() * 15; if (nw > 90) nw = 90; progressFill.style.width = nw + '%'; progressText.textContent = Math.round(nw) + '%'; }
+        }, 200);
+        const compressedData = await compressImage(file);
+        clearInterval(interval);
+        progressFill.style.width = '100%';
+        progressText.textContent = '100%';
+        setTimeout(() => {
+            progress.style.display = 'none';
+            progressFill.style.width = '0%';
+            previewImage.src = compressedData;
+            previewContainer.style.display = 'block';
+            box.classList.add('has-image');
+            box.classList.remove('compress');
+            uploadedImages[index] = compressedData;
+        }, 300);
+    } catch (error) { alert('Error compressing image. Please try with a smaller image.'); progress.style.display = 'none'; box.classList.remove('compress'); }
+}
+
+function removeImageModern(index) {
+    const box = document.getElementById('uploadBox' + (index + 1));
+    const previewContainer = document.getElementById('previewContainer' + index);
+    const previewImage = document.getElementById('previewImage' + index);
+    const input = document.getElementById('imageInput' + index);
+    previewContainer.style.display = 'none';
+    previewImage.src = '#';
+    box.classList.remove('has-image');
+    box.classList.remove('compress');
+    input.value = '';
+    delete uploadedImages[index];
+}
+
+function getUploadedImages() {
+    const images = [];
+    for (let key in uploadedImages) if (uploadedImages.hasOwnProperty(key)) images.push(uploadedImages[key]);
+    return images;
+}
+
+function openEditEventModal(eventId) {
+    const event = events.find(e => e.id === eventId);
+    if (!event) { alert(t('eventNotFound')); return; }
+    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) { alert('You are not the organizer of this event'); return; }
+    editingEventId = eventId;
+    document.getElementById('editEventDescription').value = event.description || '';
+    document.getElementById('editEventLocation').value = event.location || '';
+    document.getElementById('editEventConditions').value = event.conditions || '';
+    document.getElementById('editEventDurationValue').value = event.durationValue || '';
+    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
+    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
+    document.getElementById('editEventModal').classList.add('show');
+}
+
+function closeEditEventModal() { document.getElementById('editEventModal').classList.remove('show'); editingEventId = null; }
+
+async function saveEventEdits() {
+    if (!editingEventId) return;
+    const event = events.find(e => e.id === editingEventId);
+    if (!event) { alert(t('eventNotFound')); return; }
+    const description = document.getElementById('editEventDescription').value.trim();
+    const location = document.getElementById('editEventLocation').value.trim();
+    const conditions = document.getElementById('editEventConditions').value.trim();
+    const durationValue = document.getElementById('editEventDurationValue').value;
+    const durationUnit = document.getElementById('editEventDurationUnit').value;
+    const seatsTotal = parseInt(document.getElementById('editEventSeats').value) || 0;
+    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
+    const ticketsSold = tickets.filter(t => t.eventId === editingEventId).length;
+    if (seatsTotal < ticketsSold) { alert('You cannot reduce the number of seats below the ' + ticketsSold + ' already sold'); return; }
+    const updates = {
+        description, location, conditions,
+        seatsTotal,
+        seatsLeft: seatsTotal - ticketsSold,
+        durationValue: durationValue ? parseInt(durationValue) : null,
+        durationUnit: durationUnit || null,
+        standardSeats: seatsTotal,
+        standardLeft: seatsTotal - ticketsSold,
+        standardSold: ticketsSold
+    };
+    Object.assign(event, updates);
+    saveEvents();
+    await updateEventInSupabase(editingEventId, {
+        description: updates.description, location: updates.location, conditions: updates.conditions,
+        max_tickets: updates.seatsTotal, duration_value: updates.durationValue, duration_unit: updates.durationUnit,
+        standard_seats: updates.standardSeats, standard_sold: updates.standardSold
+    });
+    addNotification(t('editEvent') + ' "' + event.title + '"', 'event');
+    closeEditEventModal();
+    renderEventsByCategory();
+    renderMyEvents();
+    alert(t('eventPublished'));
+}
+
+function renderMyRatings() {
+    const container = document.getElementById('myRatingsList');
+    if (!container) return;
+    const myRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
+    if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">' + t('noReviews') + '</p>'; return; }
+    container.innerHTML = myRatings.map(r => {
+        const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
+        return `<div class="ticket-card"><h3>${escapeHtml(r.eventTitle)}</h3><div>${t('rating')}: ${r.rating}/5 ${stars}</div>${r.comment ? `<p>"${escapeHtml(r.comment)}"</p>` : ''}<small>${new Date(r.date).toLocaleDateString()}</small></div>`;
+    }).join('');
+    setTimeout(() => {
+        applyStaggeredAnimation('#myRatingsList');
+    }, 50);
+}
+
+function setupTicketTypesUI() { /* no-op */ }
+
+function initCountrySelectors() {
+    const filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        countriesList.forEach(country => {
+            const flag = countryFlags[country] || '';
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = flag + ' ' + country;
+            if (country === currentCountryFilter) option.selected = true;
+            filterSelect.appendChild(option);
+        });
+    }
+    const eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        countriesList.forEach(country => {
+            if (country === 'All') return;
+            const flag = countryFlags[country] || '';
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = flag + ' ' + country;
+            if (country === 'France') option.selected = true;
+            eventSelect.appendChild(option);
+        });
+    }
+    setTimeout(() => {
+        const filterSelect = document.getElementById('countrySelect');
+        if (filterSelect) {
+            const options = filterSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+        const eventSelect = document.getElementById('eventCountry');
+        if (eventSelect) {
+            const options = eventSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+    }, 50);
+}
+
+// ============================================================
+// LANGUE, TRADUCTIONS ET UI
+// ============================================================
+function changeLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('betix_language', lang);
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) settingsSelect.value = lang;
+    updateUITranslations();
+    const googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
+    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
+}
+
+function updateUITranslations() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+    const pageMap = { home: t('home'), myevents: t('myEvents'), profile: t('profile'), settings: t('settings'), tickets: t('myTickets'), history: t('ticketHistory'), faq: t('faq'), admin: t('administration'), scan: 'Scan Ticket' };
+    sidebarItems.forEach(item => {
+        const page = item.dataset.page;
+        if (pageMap[page]) {
+            const icon = item.querySelector('i');
+            item.innerHTML = '';
+            if (icon) item.appendChild(icon);
+            item.appendChild(document.createTextNode(' ' + pageMap[page]));
+        }
+    });
+    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
+    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
+    document.getElementById('sidebarWalletBtn') && (document.getElementById('sidebarWalletBtn').textContent = currentUser.wallet ? t('disconnect') : t('connectPi'));
+    const socialTitle = document.querySelector('.sidebar-social-title');
+    if (socialTitle) socialTitle.textContent = t('followUs');
+    const heroTitle = document.querySelector('.hero-text h1');
+    if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.placeholder = t('searchEvent');
+    const countryLabel = document.querySelector('.filter-country-select label');
+    if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
+    const eventsTitle = document.querySelector('.events-title');
+    if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
+    const eventsSub = document.querySelector('.events-sub');
+    if (eventsSub) eventsSub.textContent = t('joinCommunity');
+    document.querySelector('#navHome span') && (document.querySelector('#navHome span').textContent = t('home'));
+    document.querySelector('#navCreate span') && (document.querySelector('#navCreate span').textContent = 'Create');
+    document.querySelector('#navMenu span') && (document.querySelector('#navMenu span').textContent = 'Menu');
+    const backLabel = document.querySelector('.back-btn .back-btn-label');
+    if (backLabel) backLabel.textContent = t('back');
+    const footerTitles = document.querySelectorAll('.footer-col h4');
+    if (footerTitles.length >= 3) {
+        footerTitles[0].textContent = t('footerTitleInfo');
+        footerTitles[1].textContent = t('footerTitleBetix');
+        footerTitles[2].textContent = t('footerTitlePartners');
+    }
+    const footerLinks = document.querySelectorAll('.footer-col ul li a');
+    const footerLinkTexts = [
+        t('footerTermsSale'), t('footerTermsUse'), t('footerPrivacy'), t('footerAccessibility'),
+        t('footerPrivacyChoices'), t('footerFanGuide'), t('footerLegal'), t('footerCookies'),
+        t('footerAbout'), t('footerContact'), t('footerFeedback'), t('footerHelp'),
+        t('footerJoinCommunity'), t('footerPiNetwork'), t('footerSecure')
+    ];
+    footerLinks.forEach((link, index) => { if (index < footerLinkTexts.length) link.textContent = footerLinkTexts[index]; });
+    const footerSlogan = document.querySelector('.footer-slogan');
+    if (footerSlogan) footerSlogan.textContent = t('footerSlogan');
+    const footerDesc = document.querySelector('.footer-desc');
+    if (footerDesc) footerDesc.textContent = t('footerDesc');
+    const footerRights = document.querySelectorAll('.footer-bottom span');
+    if (footerRights.length >= 1) footerRights[0].textContent = '© 2026 Betix. ' + t('footerRights');
+    if (footerRights.length >= 2) footerRights[footerRights.length - 1].textContent = t('footerBuiltOn');
+}
+
+function detectLanguage() {
+    let savedLang = localStorage.getItem('betix_language') || 'en';
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
+    currentLang = savedLang;
+    const nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) settingsSelect.value = savedLang;
+    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
+    setTimeout(() => updateUITranslations(), 500);
+    return savedLang;
+}
+
+function syncSettingsLanguageSelector() {
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) {
+        settingsSelect.value = currentLang;
+        settingsSelect.addEventListener('change', function() { changeLanguage(this.value); });
+    }
+}
+
+function renderNotificationsPage() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    if (!notifications || notifications.length === 0) { container.innerHTML = `<div class="notification-empty"><i class="fas fa-bell-slash"></i> ${t('noNotifications')}</div>`; return; }
+    let html = '';
+    for (let i = 0; i < notifications.length; i++) {
+        const notif = notifications[i];
+        const time = new Date(notif.date);
+        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const unreadClass = notif.read ? '' : 'unread';
+        const type = notif.type || 'info';
+        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
+        const icon = iconMap[type] || 'fa-info-circle';
+        html += `<div class="notification-item type-${type} ${unreadClass}">
+            <div class="notif-icon"><i class="fas ${icon}"></i></div>
+            <div class="notif-content">
+                <div class="notif-msg">${escapeHtml(notif.message)}</div>
+                <div class="notif-time">${timeStr}</div>
+            </div>
+        </div>`;
+        notifications[i].read = true;
+    }
+    container.innerHTML = html;
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
+function updateNotifBadgeHeader() {
+    const badge = document.getElementById('notifBadgeHeader');
+    if (!badge) return;
+    const unread = notifications.filter(n => !n.read).length;
+    if (unread > 0) { badge.textContent = unread; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
+    updateSidebarNotifBadge();
+}
+
+function updateSidebarNotifBadge() {
+    const badge = document.getElementById('sidebarNotifBadge');
+    if (!badge) return;
+    const unread = notifications.filter(n => !n.read).length;
+    if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+}
+
+function addNotification(message, type) {
+    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
+    notifications.unshift(notif);
+    if (notifications.length > 100) notifications = notifications.slice(0, 100);
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
+function goToMyEvents() { showPage('myevents'); }
+function goToTickets() { showPage('tickets'); }
+function goToHistory() { showPage('history'); }
+function goToRatings() { showPage('ratings'); }
+
+function calculateLoyaltyPoints() {
+    let points = 0;
+    for (let i = 0; i < ratings.length; i++) if (ratings[i].userWallet === (currentUser.wallet || currentUser.name)) points += ratings[i].rating;
+    currentUser.loyaltyPoints = points;
+    saveUser();
+    return points;
+}
+
+function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
+function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
+
+function disconnectPi() {
+    if (confirm(t('disconnect') + '?')) {
+        currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0 };
+        piUser = null;
+        saveUser();
+        localStorage.removeItem('betix_last_activity');
+        localStorage.removeItem('betix_pending_payment');
+        updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); updateConnectButtons(); closeSidebar();
+        alert(t('disconnected'));
+    }
+}
+function logout() { disconnectPi(); }
+function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
+function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
+
+function showPage(pageName) {
+    updateActivity();
+    const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage','premiumPage'];
+    pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
+    let displayPage = pageName;
+    if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
+    else { const target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } displayPage = pageName; }
+    if (pageHistory[pageHistory.length - 1] !== displayPage) pageHistory.push(displayPage);
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        if (displayPage === 'home') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; }
+        else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
+    }
+    if (pageName === 'tickets') renderTickets();
+    if (pageName === 'history') renderHistory();
+    if (pageName === 'profile') { updateProfilePage(); loadProfileData(); }
+    if (pageName === 'ratings') renderMyRatings();
+    if (pageName === 'admin') loadAdminPage();
+    if (pageName === 'myevents') renderMyEvents();
+    if (pageName === 'notifications') renderNotificationsPage();
+    if (pageName === 'premium') renderPremiumPage();
+    closeSidebar();
+    window.scrollTo(0, 0);
+}
+
+function goBack() {
+    const detailModal = document.getElementById('eventDetailModal');
+    if (detailModal && detailModal.classList.contains('show')) { closeEventDetailModalAndGoBack(); return; }
+    if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
+}
+
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); document.body.style.overflow = ''; }
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+
+function updateConnectButtons() {
+    const sidebarBtn = document.getElementById('sidebarWalletBtn');
+    if (sidebarBtn) {
+        if (currentUser.wallet) {
+            sidebarBtn.textContent = t('disconnect');
+            sidebarBtn.classList.add('disconnect');
+            sidebarBtn.classList.remove('loading');
+            sidebarBtn.onclick = function() { disconnectPi(); };
+            sidebarBtn.disabled = false;
+        } else {
+            sidebarBtn.textContent = t('connectPi');
+            sidebarBtn.classList.remove('disconnect');
+            sidebarBtn.classList.remove('loading');
+            sidebarBtn.onclick = function() { connectToPi(); };
+            sidebarBtn.disabled = false;
+        }
+    }
+    const profilePageBtn = document.getElementById('profileConnectBtnPage');
+    if (profilePageBtn) {
+        if (currentUser.wallet) { profilePageBtn.textContent = t('disconnect'); profilePageBtn.onclick = function() { disconnectPi(); }; }
+        else { profilePageBtn.textContent = t('connectPi'); profilePageBtn.onclick = function() { connectToPi(); }; }
+    }
+}
+
+function showConnectSpinner() {
+    const btn = document.getElementById('sidebarWalletBtn');
+    if (btn) { btn.textContent = t('connecting'); btn.disabled = true; btn.classList.add('loading'); }
+}
+function hideConnectSpinner() {
+    const btn = document.getElementById('sidebarWalletBtn');
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
+}
+
+function updatePremiumBanner() {
+    const banner = document.getElementById('premiumBanner');
+    if (!banner) return;
+    if (!currentUser.wallet) { banner.style.display = 'none'; return; }
+    if (isUserPremium()) {
+        banner.style.display = 'none';
+    } else {
+        banner.style.display = 'none';
+    }
+}
+
+function trackUserConnection() {
+    if (!currentUser.wallet) return;
+    let existing = connectedUsers.find(u => u.wallet === currentUser.wallet);
+    const userData = { name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString(), loyaltyPoints: currentUser.loyaltyPoints || 0, memberSince: currentUser.memberSince || '2026' };
+    if (!existing) connectedUsers.push(userData);
+    else { Object.assign(existing, userData); }
+    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+    syncUserToSupabase();
+}
+
+// ============================================================
+// RENDER MY EVENTS
+// ============================================================
+function renderMyEvents() {
+    const container = document.getElementById('myEventsList');
+    if (!container) return;
+    const userId = currentUser.piUid || currentUser.wallet;
+    const myEvents = events.filter(e => 
+        e.organizer === userId || 
+        e.organizerPiUid === userId || 
+        e.organizerName === currentUser.name
+    );
+    if (myEvents.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">${t('noEvents')}</p><p style="font-size:0.85rem;">${t('createEvent')}</p></div>`;
+        return;
+    }
+    container.innerHTML = myEvents.map(e => renderMyEventCardModern(e)).join('');
+    updateScanButtonVisibility();
+    setTimeout(() => {
+        applyStaggeredAnimation('#myEventsList');
+    }, 50);
+}
+
+function renderMyEventCardModern(event) {
+    const dateEvent = new Date(event.date);
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
+    const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+    const imageUrl = event.coverImage || (event.images && event.images[0]) || fallbackImage;
+    const ticketSold = tickets.filter(t => t.eventId === event.id).length;
+    let statusBadge = '', statusClass = '';
+    if (event.seatsLeft <= 0) { statusBadge = t('soldOut'); statusClass = 'sold-out'; }
+    else if (new Date(event.date) < new Date()) { statusBadge = t('ended'); statusClass = 'ended'; }
+    else { statusBadge = t('new'); statusClass = ''; }
+    const countryFlag = countryFlags[event.pays || event.country] || '';
+    const countryDisplay = event.pays || event.country || 'International';
+    let durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
+    }
+    const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : 'No ticket types';
+    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, event.organizerName || event.organizer || '');
+    return `<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="${imageUrl}" class="event-image" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"><span class="event-status-badge-modern ${statusClass}">${statusBadge}</span></div><div class="event-body-modern"><div class="event-title-modern">${escapeHtml(event.title)}</div><div class="event-details-modern">
+        <div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">${t('eventDate')}</span> <span class="detail-value">${dateFormatted}</span></div>
+        <div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">${t('eventTime')}</span> <span class="detail-value">${timeFormatted}</span></div>
+        <div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">${t('locationLabel')}</span> <span class="detail-value">${escapeHtml(event.location || 'Online')}</span></div>
+        <div class="detail-item-modern"><span style="font-size:1rem;">${countryFlag}</span> <span class="detail-label">${t('countryLabel')}</span> <span class="detail-value">${escapeHtml(countryDisplay)}</span></div>
+        <div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">${t('tickets')} Sold</span> <span class="detail-value">${ticketSold}</span></div>
+        <div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">${t('seatsLeft')}</span> <span class="detail-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
+        ${durationDisplay ? `<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">${t('duration')}</span> <span class="detail-value">${durationDisplay}</span></div>` : ''}
+        <div class="detail-item-modern" style="grid-column:${durationDisplay ? '2' : '1'}/-1;"><i class="fas fa-tags"></i> <span class="detail-label">${t('ticketTypes')}</span> <span class="detail-value" style="font-size:0.7rem;">${escapeHtml(typesDisplay)}</span></div>
+    </div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ${event.boosts || 0} ${t('views')}</span><span><i class="fas fa-calendar-plus"></i> ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal('${event.id}')"><i class="fas fa-pen"></i> ${t('editEvent')}</button></div></div></div></div>`;
+}
+
+function renderEventsByCategory() {
+    const container = document.getElementById('eventsByCategory');
+    if (!container) return;
+    const filtered = events.filter(e => {
+        const matchCategory = currentFilter === 'All' || e.category === currentFilter;
+        const matchCountry = currentCountryFilter === 'All' || (e.pays || e.country) === currentCountryFilter;
+        const matchSearch = e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery));
+        return matchCategory && matchCountry && matchSearch;
+    });
+    if (filtered.length === 0) { container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noEvents')}</p>`; return; }
+    const cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
+    let html = '';
+    if (currentFilter !== 'All') {
+        html = '<div class="category-section"><div class="events-grid-centered">';
+        filtered.forEach(e => html += renderEventCard(e));
+        html += '</div></div>';
+    } else {
+        cats.forEach(cat => {
+            const catEvents = filtered.filter(e => e.category === cat);
+            if (catEvents.length) {
+                html += `<div class="category-section"><div class="category-header">${cat}</div><div class="events-grid-centered">`;
+                catEvents.forEach(e => html += renderEventCard(e));
+                html += '</div></div>';
+            }
+        });
+    }
+    container.innerHTML = html;
+    setTimeout(() => {
+        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+    }, 50);
+}
+
+function initFilters() {
+    const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
+    const container = document.getElementById('filtersContainer');
+    if (!container) return;
+    container.innerHTML = cats.map(c => `<div class="filter-chip ${c === currentFilter ? 'active' : ''}" data-category="${c}">${c === 'All' ? t('all') : c}</div>`).join('');
+    document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }));
+}
+
+function updateUserInfo() {
+    const displayName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = displayName);
+    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = displayName);
+    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
+    document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
+    document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
+    document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
+    const badgeEl = document.getElementById('profileBadgeVerified');
+    if (badgeEl) {
+        if (isUserPremium() && appSettings.badgeEnabled) {
+            badgeEl.style.display = 'inline';
+        } else {
+            badgeEl.style.display = 'none';
+        }
+    }
+    const accountBadge = document.getElementById('profileAccountTypeBadge');
+    if (accountBadge) {
+        if (isUserPremium()) {
+            accountBadge.innerHTML = '<i class="fas fa-crown"></i> Premium';
+            accountBadge.style.background = 'rgba(245, 180, 0, 0.2)';
+            accountBadge.style.color = '#F5B400';
+        } else {
+            accountBadge.innerHTML = '<i class="fas fa-user"></i> Free';
+            accountBadge.style.background = 'rgba(255,255,255,0.12)';
+            accountBadge.style.color = 'white';
+        }
+    }
+    updateConnectButtons();
+    updateSidebarNotifBadge();
+    updateUITranslations();
+    updateScanButtonVisibility();
+    updatePremiumBanner();
+}
+
+function updateProfilePage() {
+    const userId = currentUser.piUid || currentUser.wallet;
+    const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+    const userTickets = tickets.filter(t => t.userWallet === userId || t.buyerWallet === userId);
+    const userRatings = ratings.filter(r => r.userWallet === userId || r.userWallet === currentUser.name);
+    document.getElementById('myEventsCount') && (document.getElementById('myEventsCount').textContent = myEvents.length);
+    document.getElementById('ticketCount') && (document.getElementById('ticketCount').textContent = userTickets.length);
+    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === userId || t.buyerWallet === userId)).length);
+    document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
+    document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
+    document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
+
+    const remaining = getRemainingFreeEvents();
+    const isPremium = isUserPremium();
+    const statsGrid = document.querySelector('.profile-stats-grid');
+    if (statsGrid) {
+        let statCard = document.querySelector('.stat-card.remaining-pubs');
+        if (!statCard) {
+            statCard = document.createElement('div');
+            statCard.className = 'stat-card remaining-pubs';
+            statCard.innerHTML = `
+                <span class="stat-number" id="remainingPubsCount">${isPremium ? '∞' : remaining}</span>
+                <span class="stat-label"><i class="fas fa-calendar-alt"></i> Publications restantes</span>
+                <span class="stat-link">${isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois'}</span>
+            `;
+            statsGrid.appendChild(statCard);
+        } else {
+            document.getElementById('remainingPubsCount').textContent = isPremium ? '∞' : remaining;
+            statCard.querySelector('.stat-link').textContent = isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois';
+        }
+    }
+
+    updateUserInfo();
+    updateScanButtonVisibility();
+}
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    const userId = currentUser.piUid || currentUser.wallet;
+    return events.some(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+}
+
+function updateScanButtonVisibility() {
+    const scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
+}
+
+function initAdmin() {
+    const adminItem = document.getElementById('adminMenuItem');
+    if (!adminItem) return;
+    const logo = document.querySelector('.logo');
+    let clicks = 0;
+    if (logo) logo.addEventListener('click', function() {
+        clicks++;
+        if (clicks === 5) {
+            const pwd = prompt('Admin code:');
+            if (pwd === adminPassword || pwd === 'Betix@2026#') {
+                localStorage.setItem('betix_admin_password', pwd);
+                adminPassword = pwd;
+                adminItem.style.display = 'block';
+                adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)';
+                adminItem.style.color = 'white';
+                addAdminLog('Admin authentication', 'Login via logo');
+                alert('Admin activated');
+            }
+            clicks = 0;
+        }
+        setTimeout(() => { clicks = 0; }, 2000);
+    });
+    if (localStorage.getItem('betix_admin_password') === adminPassword || localStorage.getItem('betix_admin_password') === 'Betix@2026#') {
+        adminItem.style.display = 'block';
+        adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)';
+        adminItem.style.color = 'white';
+    }
+}
+
+function addAdminLog(action, details) {
+    const log = { id: Date.now(), timestamp: new Date().toISOString(), date: new Date().toLocaleString('en-US'), user: currentUser.wallet || 'Local Admin', action, details: details || '' };
+    adminLogs.unshift(log);
+    if (adminLogs.length > 500) adminLogs = adminLogs.slice(0, 500);
+    localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+    renderAdminLogs();
+}
+
+function renderAdminLogs() {
+    const container = document.getElementById('adminLogsList');
+    if (!container) return;
+    if (adminLogs.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">No logs available</p>'; return; }
+    container.innerHTML = adminLogs.map(log =>
+        `<div class="admin-log-item"><div><span class="log-user">${escapeHtml(log.user)}</span> <span class="log-action">${escapeHtml(log.action)}</span>${log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : ''}</div><span class="log-time">${escapeHtml(log.date)}</span></div>`
+    ).join('');
+}
+
+function adminClearLogs() {
+    if (confirm('Clear all connection logs?')) {
+        adminLogs = [];
+        localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
+        renderAdminLogs();
+        addAdminLog('Logs cleared', 'All logs were deleted');
+        alert('Logs cleared');
+    }
+}
+
+function startAdminSession() {
+    addAdminLog('Admin login', 'Access to administration interface');
+    localStorage.setItem('betix_admin_last_login', new Date().toLocaleString('en-US'));
+    const loginCount = parseInt(localStorage.getItem('betix_admin_login_count') || 0) + 1;
+    localStorage.setItem('betix_admin_login_count', loginCount);
+    adminSessionTimer = 1800;
+    updateAdminTimerDisplay();
+    if (adminTimerInterval) clearInterval(adminTimerInterval);
+    adminTimerInterval = setInterval(() => {
+        adminSessionTimer--;
+        updateAdminTimerDisplay();
+        if (adminSessionTimer <= 0) { clearInterval(adminTimerInterval); adminTimerInterval = null; adminLogout(); }
+    }, 1000);
+    document.addEventListener('click', resetAdminTimer);
+    document.addEventListener('keydown', resetAdminTimer);
+    document.addEventListener('scroll', resetAdminTimer);
+}
+
+function resetAdminTimer() { if (adminTimerInterval) { adminSessionTimer = 1800; updateAdminTimerDisplay(); } }
+
+function updateAdminTimerDisplay() {
+    const display = document.getElementById('adminSessionTimer');
+    if (display) {
+        const minutes = Math.floor(adminSessionTimer / 60);
+        const seconds = adminSessionTimer % 60;
+        display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        display.style.color = adminSessionTimer < 300 ? '#ef4444' : adminSessionTimer < 600 ? '#f59e0b' : '#F5B400';
+    }
+}
+
+function adminLogout() {
+    if (adminTimerInterval) { clearInterval(adminTimerInterval); adminTimerInterval = null; }
+    document.removeEventListener('click', resetAdminTimer);
+    document.removeEventListener('keydown', resetAdminTimer);
+    document.removeEventListener('scroll', resetAdminTimer);
+    addAdminLog('Admin logout', 'Session ended');
+    localStorage.removeItem('betix_admin_password');
+    const adminBtn = document.getElementById('adminMenuItem');
+    if (adminBtn) adminBtn.style.display = 'none';
+    alert('Admin session ended');
+    showPage('home');
+}
+
+function adminChangePassword() {
+    const newPassword = document.getElementById('adminNewPassword').value;
+    const confirmPassword = document.getElementById('adminConfirmPassword').value;
+    const message = document.getElementById('adminPasswordMessage');
+    if (!newPassword || newPassword.length < 6) { message.textContent = 'Password must be at least 6 characters'; message.style.color = '#ef4444'; return; }
+    if (newPassword !== confirmPassword) { message.textContent = 'Passwords do not match'; message.style.color = '#ef4444'; return; }
+    adminPassword = newPassword;
+    localStorage.setItem('betix_admin_password', newPassword);
+    message.textContent = 'Password changed successfully!';
+    message.style.color = '#10b981';
+    document.getElementById('adminNewPassword').value = '';
+    document.getElementById('adminConfirmPassword').value = '';
+    addAdminLog('Password changed', 'Admin password was updated');
+    setTimeout(() => { message.textContent = ''; }, 3000);
+}
+
+async function adminSaveSettings() {
+    const premiumPrice = parseFloat(document.getElementById('adminPremiumPrice').value);
+    const commission = parseFloat(document.getElementById('adminCommission').value);
+    const serviceFee = parseFloat(document.getElementById('adminServiceFee').value);
+    const premiumDuration = parseInt(document.getElementById('adminPremiumDuration').value);
+    const piRate = parseFloat(document.getElementById('adminPiRate').value);
+    const badgeEnabled = document.getElementById('adminBadgeEnabled').checked;
+
+    if (isNaN(premiumPrice) || premiumPrice < 0) { alert('Invalid Premium Price'); return; }
+    if (isNaN(commission) || commission < 0 || commission > 100) { alert('Commission must be between 0 and 100'); return; }
+    if (isNaN(serviceFee) || serviceFee < 0 || serviceFee > 100) { alert('Service Fee must be between 0 and 100'); return; }
+    if (isNaN(premiumDuration) || premiumDuration < 1) { alert('Premium Duration must be at least 1 day'); return; }
+    if (isNaN(piRate) || piRate <= 0) { alert('Pi Rate must be greater than 0'); return; }
+
+    const settings = {
+        premiumPriceUSD: premiumPrice,
+        commissionPercent: commission,
+        serviceFeePercent: serviceFee,
+        premiumDurationDays: premiumDuration,
+        piRate: piRate,
+        badgeEnabled: badgeEnabled
+    };
+
+    const success = await saveAppSettings(settings);
+    const msg = document.getElementById('adminSettingsMessage');
+    if (success) {
+        msg.textContent = 'Settings saved successfully!';
+        msg.style.color = '#10b981';
+        renderPremiumPage();
+        renderEventsByCategory();
+        updateProfilePage();
+    } else {
+        msg.textContent = 'Error saving settings.';
+        msg.style.color = '#ef4444';
+    }
+    setTimeout(() => { msg.textContent = ''; }, 4000);
+}
+
+function loadAdminPage() {
+    const storedPassword = localStorage.getItem('betix_admin_password');
+    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') { alert('Access denied. Please authenticate via 5 clicks on the logo.'); showPage('home'); return; }
+    if (storedPassword && storedPassword !== adminPassword) adminPassword = storedPassword;
+    document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
+    document.getElementById('adminTicketCount').innerText = tickets.length;
+    document.getElementById('adminEventCount').innerText = events.length;
+    document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
+    document.getElementById('adminLoginCount').textContent = localStorage.getItem('betix_admin_login_count') || 0;
+    document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
+    document.getElementById('adminPremiumPrice').value = appSettings.premiumPriceUSD;
+    document.getElementById('adminCommission').value = appSettings.commissionPercent;
+    document.getElementById('adminServiceFee').value = appSettings.serviceFeePercent;
+    document.getElementById('adminPremiumDuration').value = appSettings.premiumDurationDays;
+    document.getElementById('adminPiRate').value = appSettings.piRate;
+    document.getElementById('adminBadgeEnabled').checked = appSettings.badgeEnabled;
+    renderAdminEvents(); renderAdminSlides(); renderAdminUsers(); renderAdminLogs();
+    initAdminTabs();
+    if (!adminTimerInterval) startAdminSession();
+    const userSearch = document.getElementById('adminUserSearch');
+    if (userSearch) userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
+}
+
+function filterAdminUsers(query) {
+    const container = document.getElementById('adminUsersList');
+    if (!container) return;
+    const rows = container.querySelectorAll('tr');
+    const search = query.toLowerCase().trim();
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        if (search === '' || row.textContent.toLowerCase().includes(search)) row.style.display = '';
+        else row.style.display = 'none';
+    });
+}
+
+function renderAdminUsers() {
+    const container = document.getElementById('adminUsersList');
+    if (!container) return;
+    let html = '<table><tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
+    const userRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
+    const avgRating = userRatings.length ? userRatings.reduce((a,r) => a + r.rating, 0) / userRatings.length : 0;
+    html += `<tr><td>${escapeHtml(currentUser.name)} <span style="color:#F5B400;font-size:0.7rem;">(you)</span></td><td>${currentUser.wallet || 'Not connected'}</td><td>${tickets.length}</td><td>${avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-'}</td><td>Active</td></tr>`;
+    connectedUsers.forEach(u => {
+        if (u.wallet !== currentUser.wallet) {
+            const uRatings = ratings.filter(r => r.userWallet === u.wallet);
+            const uAvg = uRatings.length ? uRatings.reduce((a,r) => a + r.rating, 0) / uRatings.length : 0;
+            html += `<tr><td>${escapeHtml(u.name)}</td><td>${u.wallet || 'Not connected'}</td><td>${u.ticketCount || 0}</td><td>${uAvg > 0 ? uAvg.toFixed(1) + '/5' : '-'}</td><td>${u.lastSeen || 'Unknown'}</td></tr>`;
+        }
+    });
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+function renderAdminEvents() {
+    const container = document.getElementById('adminEventsList');
+    if (!container) return;
+    if (events.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No events created</p>'; return; }
+    container.innerHTML = events.map(e => {
+        const typesDisplay = 'Standard: ' + (e.ticketTypes?.standard?.price || 0).toFixed(6) + ' Pi';
+        return `<div class="admin-event-item"><div class="event-info"><strong>${escapeHtml(e.title)}</strong><small>${e.category} | ${e.pays || e.country || 'France'} | ${e.seatsLeft}/${e.seatsTotal} tickets | ${new Date(e.date).toLocaleDateString('en-US')}</small><small>Ticket Types: ${typesDisplay}</small><small>Organizer: ${escapeHtml(e.organizerName || e.organizer)}</small></div><div class="event-actions"><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Cancel</button></div></div>`;
+    }).join('');
+}
+
+function adminDeleteEvent(id) {
+    if (confirm('Delete this event?')) {
+        events = events.filter(e => e.id !== id);
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents(); renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = events.length;
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert('Event deleted');
+    }
+}
+
+function adminDeleteAllEvents() {
+    if (confirm('Delete ALL events? This action is irreversible.')) {
+        events = [];
+        saveEvents();
+        renderAdminEvents(); renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = 0;
+        addAdminLog('All events deleted', 'Mass deletion');
+        alert('All events have been deleted');
+    }
+}
+
+function initAdminTabs() {
+    const tabs = document.querySelectorAll('.admin-tab');
+    const contents = { events: document.getElementById('adminTabEvents'), slides: document.getElementById('adminTabSlides'), users: document.getElementById('adminTabUsers'), logs: document.getElementById('adminTabLogs'), settings: document.getElementById('adminTabSettings') };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            for (let key in contents) if (contents[key]) contents[key].classList.remove('active');
+            if (contents[this.dataset.tab]) contents[this.dataset.tab].classList.add('active');
+        });
+    });
+}
+
+// ============================================================
+// TRANSACTION PROCESSED ET PAST EVENT POPUPS
+// ============================================================
+let transactionProcessedTimer = null;
+let transactionProcessedSeconds = 0;
+
+function openTransactionProcessedPopup(seconds) {
+    transactionProcessedSeconds = seconds || 5;
+    document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
+    document.getElementById('transactionProcessedPopup').style.display = 'flex';
+    if (transactionProcessedTimer) clearInterval(transactionProcessedTimer);
+    transactionProcessedTimer = setInterval(() => {
+        transactionProcessedSeconds--;
+        document.getElementById('timerSeconds').textContent = Math.max(0, transactionProcessedSeconds);
+        if (transactionProcessedSeconds <= 0) {
+            clearInterval(transactionProcessedTimer);
+            transactionProcessedTimer = null;
+        }
+    }, 1000);
+}
+
+function closeTransactionProcessedPopup() {
+    if (transactionProcessedTimer) {
+        clearInterval(transactionProcessedTimer);
+        transactionProcessedTimer = null;
+    }
+    document.getElementById('transactionProcessedPopup').style.display = 'none';
+}
+
+function openPastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'flex';
+}
+
+function closePastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'none';
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+function initChat() {
+    const widget = document.getElementById('chatWidget');
+    const btn = document.getElementById('chatFloatBtn');
+    const close = document.getElementById('chatCloseBtn');
+    const send = document.getElementById('chatSendBtn');
+    const input = document.getElementById('chatInput');
+    const msgs = document.getElementById('chatMessages');
+    if (!widget) return;
+    function load() {
+        if (!msgs) return;
+        msgs.innerHTML = '';
+        if (!chatMessages || chatMessages.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'chat-message support';
+            empty.innerHTML = '<div class="message-bubble">Hello! How can we help you today?</div>';
+            msgs.appendChild(empty);
+            return;
+        }
+        chatMessages.forEach(m => addMessage(m));
+    }
+    function addMessage(m) {
+        if (!msgs) return;
+        const d = document.createElement('div');
+        d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
+        d.innerHTML = `<div class="message-bubble">${escapeHtml(m.text)}</div><span class="message-time">${m.time}</span>`;
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+    if (btn) btn.addEventListener('click', function() { widget.classList.toggle('open'); });
+    if (close) close.addEventListener('click', function() { widget.classList.remove('open'); });
+    function sendMsg() {
+        const msg = input.value.trim();
+        if (!msg) return;
+        const newMsg = { id: Date.now(), text: msg, sender: currentUser.wallet || currentUser.name, isUser: true, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), timestamp: new Date().toISOString() };
+        chatMessages.push(newMsg);
+        saveChatMessages();
+        addMessage(newMsg);
+        input.value = '';
+        setTimeout(() => {
+            let resp = "Thank you! Quick response by email: betixservices@gmail.com";
+            if (msg.toLowerCase().includes('ticket')) resp = "Your tickets are in the 'My Tickets' section.";
+            else if (msg.toLowerCase().includes('payment')) resp = "Payments are secured via Pi Network.";
+            const auto = { id: Date.now() + 1, text: resp, sender: 'Betix Support', isUser: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), timestamp: new Date().toISOString() };
+            chatMessages.push(auto);
+            saveChatMessages();
+            addMessage(auto);
+        }, 1000);
+    }
+    if (send) send.addEventListener('click', sendMsg);
+    if (input) input.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMsg(); });
+    load();
+}
+
+function initLegalModals() {
+    const modal = document.getElementById('legalModal'), content = document.getElementById('modalContent'), close = document.querySelector('#legalModal .modal-close');
+    if (close) close.onclick = function() { modal.classList.remove('show'); };
+    window.onclick = function(e) { if (e.target === modal) modal.classList.remove('show'); };
+}
+
+function handleLogoClick() {
+    logoClickCount++;
+    if (logoClickCount >= 5) {
+        const password = prompt('Enter administrator password:');
+        if (password === adminPassword || password === 'Betix@2026#') {
+            localStorage.setItem('betix_admin_password', password);
+            adminPassword = password;
+            const adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
+            addAdminLog('Admin authentication', 'Login via logo');
+            alert('Administrator access activated!');
+            logoClickCount = 0;
+        } else if (password !== null) { alert('Incorrect password'); logoClickCount = 0; } else { logoClickCount = 0; }
+    }
+}
+
+function showLegal(type) {
+    const modal = document.getElementById('legalModal');
+    const content = document.getElementById('modalContent');
+    const closeBtn = document.getElementById('legalModalClose');
+    const texts = {
+        terms: '<h2>Terms of Service</h2><p><strong>Last updated:</strong> June 2026</p><p>Welcome to Betix. By using our platform, you agree to these terms.</p><h3>1. Acceptance of Terms</h3><p>By accessing and using Betix, you accept and agree to be bound by these Terms of Service.</p><h3>2. User Accounts</h3><p>You must connect a valid Pi Network wallet to use certain features. You are responsible for maintaining the security of your wallet.</p><h3>3. Events and Tickets</h3><p>Organizers are responsible for the accuracy of event information. Tickets are digital and non-transferable.</p><h3>4. Payments</h3><p>All payments are made in Pi cryptocurrency. Transactions are final and irreversible.</p><h3>5. Cancellations</h3><p>Organizers may cancel events. In such cases, tickets will be refunded in Pi.</p><h3>6. Prohibited Activities</h3><p>You may not use Betix for illegal activities, fraud, or to distribute harmful content.</p><h3>7. Limitation of Liability</h3><p>Betix is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the platform.</p><h3>8. Changes to Terms</h3><p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of changes.</p><h3>9. Contact</h3><p>For questions about these terms, contact us at betixservices@gmail.com</p>',
+        privacy: '<h2>Privacy Policy</h2><p><strong>Last updated:</strong> June 2026</p><p>Betix is committed to protecting your privacy. This policy explains how we collect, use, and protect your personal information.</p><h3>1. Information We Collect</h3><p>We collect information you provide directly, such as your Pi wallet address, name, and profile photo. We also collect usage data and device information.</p><h3>2. How We Use Information</h3><p>We use your information to provide and improve our services, process transactions, communicate with you, and ensure platform security.</p><h3>3. Data Storage</h3><p>Your data is stored securely on our servers. We use encryption to protect your personal information.</p><h3>4. Data Sharing</h3><p>We do not sell your personal information. We may share data with service providers who assist us in operating the platform.</p><h3>5. Your Rights</h3><p>You have the right to access, correct, or delete your personal data. Contact us to exercise these rights.</p><h3>6. Cookies</h3><p>We use cookies to improve your experience. You can control cookie preferences in your browser settings.</p><h3>7. Security</h3><p>We implement security measures to protect your data from unauthorized access, alteration, or disclosure.</p><h3>8. Children\'s Privacy</h3><p>Our platform is not directed at children under 13. We do not knowingly collect data from children.</p><h3>9. Changes to Policy</h3><p>We may update this policy from time to time. We will notify you of significant changes.</p><h3>10. Contact</h3><p>For privacy concerns, contact us at betixservices@gmail.com</p>',
+        cookies: '<h2>Cookie Policy</h2><p><strong>Last updated:</strong> June 2026</p><p>This policy explains how Betix uses cookies and similar technologies.</p><h3>1. What are Cookies</h3><p>Cookies are small text files stored on your device that help us provide and improve our services.</p><h3>2. Types of Cookies We Use</h3><p><strong>Essential Cookies:</strong> Required for basic platform functionality.</p><p><strong>Preference Cookies:</strong> Remember your language and settings preferences.</p><p><strong>Analytics Cookies:</strong> Help us understand how users interact with our platform.</p><h3>3. Managing Cookies</h3><p>You can control cookies through your browser settings. Disabling cookies may affect platform functionality.</p><h3>4. Third-Party Cookies</h3><p>We may use third-party services that set their own cookies. We do not control these cookies.</p><h3>5. Updates</h3><p>We may update this policy periodically. Please check back regularly for changes.</p><h3>6. Contact</h3><p>For questions about our cookie policy, contact us at betixservices@gmail.com</p>',
+        legal: '<h2>Legal Notices</h2><p><strong>Last updated:</strong> June 2026</p><h3>1. Publisher</h3><p>Betix is a decentralized event platform built on Pi Network.</p><h3>2. Contact Information</h3><p>Email: betixservices@gmail.com</p><p>Website: betixapp.vercel.app</p><h3>3. Intellectual Property</h3><p>All content on this platform, including text, images, and logos, is the property of Betix and protected by copyright laws.</p><h3>4. Disclaimer</h3><p>Information provided on this platform is for general informational purposes only. We do not guarantee the accuracy or completeness of information.</p><h3>5. Governing Law</h3><p>These legal notices are governed by the laws of the jurisdiction where Betix operates.</p><h3>6. Dispute Resolution</h3><p>Any disputes arising from your use of the platform shall be resolved through arbitration in accordance with applicable laws.</p>'
+    };
+    if (content) content.innerHTML = texts[type] || '<p>Information in progress</p>';
+    if (modal) modal.classList.add('show');
+    if (closeBtn) closeBtn.onclick = function() { modal.classList.remove('show'); };
+    window.onclick = function(e) { if (e.target === modal) modal.classList.remove('show'); };
+}
+
+function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.clear(); location.reload(); } }
+function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
+
+// ============================================================
+// INITIALISATION DE L'APPLICATION
+// ============================================================
+async function initApp() {
+    try {
+        const savedUser = localStorage.getItem('betix_user');
+        if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) {
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); loadAllFromSupabase(); }, 600);
+            }, 3000);
+        }
+        await loadAppSettings();
+        if (currentUser.piUid || currentUser.wallet) {
+            await loadUserPremiumStatus(currentUser.piUid || currentUser.wallet);
+        }
+        detectLanguage();
+        syncSettingsLanguageSelector();
+        loadUsedTickets();
+        if (!events || events.length === 0) { events = []; saveEvents(); }
+        initCountrySelectors();
+        calculateLoyaltyPoints();
+        initFilters();
+        renderEventsByCategory();
+        updateUserInfo();
+        updateProfilePage();
+        updateNotifBadgeHeader();
+        updatePremiumBanner();
+        initAdmin();
+        initChat();
+        initLegalModals();
+        const dark = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
+        if (dark) dark.addEventListener('change', toggleDarkMode);
+        loadHeroSlides();
+        renderAdminLogs();
+        setupTicketTypesUI();
+        initCharCounters();
+        const storedPassword = localStorage.getItem('betix_admin_password');
+        if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
+            const adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
+            if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
+        }
+        populateProfileCountrySelect();
+        if (currentUser.wallet) loadProfileData();
+        document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
+        document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
+        document.getElementById('profileReviewConfirmBtn')?.addEventListener('click', confirmProfileSave);
+        document.getElementById('profileReviewClose')?.addEventListener('click', closeProfileReview);
+        document.getElementById('editProfileBtn')?.addEventListener('click', function() { enableEditMode(true); });
+        document.getElementById('verifyEmailBtn')?.addEventListener('click', verifyEmail);
+        document.getElementById('verifyPhoneBtn')?.addEventListener('click', verifyPhone);
+
+        const backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); goBack(); return false; });
+            const homePage = document.getElementById('homePage');
+            if (homePage && homePage.style.display !== 'none') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; } else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
+        }
+        document.getElementById('closeSidebarBtn') && document.getElementById('closeSidebarBtn').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); closeSidebar(); });
+        document.getElementById('overlay') && document.getElementById('overlay').addEventListener('click', function() { closeSidebar(); });
+        const eventForm = document.getElementById('eventForm');
+        const searchInput = document.getElementById('searchInput');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        updateConnectButtons();
+        document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
+        document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
+        const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
+        const adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
+        const adminImageInput = document.getElementById('adminSlideImageInput');
+        const adminUploadBox = document.getElementById('adminUploadBox');
+        const adminPreview = document.getElementById('adminSlidePreview');
+        if (adminAddSlideBtn) adminAddSlideBtn.addEventListener('click', function() { adminShowSlideForm(-1); });
+        if (adminSaveSlideBtn) adminSaveSlideBtn.addEventListener('click', adminSaveSlide);
+        if (adminCancelSlideBtn) adminCancelSlideBtn.addEventListener('click', adminCancelSlideForm);
+        if (adminImageInput && adminUploadBox) {
+            adminImageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { adminPreview.src = e.target.result; adminPreview.style.display = 'block'; adminUploadBox.classList.add('has-image'); };
+                    reader.readAsDataURL(file);
+                }
+            });
+            adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
+        }
+        if (eventForm) eventForm.addEventListener('submit', createEvent);
+        if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
+        if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
+        document.querySelectorAll('.image-input-modern').forEach(input => {
+            const index = parseInt(input.dataset.index);
+            input.addEventListener('change', function(e) { if (this.files && this.files[0]) handleImageUploadModern(this.files[0], index); });
+            const box = document.getElementById('uploadBox' + (index + 1));
+            if (box) {
+                box.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+                box.addEventListener('dragleave', function(e) { e.preventDefault(); this.classList.remove('dragover'); });
+                box.addEventListener('drop', function(e) {
+                    e.preventDefault(); this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    const inputFile = this.querySelector('.image-input-modern');
+                    if (files && files.length > 0 && inputFile) { inputFile.files = files; inputFile.dispatchEvent(new Event('change')); }
+                });
+            }
+        });
+        document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
+        bindActivityListeners();
+        setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
+        setTimeout(() => loadAllFromSupabase(), 1000);
+        setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 30000);
+        window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
+        if (currentUser.wallet && isSessionExpired()) disconnectPi();
+        document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
+        document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
+            document.getElementById('confirmPurchasePopup').style.display = 'none';
+            if (confirmPurchaseResolve) {
+                confirmPurchaseResolve(true);
+                confirmPurchaseResolve = null;
+            }
+        });
+        document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup);
+        document.getElementById('viewUpcomingEventsBtn')?.addEventListener('click', function() {
+            closePastEventPopup();
+            showPage('home');
+            setTimeout(() => {
+                const eventsSection = document.querySelector('.events-container');
+                if (eventsSection) { eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            }, 300);
+        });
+        if (currentUser.wallet) {
+            schedulePremiumNotification();
+        }
+    } catch (error) {
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
+    }
+}
+
+// ============================================================
+// EXPOSITION DES FONCTIONS GLOBALES
+// ============================================================
+window.syncAllToSupabase = syncAllToSupabase;
+window.loadAllFromSupabase = loadAllFromSupabase;
+window.forceRefreshData = forceRefreshData;
+window.updateSyncStatus = updateSyncStatus;
+window.saveEventToSupabase = saveEventToSupabase;
+window.saveTicketToSupabase = saveTicketToSupabase;
+window.saveUserToSupabase = saveUserToSupabase;
+window.loadEventsFromSupabase = loadEventsFromSupabase;
+window.loadTicketsFromSupabase = loadTicketsFromSupabase;
+window.loadHeroSlides = loadHeroSlides;
+window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
+window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
+window.uploadHeroImage = uploadHeroImage;
+window.renderPremiumPage = renderPremiumPage;
+window.subscribePremium = subscribePremium;
+window.subscribePremiumWithDuration = subscribePremiumWithDuration;
+window.adminSaveSettings = adminSaveSettings;
+window.loadAppSettings = loadAppSettings;
+window.saveAppSettings = saveAppSettings;
+window.isUserPremium = isUserPremium;
+window.canPublishEvent = canPublishEvent;
+window.getRemainingFreeEvents = getRemainingFreeEvents;
+window.downloadTicketPDF = downloadTicketPDF;
+window.downloadTicketPNG = downloadTicketPNG;
+window.viewTicketModal = viewTicketModal;
+window.shareTicket = shareTicket;
+window.openConfirmPurchasePopup = openConfirmPurchasePopup;
+window.openTransactionProcessedPopup = openTransactionProcessedPopup;
+window.openPastEventPopup = openPastEventPopup;
+window.openQuantityPopup = openQuantityPopup;
+window.requireLogin = requireLogin;
+window.requireProfileComplete = requireProfileComplete;
+window.retryPendingTickets = retryPendingTickets;
+window.schedulePremiumNotification = schedulePremiumNotification;
+window.showPremiumBanner = showPremiumBanner;
+window.hidePremiumBanner = hidePremiumBanner;
+
+// ============================================================
+// LANCEMENT DE L'APPLICATION
+// ============================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
