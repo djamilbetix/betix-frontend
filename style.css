@@ -1202,8 +1202,9 @@ body {
         flex: 0 0 calc(100% - 16px);
         min-width: 140px;
     }
-}/* ============================================================
-   TICKET – POSITIONNEMENT FINAL
+    }
+/* ============================================================
+   TICKET – POSITIONNEMENT FINAL EXACT (BETIX TICKET)
    ============================================================ */
 
 .ticket-list-item {
@@ -1266,60 +1267,61 @@ body {
     display: block;
 }
 
-/* ===== Colonnes ===== */
+/* ===== Colonnes de données ===== */
 .ticket-left,
 .ticket-right {
     position: absolute;
     pointer-events: none;
+    text-align: left; /* Alignement propre à gauche après les deux-points */
 }
 
-/* Colonne gauche : alignée à droite des deux‑points */
+/* Colonne gauche (Placée après le `:` de EVENT, DURATION, etc.) */
 .ticket-left {
-    left: 26%;          /* Ajustez selon votre image */
-    width: 45%;
-    text-align: right;
+    left: 25.5%;
+    width: 18%;
 }
 
-/* Colonne droite : alignée à gauche des deux‑points */
+/* Colonne droite (Placée après le `:` de NAME, EMAIL, etc.) */
 .ticket-right {
-    left: 56%;          /* Ajustez selon votre image */
-    width: 35%;
-    text-align: left;
+    left: 56.5%;
+    width: 16%;
 }
 
-/* Lignes verticales (top en %) – À AFFINER */
-.ticket-left.line-1 { top: 41%; }   /* EVENT */
-.ticket-left.line-2 { top: 48%; }   /* DURATION */
-.ticket-left.line-3 { top: 55%; }   /* DATE */
-.ticket-left.line-4 { top: 62%; }   /* TIME */
-.ticket-left.line-5 { top: 69%; }   /* LOCATION */
-.ticket-left.line-6 { top: 76%; }   /* PRICE */
+/* Alignement vertical exact sur chaque ligne de pointillé */
+.ticket-left.ticket-line-1,
+.ticket-right.ticket-line-1 { top: 30.5%; } /* EVENT / NAME */
 
-.ticket-right.line-1 { top: 41%; }  /* NAME */
-.ticket-right.line-2 { top: 48%; }  /* EMAIL */
-.ticket-right.line-3 { top: 55%; }  /* PHONE */
-.ticket-right.line-4 { top: 62%; }  /* WALLET ID (numéro séquentiel) */
-.ticket-right.line-5 { top: 69%; }  /* TICKET PURCHASE DATE */
-.ticket-right.line-6 { top: 76%; }  /* TICKET NUMBER (ID unique) */
+.ticket-left.ticket-line-2,
+.ticket-right.ticket-line-2 { top: 37.0%; } /* DURATION / EMAIL */
+
+.ticket-left.ticket-line-3,
+.ticket-right.ticket-line-3 { top: 43.5%; } /* DATE / PHONE */
+
+.ticket-left.ticket-line-4,
+.ticket-right.ticket-line-4 { top: 50.0%; } /* TIME / WALLET ID */
+
+.ticket-left.ticket-line-5,
+.ticket-right.ticket-line-5 { top: 57.0%; } /* LOCATION / PURCHASE DATE */
+
+.ticket-left.ticket-line-6,
+.ticket-right.ticket-line-6 { top: 64.0%; } /* PRICE / TICKET NUMBER */
 
 /* Valeurs */
 .ticket-value {
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 700;
     color: #1a202c;
-    line-height: 1.2;
+    line-height: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: inline-block;
-    max-width: 100%;
+    display: block;
+    width: 100%;
 }
 
-/* Localisation : retour à la ligne si trop longue */
-.ticket-left.line-5 .ticket-value {
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+/* Localisation : gestion si le texte dépasse */
+.ticket-left.ticket-line-5 .ticket-value {
+    white-space: nowrap;
 }
 
 /* ===== QR Code : centré dans le cadre jaune ===== */
@@ -1331,84 +1333,61 @@ body {
     background: white;
     padding: 2px;
     border-radius: 6px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    right: 8%;          /* Ajustez */
-    top: 17%;           /* Ajustez */
-    width: 16%;         /* Ajustez */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    right: 7.5%;
+    top: 19.5%;
+    width: 14.5%;
     aspect-ratio: 1/1;
 }
 
-/* ===== Ticket ID sur le coupon jaune (ligne "TICKET ID :") ===== */
-.ticket-qr-id {
-    position: absolute;
-    right: 8%;
-    width: 16%;
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 8px;
-    color: #1a202c;
-    letter-spacing: 0.5px;
-    top: 52%;           /* Position sur la ligne "TICKET ID :" */
+.ticket-qr canvas,
+.ticket-qr img {
+    width: 100% !important;
+    height: 100% !important;
 }
 
-/* ===== DATE OF PURCHASE sur le coupon (ligne "DATE OF PURCHASE :") ===== */
+/* ===== TICKET ID (sur la ligne TICKET ID : à droite) ===== */
+.ticket-qr-id {
+    position: absolute;
+    right: 7.5%;
+    left: 81%;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 10px;
+    color: #1a202c;
+    letter-spacing: 0.5px;
+    top: 50.5%;
+}
+
+/* ===== DATE OF PURCHASE (sur la ligne DATE OF PURCHASE : à droite) ===== */
 .ticket-qr-date {
     position: absolute;
-    right: 8%;
-    width: 16%;
-    text-align: center;
+    right: 7.5%;
+    left: 85%;
+    text-align: left;
     font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 7px;
+    font-weight: 700;
+    font-size: 10px;
     color: #1a202c;
-    top: 62%;           /* Position sur la ligne "DATE OF PURCHASE :" */
+    top: 61.5%;
 }
-}
+
 /* ============================================================
-   ADAPTATION MOBILE
+   ADAPTATION MOBILE (Garde les mêmes ratios sans décaler)
    ============================================================ */
 @media (max-width: 640px) {
-    .ticket-left { left: 18%; width: 30%; }
-    .ticket-right { left: 50%; width: 30%; }
-    .ticket-value { font-size: 6px; }
-    .ticket-left.line-1 { top: 33%; }
-    .ticket-left.line-2 { top: 40%; }
-    .ticket-left.line-3 { top: 47%; }
-    .ticket-left.line-4 { top: 54%; }
-    .ticket-left.line-5 { top: 61%; }
-    .ticket-left.line-6 { top: 68%; }
-    .ticket-right.line-1 { top: 33%; }
-    .ticket-right.line-2 { top: 40%; }
-    .ticket-right.line-3 { top: 47%; }
-    .ticket-right.line-4 { top: 54%; }
-    .ticket-right.line-5 { top: 61%; }
-    .ticket-right.line-6 { top: 68%; }
-    .ticket-qr { right: 5%; top: 15%; width: 12%; }
-    .ticket-qr-id { right: 5%; width: 12%; top: 52%; font-size: 6px; }
-    .ticket-qr-date { right: 5%; width: 12%; top: 62%; font-size: 5px; }
+    .ticket-value { font-size: 8px; }
+    .ticket-qr-id { font-size: 7px; }
+    .ticket-qr-date { font-size: 7px; }
 }
 
 @media (max-width: 480px) {
-    .ticket-left { left: 12%; width: 35%; }
-    .ticket-right { left: 48%; width: 35%; }
-    .ticket-value { font-size: 5px; }
-    .ticket-left.line-1 { top: 29%; }
-    .ticket-left.line-2 { top: 36%; }
-    .ticket-left.line-3 { top: 43%; }
-    .ticket-left.line-4 { top: 50%; }
-    .ticket-left.line-5 { top: 57%; }
-    .ticket-left.line-6 { top: 64%; }
-    .ticket-right.line-1 { top: 29%; }
-    .ticket-right.line-2 { top: 36%; }
-    .ticket-right.line-3 { top: 43%; }
-    .ticket-right.line-4 { top: 50%; }
-    .ticket-right.line-5 { top: 57%; }
-    .ticket-right.line-6 { top: 64%; }
-    .ticket-qr { right: 4%; top: 13%; width: 14%; }
-    .ticket-qr-id { right: 4%; width: 14%; top: 52%; font-size: 5px; }
-    .ticket-qr-date { right: 4%; width: 14%; top: 62%; font-size: 4px; }
+    .ticket-value { font-size: 6px; }
+    .ticket-qr-id { font-size: 5px; }
+    .ticket-qr-date { font-size: 5px; }
 }
+
 /* ============================================================
    FOOTER – textes réduits, logos centrés
    ============================================================ */
