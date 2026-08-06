@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (abrégé – gardez votre version complète)
+// TRADUCTIONS (abrégé)
 // ============================================================
 const translations = {
     en: {
@@ -305,7 +305,8 @@ let currentUser = {
     account_type: 'free',
     premium_start: null,
     premium_end: null,
-    premium_status: 'inactive'
+    premium_status: 'inactive',
+    premium_receipt: null
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -329,6 +330,7 @@ let adminLogs = [];
 let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
+let pendingPremiumUpdates = JSON.parse(localStorage.getItem('betix_pending_premium') || '[]');
 
 // ============================================================
 // PARAMÈTRES DE L'APPLICATION
@@ -340,9 +342,7 @@ let appSettings = {
     premiumDurationDays: 30,
     piRate: 1,
     badgeEnabled: true
-};
-
-// ============================================================
+};// ============================================================
 // VÉRIFICATIONS DE CONNEXION ET PROFIL
 // ============================================================
 function requireLogin() {
@@ -588,6 +588,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             premium_start: currentUser.premium_start || null,
             premium_end: currentUser.premium_end || null,
             premium_status: currentUser.premium_status || 'inactive',
+            premium_receipt: currentUser.premium_receipt || null,
             updated_at: now,
             last_seen: now
         };
@@ -845,6 +846,10 @@ async function loadAllFromSupabase() {
         notifications = localNotifs;
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
         
+        if (userIdentifier) {
+            await loadUserPremiumStatus(userIdentifier);
+        }
+        
         updateSyncStatus('success');
         console.log("Load completed successfully. Events:", events.length, "Tickets:", tickets.length);
         
@@ -866,6 +871,7 @@ async function loadAllFromSupabase() {
     }, 300);
     
     await retryPendingTickets();
+    await retryPendingPremiumUpdates();
     console.log("=== LOAD COMPLETE ===");
 }
 
@@ -956,6 +962,29 @@ async function retryPendingTickets() {
         console.log('All pending tickets saved successfully!');
     } else {
         console.log('Still', pendingTickets.length, 'tickets pending.');
+    }
+}
+
+// ============================================================
+// RETRY PENDING PREMIUM UPDATES
+// ============================================================
+async function retryPendingPremiumUpdates() {
+    if (!pendingPremiumUpdates || pendingPremiumUpdates.length === 0) return;
+    console.log('Retrying', pendingPremiumUpdates.length, 'pending premium updates...');
+    const remaining = [];
+    for (const update of pendingPremiumUpdates) {
+        const { piUid, account_type, premium_start, premium_end, premium_status, premium_receipt } = update;
+        const success = await updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_receipt);
+        if (!success) {
+            remaining.push(update);
+        }
+    }
+    pendingPremiumUpdates = remaining;
+    localStorage.setItem('betix_pending_premium', JSON.stringify(pendingPremiumUpdates));
+    if (pendingPremiumUpdates.length === 0) {
+        console.log('All pending premium updates saved successfully!');
+    } else {
+        console.log('Still', pendingPremiumUpdates.length, 'premium updates pending.');
     }
 }
 
@@ -1062,14 +1091,14 @@ async function saveAppSettings(settings) {
 }
 
 // ============================================================
-// GESTION PREMIUM
+// GESTION PREMIUM (AMÉLIORÉE)
 // ============================================================
 async function loadUserPremiumStatus(piUid) {
     if (!piUid) return;
     try {
         const { data, error } = await supabaseClient
             .from('users')
-            .select('account_type, premium_start, premium_end, premium_status')
+            .select('account_type, premium_start, premium_end, premium_status, premium_receipt')
             .eq('pi_uid', piUid)
             .single();
         if (error) throw error;
@@ -1078,12 +1107,13 @@ async function loadUserPremiumStatus(piUid) {
             currentUser.premium_start = data.premium_start || null;
             currentUser.premium_end = data.premium_end || null;
             currentUser.premium_status = data.premium_status || 'inactive';
+            currentUser.premium_receipt = data.premium_receipt || null;
             if (currentUser.premium_status === 'active' && currentUser.premium_end) {
                 const endDate = new Date(currentUser.premium_end);
                 if (endDate < new Date()) {
                     currentUser.premium_status = 'expired';
                     currentUser.account_type = 'free';
-                    await updateUserPremiumStatus(piUid, 'free', null, null, 'expired');
+                    await updateUserPremiumStatus(piUid, 'free', null, null, 'expired', null);
                 }
             }
             saveUser();
@@ -1093,7 +1123,7 @@ async function loadUserPremiumStatus(piUid) {
     }
 }
 
-async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status) {
+async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_receipt = null) {
     try {
         const updates = {
             account_type,
@@ -1102,6 +1132,7 @@ async function updateUserPremiumStatus(piUid, account_type, premium_start, premi
             premium_status,
             updated_at: new Date().toISOString()
         };
+        if (premium_receipt) updates.premium_receipt = premium_receipt;
         const { error } = await supabaseClient
             .from('users')
             .update(updates)
@@ -1110,6 +1141,8 @@ async function updateUserPremiumStatus(piUid, account_type, premium_start, premi
         return true;
     } catch (error) {
         console.error('Error updating premium status:', error);
+        pendingPremiumUpdates.push({ piUid, account_type, premium_start, premium_end, premium_status, premium_receipt });
+        localStorage.setItem('betix_pending_premium', JSON.stringify(pendingPremiumUpdates));
         return false;
     }
 }
@@ -1125,7 +1158,7 @@ function isUserPremium() {
                 currentUser.account_type = 'free';
                 saveUser();
                 if (currentUser.piUid) {
-                    updateUserPremiumStatus(currentUser.piUid, 'free', null, null, 'expired');
+                    updateUserPremiumStatus(currentUser.piUid, 'free', null, null, 'expired', null);
                 }
                 return false;
             }
@@ -1135,6 +1168,7 @@ function isUserPremium() {
 }
 
 function countFreeEventsThisMonth() {
+    if (isUserPremium()) return 0;
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const userId = currentUser.piUid || currentUser.wallet;
@@ -1158,6 +1192,73 @@ function getRemainingFreeEvents() {
 }
 
 // ============================================================
+// NOUVELLES FONCTIONS POUR LE RECU PREMIUM
+// ============================================================
+function generatePremiumReceipt(userId) {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 6);
+    return `PREMIUM-${userId.substring(0,8)}-${timestamp}-${random}`;
+}
+
+function sendPremiumReceiptEmail(email, receipt) {
+    console.log(`Email envoyé à ${email} avec le reçu : ${receipt}`);
+    // Simulation – dans la réalité, appel à une Cloud Function ou API email
+}
+
+// ============================================================
+// RECHERCHE D'UTILISATEURS POUR ADMIN PREMIUM
+// ============================================================
+async function searchUserByQuery(query) {
+    if (!query || query.trim().length < 2) return [];
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('*')
+            .or(`username.ilike.%${query}%,pi_uid.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+            .limit(10);
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Erreur recherche utilisateur:', error);
+        return [];
+    }
+}
+
+async function assignPremiumManually(userId, durationDays) {
+    if (!userId) return { success: false, message: 'ID utilisateur manquant' };
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + durationDays);
+    const receipt = generatePremiumReceipt(userId);
+    try {
+        const updates = {
+            account_type: 'premium',
+            premium_start: startDate.toISOString(),
+            premium_end: endDate.toISOString(),
+            premium_status: 'active',
+            premium_receipt: receipt,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
+            .from('users')
+            .update(updates)
+            .eq('pi_uid', userId);
+        if (error) throw error;
+        // Ajouter une trace dans l'historique (table premium_assignments)
+        await supabaseClient.from('premium_assignments').insert({
+            user_id: userId,
+            assigned_by: currentUser.wallet || 'admin',
+            duration_days: durationDays,
+            receipt: receipt,
+            assigned_at: new Date().toISOString()
+        });
+        return { success: true, receipt };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+// ============================================================
 // BADGE VERIFIED
 // ============================================================
 function renderVerifiedBadge(userId, userName) {
@@ -1166,9 +1267,7 @@ function renderVerifiedBadge(userId, userName) {
         return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#0B1F5C; font-size:0.8rem; margin-left:4px;"></i></span>`;
     }
     return '';
-}
-
-// ============================================================
+}// ============================================================
 // VÉRIFICATION DU PROFIL COMPLET
 // ============================================================
 function checkProfileComplete() {
@@ -1219,6 +1318,7 @@ function hideLoader() {
     const loader = document.getElementById('globalLoader');
     if (loader) loader.style.display = 'none';
 }
+
 // ============================================================
 // GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS
 // ============================================================
@@ -1284,10 +1384,10 @@ function generateTicketHTML(ticket) {
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
-            <!-- WALLET ID : affiche désormais l'ID du ticket (#17860255) -->
+            <!-- WALLET ID : affiche désormais l'ID du ticket -->
             <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <!-- TICKET NUMBER : affiche désormais le numéro séquentiel (#1) -->
+            <!-- TICKET NUMBER : affiche désormais le numéro séquentiel -->
             <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
 
             <!-- Coupon Droite -->
@@ -2294,6 +2394,9 @@ function renderPremiumPage() {
     });
 }
 
+// ============================================================
+// ABONNEMENT PREMIUM (AVEC RECU ET EMAIL)
+// ============================================================
 async function subscribePremiumWithDuration(durationDays) {
     if (!currentUser.wallet) {
         alert(t('pleaseConnect'));
@@ -2339,23 +2442,32 @@ async function subscribePremiumWithDuration(durationDays) {
                     const endDate = new Date();
                     endDate.setDate(endDate.getDate() + durationDays);
                     const piUid = currentUser.piUid || currentUser.wallet;
-                    if (piUid) {
-                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active');
-                        if (success) {
-                            currentUser.account_type = 'premium';
-                            currentUser.premium_start = startDate.toISOString();
-                            currentUser.premium_end = endDate.toISOString();
-                            currentUser.premium_status = 'active';
-                            saveUser();
-                            addNotification('You are now a Betix Premium member!', 'info');
-                            alert('Subscription successful! Welcome to Betix Premium.');
-                            renderPremiumPage();
-                            updateProfilePage();
-                            updateUserInfo();
-                            renderEventsByCategory();
-                        } else {
-                            alert('Error updating premium status. Please contact support.');
+                    const receipt = generatePremiumReceipt(piUid);
+                    
+                    const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active', receipt);
+                    if (success) {
+                        currentUser.account_type = 'premium';
+                        currentUser.premium_start = startDate.toISOString();
+                        currentUser.premium_end = endDate.toISOString();
+                        currentUser.premium_status = 'active';
+                        currentUser.premium_receipt = receipt;
+                        saveUser();
+                        
+                        if (currentUser.email) {
+                            sendPremiumReceiptEmail(currentUser.email, receipt);
                         }
+                        
+                        showPremiumSuccessPopup(receipt, durationDays);
+                        addNotification('You are now a Betix Premium member!', 'info');
+                        alert('Subscription successful! Welcome to Betix Premium.');
+                        renderPremiumPage();
+                        updateProfilePage();
+                        updateUserInfo();
+                        renderEventsByCategory();
+                    } else {
+                        pendingPremiumUpdates.push({ piUid, account_type: 'premium', premium_start: startDate.toISOString(), premium_end: endDate.toISOString(), premium_status: 'active', premium_receipt: receipt });
+                        localStorage.setItem('betix_pending_premium', JSON.stringify(pendingPremiumUpdates));
+                        alert('Votre paiement a été accepté mais la mise à jour du statut a échoué. Un email vous sera envoyé avec un identifiant pour contacter le support.');
                     }
                 } catch (error) {
                     alert('Error during premium subscription: ' + error.message);
@@ -2379,373 +2491,42 @@ function subscribePremium() {
 }
 
 // ============================================================
-// QUANTITY POPUP ET ACHAT
+// SUCCESS POPUP PREMIUM (AVEC RECU)
 // ============================================================
-function openQuantityPopup(eventId) {
-    if (!requireLogin()) return;
-    if (!requireProfileComplete()) return;
-    const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
-    const standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
-    if (standardLeft <= 0) { alert('All tickets are sold out for this event'); return; }
-    selectedEventForPurchase = event;
-    const popup = document.getElementById('quantityPopup');
-    const titleEl = document.getElementById('quantityEventTitle');
-    const maxInfo = document.getElementById('maxQuantityInfo');
-    const quantityInput = document.getElementById('ticketQuantity');
-    if (titleEl) titleEl.textContent = event.title;
-    if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; quantityInput.max = Math.min(standardLeft, 10); }
-    if (maxInfo) maxInfo.textContent = 'Maximum: ' + Math.min(standardLeft, 10) + ' ticket(s) available';
-    updateTicketTotal();
+function showPremiumSuccessPopup(receipt, durationDays) {
+    const popup = document.getElementById('successPopup');
+    if (!popup) return;
+    const title = document.getElementById('successTitle');
+    const message = document.getElementById('successMessage');
+    const info = document.getElementById('successTicketInfo');
+    const viewBtn = document.getElementById('viewTicketBtn');
+    const homeBtn = document.getElementById('successHomeBtn');
+    const closeBtn = document.getElementById('closeSuccessXBtn');
+
+    title.textContent = '🎉 Bienvenue chez Betix Premium !';
+    message.textContent = `Votre abonnement de ${durationDays} jours est actif. Conservez précieusement votre identifiant ci-dessous.`;
+    if (info) {
+        info.innerHTML = `
+            <div class="ticket-line"><span class="ticket-label">Identifiant Premium</span><span class="ticket-value" style="font-family:monospace;font-size:0.9rem;">${receipt}</span></div>
+            <div class="ticket-line"><span class="ticket-label">Durée</span><span class="ticket-value">${durationDays} jours</span></div>
+            <div class="ticket-line"><span class="ticket-label">Début</span><span class="ticket-value">${new Date().toLocaleDateString()}</span></div>
+            <div class="ticket-line"><span class="ticket-label">Expiration</span><span class="ticket-value">${new Date(Date.now() + durationDays*86400000).toLocaleDateString()}</span></div>
+            <div class="ticket-line"><span class="ticket-label">Email de confirmation</span><span class="ticket-value">${currentUser.email || 'Non renseigné'}</span></div>
+        `;
+    }
+    const subMsg = document.querySelector('.success-submessage');
+    if (subMsg) {
+        subMsg.textContent = 'Un email contenant cet identifiant vous a été envoyé. En cas de problème, contactez-nous en fournissant cet identifiant.';
+    }
+    viewBtn.textContent = 'Aller à mon profil';
+    viewBtn.onclick = function() { closeSuccessPopup(); showPage('profile'); };
+    homeBtn.textContent = 'Accueil';
+    homeBtn.onclick = function() { closeSuccessPopup(); showPage('home'); };
+    closeBtn.onclick = function() { closeSuccessPopup(); };
+    popup.style.display = 'flex';
     popup.classList.add('show');
 }
 
-function closeQuantityPopup() {
-    document.getElementById('quantityPopup').classList.remove('show');
-    selectedEventForPurchase = null;
-}
-
-function updateQuantity(delta) {
-    const input = document.getElementById('ticketQuantity');
-    if (!input) return;
-    let val = parseInt(input.value) || 1;
-    const maxVal = parseInt(input.max) || 10;
-    val = Math.min(Math.max(val + delta, 1), maxVal);
-    input.value = val;
-    updateTicketTotal();
-}
-
-function updateTicketTotal() {
-    const input = document.getElementById('ticketQuantity');
-    const subtotalDisplay = document.getElementById('subtotalDisplay');
-    const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
-    const totalDisplay = document.getElementById('totalPriceDisplay');
-    if (!input || !totalDisplay || !selectedEventForPurchase) return;
-    const qty = parseInt(input.value) || 1;
-    const price = selectedEventForPurchase.price || 0;
-    const subtotal = qty * price;
-    const serviceFeePercent = appSettings.serviceFeePercent || 2;
-    const serviceFee = subtotal * (serviceFeePercent / 100);
-    const total = subtotal + serviceFee;
-    if (subtotalDisplay) subtotalDisplay.textContent = subtotal.toFixed(6) + ' Pi';
-    if (serviceFeeDisplay) serviceFeeDisplay.textContent = serviceFee.toFixed(6) + ' Pi';
-    if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
-}
-
-function confirmPurchaseFromPopup() {
-    if (!selectedEventForPurchase) { 
-        alert('No event selected'); 
-        return; 
-    }
-    const quantityInput = document.getElementById('ticketQuantity');
-    const quantity = parseInt(quantityInput.value) || 1;
-    if (quantity < 1) { 
-        alert('Please select at least 1 ticket'); 
-        return; 
-    }
-    const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
-    if (quantity > availableSeats) { 
-        alert('No seats available. Remaining: ' + availableSeats); 
-        return; 
-    }
-    if (quantity > 10) { 
-        alert('Maximum 10 tickets per purchase'); 
-        return; 
-    }
-    confirmPurchase(selectedEventForPurchase.id, quantity);
-}
-
-// ============================================================
-// CONFIRMATION D'ACHAT – DIRECT SANS POPUP INTERMÉDIAIRE
-// ============================================================
-const processingTransactions = new Set();
-let confirmPurchaseResolve = null;
-
-function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
-    return Promise.resolve(false);
-}
-
-function closeConfirmPurchasePopup() {}
-
-async function confirmPurchase(eventId, quantity) {
-    const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    const eventDate = new Date(event.date);
-    if (eventDate < new Date()) {
-        openPastEventPopup();
-        return;
-    }
-    const price = event.price || 0;
-    const availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
-    if (quantity > availableSeats) {
-        alert('No seats available. Remaining: ' + availableSeats);
-        return;
-    }
-    const subtotal = quantity * price;
-    const serviceFeePercent = appSettings.serviceFeePercent || 2;
-    const serviceFee = subtotal * (serviceFeePercent / 100);
-    const totalPrice = subtotal + serviceFee;
-
-    closeQuantityPopup();
-
-    const confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) { 
-        confirmBtn.textContent = t('connecting'); 
-        confirmBtn.disabled = true; 
-    }
-
-    try {
-        if (typeof Pi === 'undefined') {
-            alert('Pi SDK not available. Please use Pi Browser.');
-            if (confirmBtn) { 
-                confirmBtn.textContent = t('confirmPurchase'); 
-                confirmBtn.disabled = false; 
-            }
-            return;
-        }
-        
-        if (!piUser || !piUser.username) {
-            alert('Please connect your Pi account first with payments scope.');
-            if (confirmBtn) { 
-                confirmBtn.textContent = t('confirmPurchase'); 
-                confirmBtn.disabled = false; 
-            }
-            connectToPi();
-            return;
-        }
-
-        const payment = await Pi.createPayment({
-            amount: totalPrice,
-            memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
-            metadata: { eventId: event.id, eventTitle: event.title, quantity, subtotal, serviceFee }
-        }, {
-            onReadyForServerApproval: function(paymentId) {
-                fetch(BACKEND_URL + '/api/pi/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
-                }).catch(() => {});
-            },
-            onReadyForServerCompletion: async function(paymentId, txid) {
-                if (processingTransactions.has(txid)) {
-                    console.log('Transaction already in progress:', txid);
-                    return;
-                }
-                processingTransactions.add(txid);
-                try {
-                    const existingTickets = tickets.filter(t => t.transactionId === txid);
-                    if (existingTickets.length > 0) {
-                        openTransactionProcessedPopup(5);
-                        showPage('tickets');
-                        processingTransactions.delete(txid);
-                        if (confirmBtn) { 
-                            confirmBtn.textContent = t('confirmPurchase'); 
-                            confirmBtn.disabled = false; 
-                        }
-                        return;
-                    }
-                    const userIdentifier = currentUser.piUid || currentUser.wallet;
-                    if (userIdentifier) {
-                        const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
-                        const existingInSupabase = supabaseTickets.filter(t => t.transaction_id === txid);
-                        if (existingInSupabase.length > 0) {
-                            tickets = mergeArraysById(tickets, supabaseTickets);
-                            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-                            openTransactionProcessedPopup(5);
-                            renderTickets();
-                            renderHistory();
-                            showPage('tickets');
-                            processingTransactions.delete(txid);
-                            if (confirmBtn) { 
-                                confirmBtn.textContent = t('confirmPurchase'); 
-                                confirmBtn.disabled = false; 
-                            }
-                            return;
-                        }
-                    }
-                    const purchaseDate = new Date().toISOString();
-                    event.standardSold = (event.standardSold || 0) + quantity;
-                    event.standardLeft = (event.standardSeats || 0) - event.standardSold;
-                    event.seatsLeft -= quantity;
-                    event.boosts = (event.boosts || 0) + quantity;
-                    
-                    // Calcul du prochain numéro séquentiel pour cet événement
-                    const existingTicketsForEvent = tickets.filter(t => t.eventId === event.id && t.ticketNumber !== undefined);
-                    const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
-                    let nextNumber = lastNumber + 1;
-                    
-                    const ticketsAdded = [];
-                    for (let i = 0; i < quantity; i++) {
-                        const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
-                        const qrData = ticketId; // QR code contient l'ID unique pour vérification
-                        
-                        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
-                                         (currentUser.last_name ? ' ' + currentUser.last_name : '');
-                        const buyerEmail = currentUser.email || 'Not provided';
-                        const buyerPhone = currentUser.phone_number || 'Not provided';
-                        const organizerName = event.organizerName || event.organizer || 'Anonymous';
-                        const organizerPiUid = event.organizerPiUid || event.organizer || '';
-                        
-                        const ticket = {
-                            id: ticketId,
-                            eventId: event.id,
-                            eventTitle: event.title || 'Event',
-                            eventDate: event.date || new Date().toISOString(),
-                            eventLocation: event.location || 'Online',
-                            category: event.category || '',
-                            price: price,
-                            ticketType: 'standard',
-                            pays: event.pays || event.country || 'France',
-                            buyerWallet: piUser ? piUser.username : currentUser.wallet,
-                            buyerName: fullName || 'Anonymous',
-                            buyerEmail: buyerEmail,
-                            buyerPhone: buyerPhone,
-                            userWallet: currentUser.wallet,
-                            status: 'Valid',
-                            purchaseDate: purchaseDate,
-                            transactionId: txid || 'tx-' + Date.now(),
-                            qrCode: qrData,
-                            quantity: quantity,
-                            durationValue: event.durationValue || null,
-                            durationUnit: event.durationUnit || null,
-                            organizerName: organizerName,
-                            organizerPiUid: organizerPiUid,
-                            eventPays: event.pays || event.country || 'France',
-                            ticketNumber: nextNumber + i   // Numéro séquentiel
-                        };
-                        tickets.push(ticket);
-                        ticketsAdded.push(ticket);
-                    }
-                    saveEvents();
-                    saveTickets();
-                    for (let j = 0; j < ticketsAdded.length; j++) {
-                        const saved = await saveTicketToSupabase(ticketsAdded[j]);
-                        if (!saved) {
-                            pendingTickets.push(ticketsAdded[j]);
-                            localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-                            console.warn('Ticket', ticketsAdded[j].id, 'saved locally, will retry later.');
-                        }
-                        await new Promise(r => setTimeout(r, 200));
-                    }
-                    await saveEventToSupabase(event);
-                    const commission = subtotal * (appSettings.commissionPercent / 100);
-                    await saveTransactionToSupabase({
-                        id: 'tx-' + Date.now(),
-                        buyerWallet: currentUser.wallet,
-                        buyerPiUid: currentUser.piUid || currentUser.wallet,
-                        eventId: event.id,
-                        amount: totalPrice,
-                        txid: txid || 'tx-' + Date.now(),
-                        status: 'completed',
-                        date: new Date().toISOString(),
-                        subtotal: subtotal,
-                        serviceFee: serviceFee,
-                        commission: commission
-                    });
-                    addNotification('New sale! ' + quantity + ' ticket(s) purchased for "' + event.title + '"', 'purchase');
-                    addNotification('Purchase successful! ' + quantity + ' ticket(s) for "' + event.title + '"', 'purchase');
-                    renderEventsByCategory();
-                    renderTickets();
-                    renderHistory();
-                    updateProfilePage();
-                    setTimeout(() => {
-                        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
-                    }, 300);
-                    await syncUserToSupabase();
-                    showSuccessPopup(event, ticketsAdded, quantity);
-                    processingTransactions.delete(txid);
-                } catch (error) {
-                    console.error('Error finalizing payment:', error);
-                    alert('Payment was successful but an error occurred while saving tickets. Please contact support.');
-                    processingTransactions.delete(txid);
-                } finally {
-                    if (confirmBtn) {
-                        confirmBtn.textContent = t('confirmPurchase');
-                        confirmBtn.disabled = false;
-                    }
-                }
-            },
-            onCancel: function() {
-                alert(t('paymentCancelled'));
-                if (confirmBtn) { 
-                    confirmBtn.textContent = t('confirmPurchase'); 
-                    confirmBtn.disabled = false; 
-                }
-            },
-            onError: function(error) {
-                alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-                if (confirmBtn) { 
-                    confirmBtn.textContent = t('confirmPurchase'); 
-                    confirmBtn.disabled = false; 
-                }
-            },
-            onIncompletePaymentFound
-        });
-    } catch (error) {
-        alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-        if (confirmBtn) { 
-            confirmBtn.textContent = t('confirmPurchase'); 
-            confirmBtn.disabled = false; 
-        }
-    }
-}
-
-// ============================================================
-// STAGGERED ANIMATION
-// ============================================================
-function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
-    const container = document.querySelector(containerSelector);
-    if (!container) return;
-    const items = container.children;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        item.classList.add('stagger-item');
-        item.style.animationDelay = (i * delayIncrement) + 's';
-    }
-}
-
-// ============================================================
-// TOAST NOTIFICATION
-// ============================================================
-function showToast(title, message, type = 'success') {
-    const existing = document.querySelector('.toast-notification');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `
-        <div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
-        <div class="toast-content">
-            <div class="toast-title">${escapeHtml(title)}</div>
-            <div class="toast-message">${escapeHtml(message)}</div>
-        </div>
-        <button class="toast-close"><i class="fas fa-times"></i></button>
-    `;
-    document.body.appendChild(toast);
-
-    toast.querySelector('.toast-close').addEventListener('click', function() {
-        closeToast(toast);
-    });
-
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    setTimeout(() => {
-        closeToast(toast);
-    }, 5000);
-}
-
-function closeToast(toast) {
-    if (!toast) return;
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 400);
-}
-
-// ============================================================
-// SUCCESS POPUP
-// ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
     const title = document.getElementById('successTitle');
@@ -2839,9 +2620,7 @@ function closeSuccessPopup() {
     const info = document.getElementById('successTicketInfo');
     if (info) info.innerHTML = '';
     localStorage.removeItem('betix_success_popup_shown');
-}
-
-// ============================================================
+}// ============================================================
 // CONNEXION PI
 // ============================================================
 async function connectToPi() {
@@ -3895,6 +3674,7 @@ function loadAdminPage() {
     document.getElementById('adminBadgeEnabled').checked = appSettings.badgeEnabled;
     renderAdminEvents(); renderAdminSlides(); renderAdminUsers(); renderAdminLogs();
     initAdminTabs();
+    initAdminPremiumTab(); // NOUVEAU : initialiser l'onglet Premium
     if (!adminTimerInterval) startAdminSession();
     const userSearch = document.getElementById('adminUserSearch');
     if (userSearch) userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
@@ -3965,7 +3745,7 @@ function adminDeleteAllEvents() {
 
 function initAdminTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
-    const contents = { events: document.getElementById('adminTabEvents'), slides: document.getElementById('adminTabSlides'), users: document.getElementById('adminTabUsers'), logs: document.getElementById('adminTabLogs'), settings: document.getElementById('adminTabSettings') };
+    const contents = { events: document.getElementById('adminTabEvents'), slides: document.getElementById('adminTabSlides'), users: document.getElementById('adminTabUsers'), logs: document.getElementById('adminTabLogs'), settings: document.getElementById('adminTabSettings'), premium: document.getElementById('adminTabPremium') };
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             tabs.forEach(t => t.classList.remove('active'));
@@ -3974,6 +3754,69 @@ function initAdminTabs() {
             if (contents[this.dataset.tab]) contents[this.dataset.tab].classList.add('active');
         });
     });
+}
+
+// ============================================================
+// ADMIN PREMIUM TAB (NOUVEAU)
+// ============================================================
+function initAdminPremiumTab() {
+    const searchBtn = document.getElementById('adminPremiumSearchBtn');
+    const searchInput = document.getElementById('adminPremiumSearch');
+    const assignBtn = document.getElementById('adminPremiumAssignBtn');
+    const resultDiv = document.getElementById('adminPremiumSearchResult');
+    const assignDiv = document.getElementById('adminPremiumAssign');
+    const messageP = document.getElementById('adminPremiumMessage');
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', async function() {
+            const query = searchInput.value.trim();
+            if (!query) { resultDiv.innerHTML = '<p>Veuillez entrer un nom ou un identifiant.</p>'; assignDiv.style.display = 'none'; return; }
+            const users = await searchUserByQuery(query);
+            if (users.length === 0) {
+                resultDiv.innerHTML = '<p>Aucun utilisateur trouvé.</p>';
+                assignDiv.style.display = 'none';
+                return;
+            }
+            let html = '<p><strong>Utilisateurs trouvés :</strong></p><ul>';
+            users.forEach(u => {
+                const name = (u.first_name || '') + ' ' + (u.last_name || '') || u.username || u.pi_uid;
+                const status = u.account_type === 'premium' && u.premium_status === 'active' ? '✅ Premium' : (u.account_type || 'free');
+                html += `<li style="margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>${escapeHtml(name)}</strong> (${escapeHtml(u.pi_uid)}) - ${status}</span>
+                    <button class="btn-secondary" style="font-size:0.7rem;padding:2px 8px;" onclick="selectPremiumUser('${u.pi_uid}')">Sélectionner</button>
+                </li>`;
+            });
+            html += '</ul>';
+            resultDiv.innerHTML = html;
+            assignDiv.style.display = 'none';
+        });
+    }
+
+    window.selectPremiumUser = function(userId) {
+        const assignDiv = document.getElementById('adminPremiumAssign');
+        assignDiv.style.display = 'block';
+        assignDiv.dataset.userId = userId;
+        document.getElementById('adminPremiumMessage').textContent = '';
+    };
+
+    if (assignBtn) {
+        assignBtn.addEventListener('click', async function() {
+            const userId = assignDiv.dataset.userId;
+            if (!userId) { messageP.textContent = 'Aucun utilisateur sélectionné.'; return; }
+            const duration = parseInt(document.getElementById('adminPremiumDurationAssign').value) || 30;
+            messageP.textContent = 'Attribution en cours...';
+            assignBtn.disabled = true;
+            const result = await assignPremiumManually(userId, duration);
+            if (result.success) {
+                messageP.innerHTML = `<span style="color:#10b981;">✅ Premium attribué ! Reçu : ${result.receipt}</span>`;
+                // Rafraîchir la liste
+                if (searchInput.value) searchBtn.click();
+            } else {
+                messageP.innerHTML = `<span style="color:#ef4444;">❌ Erreur : ${result.message}</span>`;
+            }
+            assignBtn.disabled = false;
+        });
+    }
 }
 
 // ============================================================
@@ -4291,9 +4134,13 @@ window.openQuantityPopup = openQuantityPopup;
 window.requireLogin = requireLogin;
 window.requireProfileComplete = requireProfileComplete;
 window.retryPendingTickets = retryPendingTickets;
+window.retryPendingPremiumUpdates = retryPendingPremiumUpdates;
 window.schedulePremiumNotification = schedulePremiumNotification;
 window.showPremiumBanner = showPremiumBanner;
 window.hidePremiumBanner = hidePremiumBanner;
+window.searchUserByQuery = searchUserByQuery;
+window.assignPremiumManually = assignPremiumManually;
+window.selectPremiumUser = selectPremiumUser;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
