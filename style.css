@@ -1203,83 +1203,103 @@ body {
         min-width: 140px;
     }
 }
-// ============================================================
-// GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS
-// ============================================================
-function generateTicketHTML(ticket) {
-    const safeTicket = ticket || {};
-    
-    // Formatage de la date et de l'heure de l'événement
-    const dateEvent = new Date(safeTicket.eventDate || Date.now());
-    const dateFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'To be defined';
-        
-    const timeFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'To be defined';
-    
-    // Formatage de la durée
-    const durationValue = safeTicket.durationValue || '';
-    const durationUnit = safeTicket.durationUnit || '';
-    let durationDisplay = 'N/A';
-    if (durationValue && durationUnit) {
-        const unitLabels = {
-            hours: durationValue === 1 ? 'Hour' : 'Hours',
-            days: durationValue === 1 ? 'Day' : 'Days',
-            weeks: durationValue === 1 ? 'Week' : 'Weeks',
-            months: durationValue === 1 ? 'Month' : 'Months',
-            years: durationValue === 1 ? 'Year' : 'Years'
-        };
-        durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
-    }
-    
-    // Données client & événement
-    const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
-    let userEmail = safeTicket.buyerEmail || 'Not provided';
-    if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
-    
-    const userPhone = safeTicket.buyerPhone || 'Not provided';
-    const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
-    const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
-    const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
-    const eventLocation = safeTicket.eventLocation || 'Online';
-    
-    const purchaseDate = safeTicket.purchaseDate 
-        ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') 
-        : 'N/A';
-    const ticketNumber = safeTicket.ticketNumber || 'N/A';
+/* ============================================================
+   TICKET – ALIGNEMENT SUR LES LIGNES ET REPARES
+   ============================================================ */
 
-    return `
-        <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
-            <div class="ticket-overlay-bg">
-                <img src="ticket-officiel.png" alt="Ticket officiel" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
-            </div>
-            
-            <!-- Colonne Gauche (Infos Événement) -->
-            <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
-            <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
-            <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
-            <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
-            <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
-            <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
+.ticket-overlay-container {
+    position: relative;
+    max-width: 780px;
+    margin: 0 auto;
+    background: #0a1628;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
 
-            <!-- Colonne Droite (Infos Acheteur & Transaction) -->
-            <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
-            <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
-            <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
-            <!-- WALLET ID : affiche désormais l'ID du ticket (#17860255) -->
-            <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
-            <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <!-- TICKET NUMBER : affiche désormais le numéro séquentiel (#1) -->
-            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
+.ticket-overlay-bg img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
 
-            <!-- Coupon Droite -->
-            <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
-            <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
-            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
-        </div>
-    `;
+/* Base commune */
+.ticket-left,
+.ticket-right {
+    position: absolute;
+    pointer-events: none;
+    text-align: left;
+}
+
+.ticket-left {
+    left: 25.5%;
+    width: 19%;
+}
+
+.ticket-right {
+    left: 56.5%;
+    width: 19%;
+}
+
+/* ===== Hauteurs ajustées (+1.5% plus bas pour épouser la ligne) ===== */
+.ticket-left.line-1, .ticket-right.line-1 { top: 31.0%; } /* EVENT & NAME */
+.ticket-left.line-2, .ticket-right.line-2 { top: 38.0%; } /* DURATION & EMAIL */
+.ticket-left.line-3, .ticket-right.line-3 { top: 45.0%; } /* DATE & PHONE */
+.ticket-left.line-4, .ticket-right.line-4 { top: 52.0%; } /* TIME & WALLET ID */
+.ticket-left.line-5, .ticket-right.line-5 { top: 59.0%; } /* LOCATION & PURCHASE DATE */
+.ticket-left.line-6, .ticket-right.line-6 { top: 66.0%; } /* PRICE & TICKET NUMBER */
+
+.ticket-value {
+    font-size: clamp(6px, 1.05vw, 11px);
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+}
+
+/* ===== COUPON JAUNE (QR Code & Infos) ===== */
+.ticket-qr {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 3px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    top: 15.5%;
+    right: 17%;
+    width: 17.5%;
+    aspect-ratio: 1/1;
+}
+
+.ticket-qr-id {
+    position: absolute;
+    right: 15%;
+    width: 21%;
+    text-align: center;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 700;
+    font-size: clamp(6px, 1.05vw, 11px);
+    color: #000000;
+    top: 52.5%;
+}
+
+.ticket-qr-date {
+    position: absolute;
+    right: 15%;
+    width: 21%;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: clamp(6px, 0.95vw, 10px);
+    color: #000000;
+    top: 64.5%;
 }
 
 /* ============================================================
