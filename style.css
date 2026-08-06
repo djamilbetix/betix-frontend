@@ -4037,6 +4037,40 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 }
 
 /* ============================================================
+   ADMIN PREMIUM (NOUVEAU)
+   ============================================================ */
+.admin-premium-search {
+    margin-bottom: 20px;
+}
+.admin-premium-search .form-group {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+.admin-premium-search .form-group input {
+    flex: 1;
+    min-width: 200px;
+}
+.admin-premium-search .form-group button {
+    flex-shrink: 0;
+}
+#adminPremiumSearchResult {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e6e6e6;
+}
+#adminPremiumAssign {
+    margin-top: 16px;
+}
+#adminPremiumMessage {
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* ============================================================
    DARK MODE ADAPTATIONS (compléments généraux)
    ============================================================ */
 body.dark-mode .header {
