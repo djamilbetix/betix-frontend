@@ -1204,8 +1204,9 @@ body {
     }
 }
 /* ============================================================
-   TICKET – POSITIONNEMENT EXACT ET ALIGNÉ (correction)
+   TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
    ============================================================ */
+
 .ticket-overlay-container {
     position: relative;
     max-width: 780px;
@@ -1244,12 +1245,12 @@ body {
 }
 
 /* ===== Hauteurs exactes des 6 lignes (top en %) ===== */
-.ticket-left.ticket-line-1, .ticket-right.ticket-line-1 { top: 29.5%; } /* EVENT & NAME */
-.ticket-left.ticket-line-2, .ticket-right.ticket-line-2 { top: 36.5%; } /* DURATION & EMAIL */
-.ticket-left.ticket-line-3, .ticket-right.ticket-line-3 { top: 43.5%; } /* DATE & PHONE */
-.ticket-left.ticket-line-4, .ticket-right.ticket-line-4 { top: 50.5%; } /* TIME & WALLET ID */
-.ticket-left.ticket-line-5, .ticket-right.ticket-line-5 { top: 57.5%; } /* LOCATION & PURCHASE DATE */
-.ticket-left.ticket-line-6, .ticket-right.ticket-line-6 { top: 64.5%; } /* PRICE & TICKET NUMBER */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; } /* EVENT & NAME */
+.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; } /* DURATION & EMAIL */
+.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; } /* DATE & PHONE */
+.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; } /* TIME & WALLET ID */
+.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; } /* LOCATION & PURCHASE DATE */
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; } /* PRICE & TICKET NUMBER */
 
 /* Style du texte */
 .ticket-value {
