@@ -351,7 +351,6 @@ function requireLogin() {
 }
 
 function requireProfileComplete() {
-    // Vérifie que les champs obligatoires sont remplis (email, téléphone, etc.)
     const check = checkProfileComplete();
     if (!check.complete) {
         const missing = check.missing.join(', ');
@@ -581,10 +580,11 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             address: currentUser.address || '',
             email: currentUser.email || '',
             phone_number: currentUser.phone_number || '',
+            profile_completed: currentUser.profile_completed || false,
+            profile_reminder_shown: currentUser.profile_reminder_shown || false,
             updated_at: now,
             last_seen: now
         };
-        // On ne stocke plus profile_completed/reminder dans Supabase
         const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
         if (checkError && checkError.code !== 'PGRST116') throw checkError;
         if (existing) {
@@ -1429,7 +1429,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL (STYLE X)
+// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL (STYLE X) AMÉLIORÉ
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1439,7 +1439,7 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
 
-    // Construction du carrousel avec défilement horizontal (style X)
+    // Construction du carrousel avec défilement horizontal (style X) - amélioré
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
     carouselHtml += `<div class="carousel-track">`;
     images.forEach((img, idx) => {
@@ -1500,6 +1500,7 @@ function renderEventCard(event) {
         durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
     }
 
+    // Info box avec alignement professionnel
     const infoBoxHtml = `
         <div class="event-info-box">
             <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
@@ -1514,7 +1515,7 @@ function renderEventCard(event) {
         </div>
         <div class="card-content-classic">
             <div class="event-title-large">${escapeHtml(event.title)}</div>
-            ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
+            <div class="event-description-full">${escapeHtml(desc)}</div>
             ${infoBoxHtml}
             <div class="event-meta-row">
                 ${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}
@@ -1860,7 +1861,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE (CORRIGÉ)
+// PROFIL – FORMULAIRE AVEC REVUE (CORRIGÉ pour Supabase)
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -1883,10 +1884,10 @@ async function loadProfileData() {
     const piUid = currentUser.piUid || currentUser.wallet;
     if (!piUid) return;
     try {
-        // On ne sélectionne plus les colonnes profile_completed et profile_reminder_shown
+        // On sélectionne maintenant aussi profile_completed et profile_reminder_shown
         const { data, error } = await supabaseClient
             .from('users')
-            .select('first_name, last_name, country, address, email, phone_number')
+            .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
             .eq('pi_uid', piUid)
             .single();
         if (error) throw error;
@@ -1903,7 +1904,8 @@ async function loadProfileData() {
             currentUser.address = data.address || '';
             currentUser.email = data.email || '';
             currentUser.phone_number = data.phone_number || '';
-            // On conserve les flags locaux, on ne les recharge pas depuis la base
+            currentUser.profile_completed = data.profile_completed || false;
+            currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
             updateUserInfo();
             enableEditMode(false);
         } else {
@@ -2010,8 +2012,9 @@ async function confirmProfileSave() {
             address: data.address,
             email: data.email,
             phone_number: data.phone,
+            profile_completed: true,
+            profile_reminder_shown: true,
             updated_at: new Date().toISOString()
-            // On ne met pas profile_completed/reminder ici
         };
         const { error } = await supabaseClient
             .from('users')
@@ -2282,7 +2285,7 @@ async function confirmPurchase(eventId, quantity) {
                     const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
                     let nextNumber = lastNumber + 1;
                     
-                    // Récupération des informations de profil
+                    // Récupération des informations de profil (email, téléphone)
                     const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                      (currentUser.last_name ? ' ' + currentUser.last_name : '');
                     const buyerEmail = currentUser.email || 'Non renseigné';
@@ -2655,7 +2658,6 @@ async function connectToPi() {
 // NOTIFICATION DE COMPLÉTION DE PROFIL (AJOUT)
 // ============================================================
 function checkAndNotifyProfileCompletion() {
-    // On vérifie si l'utilisateur a déjà été notifié et si son profil est complet
     if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
         setTimeout(() => {
             showToast('Profil incomplet', 'Veuillez compléter votre profil (email et téléphone) pour une meilleure expérience.', 'info');
