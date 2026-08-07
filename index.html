@@ -95,7 +95,7 @@
         </button>
         <button class="sidebar-item" onclick="window.location.href='whitepaper.html'"><i class="fas fa-file-alt"></i> Whitepaper</button>
         <button class="sidebar-item" onclick="window.location.href='faq.html'"><i class="fas fa-question-circle"></i> FAQ</button>
-        <button class="sidebar-item" data-page="premium"><i class="fas fa-crown"></i> Premium</button>
+        <!-- Premium button removed -->
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -139,11 +139,7 @@
 
 <!-- HOME PAGE -->
 <div id="homePage">
-    <div id="premiumBanner" class="premium-banner" style="display:none; background: #f5a623; color: #1a1a2e; padding: 12px 20px; text-align: center; font-size: 0.95rem; border-radius: 0; margin: 0; font-weight: 600; position: relative; z-index: 100; transform: translateY(-100%); transition: transform 0.5s ease;">
-        <span>Unlock unlimited events and exclusive benefits with <strong>Betix Premium</strong>.</span>
-        <button class="premium-banner-btn" onclick="showPage('premium'); hidePremiumBanner();" style="background: #1a1a2e; border: none; padding: 4px 16px; border-radius: 30px; font-weight: 700; color: white; margin-left: 10px; cursor: pointer;">Learn More</button>
-        <button class="premium-banner-close" onclick="hidePremiumBanner();" style="background: none; border: none; color: #1a1a2e; margin-left: 10px; cursor: pointer; font-size: 1.2rem;">&times;</button>
-    </div>
+    <!-- Premium banner removed -->
     <section class="hero">
         <div class="hero-slider-container">
             <div class="hero-slider">
@@ -187,10 +183,7 @@
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
-        <div id="freeLimitMessage" style="display:none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #92400e;">
-            <i class="fas fa-info-circle"></i> You have reached the limit of 3 free events per month. 
-            <a href="#" onclick="showPage('premium'); return false;" style="color: #08143F; font-weight: 600; text-decoration: underline;">Upgrade to Premium</a> to publish unlimited events.
-        </div>
+        <!-- Free limit message removed -->
         <form id="eventForm" class="create-form">
             <div class="form-group">
                 <label>Title <span style="font-size:0.7rem; color:#6b7280;">(max 25 characters)</span></label>
@@ -332,18 +325,7 @@
     </div>
 </div>
 
-<!-- PREMIUM PAGE -->
-<div id="premiumPage" class="hidden-page">
-    <div class="page-content premium-page-content">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
-            <i class="fas fa-crown" style="font-size:2rem; color:#f5a623;"></i>
-            <h2 style="font-size:1.8rem; margin:0; font-weight:700;">Betix Premium</h2>
-        </div>
-        <p class="events-sub" style="font-size:1rem; margin-bottom:16px;">Choose the plan that fits your needs and unlock exclusive benefits.</p>
-        <div id="premiumContent"></div>
-        <button class="btn-back" onclick="showPage('home')">Back</button>
-    </div>
-</div>
+<!-- PREMIUM PAGE REMOVED -->
 
 <!-- TICKETS PAGE -->
 <div id="ticketsPage" class="hidden-page">
@@ -385,13 +367,13 @@
                 </div>
             </div>
             <div class="profile-header-info">
-                <h2 id="profileNameDisplay">Guest <span id="profileBadgeVerified" style="display:none; color:#08143F; font-size:1.2rem; margin-left:4px;">✔</span></h2>
+                <h2 id="profileNameDisplay">Guest</h2>
                 <p><i class="fas fa-wallet"></i> <span id="profileWalletDisplay">Not connected</span></p>
                 <p><i class="fas fa-calendar-alt"></i> Member since <span id="memberSince">2026</span></p>
                 <div class="profile-badges">
                     <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
                     <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
-                    <span class="profile-badge" id="profileAccountTypeBadge"><i class="fas fa-user"></i> Free</span>
+                    <!-- Premium badge removed -->
                 </div>
             </div>
         </div>
@@ -602,33 +584,7 @@
                 <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
                 <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
             </div>
-            <hr style="margin: 30px 0; border-color: #e5e7eb;">
-            <h3>Premium & Fees Settings</h3>
-            <div class="form-group">
-                <label>Premium Price (USD)</label>
-                <input type="number" id="adminPremiumPrice" step="0.01" min="0" value="5">
-            </div>
-            <div class="form-group">
-                <label>Commission Percentage (%)</label>
-                <input type="number" id="adminCommission" step="0.1" min="0" max="100" value="5">
-            </div>
-            <div class="form-group">
-                <label>Service Fee Percentage (%)</label>
-                <input type="number" id="adminServiceFee" step="0.1" min="0" max="100" value="2">
-            </div>
-            <div class="form-group">
-                <label>Premium Duration (days)</label>
-                <input type="number" id="adminPremiumDuration" min="1" step="1" value="30">
-            </div>
-            <div class="form-group">
-                <label>Pi Conversion Rate (USD per Pi)</label>
-                <input type="number" id="adminPiRate" step="0.0001" min="0" value="1">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="adminBadgeEnabled"> Verified Badge Enabled</label>
-            </div>
-            <button class="btn-primary" id="adminSaveSettingsBtn" style="width:auto; padding:10px 30px;">Save Settings</button>
-            <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
+            <!-- Premium settings removed -->
         </div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
@@ -822,7 +778,7 @@
     </div>
 </div>
 
-<!-- SUCCESS POPUP (version améliorée) -->
+<!-- SUCCESS POPUP -->
 <div id="successPopup" class="success-popup">
     <div class="success-popup-content">
         <div class="success-popup-header">
