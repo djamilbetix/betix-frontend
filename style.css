@@ -698,7 +698,9 @@ body {
 /* ============================================================
    SEARCH & FILTERS – marges réduites
    ============================================================ */
-.search-bar { padding: 0.4rem 5% 0.2rem; }
+.search-bar { 
+    padding: 0.4rem 5% 0.2rem; 
+}
 .search-bar input {
     width: 100%;
     padding: 0.6rem 1.2rem;
@@ -710,48 +712,56 @@ body {
 }
 .search-bar input:focus { outline: none; border-color: #F5B400; }
 
-.filter-country-wrapper { padding: 0.2rem 5% 0.2rem; }
+/* ===== FILTRE PAYS – COMPACT ET EN BAS ===== */
+.filter-country-wrapper {
+    padding: 0.2rem 5% 0.2rem;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+}
 .filter-country-select {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 6px;
     background: #f8fafc;
-    padding: 4px 12px;
-    border-radius: 12px;
+    padding: 2px 8px 2px 12px;
+    border-radius: 20px;
     border: 1px solid #e6e6e6;
+    font-size: 0.75rem;
+    width: auto;
+    max-width: 220px;
 }
 .filter-country-select label {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: var(--dark);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     white-space: nowrap;
 }
-.filter-country-select label i { color: #F5B400; }
+.filter-country-select label i { color: #F5B400; font-size: 0.7rem; }
 .filter-country-select select {
     flex: 1;
-    min-width: 140px;
-    padding: 4px 10px;
-    border: 2px solid #e6e6e6;
-    border-radius: 10px;
-    font-size: 0.75rem;
+    min-width: 100px;
+    padding: 3px 20px 3px 6px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.7rem;
     background: white;
     color: var(--dark);
     cursor: pointer;
-    transition: border 0.2s;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
+    background-position: right 6px center;
+    background-size: 8px;
+    padding-right: 20px;
+    font-weight: 500;
 }
 .filter-country-select select:focus {
     outline: none;
     border-color: #F5B400;
-    box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
 }
 
 /* ============================================================
@@ -832,7 +842,7 @@ body {
 @media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; gap: 1rem; } }
 
 /* ============================================================
-   CARTE ÉVÉNEMENT – STYLE PROFESSIONNEL AVEC CARROUSEL
+   CARTE ÉVÉNEMENT – STYLE PROFESSIONNEL AVEC CARROUSEL (AGRANDI)
    ============================================================ */
 .event-card-classic {
     background: #ffffff;
@@ -858,8 +868,8 @@ body {
     overflow: hidden;
     background: #f3f4f6;
     aspect-ratio: auto;
-    min-height: 200px;
-    max-height: 350px;
+    min-height: 220px;
+    max-height: 380px;
 }
 .event-card-classic .category-badge-classic {
     position: absolute;
@@ -878,14 +888,14 @@ body {
     backdrop-filter: blur(4px);
 }
 .event-card-classic .card-content-classic {
-    padding: 10px 12px 12px;
+    padding: 12px 14px 14px;
     display: flex;
     flex-direction: column;
     gap: 4px;
     flex: 1;
 }
 .event-title-large {
-    font-size: 1.1rem !important;
+    font-size: 1.15rem !important;
     font-weight: 700;
     color: #1a1a2e;
     line-height: 1.3;
@@ -897,7 +907,7 @@ body {
     line-height: 1.5;
     margin: 2px 0;
     display: -webkit-box;
-    -webkit-line-clamp: 5;  /* Augmenté pour voir plus de texte */
+    -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 3.5rem;
@@ -920,7 +930,7 @@ body {
     font-size: 0.7rem;
     color: #1f2937;
     flex-wrap: wrap;
-    justify-content: flex-start; /* aligné à gauche pour un look pro */
+    justify-content: flex-start;
 }
 .event-location-line i,
 .event-datetime-line i {
@@ -1057,8 +1067,8 @@ body {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     background: #1a1a2e;
-    min-height: 200px;
-    max-height: 350px;
+    min-height: 220px;
+    max-height: 380px;
     display: flex;
     align-items: center;
     cursor: grab;
@@ -1089,7 +1099,7 @@ body {
 .carousel-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* remplit tout l'espace sans déformation */
+    object-fit: cover;
     background: #1a1a2e;
     pointer-events: none;
     user-select: none;
@@ -1121,8 +1131,8 @@ body {
 }
 @media (max-width: 480px) {
     .event-carousel {
-        min-height: 150px;
-        max-height: 250px;
+        min-height: 160px;
+        max-height: 260px;
     }
 }
 body.dark-mode .event-carousel {
