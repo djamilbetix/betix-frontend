@@ -306,7 +306,7 @@ let currentUser = {
     premium_start: null,
     premium_end: null,
     premium_status: 'inactive',
-    premium_id: null   // <-- ajout
+    premium_id: null
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -840,7 +840,7 @@ async function loadAllFromSupabase() {
             }
         }
         
-        // Gestion locale des notifications (pas de Supabase pour les notifs)
+        // Gestion locale des notifications
         const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
         notifications = localNotifs;
         localStorage.setItem('betix_notifications', JSON.stringify(notifications));
@@ -2312,7 +2312,7 @@ function renderPremiumPage() {
 }
 
 // ============================================================
-// ABONNEMENT PREMIUM AVEC ID UNIQUE ET NOTIFICATION
+// ABONNEMENT PREMIUM AVEC ID UNIQUE ET NOTIFICATION (MODIFIÉ)
 // ============================================================
 async function subscribePremiumWithDuration(durationDays) {
     if (!currentUser.wallet) {
@@ -2360,21 +2360,37 @@ async function subscribePremiumWithDuration(durationDays) {
                     endDate.setDate(endDate.getDate() + durationDays);
                     const piUid = currentUser.piUid || currentUser.wallet;
                     if (piUid) {
-                        // Générer un identifiant unique
                         const premiumId = 'PREMIUM-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
                         const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active', premiumId);
                         if (success) {
-                            // Recharger le statut
                             await loadUserPremiumStatus(piUid);
-                            // Notification
+                            
+                            // Notification et popup de succès
                             const message = `🎉 Abonnement Premium activé ! ID: ${premiumId}. Expire le ${endDate.toLocaleDateString('fr-FR')}.`;
                             addNotification(message, 'success');
-                            alert(`Abonnement Premium réussi !\nVotre ID unique : ${premiumId}\nExpiration : ${endDate.toLocaleDateString('fr-FR')}\nGardez cet ID pour vos réclamations.`);
+                            
+                            showSuccessPopup(
+                                { title: 'Betix Premium', date: endDate.toISOString() },
+                                [{ id: 'premium' }],
+                                1
+                            );
+                            document.getElementById('successTitle').textContent = '✅ Premium activé !';
+                            document.getElementById('successMessage').textContent = `Félicitations ! Vous êtes désormais membre Premium jusqu'au ${endDate.toLocaleDateString('fr-FR')}.`;
+                            const info = document.getElementById('successTicketInfo');
+                            info.innerHTML = `
+                                <div class="ticket-line"><span class="ticket-label">ID Premium</span><span class="ticket-value">${premiumId}</span></div>
+                                <div class="ticket-line"><span class="ticket-label">Expiration</span><span class="ticket-value">${endDate.toLocaleDateString('fr-FR')}</span></div>
+                            `;
+                            
+                            // Mise à jour forcée de l'UI
                             renderPremiumPage();
                             updateProfilePage();
                             updateUserInfo();
                             renderEventsByCategory();
                             updatePremiumBanner();
+                            updateSidebar();
+                            
+                            alert(`Abonnement Premium réussi !\nVotre ID unique : ${premiumId}\nExpiration : ${endDate.toLocaleDateString('fr-FR')}\nGardez cet ID pour vos réclamations.`);
                         } else {
                             alert('Erreur lors de l\'activation Premium. Contactez le support.');
                         }
@@ -3395,33 +3411,94 @@ function syncSettingsLanguageSelector() {
     }
 }
 
+// ============================================================
+// NOTIFICATIONS – FONCTIONS DE SUPPRESSION (AJOUT)
+// ============================================================
+// Supprimer une notification par son id
+function deleteNotification(id) {
+    notifications = notifications.filter(n => n.id !== id);
+    saveNotifications();
+    renderNotificationsPage();
+    updateNotifBadgeHeader();
+    updateSidebarNotifBadge();
+}
+
+// Supprimer toutes les notifications
+function clearAllNotifications() {
+    if (notifications.length === 0) return;
+    if (confirm('Supprimer toutes les notifications ?')) {
+        notifications = [];
+        saveNotifications();
+        renderNotificationsPage();
+        updateNotifBadgeHeader();
+        updateSidebarNotifBadge();
+        addNotification('Toutes les notifications ont été effacées.', 'info');
+    }
+}
+
+// ============================================================
+// RENDER NOTIFICATIONS PAGE (MODIFIÉ)
+// ============================================================
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
-    if (!notifications || notifications.length === 0) { container.innerHTML = `<div class="notification-empty"><i class="fas fa-bell-slash"></i> ${t('noNotifications')}</div>`; return; }
-    let html = '';
-    for (let i = 0; i < notifications.length; i++) {
-        const notif = notifications[i];
+
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+            <div class="notification-empty">
+                <i class="fas fa-bell-slash"></i>
+                <p style="font-size:0.95rem;">${t('noNotifications')}</p>
+            </div>
+        `;
+        return;
+    }
+
+    // En-tête avec bouton "Tout effacer"
+    let html = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
+            <button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">
+                <i class="fas fa-trash"></i> Tout effacer
+            </button>
+        </div>
+    `;
+
+    notifications.forEach((notif, index) => {
         const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = time.toLocaleDateString('fr-FR') + ' ' + time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
         const type = notif.type || 'info';
         const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
         const icon = iconMap[type] || 'fa-info-circle';
-        html += `<div class="notification-item type-${type} ${unreadClass}">
-            <div class="notif-icon"><i class="fas ${icon}"></i></div>
-            <div class="notif-content">
-                <div class="notif-msg">${escapeHtml(notif.message)}</div>
-                <div class="notif-time">${timeStr}</div>
+
+        html += `
+            <div class="notification-item type-${type} ${unreadClass}">
+                <div class="notif-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-msg">${escapeHtml(notif.message)}</div>
+                    <div class="notif-time">${timeStr}</div>
+                </div>
+                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Supprimer">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        </div>`;
-        notifications[i].read = true;
-    }
+        `;
+    });
+
     container.innerHTML = html;
+
+    // Marquer toutes les notifications comme lues
+    notifications.forEach(n => n.read = true);
     saveNotifications();
     updateNotifBadgeHeader();
+    updateSidebarNotifBadge();
 }
 
+// ============================================================
+// NOTIFICATIONS - AUTRES FONCTIONS EXISTANTES
+// ============================================================
 function updateNotifBadgeHeader() {
     const badge = document.getElementById('notifBadgeHeader');
     if (!badge) return;
@@ -3445,6 +3522,9 @@ function addNotification(message, type) {
     updateNotifBadgeHeader();
 }
 
+// ============================================================
+// AUTRES FONCTIONS DE NAVIGATION, PROFIL, ETC.
+// ============================================================
 function goToMyEvents() { showPage('myevents'); }
 function goToTickets() { showPage('tickets'); }
 function goToHistory() { showPage('history'); }
@@ -4423,6 +4503,8 @@ window.hidePremiumBanner = hidePremiumBanner;
 window.renderAdminUsers = renderAdminUsers;
 window.refreshUsersList = refreshUsersList;
 window.loadAllUsersFromSupabase = loadAllUsersFromSupabase;
+window.deleteNotification = deleteNotification;
+window.clearAllNotifications = clearAllNotifications;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
