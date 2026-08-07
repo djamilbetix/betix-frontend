@@ -305,7 +305,8 @@ let currentUser = {
     account_type: 'free',
     premium_start: null,
     premium_end: null,
-    premium_status: 'inactive'
+    premium_status: 'inactive',
+    premium_id: null   // <-- ajout
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -329,6 +330,7 @@ let adminLogs = [];
 let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
+let allUsersCache = [];
 
 // ============================================================
 // PARAMÈTRES DE L'APPLICATION
@@ -588,6 +590,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             premium_start: currentUser.premium_start || null,
             premium_end: currentUser.premium_end || null,
             premium_status: currentUser.premium_status || 'inactive',
+            premium_id: currentUser.premium_id || null,
             updated_at: now,
             last_seen: now
         };
@@ -1059,14 +1062,14 @@ async function saveAppSettings(settings) {
 }
 
 // ============================================================
-// GESTION PREMIUM
+// GESTION PREMIUM (modifié avec premium_id)
 // ============================================================
 async function loadUserPremiumStatus(piUid) {
     if (!piUid) return;
     try {
         const { data, error } = await supabaseClient
             .from('users')
-            .select('account_type, premium_start, premium_end, premium_status')
+            .select('account_type, premium_start, premium_end, premium_status, premium_id')
             .eq('pi_uid', piUid)
             .single();
         if (error) throw error;
@@ -1075,6 +1078,7 @@ async function loadUserPremiumStatus(piUid) {
             currentUser.premium_start = data.premium_start || null;
             currentUser.premium_end = data.premium_end || null;
             currentUser.premium_status = data.premium_status || 'inactive';
+            currentUser.premium_id = data.premium_id || null;
             if (currentUser.premium_status === 'active' && currentUser.premium_end) {
                 const endDate = new Date(currentUser.premium_end);
                 if (endDate < new Date()) {
@@ -1084,13 +1088,17 @@ async function loadUserPremiumStatus(piUid) {
                 }
             }
             saveUser();
+            updateUserInfo();
+            updateProfilePage();
+            renderPremiumPage();
+            renderEventsByCategory();
         }
     } catch (error) {
         console.warn('Could not load premium status:', error);
     }
 }
 
-async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status) {
+async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_id = null) {
     try {
         const updates = {
             account_type,
@@ -1099,11 +1107,13 @@ async function updateUserPremiumStatus(piUid, account_type, premium_start, premi
             premium_status,
             updated_at: new Date().toISOString()
         };
+        if (premium_id) updates.premium_id = premium_id;
         const { error } = await supabaseClient
             .from('users')
             .update(updates)
             .eq('pi_uid', piUid);
         if (error) throw error;
+        console.log('Premium status updated in Supabase for', piUid);
         return true;
     } catch (error) {
         console.error('Error updating premium status:', error);
@@ -1115,7 +1125,10 @@ function isUserPremium() {
     if (currentUser.account_type === 'premium' && currentUser.premium_status === 'active') {
         if (currentUser.premium_end) {
             const end = new Date(currentUser.premium_end);
-            if (end > new Date()) {
+            const now = new Date();
+            const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+            const nowUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+            if (endUTC > nowUTC) {
                 return true;
             } else {
                 currentUser.premium_status = 'expired';
@@ -2189,11 +2202,13 @@ function renderPremiumPage() {
 
     if (isPremium) {
         const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
+        const premiumId = currentUser.premium_id || 'N/A';
         container.innerHTML = `
             <div class="premium-status-card" style="max-width:500px; margin:0 auto; text-align:center; padding:30px; background:#f8fafc; border-radius:16px; border:1px solid #e6e6e6;">
                 <div class="premium-status-icon"><i class="fas fa-crown" style="color:#F5B400; font-size:3rem;"></i></div>
                 <h3>You are a Premium member!</h3>
                 <p>Your subscription is active until <strong>${endDate}</strong>.</p>
+                <p><strong>Premium ID :</strong> ${premiumId}</p>
                 <p>Enjoy unlimited events and exclusive benefits.</p>
                 <button class="btn-secondary" onclick="showPage('home')" style="margin-top:10px;">Go to Home</button>
             </div>
@@ -2275,6 +2290,9 @@ function renderPremiumPage() {
     });
 }
 
+// ============================================================
+// ABONNEMENT PREMIUM AVEC ID UNIQUE ET NOTIFICATION
+// ============================================================
 async function subscribePremiumWithDuration(durationDays) {
     if (!currentUser.wallet) {
         alert(t('pleaseConnect'));
@@ -2321,25 +2339,27 @@ async function subscribePremiumWithDuration(durationDays) {
                     endDate.setDate(endDate.getDate() + durationDays);
                     const piUid = currentUser.piUid || currentUser.wallet;
                     if (piUid) {
-                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active');
+                        // Générer un identifiant unique
+                        const premiumId = 'PREMIUM-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active', premiumId);
                         if (success) {
-                            currentUser.account_type = 'premium';
-                            currentUser.premium_start = startDate.toISOString();
-                            currentUser.premium_end = endDate.toISOString();
-                            currentUser.premium_status = 'active';
-                            saveUser();
-                            addNotification('You are now a Betix Premium member!', 'info');
-                            alert('Subscription successful! Welcome to Betix Premium.');
+                            // Recharger le statut
+                            await loadUserPremiumStatus(piUid);
+                            // Notification
+                            const message = `🎉 Abonnement Premium activé ! ID: ${premiumId}. Expire le ${endDate.toLocaleDateString('fr-FR')}.`;
+                            addNotification(message, 'success');
+                            alert(`Abonnement Premium réussi !\nVotre ID unique : ${premiumId}\nExpiration : ${endDate.toLocaleDateString('fr-FR')}\nGardez cet ID pour vos réclamations.`);
                             renderPremiumPage();
                             updateProfilePage();
                             updateUserInfo();
                             renderEventsByCategory();
+                            updatePremiumBanner();
                         } else {
-                            alert('Error updating premium status. Please contact support.');
+                            alert('Erreur lors de l\'activation Premium. Contactez le support.');
                         }
                     }
                 } catch (error) {
-                    alert('Error during premium subscription: ' + error.message);
+                    alert('Erreur : ' + error.message);
                 }
             },
             onCancel: function() {
@@ -2563,7 +2583,6 @@ async function confirmPurchase(eventId, quantity) {
                         
                         const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                          (currentUser.last_name ? ' ' + currentUser.last_name : '');
-                        // Ne plus stocker email et phone dans le ticket
                         const organizerName = event.organizerName || event.organizer || 'Anonymous';
                         const organizerPiUid = event.organizerPiUid || event.organizer || '';
                         
@@ -3855,11 +3874,130 @@ async function adminSaveSettings() {
     setTimeout(() => { msg.textContent = ''; }, 4000);
 }
 
+// ============================================================
+// ADMIN – NOUVELLE FONCTION LOAD ALL USERS
+// ============================================================
+async function loadAllUsersFromSupabase() {
+    try {
+        const { data: users, error: usersError } = await supabaseClient
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (usersError) throw usersError;
+
+        const { data: eventsData, error: eventsError } = await supabaseClient
+            .from('events')
+            .select('organizer_pi_uid');
+        if (eventsError) throw eventsError;
+
+        const eventCounts = {};
+        eventsData.forEach(ev => {
+            const uid = ev.organizer_pi_uid;
+            if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
+        });
+
+        const usersWithEvents = users.map(user => ({
+            ...user,
+            events_created: eventCounts[user.pi_uid] || 0
+        }));
+
+        return usersWithEvents;
+    } catch (error) {
+        console.error('Error loading users from Supabase:', error);
+        return [];
+    }
+}
+
+// ============================================================
+// ADMIN – RENDER ADMIN USERS (tableau complet)
+// ============================================================
+async function renderAdminUsers() {
+    const container = document.getElementById('adminUsersList');
+    if (!container) return;
+
+    const users = await loadAllUsersFromSupabase();
+    allUsersCache = users;
+    document.getElementById('adminUserCount').innerText = users.length;
+
+    if (!users || users.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">Aucun utilisateur trouvé.</p>';
+        return;
+    }
+
+    let html = `
+        <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">
+                <i class="fas fa-sync"></i> Rafraîchir
+            </button>
+        </div>
+        <table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">
+            <thead>
+                <tr style="background: #f3f4f6; color: #1f2937;">
+                    <th style="padding: 10px 8px; text-align: left;">Utilisateur</th>
+                    <th style="padding: 10px 8px; text-align: left;">Wallet</th>
+                    <th style="padding: 10px 8px; text-align: left;">Type de compte</th>
+                    <th style="padding: 10px 8px; text-align: left;">Statut Premium</th>
+                    <th style="padding: 10px 8px; text-align: left;">Date d'achat</th>
+                    <th style="padding: 10px 8px; text-align: left;">Date d'expiration</th>
+                    <th style="padding: 10px 8px; text-align: center;">Événements créés</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    users.forEach(user => {
+        const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'Utilisateur';
+        const wallet = user.wallet || user.pi_uid || '—';
+        const accountType = user.account_type || 'free';
+        const status = user.premium_status || 'inactive';
+        const start = user.premium_start ? new Date(user.premium_start).toLocaleDateString('fr-FR') : '—';
+        const end = user.premium_end ? new Date(user.premium_end).toLocaleDateString('fr-FR') : '—';
+
+        let statusLabel = 'Inactif';
+        let statusColor = '#6b7280';
+        if (status === 'active') {
+            statusLabel = 'Actif';
+            statusColor = '#10b981';
+        } else if (status === 'expired') {
+            statusLabel = 'Expiré';
+            statusColor = '#ef4444';
+        }
+
+        html += `
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 8px 6px;">${escapeHtml(name)}</td>
+                <td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">${escapeHtml(wallet)}</td>
+                <td style="padding: 8px 6px; text-transform: capitalize;">${accountType}</td>
+                <td style="padding: 8px 6px; color: ${statusColor}; font-weight: 600;">${statusLabel}</td>
+                <td style="padding: 8px 6px;">${start}</td>
+                <td style="padding: 8px 6px;">${end}</td>
+                <td style="padding: 8px 6px; text-align: center;">${user.events_created}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
+
+    container.innerHTML = html;
+}
+
+async function refreshUsersList() {
+    await renderAdminUsers();
+    addAdminLog('Utilisateurs rafraîchis', 'Liste mise à jour');
+}
+
 function loadAdminPage() {
     const storedPassword = localStorage.getItem('betix_admin_password');
-    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') { alert('Access denied. Please authenticate via 5 clicks on the logo.'); showPage('home'); return; }
+    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
+        alert('Access denied. Please authenticate via 5 clicks on the logo.');
+        showPage('home');
+        return;
+    }
     if (storedPassword && storedPassword !== adminPassword) adminPassword = storedPassword;
-    document.getElementById('adminUserCount').innerText = connectedUsers.length || 1;
+    document.getElementById('adminUserCount').innerText = allUsersCache.length || 0;
     document.getElementById('adminTicketCount').innerText = tickets.length;
     document.getElementById('adminEventCount').innerText = events.length;
     document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
@@ -3871,41 +4009,30 @@ function loadAdminPage() {
     document.getElementById('adminPremiumDuration').value = appSettings.premiumDurationDays;
     document.getElementById('adminPiRate').value = appSettings.piRate;
     document.getElementById('adminBadgeEnabled').checked = appSettings.badgeEnabled;
-    renderAdminEvents(); renderAdminSlides(); renderAdminUsers(); renderAdminLogs();
+    renderAdminEvents();
+    renderAdminSlides();
+    renderAdminUsers();
+    renderAdminLogs();
     initAdminTabs();
     if (!adminTimerInterval) startAdminSession();
     const userSearch = document.getElementById('adminUserSearch');
-    if (userSearch) userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
+    if (userSearch) userSearch.addEventListener('input', function() {
+        filterAdminUsers(this.value);
+    });
 }
 
 function filterAdminUsers(query) {
     const container = document.getElementById('adminUsersList');
     if (!container) return;
-    const rows = container.querySelectorAll('tr');
+    const rows = container.querySelectorAll('tbody tr');
     const search = query.toLowerCase().trim();
-    rows.forEach((row, index) => {
-        if (index === 0) return;
-        if (search === '' || row.textContent.toLowerCase().includes(search)) row.style.display = '';
-        else row.style.display = 'none';
-    });
-}
-
-function renderAdminUsers() {
-    const container = document.getElementById('adminUsersList');
-    if (!container) return;
-    let html = '<table><tr><th>User</th><th>Pi Account</th><th>Tickets</th><th>Average Rating</th><th>Last Seen</th></tr>';
-    const userRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
-    const avgRating = userRatings.length ? userRatings.reduce((a,r) => a + r.rating, 0) / userRatings.length : 0;
-    html += `<tr><td>${escapeHtml(currentUser.name)} <span style="color:#F5B400;font-size:0.7rem;">(you)</span></td><td>${currentUser.wallet || 'Not connected'}</td><td>${tickets.length}</td><td>${avgRating > 0 ? avgRating.toFixed(1) + '/5' : '-'}</td><td>Active</td></tr>`;
-    connectedUsers.forEach(u => {
-        if (u.wallet !== currentUser.wallet) {
-            const uRatings = ratings.filter(r => r.userWallet === u.wallet);
-            const uAvg = uRatings.length ? uRatings.reduce((a,r) => a + r.rating, 0) / uRatings.length : 0;
-            html += `<tr><td>${escapeHtml(u.name)}</td><td>${u.wallet || 'Not connected'}</td><td>${u.ticketCount || 0}</td><td>${uAvg > 0 ? uAvg.toFixed(1) + '/5' : '-'}</td><td>${u.lastSeen || 'Unknown'}</td></tr>`;
+    rows.forEach(row => {
+        if (search === '' || row.textContent.toLowerCase().includes(search)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
     });
-    html += '</table>';
-    container.innerHTML = html;
 }
 
 function renderAdminEvents() {
@@ -4272,6 +4399,9 @@ window.retryPendingTickets = retryPendingTickets;
 window.schedulePremiumNotification = schedulePremiumNotification;
 window.showPremiumBanner = showPremiumBanner;
 window.hidePremiumBanner = hidePremiumBanner;
+window.renderAdminUsers = renderAdminUsers;
+window.refreshUsersList = refreshUsersList;
+window.loadAllUsersFromSupabase = loadAllUsersFromSupabase;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
