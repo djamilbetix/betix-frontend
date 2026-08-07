@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
     <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
-    <!-- SUPPRESSION DE 'async' sur Supabase pour garantir le chargement avant script.js -->
+    <!-- Chargement de Supabase sans async pour garantir l'ordre -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
@@ -632,7 +632,7 @@
             <button class="btn-primary" id="adminSaveSettingsBtn" style="width:auto; padding:10px 30px;">Save Settings</button>
             <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
         </div>
-        <!-- NOUVEL ONGLET PREMIUM -->
+        <!-- ONGLET PREMIUM -->
         <div id="adminTabPremium" class="admin-tab-content">
             <h3>Attribuer le badge Premium</h3>
             <div class="admin-premium-search">
@@ -656,7 +656,7 @@
             <h3>Historique des attributions Premium</h3>
             <div id="adminPremiumHistory"></div>
         </div>
-        <!-- Fin nouvel onglet -->
+        <!-- Fin onglet Premium -->
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
@@ -930,7 +930,7 @@
         }, 500);
     }
 </script>
-<!-- Le script principal est chargé en dernier, après Supabase -->
+<!-- Le script principal est chargé en dernier -->
 <script src="script.js"></script>
 </body>
 </html>
