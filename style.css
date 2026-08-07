@@ -1044,7 +1044,7 @@ body {
 }
 
 /* ============================================================
-   CARROUSEL HORIZONTAL POUR IMAGES D'ÉVÉNEMENTS (STYLE X)
+   CARROUSEL HORIZONTAL POUR IMAGES D'ÉVÉNEMENTS (STYLE X) - AMÉLIORÉ
    ============================================================ */
 .event-carousel {
     position: relative;
@@ -1055,9 +1055,8 @@ body {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     background: #1a1a2e;
-    aspect-ratio: 16 / 9;
-    min-height: 160px;
-    max-height: 300px;
+    min-height: 200px;
+    max-height: 400px;
     display: flex;
     align-items: center;
 }
@@ -1088,7 +1087,7 @@ body {
 .carousel-slide img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     background: #1a1a2e;
     pointer-events: none;
     user-select: none;
@@ -1124,8 +1123,8 @@ body {
 
 @media (max-width: 480px) {
     .event-carousel {
-        min-height: 120px;
-        max-height: 200px;
+        min-height: 150px;
+        max-height: 250px;
     }
 }
 
