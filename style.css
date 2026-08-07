@@ -832,7 +832,7 @@ body {
 @media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; gap: 1rem; } }
 
 /* ============================================================
-   CARTE ÉVÉNEMENT (version compacte avec CARROUSEL)
+   CARTE ÉVÉNEMENT – STYLE PROFESSIONNEL AVEC CARROUSEL
    ============================================================ */
 .event-card-classic {
     background: #ffffff;
@@ -858,8 +858,8 @@ body {
     overflow: hidden;
     background: #f3f4f6;
     aspect-ratio: auto;
-    min-height: 160px;
-    max-height: 300px;
+    min-height: 200px;
+    max-height: 350px;
 }
 .event-card-classic .category-badge-classic {
     position: absolute;
@@ -892,14 +892,15 @@ body {
     margin-bottom: 2px;
 }
 .event-description-full {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #4b5563;
-    line-height: 1.4;
+    line-height: 1.5;
     margin: 2px 0;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 5;  /* Augmenté pour voir plus de texte */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-height: 3.5rem;
 }
 .event-info-box {
     background: #f3f4f6;
@@ -907,18 +908,19 @@ body {
     padding: 6px 10px;
     margin: 2px 0 4px;
     border: 1px solid #e6e6e6;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 .event-location-line,
 .event-datetime-line {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 0.7rem;
     color: #1f2937;
-    margin: 1px 0;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start; /* aligné à gauche pour un look pro */
 }
 .event-location-line i,
 .event-datetime-line i {
@@ -1044,7 +1046,7 @@ body {
 }
 
 /* ============================================================
-   CARROUSEL HORIZONTAL POUR IMAGES D'ÉVÉNEMENTS (STYLE X) - AMÉLIORÉ
+   CARROUSEL HORIZONTAL (STYLE X) – défilement plein écran
    ============================================================ */
 .event-carousel {
     position: relative;
@@ -1056,15 +1058,17 @@ body {
     scroll-behavior: smooth;
     background: #1a1a2e;
     min-height: 200px;
-    max-height: 400px;
+    max-height: 350px;
     display: flex;
     align-items: center;
+    cursor: grab;
 }
-
+.event-carousel:active {
+    cursor: grabbing;
+}
 .event-carousel::-webkit-scrollbar {
     display: none;
 }
-
 .carousel-track {
     display: flex;
     height: 100%;
@@ -1072,7 +1076,6 @@ body {
     gap: 0;
     flex-shrink: 0;
 }
-
 .carousel-slide {
     flex: 0 0 100%;
     height: 100%;
@@ -1083,16 +1086,14 @@ body {
     align-items: center;
     justify-content: center;
 }
-
 .carousel-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* remplit tout l'espace sans déformation */
     background: #1a1a2e;
     pointer-events: none;
     user-select: none;
 }
-
 .carousel-indicators {
     position: absolute;
     bottom: 8px;
@@ -1106,7 +1107,6 @@ body {
     border-radius: 20px;
     backdrop-filter: blur(4px);
 }
-
 .carousel-indicators .dot {
     width: 6px;
     height: 6px;
@@ -1114,24 +1114,20 @@ body {
     background: rgba(255,255,255,0.4);
     transition: all 0.3s ease;
 }
-
 .carousel-indicators .dot.active {
     background: #F5B400;
     width: 18px;
     border-radius: 4px;
 }
-
 @media (max-width: 480px) {
     .event-carousel {
         min-height: 150px;
         max-height: 250px;
     }
 }
-
 body.dark-mode .event-carousel {
     background: #2d3748;
 }
-
 body.dark-mode .carousel-slide {
     background: #2d3748;
 }
