@@ -301,12 +301,7 @@ let currentUser = {
     country: '',
     address: '',
     email: '',
-    phone_number: '',
-    account_type: 'free',
-    premium_start: null,
-    premium_end: null,
-    premium_status: 'inactive',
-    premium_id: null
+    phone_number: ''
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -336,12 +331,9 @@ let allUsersCache = [];
 // PARAMÈTRES DE L'APPLICATION
 // ============================================================
 let appSettings = {
-    premiumPriceUSD: 5,
     commissionPercent: 5,
     serviceFeePercent: 2,
-    premiumDurationDays: 30,
-    piRate: 1,
-    badgeEnabled: true
+    piRate: 1
 };
 
 // ============================================================
@@ -586,11 +578,6 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             address: currentUser.address || '',
             email: currentUser.email || '',
             phone_number: currentUser.phone_number || '',
-            account_type: currentUser.account_type || 'free',
-            premium_start: currentUser.premium_start || null,
-            premium_end: currentUser.premium_end || null,
-            premium_status: currentUser.premium_status || 'inactive',
-            premium_id: currentUser.premium_id || null,
             updated_at: now,
             last_seen: now
         };
@@ -1062,123 +1049,6 @@ async function saveAppSettings(settings) {
 }
 
 // ============================================================
-// GESTION PREMIUM (modifié avec premium_id)
-// ============================================================
-async function loadUserPremiumStatus(piUid) {
-    if (!piUid) return;
-    try {
-        const { data, error } = await supabaseClient
-            .from('users')
-            .select('account_type, premium_start, premium_end, premium_status, premium_id')
-            .eq('pi_uid', piUid)
-            .single();
-        if (error) throw error;
-        if (data) {
-            currentUser.account_type = data.account_type || 'free';
-            currentUser.premium_start = data.premium_start || null;
-            currentUser.premium_end = data.premium_end || null;
-            currentUser.premium_status = data.premium_status || 'inactive';
-            currentUser.premium_id = data.premium_id || null;
-            if (currentUser.premium_status === 'active' && currentUser.premium_end) {
-                const endDate = new Date(currentUser.premium_end);
-                if (endDate < new Date()) {
-                    currentUser.premium_status = 'expired';
-                    currentUser.account_type = 'free';
-                    await updateUserPremiumStatus(piUid, 'free', null, null, 'expired');
-                }
-            }
-            saveUser();
-            updateUserInfo();
-            updateProfilePage();
-            renderPremiumPage();
-            renderEventsByCategory();
-        }
-    } catch (error) {
-        console.warn('Could not load premium status:', error);
-    }
-}
-
-async function updateUserPremiumStatus(piUid, account_type, premium_start, premium_end, premium_status, premium_id = null) {
-    try {
-        const updates = {
-            account_type,
-            premium_start,
-            premium_end,
-            premium_status,
-            updated_at: new Date().toISOString()
-        };
-        if (premium_id) updates.premium_id = premium_id;
-        const { error } = await supabaseClient
-            .from('users')
-            .update(updates)
-            .eq('pi_uid', piUid);
-        if (error) throw error;
-        console.log('Premium status updated in Supabase for', piUid);
-        return true;
-    } catch (error) {
-        console.error('Error updating premium status:', error);
-        return false;
-    }
-}
-
-function isUserPremium() {
-    if (currentUser.account_type === 'premium' && currentUser.premium_status === 'active') {
-        if (currentUser.premium_end) {
-            const end = new Date(currentUser.premium_end);
-            const now = new Date();
-            const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
-            const nowUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-            if (endUTC > nowUTC) {
-                return true;
-            } else {
-                currentUser.premium_status = 'expired';
-                currentUser.account_type = 'free';
-                saveUser();
-                if (currentUser.piUid) {
-                    updateUserPremiumStatus(currentUser.piUid, 'free', null, null, 'expired');
-                }
-                return false;
-            }
-        }
-    }
-    return false;
-}
-
-function countFreeEventsThisMonth() {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const userId = currentUser.piUid || currentUser.wallet;
-    if (!userId) return 0;
-    return events.filter(e => {
-        const created = new Date(e.createdAt);
-        return created >= monthStart && (e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
-    }).length;
-}
-
-function canPublishEvent() {
-    if (isUserPremium()) return true;
-    const count = countFreeEventsThisMonth();
-    return count < 3;
-}
-
-function getRemainingFreeEvents() {
-    if (isUserPremium()) return Infinity;
-    const count = countFreeEventsThisMonth();
-    return Math.max(0, 3 - count);
-}
-
-// ============================================================
-// BADGE VERIFIED
-// ============================================================
-function renderVerifiedBadge(userId, userName) {
-    if (!appSettings.badgeEnabled) return '';
-    if (isUserPremium() && (userId === currentUser.piUid || userId === currentUser.wallet || userName === currentUser.name)) {
-        return `<span class="verified-badge" title="Betix Verified"><i class="fas fa-check-circle" style="color:#0B1F5C; font-size:0.8rem; margin-left:4px;"></i></span>`;
-    }
-    return '';
-}
-
-// ============================================================
 // VÉRIFICATION DU PROFIL COMPLET
 // ============================================================
 function checkProfileComplete() {
@@ -1309,7 +1179,6 @@ function generateTicketHTML(ticket) {
     `;
 }
 
-
 // ============================================================
 // GÉNÉRER LE QR CODE – AVEC NETTOYAGE
 // ============================================================
@@ -1339,49 +1208,6 @@ function generateAllQRCodes() {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
-}
-
-// ============================================================
-// NOTIFICATION PREMIUM APRÈS 15 SECONDES
-// ============================================================
-let premiumBannerTimer = null;
-let premiumAutoHideTimer = null;
-
-function schedulePremiumNotification() {
-    if (!currentUser.wallet || isUserPremium()) return;
-    clearTimeout(premiumBannerTimer);
-    clearTimeout(premiumAutoHideTimer);
-    premiumBannerTimer = setTimeout(() => {
-        showPremiumBanner();
-    }, 15000);
-}
-
-function showPremiumBanner() {
-    const banner = document.getElementById('premiumBanner');
-    if (!banner) return;
-    if (isUserPremium() || !currentUser.wallet) {
-        banner.style.display = 'none';
-        return;
-    }
-    banner.style.display = 'block';
-    setTimeout(() => {
-        banner.style.transform = 'translateY(0)';
-    }, 10);
-    clearTimeout(premiumAutoHideTimer);
-    premiumAutoHideTimer = setTimeout(() => {
-        hidePremiumBanner();
-    }, 5000);
-}
-
-function hidePremiumBanner() {
-    const banner = document.getElementById('premiumBanner');
-    if (!banner) return;
-    banner.style.transform = 'translateY(-100%)';
-    setTimeout(() => {
-        banner.style.display = 'none';
-        banner.style.transform = 'translateY(-100%)';
-    }, 500);
-    clearTimeout(premiumAutoHideTimer);
 }
 
 // ============================================================
@@ -1664,8 +1490,6 @@ function renderEventCard(event) {
         </div>
     `;
 
-    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
-
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
         <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
         <div class="card-content-classic">
@@ -1680,7 +1504,7 @@ function renderEventCard(event) {
                 ${priceRightHtml}
             </div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
-            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)} ${badgeHtml}</div>
+            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)}</div>
             ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}` : ''}
         </div>
     </div>`;
@@ -1755,8 +1579,6 @@ function openEventDetails(eventId) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, organizerDisplay);
-
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1792,7 +1614,7 @@ function openEventDetails(eventId) {
             <div class="detail-block meta-block">
                 <h4><i class="fas fa-ellipsis-h"></i> ${t('information')}</h4>
                 <div class="meta-grid">
-                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)} ${badgeHtml}</span></div>
+                    <div><span class="meta-label">${t('organizer')}</span><span class="meta-value">${escapeHtml(organizerDisplay)}</span></div>
                     <div><span class="meta-label">${t('createdOn')}</span><span class="meta-value">${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
                     <div><span class="meta-label">${t('seatsLeft')}</span><span class="meta-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
                     <div><span class="meta-label">${t('rating')}</span><span class="meta-value">${ratingDisplay}</span></div>
@@ -2211,209 +2033,6 @@ function verifyPhone() {
     alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
     document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     document.getElementById('verifyPhoneBtn').classList.add('verified');
-}
-
-// ============================================================
-// PAGE PREMIUM – 3 CARTES AVEC ABONNEMENT ANNUEL
-// ============================================================
-function renderPremiumPage() {
-    const container = document.getElementById('premiumContent');
-    if (!container) return;
-    const isPremium = isUserPremium();
-
-    if (isPremium) {
-        const endDate = currentUser.premium_end ? new Date(currentUser.premium_end).toLocaleDateString('en-US') : 'N/A';
-        const premiumId = currentUser.premium_id || 'N/A';
-        container.innerHTML = `
-            <div class="premium-status-card" style="max-width:500px; margin:0 auto; text-align:center; padding:30px; background:#f8fafc; border-radius:16px; border:1px solid #e6e6e6;">
-                <div class="premium-status-icon"><i class="fas fa-crown" style="color:#F5B400; font-size:3rem;"></i></div>
-                <h3>You are a Premium member!</h3>
-                <p>Your subscription is active until <strong>${endDate}</strong>.</p>
-                <p><strong>Premium ID :</strong> ${premiumId}</p>
-                <p>Enjoy unlimited events and exclusive benefits.</p>
-                <button class="btn-secondary" onclick="showPage('home')" style="margin-top:10px;">Go to Home</button>
-            </div>
-        `;
-        return;
-    }
-
-    const monthlyPrice = appSettings.premiumPriceUSD || 5;
-    const yearlyPrice = monthlyPrice * 10;
-    const piRate = appSettings.piRate || 1;
-    const monthlyPi = monthlyPrice / piRate;
-    const yearlyPi = yearlyPrice / piRate;
-
-    const featuresFree = [
-        { icon: 'fa-check-circle', text: 'Publish up to 3 events per month' },
-        { icon: 'fa-check-circle', text: 'Buy tickets without limits' },
-        { icon: 'fa-times-circle', text: 'No Betix Verified badge' },
-        { icon: 'fa-times-circle', text: 'No event promotion' },
-        { icon: 'fa-times-circle', text: 'No priority in searches' },
-        { icon: 'fa-times-circle', text: 'No advanced statistics' },
-        { icon: 'fa-times-circle', text: 'Standard support' }
-    ];
-    const featuresMonthly = [
-        { icon: 'fa-check-circle', text: 'Unlimited publications' },
-        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
-        { icon: 'fa-check-circle', text: 'Automatic promotion on homepage' },
-        { icon: 'fa-check-circle', text: 'Priority in searches' },
-        { icon: 'fa-check-circle', text: 'More visibility to buyers' },
-        { icon: 'fa-check-circle', text: 'Advanced statistics' },
-        { icon: 'fa-check-circle', text: 'Priority support' }
-    ];
-    const featuresYearly = [
-        { icon: 'fa-check-circle', text: 'All Monthly Premium benefits' },
-        { icon: 'fa-check-circle', text: 'Unlimited publications' },
-        { icon: 'fa-check-circle', text: 'Betix Verified badge' },
-        { icon: 'fa-check-circle', text: 'Maximum priority' },
-        { icon: 'fa-check-circle', text: 'Complete advanced statistics' },
-        { icon: 'fa-check-circle', text: 'Priority support' },
-        { icon: 'fa-check-circle', text: 'Save money vs monthly payment' }
-    ];
-
-    const card = (id, name, price, priceLabel, features, recommended, btnText, btnDisabled, badgeText = '') => {
-        const badgeHtml = badgeText ? `<div class="plan-badge">${badgeText}</div>` : '';
-        const btnClass = btnDisabled ? 'btn-subscribe disabled' : 'btn-subscribe';
-        return `
-            <div class="pricing-card ${recommended ? 'recommended' : ''} ${id === 'free' ? 'free' : ''}">
-                ${badgeHtml}
-                <div class="plan-name">${name}</div>
-                <div class="plan-price">${price} <small>Pi</small></div>
-                <div style="font-size:0.7rem; color:#6b7280; text-align:center; margin-bottom:8px;">${priceLabel}</div>
-                <div class="plan-description">${id === 'free' ? 'Ideal for discovering Betix and starting to organize your events.' : 
-                    id === 'monthly' ? 'The best choice for organizers looking to quickly grow their visibility.' :
-                    'The best value for enjoying all Premium benefits for a full year.'}</div>
-                <ul class="plan-features">
-                    ${features.map(f => `<li><i class="fas ${f.icon}"></i><span class="feature-text">${f.text}</span></li>`).join('')}
-                </ul>
-                <button class="${btnClass}" data-plan="${id}" ${btnDisabled ? 'disabled' : ''}>
-                    ${btnText}
-                </button>
-            </div>
-        `;
-    };
-
-    const plansHtml = `<div class="pricing-table">
-        ${card('free', 'Free', '0', 'Free', featuresFree, false, 'Current Plan', true)}
-        ${card('monthly', 'Monthly Premium', monthlyPi.toFixed(6), `≈ $${monthlyPrice} / month`, featuresMonthly, true, 'Upgrade to Premium', false, 'RECOMMENDED')}
-        ${card('yearly', 'Yearly Premium', yearlyPi.toFixed(6), `≈ $${yearlyPrice} / year`, featuresYearly, false, 'Choose Yearly Plan', false, 'BEST VALUE')}
-    </div>`;
-
-    container.innerHTML = plansHtml;
-
-    container.querySelectorAll('.btn-subscribe:not(.disabled)').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const plan = this.dataset.plan || 'monthly';
-            let duration = appSettings.premiumDurationDays;
-            if (plan === 'yearly') duration = 365;
-            subscribePremiumWithDuration(duration);
-        });
-    });
-}
-
-// ============================================================
-// ABONNEMENT PREMIUM AVEC ID UNIQUE ET NOTIFICATION (MODIFIÉ)
-// ============================================================
-async function subscribePremiumWithDuration(durationDays) {
-    if (!currentUser.wallet) {
-        alert(t('pleaseConnect'));
-        connectToPi();
-        return;
-    }
-    if (isUserPremium()) {
-        alert('You are already a Premium member.');
-        return;
-    }
-    const usdPrice = appSettings.premiumPriceUSD || 5;
-    let priceUSD = usdPrice;
-    if (durationDays && durationDays !== appSettings.premiumDurationDays) {
-        priceUSD = usdPrice * (durationDays / appSettings.premiumDurationDays);
-    }
-    const piRate = appSettings.piRate || 1;
-    const priceInPi = priceUSD / piRate;
-    if (priceInPi <= 0) {
-        alert('Premium price not configured. Please contact admin.');
-        return;
-    }
-    if (!confirm(`Subscribe to Betix Premium for ${priceInPi.toFixed(6)} Pi (≈ $${priceUSD}) for ${durationDays} days?`)) return;
-    try {
-        if (typeof Pi === 'undefined') {
-            alert('Pi SDK not available. Please use Pi Browser.');
-            return;
-        }
-        const payment = await Pi.createPayment({
-            amount: priceInPi,
-            memo: `Betix Premium Subscription (${durationDays} days)`,
-            metadata: { type: 'premium_subscription', duration: durationDays }
-        }, {
-            onReadyForServerApproval: function(paymentId) {
-                fetch(BACKEND_URL + '/api/pi/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId })
-                }).catch(() => {});
-            },
-            onReadyForServerCompletion: async function(paymentId, txid) {
-                try {
-                    const startDate = new Date();
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + durationDays);
-                    const piUid = currentUser.piUid || currentUser.wallet;
-                    if (piUid) {
-                        const premiumId = 'PREMIUM-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-                        const success = await updateUserPremiumStatus(piUid, 'premium', startDate.toISOString(), endDate.toISOString(), 'active', premiumId);
-                        if (success) {
-                            await loadUserPremiumStatus(piUid);
-                            
-                            // Notification et popup de succès
-                            const message = `🎉 Abonnement Premium activé ! ID: ${premiumId}. Expire le ${endDate.toLocaleDateString('fr-FR')}.`;
-                            addNotification(message, 'success');
-                            
-                            showSuccessPopup(
-                                { title: 'Betix Premium', date: endDate.toISOString() },
-                                [{ id: 'premium' }],
-                                1
-                            );
-                            document.getElementById('successTitle').textContent = '✅ Premium activé !';
-                            document.getElementById('successMessage').textContent = `Félicitations ! Vous êtes désormais membre Premium jusqu'au ${endDate.toLocaleDateString('fr-FR')}.`;
-                            const info = document.getElementById('successTicketInfo');
-                            info.innerHTML = `
-                                <div class="ticket-line"><span class="ticket-label">ID Premium</span><span class="ticket-value">${premiumId}</span></div>
-                                <div class="ticket-line"><span class="ticket-label">Expiration</span><span class="ticket-value">${endDate.toLocaleDateString('fr-FR')}</span></div>
-                            `;
-                            
-                            // Mise à jour forcée de l'UI
-                            renderPremiumPage();
-                            updateProfilePage();
-                            updateUserInfo();
-                            renderEventsByCategory();
-                            updatePremiumBanner();
-                            updateSidebar();
-                            
-                            alert(`Abonnement Premium réussi !\nVotre ID unique : ${premiumId}\nExpiration : ${endDate.toLocaleDateString('fr-FR')}\nGardez cet ID pour vos réclamations.`);
-                        } else {
-                            alert('Erreur lors de l\'activation Premium. Contactez le support.');
-                        }
-                    }
-                } catch (error) {
-                    alert('Erreur : ' + error.message);
-                }
-            },
-            onCancel: function() {
-                alert('Payment cancelled.');
-            },
-            onError: function(error) {
-                alert('Payment error: ' + error.message);
-            },
-            onIncompletePaymentFound
-        });
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
-
-function subscribePremium() {
-    subscribePremiumWithDuration(appSettings.premiumDurationDays);
 }
 
 // ============================================================
@@ -2917,7 +2536,6 @@ async function connectToPi() {
                         alert('Pi account connected (demo mode)! Welcome Demo User');
                         closeSidebar();
                         await loadProfileData();
-                        schedulePremiumNotification();
                         hideConnectSpinner();
                         return;
                     }
@@ -2949,7 +2567,6 @@ async function connectToPi() {
                     closeSidebar();
                     await loadProfileData();
                     await retryPendingTickets();
-                    schedulePremiumNotification();
                     hideConnectSpinner();
                     return;
                 } else {
@@ -2977,7 +2594,7 @@ async function connectToPi() {
 }
 
 // ============================================================
-// CRÉATION D'ÉVÉNEMENT
+// CRÉATION D'ÉVÉNEMENT (sans limite premium)
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
@@ -2986,11 +2603,6 @@ async function createEvent(e) {
     const publishBtn = document.getElementById('publishEventBtn');
     if (publishBtn.classList.contains('loading')) return;
     if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
-    if (!canPublishEvent()) {
-        alert('You have reached the limit of 3 free events per month. Please upgrade to Premium to publish unlimited events.');
-        document.getElementById('freeLimitMessage').style.display = 'block';
-        return;
-    }
     const title = document.getElementById('eventTitle').value.trim();
     const category = document.getElementById('eventCategory').value;
     const pays = document.getElementById('eventCountry').value;
@@ -3412,9 +3024,8 @@ function syncSettingsLanguageSelector() {
 }
 
 // ============================================================
-// NOTIFICATIONS – FONCTIONS DE SUPPRESSION (AJOUT)
+// NOTIFICATIONS – FONCTIONS DE SUPPRESSION
 // ============================================================
-// Supprimer une notification par son id
 function deleteNotification(id) {
     notifications = notifications.filter(n => n.id !== id);
     saveNotifications();
@@ -3423,7 +3034,6 @@ function deleteNotification(id) {
     updateSidebarNotifBadge();
 }
 
-// Supprimer toutes les notifications
 function clearAllNotifications() {
     if (notifications.length === 0) return;
     if (confirm('Supprimer toutes les notifications ?')) {
@@ -3436,9 +3046,6 @@ function clearAllNotifications() {
     }
 }
 
-// ============================================================
-// RENDER NOTIFICATIONS PAGE (MODIFIÉ)
-// ============================================================
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
@@ -3489,16 +3096,12 @@ function renderNotificationsPage() {
 
     container.innerHTML = html;
 
-    // Marquer toutes les notifications comme lues
     notifications.forEach(n => n.read = true);
     saveNotifications();
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
 }
 
-// ============================================================
-// NOTIFICATIONS - AUTRES FONCTIONS EXISTANTES
-// ============================================================
 function updateNotifBadgeHeader() {
     const badge = document.getElementById('notifBadgeHeader');
     if (!badge) return;
@@ -3558,7 +3161,7 @@ function bindActivityListeners() { ['click','scroll','keydown','touchstart'].for
 
 function showPage(pageName) {
     updateActivity();
-    const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage','premiumPage'];
+    const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
     pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
     let displayPage = pageName;
     if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
@@ -3576,7 +3179,6 @@ function showPage(pageName) {
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
     if (pageName === 'notifications') renderNotificationsPage();
-    if (pageName === 'premium') renderPremiumPage();
     closeSidebar();
     window.scrollTo(0, 0);
 }
@@ -3621,17 +3223,6 @@ function showConnectSpinner() {
 function hideConnectSpinner() {
     const btn = document.getElementById('sidebarWalletBtn');
     if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
-}
-
-function updatePremiumBanner() {
-    const banner = document.getElementById('premiumBanner');
-    if (!banner) return;
-    if (!currentUser.wallet) { banner.style.display = 'none'; return; }
-    if (isUserPremium()) {
-        banner.style.display = 'none';
-    } else {
-        banner.style.display = 'none';
-    }
 }
 
 function trackUserConnection() {
@@ -3686,7 +3277,6 @@ function renderMyEventCardModern(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
     const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : 'No ticket types';
-    const badgeHtml = renderVerifiedBadge(event.organizerPiUid || event.organizer, event.organizerName || event.organizer || '');
     return `<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="${imageUrl}" class="event-image" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"><span class="event-status-badge-modern ${statusClass}">${statusBadge}</span></div><div class="event-body-modern"><div class="event-title-modern">${escapeHtml(event.title)}</div><div class="event-details-modern">
         <div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">${t('eventDate')}</span> <span class="detail-value">${dateFormatted}</span></div>
         <div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">${t('eventTime')}</span> <span class="detail-value">${timeFormatted}</span></div>
@@ -3747,31 +3337,10 @@ function updateUserInfo() {
     document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
     document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
     document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
-    const badgeEl = document.getElementById('profileBadgeVerified');
-    if (badgeEl) {
-        if (isUserPremium() && appSettings.badgeEnabled) {
-            badgeEl.style.display = 'inline';
-        } else {
-            badgeEl.style.display = 'none';
-        }
-    }
-    const accountBadge = document.getElementById('profileAccountTypeBadge');
-    if (accountBadge) {
-        if (isUserPremium()) {
-            accountBadge.innerHTML = '<i class="fas fa-crown"></i> Premium';
-            accountBadge.style.background = 'rgba(245, 180, 0, 0.2)';
-            accountBadge.style.color = '#F5B400';
-        } else {
-            accountBadge.innerHTML = '<i class="fas fa-user"></i> Free';
-            accountBadge.style.background = 'rgba(255,255,255,0.12)';
-            accountBadge.style.color = 'white';
-        }
-    }
     updateConnectButtons();
     updateSidebarNotifBadge();
     updateUITranslations();
     updateScanButtonVisibility();
-    updatePremiumBanner();
 }
 
 function updateProfilePage() {
@@ -3785,26 +3354,6 @@ function updateProfilePage() {
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
-
-    const remaining = getRemainingFreeEvents();
-    const isPremium = isUserPremium();
-    const statsGrid = document.querySelector('.profile-stats-grid');
-    if (statsGrid) {
-        let statCard = document.querySelector('.stat-card.remaining-pubs');
-        if (!statCard) {
-            statCard = document.createElement('div');
-            statCard.className = 'stat-card remaining-pubs';
-            statCard.innerHTML = `
-                <span class="stat-number" id="remainingPubsCount">${isPremium ? '∞' : remaining}</span>
-                <span class="stat-label"><i class="fas fa-calendar-alt"></i> Publications restantes</span>
-                <span class="stat-link">${isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois'}</span>
-            `;
-            statsGrid.appendChild(statCard);
-        } else {
-            document.getElementById('remainingPubsCount').textContent = isPremium ? '∞' : remaining;
-            statCard.querySelector('.stat-link').textContent = isPremium ? '✅ Premium illimité' : 'Sur 3 ce mois';
-        }
-    }
 
     updateUserInfo();
     updateScanButtonVisibility();
@@ -3938,26 +3487,18 @@ function adminChangePassword() {
 }
 
 async function adminSaveSettings() {
-    const premiumPrice = parseFloat(document.getElementById('adminPremiumPrice').value);
     const commission = parseFloat(document.getElementById('adminCommission').value);
     const serviceFee = parseFloat(document.getElementById('adminServiceFee').value);
-    const premiumDuration = parseInt(document.getElementById('adminPremiumDuration').value);
     const piRate = parseFloat(document.getElementById('adminPiRate').value);
-    const badgeEnabled = document.getElementById('adminBadgeEnabled').checked;
 
-    if (isNaN(premiumPrice) || premiumPrice < 0) { alert('Invalid Premium Price'); return; }
     if (isNaN(commission) || commission < 0 || commission > 100) { alert('Commission must be between 0 and 100'); return; }
     if (isNaN(serviceFee) || serviceFee < 0 || serviceFee > 100) { alert('Service Fee must be between 0 and 100'); return; }
-    if (isNaN(premiumDuration) || premiumDuration < 1) { alert('Premium Duration must be at least 1 day'); return; }
     if (isNaN(piRate) || piRate <= 0) { alert('Pi Rate must be greater than 0'); return; }
 
     const settings = {
-        premiumPriceUSD: premiumPrice,
         commissionPercent: commission,
         serviceFeePercent: serviceFee,
-        premiumDurationDays: premiumDuration,
-        piRate: piRate,
-        badgeEnabled: badgeEnabled
+        piRate: piRate
     };
 
     const success = await saveAppSettings(settings);
@@ -3965,7 +3506,6 @@ async function adminSaveSettings() {
     if (success) {
         msg.textContent = 'Settings saved successfully!';
         msg.style.color = '#10b981';
-        renderPremiumPage();
         renderEventsByCategory();
         updateProfilePage();
     } else {
@@ -4036,11 +3576,7 @@ async function renderAdminUsers() {
                 <tr style="background: #f3f4f6; color: #1f2937;">
                     <th style="padding: 10px 8px; text-align: left;">Utilisateur</th>
                     <th style="padding: 10px 8px; text-align: left;">Wallet</th>
-                    <th style="padding: 10px 8px; text-align: left;">Type de compte</th>
-                    <th style="padding: 10px 8px; text-align: left;">Statut Premium</th>
-                    <th style="padding: 10px 8px; text-align: left;">Date d'achat</th>
-                    <th style="padding: 10px 8px; text-align: left;">Date d'expiration</th>
-                    <th style="padding: 10px 8px; text-align: center;">Événements créés</th>
+                    <th style="padding: 10px 8px; text-align: left;">Événements créés</th>
                 </tr>
             </thead>
             <tbody>
@@ -4049,29 +3585,11 @@ async function renderAdminUsers() {
     users.forEach(user => {
         const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'Utilisateur';
         const wallet = user.wallet || user.pi_uid || '—';
-        const accountType = user.account_type || 'free';
-        const status = user.premium_status || 'inactive';
-        const start = user.premium_start ? new Date(user.premium_start).toLocaleDateString('fr-FR') : '—';
-        const end = user.premium_end ? new Date(user.premium_end).toLocaleDateString('fr-FR') : '—';
-
-        let statusLabel = 'Inactif';
-        let statusColor = '#6b7280';
-        if (status === 'active') {
-            statusLabel = 'Actif';
-            statusColor = '#10b981';
-        } else if (status === 'expired') {
-            statusLabel = 'Expiré';
-            statusColor = '#ef4444';
-        }
 
         html += `
             <tr style="border-bottom: 1px solid #e5e7eb;">
                 <td style="padding: 8px 6px;">${escapeHtml(name)}</td>
                 <td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">${escapeHtml(wallet)}</td>
-                <td style="padding: 8px 6px; text-transform: capitalize;">${accountType}</td>
-                <td style="padding: 8px 6px; color: ${statusColor}; font-weight: 600;">${statusLabel}</td>
-                <td style="padding: 8px 6px;">${start}</td>
-                <td style="padding: 8px 6px;">${end}</td>
                 <td style="padding: 8px 6px; text-align: center;">${user.events_created}</td>
             </tr>
         `;
@@ -4104,12 +3622,9 @@ function loadAdminPage() {
     document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
     document.getElementById('adminLoginCount').textContent = localStorage.getItem('betix_admin_login_count') || 0;
     document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
-    document.getElementById('adminPremiumPrice').value = appSettings.premiumPriceUSD;
     document.getElementById('adminCommission').value = appSettings.commissionPercent;
     document.getElementById('adminServiceFee').value = appSettings.serviceFeePercent;
-    document.getElementById('adminPremiumDuration').value = appSettings.premiumDurationDays;
     document.getElementById('adminPiRate').value = appSettings.piRate;
-    document.getElementById('adminBadgeEnabled').checked = appSettings.badgeEnabled;
     renderAdminEvents();
     renderAdminSlides();
     renderAdminUsers();
@@ -4334,9 +3849,6 @@ async function initApp() {
             }, 3000);
         }
         await loadAppSettings();
-        if (currentUser.piUid || currentUser.wallet) {
-            await loadUserPremiumStatus(currentUser.piUid || currentUser.wallet);
-        }
         detectLanguage();
         syncSettingsLanguageSelector();
         loadUsedTickets();
@@ -4348,7 +3860,6 @@ async function initApp() {
         updateUserInfo();
         updateProfilePage();
         updateNotifBadgeHeader();
-        updatePremiumBanner();
         initAdmin();
         initChat();
         initLegalModals();
@@ -4451,9 +3962,6 @@ async function initApp() {
                 if (eventsSection) { eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             }, 300);
         });
-        if (currentUser.wallet) {
-            schedulePremiumNotification();
-        }
     } catch (error) {
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
@@ -4477,15 +3985,9 @@ window.loadHeroSlides = loadHeroSlides;
 window.saveHeroSlideToSupabase = saveHeroSlideToSupabase;
 window.deleteHeroSlideFromSupabase = deleteHeroSlideFromSupabase;
 window.uploadHeroImage = uploadHeroImage;
-window.renderPremiumPage = renderPremiumPage;
-window.subscribePremium = subscribePremium;
-window.subscribePremiumWithDuration = subscribePremiumWithDuration;
 window.adminSaveSettings = adminSaveSettings;
 window.loadAppSettings = loadAppSettings;
 window.saveAppSettings = saveAppSettings;
-window.isUserPremium = isUserPremium;
-window.canPublishEvent = canPublishEvent;
-window.getRemainingFreeEvents = getRemainingFreeEvents;
 window.downloadTicketPDF = downloadTicketPDF;
 window.downloadTicketPNG = downloadTicketPNG;
 window.viewTicketModal = viewTicketModal;
@@ -4497,9 +3999,6 @@ window.openQuantityPopup = openQuantityPopup;
 window.requireLogin = requireLogin;
 window.requireProfileComplete = requireProfileComplete;
 window.retryPendingTickets = retryPendingTickets;
-window.schedulePremiumNotification = schedulePremiumNotification;
-window.showPremiumBanner = showPremiumBanner;
-window.hidePremiumBanner = hidePremiumBanner;
 window.renderAdminUsers = renderAdminUsers;
 window.refreshUsersList = refreshUsersList;
 window.loadAllUsersFromSupabase = loadAllUsersFromSupabase;
