@@ -95,7 +95,6 @@
         </button>
         <button class="sidebar-item" onclick="window.location.href='whitepaper.html'"><i class="fas fa-file-alt"></i> Whitepaper</button>
         <button class="sidebar-item" onclick="window.location.href='faq.html'"><i class="fas fa-question-circle"></i> FAQ</button>
-        <!-- Premium button removed -->
         <button class="sidebar-item" id="adminMenuItem" data-page="admin" style="display: none; background: linear-gradient(135deg, #1a1a2e, #08143F); color: white;"><i class="fas fa-shield-alt"></i> Administration</button>
         <div class="sidebar-social">
             <div class="sidebar-social-title">Follow us</div>
@@ -139,7 +138,6 @@
 
 <!-- HOME PAGE -->
 <div id="homePage">
-    <!-- Premium banner removed -->
     <section class="hero">
         <div class="hero-slider-container">
             <div class="hero-slider">
@@ -183,7 +181,6 @@
 <div id="createPage" class="hidden-page">
     <div class="events-container" style="max-width:700px">
         <h2 class="events-title">Create Event</h2>
-        <!-- Free limit message removed -->
         <form id="eventForm" class="create-form">
             <div class="form-group">
                 <label>Title <span style="font-size:0.7rem; color:#6b7280;">(max 25 characters)</span></label>
@@ -222,7 +219,7 @@
             </div>
             <div class="form-group">
                 <label>Description <span style="font-size:0.7rem; color:#6b7280;">(max 150 characters)</span></label>
-                <textarea id="eventDescription" rows="3" placeholder="Describe your event..." maxlength="150"></textarea>
+                <textarea id="eventDescription" rows="6" placeholder="Describe your event..." maxlength="150"></textarea>
                 <span id="descCharCounter" class="char-counter">150 characters remaining</span>
             </div>
             <div class="form-group">
@@ -325,8 +322,6 @@
     </div>
 </div>
 
-<!-- PREMIUM PAGE REMOVED -->
-
 <!-- TICKETS PAGE -->
 <div id="ticketsPage" class="hidden-page">
     <div class="events-container">
@@ -373,7 +368,6 @@
                 <div class="profile-badges">
                     <span class="profile-badge"><i class="fas fa-star"></i> <span id="profileRatingDisplay">0</span> ratings</span>
                     <span class="profile-badge"><i class="fas fa-trophy"></i> <span id="profileLoyaltyDisplay">0</span> points</span>
-                    <!-- Premium badge removed -->
                 </div>
             </div>
         </div>
@@ -584,7 +578,6 @@
                 <p><strong>Last login :</strong> <span id="adminLastLogin">Never</span></p>
                 <p><strong>Login count :</strong> <span id="adminLoginCount">0</span></p>
             </div>
-            <!-- Premium settings removed -->
         </div>
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
