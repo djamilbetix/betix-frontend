@@ -301,7 +301,9 @@ let currentUser = {
     country: '',
     address: '',
     email: '',
-    phone_number: ''
+    phone_number: '',
+    profile_completed: false,
+    profile_reminder_shown: false
 };
 let currentFilter = 'All';
 let currentCountryFilter = 'All';
@@ -578,6 +580,8 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             address: currentUser.address || '',
             email: currentUser.email || '',
             phone_number: currentUser.phone_number || '',
+            profile_completed: currentUser.profile_completed || false,
+            profile_reminder_shown: currentUser.profile_reminder_shown || false,
             updated_at: now,
             last_seen: now
         };
@@ -640,6 +644,8 @@ async function saveTicketToSupabase(ticketData) {
             event_id: ticketData.eventId || '',
             buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet || currentUser.wallet || 'unknown',
             buyer_name: ticketData.buyerName || ticketData.buyerWallet || currentUser.name || 'Anonymous',
+            buyer_email: ticketData.buyerEmail || '', // AJOUT
+            buyer_phone: ticketData.buyerPhone || '', // AJOUT
             ticket_type: 'standard',
             price: parseFloat(ticketData.price) || 0,
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
@@ -687,6 +693,8 @@ async function loadTicketsFromSupabase(piUid) {
             category: t.category || '',
             price: t.price || 0,
             buyerName: t.buyer_name || 'Anonymous',
+            buyerEmail: t.buyer_email || '',
+            buyerPhone: t.buyer_phone || '',
             purchaseDate: t.purchase_date,
             transactionId: t.transaction_id,
             qrCode: t.qr_code,
@@ -1101,7 +1109,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS
+// GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS AVEC EMAIL/TEL
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1131,12 +1139,12 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    // Données client & événement
+    // Données client & événement avec email et téléphone
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
-    let userEmail = safeTicket.buyerEmail || 'Not provided';
+    let userEmail = safeTicket.buyerEmail || 'Non renseigné';
     if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
     
-    const userPhone = safeTicket.buyerPhone || 'Not provided';
+    const userPhone = safeTicket.buyerPhone || 'Non renseigné';
     const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
@@ -1161,14 +1169,12 @@ function generateTicketHTML(ticket) {
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
 
-            <!-- Colonne Droite (Infos Acheteur & Transaction) -->
+            <!-- Colonne Droite (Infos Acheteur & Transaction) avec Email et Téléphone -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
-            <!-- WALLET ID : affiche désormais l'ID du ticket (#17860255) -->
             <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <!-- TICKET NUMBER : affiche désormais le numéro séquentiel (#1) -->
             <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
 
             <!-- Coupon Droite -->
@@ -1178,6 +1184,7 @@ function generateTicketHTML(ticket) {
         </div>
     `;
 }
+
 
 // ============================================================
 // GÉNÉRER LE QR CODE – AVEC NETTOYAGE
@@ -1423,7 +1430,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT
+// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1432,12 +1439,23 @@ function renderEventCard(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
-    let posterHtml = '';
-    if (images.length === 1) posterHtml = `<div class="poster-grid grid-1"><div class="grid-item"><img src="${images[0]}" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"></div></div>`;
-    else if (images.length === 2) posterHtml = `<div class="poster-grid grid-2">${images.map(img => `<div class="grid-item"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`).join('')}</div>`;
-    else if (images.length === 3) posterHtml = `<div class="poster-grid grid-3"><div class="grid-item"><img src="${images[0]}" alt="Image 1" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[1]}" alt="Image 2" onerror="this.src='${fallbackImage}'"></div><div class="grid-item"><img src="${images[2]}" alt="Image 3" onerror="this.src='${fallbackImage}'"></div></div>`;
-    else if (images.length >= 4) posterHtml = `<div class="poster-grid grid-4">${images.slice(0,4).map(img => `<div class="grid-item"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`).join('')}</div>${images.length > 4 ? `<span class="more-badge"><i class="fas fa-plus"></i> ${images.length - 4}</span>` : ''}`;
-    else posterHtml = `<div class="poster-grid grid-1"><div class="grid-item"><img src="${fallbackImage}" alt="${escapeHtml(event.title)}"></div></div>`;
+
+    // Construction du carrousel
+    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
+    carouselHtml += `<div class="carousel-track">`;
+    images.forEach((img, idx) => {
+        carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
+    });
+    carouselHtml += `</div>`;
+    // Indicateurs (dots) si plus d'une image
+    if (images.length > 1) {
+        carouselHtml += `<div class="carousel-indicators">`;
+        for (let i = 0; i < images.length; i++) {
+            carouselHtml += `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
+        }
+        carouselHtml += `</div>`;
+    }
+    carouselHtml += `</div>`;
 
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
@@ -1491,7 +1509,10 @@ function renderEventCard(event) {
     `;
 
     return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
-        <div class="poster-wrapper-classic"><span class="category-badge-classic">${escapeHtml(event.category)}</span>${posterHtml}</div>
+        <div class="poster-wrapper-classic">
+            <span class="category-badge-classic">${escapeHtml(event.category)}</span>
+            ${carouselHtml}
+        </div>
         <div class="card-content-classic">
             <div class="event-title-large">${escapeHtml(event.title)}</div>
             ${desc ? `<div class="event-description-full">${escapeHtml(desc)}</div>` : ''}
@@ -1511,7 +1532,31 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails)
+// INITIALISATION DES INDICATEURS DE CARROUSEL
+// ============================================================
+function initCarouselIndicators() {
+    document.querySelectorAll('.event-carousel').forEach(carousel => {
+        const track = carousel.querySelector('.carousel-track');
+        const dots = carousel.querySelectorAll('.dot');
+        if (!track || dots.length === 0) return;
+
+        const updateActiveDot = () => {
+            const scrollLeft = track.scrollLeft;
+            const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
+            const activeIndex = Math.round(scrollLeft / slideWidth);
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === activeIndex);
+            });
+        };
+
+        track.addEventListener('scroll', updateActiveDot);
+        // Initialiser
+        setTimeout(updateActiveDot, 100);
+    });
+}
+
+// ============================================================
+// PAGE DE DÉTAIL (openEventDetails) – inchangée
 // ============================================================
 function openEventDetails(eventId) {
     const event = events.find(e => e.id === eventId);
@@ -1841,7 +1886,7 @@ async function loadProfileData() {
     try {
         const { data, error } = await supabaseClient
             .from('users')
-            .select('first_name, last_name, country, address, email, phone_number')
+            .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
             .eq('pi_uid', piUid)
             .single();
         if (error) throw error;
@@ -1852,12 +1897,14 @@ async function loadProfileData() {
             document.getElementById('profileAddress').value = data.address || '';
             document.getElementById('profileEmail').value = data.email || '';
             document.getElementById('profilePhone').value = data.phone_number || '';
-            if (data.first_name) currentUser.first_name = data.first_name;
-            if (data.last_name) currentUser.last_name = data.last_name;
-            if (data.country) currentUser.country = data.country;
-            if (data.address) currentUser.address = data.address;
-            if (data.email) currentUser.email = data.email;
-            if (data.phone_number) currentUser.phone_number = data.phone_number;
+            currentUser.first_name = data.first_name || '';
+            currentUser.last_name = data.last_name || '';
+            currentUser.country = data.country || '';
+            currentUser.address = data.address || '';
+            currentUser.email = data.email || '';
+            currentUser.phone_number = data.phone_number || '';
+            currentUser.profile_completed = data.profile_completed || false;
+            currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
             updateUserInfo();
             enableEditMode(false);
         } else {
@@ -1964,6 +2011,8 @@ async function confirmProfileSave() {
             address: data.address,
             email: data.email,
             phone_number: data.phone,
+            profile_completed: true,
+            profile_reminder_shown: true,
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient
@@ -1978,7 +2027,9 @@ async function confirmProfileSave() {
             country: data.country,
             address: data.address,
             email: data.email,
-            phone_number: data.phone
+            phone_number: data.phone,
+            profile_completed: true,
+            profile_reminder_shown: true
         });
         saveUser();
 
@@ -2114,7 +2165,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT – DIRECT SANS POPUP INTERMÉDIAIRE
+// CONFIRMATION D'ACHAT – AVEC EMAIL ET TÉLÉPHONE DANS LE TICKET
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2232,13 +2283,17 @@ async function confirmPurchase(eventId, quantity) {
                     const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
                     let nextNumber = lastNumber + 1;
                     
+                    // Récupération des informations de profil
+                    const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
+                                     (currentUser.last_name ? ' ' + currentUser.last_name : '');
+                    const buyerEmail = currentUser.email || 'Non renseigné';
+                    const buyerPhone = currentUser.phone_number || 'Non renseigné';
+                    
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = ticketId; // QR code contient l'ID unique pour vérification
                         
-                        const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
-                                         (currentUser.last_name ? ' ' + currentUser.last_name : '');
                         const organizerName = event.organizerName || event.organizer || 'Anonymous';
                         const organizerPiUid = event.organizerPiUid || event.organizer || '';
                         
@@ -2254,6 +2309,8 @@ async function confirmPurchase(eventId, quantity) {
                             pays: event.pays || event.country || 'France',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: fullName || 'Anonymous',
+                            buyerEmail: buyerEmail,   // AJOUT
+                            buyerPhone: buyerPhone,   // AJOUT
                             userWallet: currentUser.wallet,
                             status: 'Valid',
                             purchaseDate: purchaseDate,
@@ -2536,6 +2593,7 @@ async function connectToPi() {
                         alert('Pi account connected (demo mode)! Welcome Demo User');
                         closeSidebar();
                         await loadProfileData();
+                        checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
                         return;
                     }
@@ -2566,6 +2624,7 @@ async function connectToPi() {
                     alert('Pi account connected! Welcome ' + piUser.username);
                     closeSidebar();
                     await loadProfileData();
+                    checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
                     hideConnectSpinner();
                     return;
@@ -2590,6 +2649,19 @@ async function connectToPi() {
         }
     } finally {
         hideConnectSpinner();
+    }
+}
+
+// ============================================================
+// NOTIFICATION DE COMPLÉTION DE PROFIL (AJOUT)
+// ============================================================
+function checkAndNotifyProfileCompletion() {
+    if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
+        setTimeout(() => {
+            showToast('Profil incomplet', 'Veuillez compléter votre profil (email et téléphone) pour une meilleure expérience.', 'info');
+            currentUser.profile_reminder_shown = true;
+            saveUser();
+        }, 5000);
     }
 }
 
@@ -3146,7 +3218,7 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
-        currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0 };
+        currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0, profile_completed: false, profile_reminder_shown: false };
         piUser = null;
         saveUser();
         localStorage.removeItem('betix_last_activity');
@@ -3179,6 +3251,10 @@ function showPage(pageName) {
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
     if (pageName === 'notifications') renderNotificationsPage();
+    // Appel pour initialiser les indicateurs de carrousel après affichage des événements
+    if (pageName === 'home' || pageName === 'myevents') {
+        setTimeout(initCarouselIndicators, 300);
+    }
     closeSidebar();
     window.scrollTo(0, 0);
 }
@@ -3256,6 +3332,8 @@ function renderMyEvents() {
     setTimeout(() => {
         applyStaggeredAnimation('#myEventsList');
     }, 50);
+    // Initialisation des carrousels pour les événements de l'utilisateur
+    setTimeout(initCarouselIndicators, 300);
 }
 
 function renderMyEventCardModern(event) {
@@ -3318,6 +3396,7 @@ function renderEventsByCategory() {
     container.innerHTML = html;
     setTimeout(() => {
         applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+        initCarouselIndicators();
     }, 50);
 }
 
@@ -3877,7 +3956,10 @@ async function initApp() {
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
         populateProfileCountrySelect();
-        if (currentUser.wallet) loadProfileData();
+        if (currentUser.wallet) {
+            await loadProfileData();
+            checkAndNotifyProfileCompletion();
+        }
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
         document.getElementById('profileReviewConfirmBtn')?.addEventListener('click', confirmProfileSave);
