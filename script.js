@@ -416,7 +416,9 @@ const eventImagesList = {
     Gala: 'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=600&h=400&fit=crop',
     Seminar: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop',
     Formation: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=400&fit=crop'
-};// ============================================================
+};
+
+// ============================================================
 // FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
@@ -1241,7 +1243,9 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
         items[i].classList.add('stagger-item');
         items[i].style.animationDelay = (i * delayIncrement) + 's';
     }
-}// ============================================================
+}
+
+// ============================================================
 // CARTES D'ÉVÉNEMENTS
 // ============================================================
 function renderEventCard(event) {
