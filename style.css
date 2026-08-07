@@ -51,9 +51,9 @@ body {
     --notif-success: #10b981;
 }
 
-/* ============================================================
-   HEADER FIXE
-   ============================================================ */
+/* ------------------------------------------------------------
+   HEADER
+   ------------------------------------------------------------ */
 .header {
     position: fixed;
     top: 0;
@@ -147,9 +147,9 @@ body {
 .back-btn.hidden { display: none !important; }
 .back-btn:not(.hidden) { display: flex !important; }
 
-/* ============================================================
+/* ------------------------------------------------------------
    LOADER
-   ============================================================ */
+   ------------------------------------------------------------ */
 .loader-container {
     position: fixed;
     top: 0;
@@ -215,9 +215,9 @@ body {
     50% { opacity: 1; }
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    COMPTEURS DE CARACTÈRES
-   ============================================================ */
+   ------------------------------------------------------------ */
 .char-counter {
     font-size: 0.7rem;
     color: #6b7280;
@@ -229,9 +229,9 @@ body {
 .char-counter.warning { color: #6b7280; }
 .char-counter.good { color: #6b7280; }
 
-/* ============================================================
+/* ------------------------------------------------------------
    SIDEBAR
-   ============================================================ */
+   ------------------------------------------------------------ */
 .sidebar-header {
     padding: 1.5rem;
     text-align: center;
@@ -283,9 +283,9 @@ body {
     cursor: pointer;
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    BOTTOM NAVIGATION
-   ============================================================ */
+   ------------------------------------------------------------ */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -326,9 +326,9 @@ body {
 .bottom-nav .nav-item:hover { color: #0B1F5C; }
 .bottom-nav .nav-item:hover i { transform: translateY(-2px) scale(1.05); }
 
-/* ============================================================
+/* ------------------------------------------------------------
    SIDEBAR (suite)
-   ============================================================ */
+   ------------------------------------------------------------ */
 .sidebar {
     position: fixed;
     top: 0;
@@ -541,9 +541,9 @@ body {
     box-shadow: 0 4px 12px rgba(11,31,92,0.3);
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    HERO – SLIDER RÉDUIT
-   ============================================================ */
+   ------------------------------------------------------------ */
 .hero {
     width: 100%;
     background: #ffffff;
@@ -695,9 +695,9 @@ body {
 }
 .hero-text p { display: none; }
 
-/* ============================================================
+/* ------------------------------------------------------------
    SEARCH & FILTERS – marges réduites
-   ============================================================ */
+   ------------------------------------------------------------ */
 .search-bar { padding: 0.4rem 5% 0.2rem; }
 .search-bar input {
     width: 100%;
@@ -754,10 +754,10 @@ body {
     box-shadow: 0 0 0 4px rgba(245,180,0,0.1);
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    FILTRES CATÉGORIES – Texte bleu, fond blanc, bordure bleue
    Actif : fond jaune
-   ============================================================ */
+   ------------------------------------------------------------ */
 .filters-wrapper { padding: 0.2rem 5% 0.4rem; }
 .filters-horizontal {
     display: flex;
@@ -790,9 +790,9 @@ body {
     box-shadow: 0 2px 8px rgba(245,180,0,0.3);
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    EVENTS GRID
-   ============================================================ */
+   ------------------------------------------------------------ */
 .events-container {
     padding: 0.4rem 5% 2rem;
     overflow: hidden;
@@ -831,9 +831,9 @@ body {
 @media (min-width: 768px) and (max-width: 1199px) { .events-grid-centered { grid-template-columns: repeat(2,1fr); gap: 1.2rem; } }
 @media (max-width: 767px) { .events-grid-centered { grid-template-columns: 1fr; gap: 1rem; } }
 
-/* ============================================================
+/* ------------------------------------------------------------
    CARTE ÉVÉNEMENT (version compacte)
-   ============================================================ */
+   ------------------------------------------------------------ */
 .event-card-classic {
     background: #ffffff;
     border-radius: 14px;
@@ -1069,9 +1069,9 @@ body {
     gap: 4px;
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    PREMIUM – 3 CARTES COMPACTES AVEC SCROLL HORIZONTAL
-   ============================================================ */
+   ------------------------------------------------------------ */
 .premium-page-content {
     max-width: 1000px;
     margin: 0 auto;
@@ -1203,10 +1203,10 @@ body {
         min-width: 140px;
     }
 }
-/* ============================================================
-   TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
-   ============================================================ */
 
+/* ------------------------------------------------------------
+   TICKET – POSITIONNEMENT EXACT
+   ------------------------------------------------------------ */
 .ticket-overlay-container {
     position: relative;
     max-width: 780px;
@@ -1217,42 +1217,31 @@ body {
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
-
 .ticket-overlay-bg img {
     width: 100%;
     height: auto;
     display: block;
 }
-
-/* Base commune */
 .ticket-left,
 .ticket-right {
     position: absolute;
     pointer-events: none;
     text-align: left;
 }
-
-/* Colonne gauche : placée juste après le ":" de EVENT/DURATION... */
 .ticket-left {
     left: 25.5%;
     width: 19%;
 }
-
-/* Colonne droite : placée juste après le ":" de NAME/EMAIL... */
 .ticket-right {
     left: 56.5%;
     width: 19%;
 }
-
-/* ===== Hauteurs exactes des 6 lignes (top en %) ===== */
-.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; } /* EVENT & NAME */
-.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; } /* DURATION & EMAIL */
-.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; } /* DATE & PHONE */
-.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; } /* TIME & WALLET ID */
-.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; } /* LOCATION & PURCHASE DATE */
-.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; } /* PRICE & TICKET NUMBER */
-
-/* Style du texte */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; }
 .ticket-value {
     font-size: clamp(6px, 1.05vw, 11px);
     font-weight: 700;
@@ -1264,8 +1253,6 @@ body {
     display: block;
     width: 100%;
 }
-
-/* ===== QR CODE : Centré parfaitement dans le cadre [ ] ===== */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1280,8 +1267,6 @@ body {
     width: 14.5%;
     aspect-ratio: 1/1;
 }
-
-/* Ticket ID sur la ligne sous "TICKET ID :" */
 .ticket-qr-id {
     position: absolute;
     right: 9%;
@@ -1293,8 +1278,6 @@ body {
     color: #1a202c;
     top: 51%;
 }
-
-/* Date d'achat sous "DATE OF PURCHASE :" */
 .ticket-qr-date {
     position: absolute;
     right: 9%;
@@ -1307,9 +1290,9 @@ body {
     top: 64%;
 }
 
-/* ============================================================
-   FOOTER – textes réduits, logos centrés
-   ============================================================ */
+/* ------------------------------------------------------------
+   FOOTER
+   ------------------------------------------------------------ */
 .betix-footer {
     background: linear-gradient(145deg, #0b1120 0%, #0f1a2e 50%, #1a1a3e 100%);
     color: #c8d4e6;
@@ -1434,9 +1417,9 @@ body {
     margin: 0;
 }
 
-/* ============================================================
-   CHAT – position fixe en bas à droite
-   ============================================================ */
+/* ------------------------------------------------------------
+   CHAT
+   ------------------------------------------------------------ */
 .chat-float-btn {
     position: fixed;
     bottom: 80px;
@@ -1454,15 +1437,11 @@ body {
     z-index: 9998;
 }
 .chat-float-btn:hover { transform: scale(1.05); }
+.scroll-top-btn { display: none !important; }
 
-/* BOUTON FLÈCHE VERS LE HAUT : DÉSACTIVÉ ET CACHÉ */
-.scroll-top-btn {
-    display: none !important;
-}
-
-/* ============================================================
-   CONFIRM PURCHASE POPUP – CENTRÉE ET AU-DESSUS DE TOUT
-   ============================================================ */
+/* ------------------------------------------------------------
+   CONFIRM PURCHASE POPUP
+   ------------------------------------------------------------ */
 .confirm-purchase-popup {
     display: none;
     position: fixed;
@@ -1470,7 +1449,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0,0,0,0.7);
     backdrop-filter: blur(4px);
     z-index: 99999 !important;
     justify-content: center;
@@ -1478,9 +1457,7 @@ body {
     padding: 20px;
     box-sizing: border-box;
 }
-.confirm-purchase-popup.show {
-    display: flex !important;
-}
+.confirm-purchase-popup.show { display: flex !important; }
 .confirm-purchase-popup-content {
     background: white;
     border-radius: 24px;
@@ -1515,12 +1492,8 @@ body {
     color: #6b7280;
     padding: 0 6px;
 }
-.confirm-purchase-popup-content .confirm-purchase-close:hover {
-    color: #1a1a2e;
-}
-.confirm-purchase-popup-content .confirm-purchase-body {
-    margin-bottom: 16px;
-}
+.confirm-purchase-popup-content .confirm-purchase-close:hover { color: #1a1a2e; }
+.confirm-purchase-popup-content .confirm-purchase-body { margin-bottom: 16px; }
 .confirm-purchase-popup-content .confirm-purchase-title {
     font-weight: 600;
     color: #1a1a2e;
@@ -1564,9 +1537,7 @@ body {
     transition: background 0.2s;
     flex: 1;
 }
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-secondary-modal:hover {
-    background: #d1d5db;
-}
+.confirm-purchase-popup-content .confirm-purchase-footer .btn-secondary-modal:hover { background: #d1d5db; }
 .confirm-purchase-popup-content .confirm-purchase-footer .btn-primary {
     background: #0B1F5C;
     border: none;
@@ -1578,13 +1549,11 @@ body {
     transition: background 0.2s;
     flex: 2;
 }
-.confirm-purchase-popup-content .confirm-purchase-footer .btn-primary:hover {
-    background: #1a2a4a;
-}
+.confirm-purchase-popup-content .confirm-purchase-footer .btn-primary:hover { background: #1a2a4a; }
 
-/* ============================================================
-   QUANTITY POPUP – CORRECTION DU BOUTON
-   ============================================================ */
+/* ------------------------------------------------------------
+   QUANTITY POPUP
+   ------------------------------------------------------------ */
 .quantity-popup {
     display: none;
     position: fixed;
@@ -1592,15 +1561,13 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0,0,0,0.7);
     backdrop-filter: blur(4px);
     z-index: 3000;
     justify-content: center;
     align-items: center;
 }
-.quantity-popup.show {
-    display: flex !important;
-}
+.quantity-popup.show { display: flex !important; }
 .quantity-popup-content {
     background: white;
     border-radius: 24px;
@@ -1633,9 +1600,7 @@ body {
     cursor: pointer;
     color: #6b7280;
 }
-.quantity-popup-content .quantity-popup-close:hover {
-    color: #1a1a2e;
-}
+.quantity-popup-content .quantity-popup-close:hover { color: #1a1a2e; }
 .quantity-popup-content .quantity-event-title {
     font-size: 1.1rem;
     font-weight: 600;
@@ -1717,9 +1682,7 @@ body {
     cursor: pointer;
     transition: background 0.2s;
 }
-.quantity-popup-content .quantity-popup-footer .btn-secondary-modal:hover {
-    background: #d1d5db;
-}
+.quantity-popup-content .quantity-popup-footer .btn-secondary-modal:hover { background: #d1d5db; }
 .quantity-popup-content .quantity-popup-footer .btn-primary {
     background: #0B1F5C;
     border: none;
@@ -1730,13 +1693,11 @@ body {
     cursor: pointer;
     transition: background 0.2s;
 }
-.quantity-popup-content .quantity-popup-footer .btn-primary:hover {
-    background: #1a2a4a;
-}
+.quantity-popup-content .quantity-popup-footer .btn-primary:hover { background: #1a2a4a; }
 
-/* ============================================================
+/* ------------------------------------------------------------
    NOTIFICATIONS
-   ============================================================ */
+   ------------------------------------------------------------ */
 .notification-item {
     display: flex;
     align-items: flex-start;
@@ -1764,9 +1725,7 @@ body {
     font-size: 1rem;
     color: white;
 }
-.notification-item .notif-content {
-    flex: 1;
-}
+.notification-item .notif-content { flex: 1; }
 .notification-item .notif-content .notif-msg {
     font-size: 0.9rem;
     color: #1f2937;
@@ -1792,9 +1751,9 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    MODALS, UPLOAD, BOUTONS, FORMULAIRE, DURATION, TICKET SEATS
-   ============================================================ */
+   ------------------------------------------------------------ */
 .image-upload-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2198,7 +2157,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0,0,0,0.7);
     backdrop-filter: blur(4px);
     z-index: 4000;
     justify-content: center;
@@ -2206,9 +2165,7 @@ body {
     padding: 20px;
     box-sizing: border-box;
 }
-.success-popup.show {
-    display: flex;
-}
+.success-popup.show { display: flex; }
 .success-popup-content {
     background: #ffffff;
     border-radius: 28px;
@@ -2216,9 +2173,9 @@ body {
     max-width: 440px;
     width: 100%;
     text-align: center;
-    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(245, 180, 0, 0.15);
+    animation: popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+    border: 1px solid rgba(245,180,0,0.15);
     position: relative;
 }
 .success-popup-header {
@@ -2242,9 +2199,7 @@ body {
     padding: 0 4px;
     transition: color 0.2s;
 }
-.success-popup-close:hover {
-    color: #1a1a2e;
-}
+.success-popup-close:hover { color: #1a1a2e; }
 .success-icon {
     width: 70px;
     height: 70px;
@@ -2254,12 +2209,9 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0 auto 12px;
-    box-shadow: 0 4px 20px rgba(245, 180, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(245,180,0,0.3);
 }
-.success-icon i {
-    font-size: 2.5rem;
-    color: white;
-}
+.success-icon i { font-size: 2.5rem; color: white; }
 .success-message {
     font-size: 1rem;
     font-weight: 600;
@@ -2284,11 +2236,9 @@ body {
     justify-content: space-between;
     padding: 6px 0;
     font-size: 0.85rem;
-    border-bottom: 1px solid rgba(245, 180, 0, 0.08);
+    border-bottom: 1px solid rgba(245,180,0,0.08);
 }
-.success-ticket-info .ticket-line:last-child {
-    border-bottom: none;
-}
+.success-ticket-info .ticket-line:last-child { border-bottom: none; }
 .success-ticket-info .ticket-label {
     color: #6b7280;
     font-weight: 500;
@@ -2329,54 +2279,32 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(11, 31, 92, 0.25);
+    box-shadow: 0 4px 15px rgba(11,31,92,0.25);
 }
 .success-buttons .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(11, 31, 92, 0.35);
+    box-shadow: 0 8px 25px rgba(11,31,92,0.35);
 }
 body.dark-mode .success-popup-content {
     background: #1f2937;
-    border-color: rgba(245, 180, 0, 0.2);
+    border-color: rgba(245,180,0,0.2);
 }
-body.dark-mode .success-popup-header h3 {
-    color: #f3f4f6;
-}
-body.dark-mode .success-popup-close {
-    color: #9ca3af;
-}
-body.dark-mode .success-popup-close:hover {
-    color: #f3f4f6;
-}
-body.dark-mode .success-message {
-    color: #f3f4f6;
-}
-body.dark-mode .success-submessage {
-    color: #9ca3af;
-}
-body.dark-mode .success-ticket-info {
-    background: #2d3748;
-}
-body.dark-mode .success-ticket-info .ticket-line {
-    border-bottom-color: #374151;
-}
-body.dark-mode .success-ticket-info .ticket-label {
-    color: #9ca3af;
-}
-body.dark-mode .success-ticket-info .ticket-value {
-    color: #f3f4f6;
-}
+body.dark-mode .success-popup-header h3 { color: #f3f4f6; }
+body.dark-mode .success-popup-close { color: #9ca3af; }
+body.dark-mode .success-popup-close:hover { color: #f3f4f6; }
+body.dark-mode .success-message { color: #f3f4f6; }
+body.dark-mode .success-submessage { color: #9ca3af; }
+body.dark-mode .success-ticket-info { background: #2d3748; }
+body.dark-mode .success-ticket-info .ticket-line { border-bottom-color: #374151; }
+body.dark-mode .success-ticket-info .ticket-label { color: #9ca3af; }
+body.dark-mode .success-ticket-info .ticket-value { color: #f3f4f6; }
 body.dark-mode .success-buttons .btn-secondary {
     background: #374151;
     color: #f3f4f6;
 }
-body.dark-mode .success-buttons .btn-secondary:hover {
-    background: #4b5563;
-}
+body.dark-mode .success-buttons .btn-secondary:hover { background: #4b5563; }
 
-/* ============================================================
-   PUBLISH CONFIRM
-   ============================================================ */
+/* PUBLISH CONFIRM */
 .publish-confirm {
     display: none;
     position: fixed;
@@ -2996,9 +2924,7 @@ body.dark-mode .success-buttons .btn-secondary:hover {
     margin: 1.5rem auto !important;
 }
 
-/* ============================================================
-   PROFIL
-   ============================================================ */
+/* PROFIL */
 .profile-header-card {
     background: linear-gradient(145deg, #0f1a3a, #1a2a4a);
     border-radius: 24px;
@@ -3352,9 +3278,7 @@ body.dark-mode #profileReviewContent .review-value {
     color: #f3f4f6;
 }
 
-/* ============================================================
-   MY EVENTS
-   ============================================================ */
+/* MY EVENTS */
 .my-events-container {
     padding: 0.5rem 5% 2rem;
     max-width: 1400px;
@@ -3529,9 +3453,7 @@ body.dark-mode .my-event-card-modern .event-details-modern .detail-item-modern .
 body.dark-mode .my-event-card-modern .event-footer-modern { border-top-color: #374151; }
 body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { color: #9ca3af; }
 
-/* ============================================================
-   CHAT WIDGET
-   ============================================================ */
+/* CHAT WIDGET */
 .chat-widget {
     position: fixed;
     bottom: 135px;
@@ -3611,9 +3533,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 }
 .chat-input-area button:hover { opacity: 0.9; }
 
-/* ============================================================
-   GALLERY
-   ============================================================ */
+/* GALLERY */
 .gallery-modal {
     position: fixed;
     top: 0;
@@ -3659,9 +3579,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 }
 .gallery-nav button:hover { background: rgba(255,255,255,0.3); }
 
-/* ============================================================
-   ADMIN
-   ============================================================ */
+/* ADMIN */
 .admin-content {
     max-width: 1000px !important;
 }
@@ -4036,9 +3954,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     font-size: 0.85rem;
 }
 
-/* ============================================================
-   ADMIN PREMIUM (NOUVEAU)
-   ============================================================ */
+/* ADMIN PREMIUM */
 .admin-premium-search {
     margin-bottom: 20px;
 }
@@ -4070,9 +3986,7 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
     font-weight: 500;
 }
 
-/* ============================================================
-   DARK MODE ADAPTATIONS (compléments généraux)
-   ============================================================ */
+/* DARK MODE ADAPTATIONS (compléments généraux) */
 body.dark-mode .header {
     background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
 }
@@ -4411,9 +4325,7 @@ body.dark-mode .ticket-actions .btn-share {
     background: #2563eb;
 }
 
-/* ============================================================
-   PAGE DE DÉTAIL D'ÉVÉNEMENT – DESIGN AMÉLIORÉ
-   ============================================================ */
+/* EVENT DETAIL */
 .event-detail-modal .modal-content {
     max-width: 700px;
     width: 95%;
@@ -4421,7 +4333,7 @@ body.dark-mode .ticket-actions .btn-share {
     border-radius: 28px;
     overflow: hidden;
     background: #ffffff;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
 }
 .event-detail-header {
     display: flex;
@@ -4436,7 +4348,7 @@ body.dark-mode .ticket-actions .btn-share {
 }
 .event-detail-header .back-btn-detail,
 .event-detail-header .modal-close-detail {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255,255,255,0.15);
     border: none;
     color: white;
     width: 36px;
@@ -4451,7 +4363,7 @@ body.dark-mode .ticket-actions .btn-share {
 }
 .event-detail-header .back-btn-detail:hover,
 .event-detail-header .modal-close-detail:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.3);
 }
 .event-detail-header .detail-title {
     font-size: 1.1rem;
@@ -4465,7 +4377,7 @@ body.dark-mode .ticket-actions .btn-share {
 }
 .event-detail-header .detail-category {
     font-size: 0.7rem;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255,255,255,0.2);
     padding: 4px 12px;
     border-radius: 20px;
     font-weight: 500;
@@ -4524,7 +4436,7 @@ body.dark-mode .ticket-actions .btn-share {
     background: #fef8f0;
     border-radius: 12px;
     padding: 12px 16px;
-    border: 1px solid rgba(245, 180, 0, 0.15);
+    border: 1px solid rgba(245,180,0,0.15);
 }
 .event-detail-body .price-seats {
     display: flex;
@@ -4619,11 +4531,11 @@ body.dark-mode .ticket-actions .btn-share {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(11, 31, 92, 0.25);
+    box-shadow: 0 4px 20px rgba(11,31,92,0.25);
 }
 .event-detail-footer .btn-buy:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(11, 31, 92, 0.35);
+    box-shadow: 0 8px 30px rgba(11,31,92,0.35);
 }
 body.dark-mode .event-detail-modal .modal-content {
     background: #1f2937;
@@ -4677,25 +4589,17 @@ body.dark-mode .event-detail-footer {
     background: #1a2332;
 }
 
-/* ============================================================
-   STAGGERED ANIMATION
-   ============================================================ */
+/* STAGGERED ANIMATION */
 .stagger-item {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.5s ease forwards;
 }
-
 @keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* ============================================================
-   TOAST NOTIFICATION
-   ============================================================ */
+/* TOAST NOTIFICATION */
 .toast-notification {
     position: fixed;
     bottom: 100px;
@@ -4711,7 +4615,7 @@ body.dark-mode .event-detail-footer {
     z-index: 99999;
     transform: translateY(120px);
     opacity: 0;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
     border-left: 6px solid #10b981;
 }
 .toast-notification.show {
