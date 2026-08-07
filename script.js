@@ -1556,10 +1556,11 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – inchangée
+// PAGE DE DÉTAIL (openEventDetails) – CORRECTION DE L'ID
 // ============================================================
 function openEventDetails(eventId) {
-    const event = events.find(e => e.id === eventId);
+    // Conversion de l'ID en nombre pour la comparaison
+    const event = events.find(e => e.id === Number(eventId));
     if (!event) { alert(t('eventNotFound')); return; }
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
@@ -1884,7 +1885,6 @@ async function loadProfileData() {
     const piUid = currentUser.piUid || currentUser.wallet;
     if (!piUid) return;
     try {
-        // On sélectionne maintenant aussi profile_completed et profile_reminder_shown
         const { data, error } = await supabaseClient
             .from('users')
             .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
@@ -2022,7 +2022,6 @@ async function confirmProfileSave() {
             .eq('pi_uid', piUid);
         if (error) throw error;
 
-        // Mise à jour locale
         Object.assign(currentUser, {
             first_name: data.firstName,
             last_name: data.lastName,
