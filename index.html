@@ -8,13 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-    <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
-    <!-- Chargement de Supabase sans async pour garantir l'ordre -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
+    <script src="https://sdk.minepi.com/pi-sdk.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" async></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -542,7 +541,6 @@
             <button class="admin-tab" data-tab="users">Users</button>
             <button class="admin-tab" data-tab="logs">Logs</button>
             <button class="admin-tab" data-tab="settings">Settings</button>
-            <button class="admin-tab" data-tab="premium">Premium</button>
         </div>
         <div id="adminTabEvents" class="admin-tab-content active">
             <div class="admin-actions">
@@ -632,31 +630,6 @@
             <button class="btn-primary" id="adminSaveSettingsBtn" style="width:auto; padding:10px 30px;">Save Settings</button>
             <p id="adminSettingsMessage" style="margin-top:10px; font-size:0.9rem;"></p>
         </div>
-        <!-- ONGLET PREMIUM -->
-        <div id="adminTabPremium" class="admin-tab-content">
-            <h3>Attribuer le badge Premium</h3>
-            <div class="admin-premium-search">
-                <div class="form-group">
-                    <label>Rechercher un utilisateur (nom ou wallet)</label>
-                    <input type="text" id="adminPremiumSearch" placeholder="Entrez le nom ou l'ID Pi...">
-                    <button class="btn-primary" id="adminPremiumSearchBtn" style="width:auto; margin-top:8px;">Rechercher</button>
-                </div>
-                <div id="adminPremiumSearchResult"></div>
-                <div id="adminPremiumAssign" style="display:none;">
-                    <hr>
-                    <div class="form-group">
-                        <label>Durée (jours)</label>
-                        <input type="number" id="adminPremiumDurationAssign" value="30" min="1">
-                    </div>
-                    <button class="btn-primary" id="adminPremiumAssignBtn" style="width:auto;">Attribuer Premium</button>
-                    <p id="adminPremiumMessage"></p>
-                </div>
-            </div>
-            <hr>
-            <h3>Historique des attributions Premium</h3>
-            <div id="adminPremiumHistory"></div>
-        </div>
-        <!-- Fin onglet Premium -->
         <button class="btn-back" onclick="showPage('home')">Back</button>
     </div>
 </div>
@@ -930,7 +903,6 @@
         }, 500);
     }
 </script>
-<!-- Le script principal est chargé en dernier -->
 <script src="script.js"></script>
 </body>
 </html>
