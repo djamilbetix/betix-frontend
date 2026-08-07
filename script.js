@@ -351,6 +351,7 @@ function requireLogin() {
 }
 
 function requireProfileComplete() {
+    // Vérifie que les champs obligatoires sont remplis (email, téléphone, etc.)
     const check = checkProfileComplete();
     if (!check.complete) {
         const missing = check.missing.join(', ');
@@ -580,11 +581,10 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             address: currentUser.address || '',
             email: currentUser.email || '',
             phone_number: currentUser.phone_number || '',
-            profile_completed: currentUser.profile_completed || false,
-            profile_reminder_shown: currentUser.profile_reminder_shown || false,
             updated_at: now,
             last_seen: now
         };
+        // On ne stocke plus profile_completed/reminder dans Supabase
         const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
         if (checkError && checkError.code !== 'PGRST116') throw checkError;
         if (existing) {
@@ -644,8 +644,8 @@ async function saveTicketToSupabase(ticketData) {
             event_id: ticketData.eventId || '',
             buyer_pi_uid: ticketData.buyerWallet || ticketData.userWallet || currentUser.wallet || 'unknown',
             buyer_name: ticketData.buyerName || ticketData.buyerWallet || currentUser.name || 'Anonymous',
-            buyer_email: ticketData.buyerEmail || '', // AJOUT
-            buyer_phone: ticketData.buyerPhone || '', // AJOUT
+            buyer_email: ticketData.buyerEmail || '',
+            buyer_phone: ticketData.buyerPhone || '',
             ticket_type: 'standard',
             price: parseFloat(ticketData.price) || 0,
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
@@ -1185,7 +1185,6 @@ function generateTicketHTML(ticket) {
     `;
 }
 
-
 // ============================================================
 // GÉNÉRER LE QR CODE – AVEC NETTOYAGE
 // ============================================================
@@ -1430,7 +1429,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL
+// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL (STYLE X)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1440,7 +1439,7 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
 
-    // Construction du carrousel
+    // Construction du carrousel avec défilement horizontal (style X)
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
     carouselHtml += `<div class="carousel-track">`;
     images.forEach((img, idx) => {
@@ -1861,7 +1860,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE
+// PROFIL – FORMULAIRE AVEC REVUE (CORRIGÉ)
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -1884,9 +1883,10 @@ async function loadProfileData() {
     const piUid = currentUser.piUid || currentUser.wallet;
     if (!piUid) return;
     try {
+        // On ne sélectionne plus les colonnes profile_completed et profile_reminder_shown
         const { data, error } = await supabaseClient
             .from('users')
-            .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
+            .select('first_name, last_name, country, address, email, phone_number')
             .eq('pi_uid', piUid)
             .single();
         if (error) throw error;
@@ -1903,8 +1903,7 @@ async function loadProfileData() {
             currentUser.address = data.address || '';
             currentUser.email = data.email || '';
             currentUser.phone_number = data.phone_number || '';
-            currentUser.profile_completed = data.profile_completed || false;
-            currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
+            // On conserve les flags locaux, on ne les recharge pas depuis la base
             updateUserInfo();
             enableEditMode(false);
         } else {
@@ -2011,9 +2010,8 @@ async function confirmProfileSave() {
             address: data.address,
             email: data.email,
             phone_number: data.phone,
-            profile_completed: true,
-            profile_reminder_shown: true,
             updated_at: new Date().toISOString()
+            // On ne met pas profile_completed/reminder ici
         };
         const { error } = await supabaseClient
             .from('users')
@@ -2021,6 +2019,7 @@ async function confirmProfileSave() {
             .eq('pi_uid', piUid);
         if (error) throw error;
 
+        // Mise à jour locale
         Object.assign(currentUser, {
             first_name: data.firstName,
             last_name: data.lastName,
@@ -2656,6 +2655,7 @@ async function connectToPi() {
 // NOTIFICATION DE COMPLÉTION DE PROFIL (AJOUT)
 // ============================================================
 function checkAndNotifyProfileCompletion() {
+    // On vérifie si l'utilisateur a déjà été notifié et si son profil est complet
     if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
         setTimeout(() => {
             showToast('Profil incomplet', 'Veuillez compléter votre profil (email et téléphone) pour une meilleure expérience.', 'info');
