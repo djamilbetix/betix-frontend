@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX
+   STYLES COMPLETS POUR BETIX (SANS PREMIUM)
    ============================================================ */
 
 * {
@@ -1069,140 +1069,6 @@ body {
     gap: 4px;
 }
 
-/* ============================================================
-   PREMIUM – 3 CARTES COMPACTES AVEC SCROLL HORIZONTAL
-   ============================================================ */
-.premium-page-content {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-.pricing-table {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 16px;
-    margin: 20px 0;
-    overflow-x: auto;
-    padding: 8px 4px 16px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-}
-.pricing-card {
-    flex: 0 0 calc(100% / 3 - 12px);
-    min-width: 200px;
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 16px 14px 14px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    border: 1px solid #e6e6e6;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease;
-    position: relative;
-    scroll-snap-align: start;
-}
-.pricing-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-}
-.pricing-card.recommended {
-    border-color: #F5B400;
-    background: linear-gradient(145deg, #ffffff, #fef8f0);
-}
-.pricing-card .plan-badge {
-    position: absolute;
-    top: -8px;
-    right: 10px;
-    background: #F5B400;
-    color: #1a1a2e;
-    font-size: 0.55rem;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.3px;
-}
-.pricing-card .plan-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1a1a2e;
-    text-align: center;
-    margin-bottom: 2px;
-}
-.pricing-card .plan-price {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #F5B400;
-    text-align: center;
-    margin: 4px 0;
-}
-.pricing-card .plan-price small {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #6b7280;
-}
-.pricing-card .plan-description {
-    font-size: 0.7rem;
-    color: #6b7280;
-    text-align: center;
-    margin: 4px 0 8px;
-}
-.pricing-card .plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 10px 0;
-    flex: 1;
-}
-.pricing-card .plan-features li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 0;
-    font-size: 0.7rem;
-    color: #1f2937;
-    border-bottom: 1px solid #f0f0f0;
-}
-.pricing-card .plan-features li:last-child { border-bottom: none; }
-.pricing-card .plan-features li i { width: 16px; text-align: center; font-size: 0.65rem; }
-.pricing-card .plan-features li .fa-check-circle { color: #10b981; }
-.pricing-card .plan-features li .fa-times-circle { color: #ef4444; }
-.pricing-card .btn-subscribe {
-    background: #0B1F5C;
-    color: white;
-    border: none;
-    padding: 8px 0;
-    border-radius: 40px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    margin-top: 4px;
-}
-.pricing-card .btn-subscribe:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(11,31,92,0.3);
-}
-.pricing-card .btn-subscribe:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
-}
-.pricing-card.free .btn-subscribe {
-    background: #e5e7eb;
-    color: #6b7280;
-    cursor: default;
-}
-@media (max-width: 640px) {
-    .pricing-card {
-        flex: 0 0 calc(100% / 2 - 12px);
-        min-width: 160px;
-    }
-}
-@media (max-width: 480px) {
-    .pricing-card {
-        flex: 0 0 calc(100% - 16px);
-        min-width: 140px;
-    }
-}
 /* ============================================================
    TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
    ============================================================ */
@@ -4300,37 +4166,6 @@ body.dark-mode #profileReviewContent .review-label {
 }
 body.dark-mode #profileReviewContent .review-value {
     color: #f3f4f6;
-}
-body.dark-mode .pricing-card {
-    background: #1f2937;
-    border-color: #374151;
-}
-body.dark-mode .pricing-card .plan-name {
-    color: #f3f4f6;
-}
-body.dark-mode .pricing-card .plan-price {
-    color: #F5B400;
-}
-body.dark-mode .pricing-card .plan-features li {
-    color: #d1d5db;
-    border-bottom-color: #374151;
-}
-body.dark-mode .pricing-card.free {
-    background: #2d3748;
-}
-body.dark-mode .pricing-card.recommended {
-    border-color: #F5B400;
-}
-body.dark-mode .premium-banner {
-    background: #F5B400 !important;
-    color: #1a1a2e !important;
-}
-body.dark-mode .premium-banner strong {
-    color: #1a1a2e;
-}
-body.dark-mode .premium-banner-btn {
-    background: #1a1a2e !important;
-    color: white !important;
 }
 body.dark-mode .verify-btn {
     background: #0a1a4f;
