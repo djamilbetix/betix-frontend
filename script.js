@@ -1556,10 +1556,10 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – CORRECTION DE L'ID
+// PAGE DE DÉTAIL (openEventDetails) – inchangée
 // ============================================================
 function openEventDetails(eventId) {
-    const event = events.find(e => e.id === Number(eventId));
+    const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
