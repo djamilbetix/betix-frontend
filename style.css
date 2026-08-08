@@ -858,8 +858,8 @@ body {
     overflow: hidden;
     background: #f3f4f6;
     aspect-ratio: auto;
-    min-height: 200px;
-    max-height: 350px;
+    min-height: 280px;   /* Augmenté pour agrandir l’image */
+    max-height: 420px;   /* Augmenté */
 }
 .event-card-classic .category-badge-classic {
     position: absolute;
@@ -1057,8 +1057,8 @@ body {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     background: #1a1a2e;
-    min-height: 200px;
-    max-height: 350px;
+    min-height: 280px;   /* Augmenté */
+    max-height: 420px;   /* Augmenté */
     display: flex;
     align-items: center;
     cursor: grab;
@@ -1121,8 +1121,8 @@ body {
 }
 @media (max-width: 480px) {
     .event-carousel {
-        min-height: 150px;
-        max-height: 250px;
+        min-height: 200px;
+        max-height: 300px;
     }
 }
 body.dark-mode .event-carousel {
@@ -1726,7 +1726,7 @@ body.dark-mode .carousel-slide {
    ============================================================ */
 .image-upload-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 colonnes pour 3 images */
     gap: 16px;
     margin-top: 6px;
 }
@@ -1736,7 +1736,7 @@ body.dark-mode .carousel-slide {
     border-radius: 14px;
     background: #fefaf0;
     transition: all 0.3s ease;
-    min-height: 180px;
+    min-height: 160px;
     overflow: hidden;
     cursor: pointer;
 }
@@ -1754,7 +1754,7 @@ body.dark-mode .carousel-slide {
     border-style: solid;
     border-color: #10b981;
     background: #f0fdf4;
-    min-height: 180px;
+    min-height: 160px;
 }
 .upload-box-modern.compress {
     border-color: #F5B400;
@@ -1765,22 +1765,22 @@ body.dark-mode .carousel-slide {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 180px;
-    padding: 20px;
+    min-height: 160px;
+    padding: 16px;
     text-align: center;
 }
 .upload-box-modern.has-image .upload-box-inner { display: none; }
 .upload-icon-modern {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #d4911e;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     opacity: 0.8;
 }
 .upload-text {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: #6b7280;
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 .upload-text span {
     color: #F5B400;
