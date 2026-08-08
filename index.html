@@ -233,8 +233,9 @@
                 <p class="ticket-seats-help"><i class="fas fa-info-circle"></i> Total number of tickets available for this event</p>
             </div>
             <div class="form-group">
-                <label>Photos (1 image minimum)</label>
+                <label>Photos (1 image minimum, up to 3)</label>
                 <div id="imageUploadContainer" class="image-upload-container">
+                    <!-- 3 upload boxes -->
                     <div class="upload-box-modern" id="uploadBox1">
                         <div class="upload-box-inner" id="uploadInner1">
                             <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
@@ -264,6 +265,22 @@
                         <div class="preview-modern" id="previewContainer1" style="display:none;">
                             <img id="previewImage1" src="#" alt="Preview">
                             <button type="button" class="remove-image-modern" id="remove1" onclick="removeImageModern(1)"><i class="fas fa-times"></i></button>
+                            <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
+                        </div>
+                    </div>
+                    <div class="upload-box-modern" id="uploadBox3">
+                        <div class="upload-box-inner" id="uploadInner3">
+                            <div class="upload-icon-modern"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <p class="upload-text">Drop your image here<br><span>or click to browse</span></p>
+                            <div class="upload-progress" id="progress3" style="display:none;">
+                                <div class="progress-bar"><div class="progress-fill" id="progressFill3" style="width:0%"></div></div>
+                                <span class="progress-text" id="progressText3">0%</span>
+                            </div>
+                        </div>
+                        <input type="file" class="image-input-modern" accept="image/*" data-index="2" id="imageInput2">
+                        <div class="preview-modern" id="previewContainer2" style="display:none;">
+                            <img id="previewImage2" src="#" alt="Preview">
+                            <button type="button" class="remove-image-modern" id="remove2" onclick="removeImageModern(2)"><i class="fas fa-times"></i></button>
                             <div class="preview-badge"><i class="fas fa-check-circle"></i> Compressed</div>
                         </div>
                     </div>
