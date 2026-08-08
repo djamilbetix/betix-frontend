@@ -607,7 +607,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// SAVE EVENT ET TICKET (AVEC FALLBACK)
+// SAVE EVENT ET TICKET (AVEC LOGS D'ERREUR)
 // ============================================================
 async function saveEventToSupabase(eventData) {
     try {
@@ -638,9 +638,16 @@ async function saveEventToSupabase(eventData) {
             updated_at: new Date().toISOString()
         };
         const { error } = await supabaseClient.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Supabase error saving event:', error);
+            return false;
+        }
+        console.log('✅ Event saved to Supabase:', eventData.id);
         return true;
-    } catch (error) { console.error('saveEventToSupabase error:', error); return false; }
+    } catch (error) {
+        console.error('❌ saveEventToSupabase exception:', error);
+        return false;
+    }
 }
 
 async function saveTicketToSupabase(ticketData) {
@@ -673,12 +680,13 @@ async function saveTicketToSupabase(ticketData) {
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
         if (error) {
-            console.error('Supabase error saving ticket:', error);
+            console.error('❌ Supabase error saving ticket:', error);
             return false;
         }
+        console.log('✅ Ticket saved to Supabase:', ticketData.id);
         return true;
     } catch (error) {
-        console.error('Error saving ticket to Supabase:', error);
+        console.error('❌ saveTicketToSupabase exception:', error);
         return false;
     }
 }
@@ -690,7 +698,10 @@ async function loadTicketsFromSupabase(piUid) {
     try {
         if (!piUid) return [];
         const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Error loading tickets from Supabase:', error);
+            return [];
+        }
         return (data || []).map(t => ({
             id: t.id,
             eventId: t.event_id,
@@ -713,13 +724,16 @@ async function loadTicketsFromSupabase(piUid) {
             pays: t.pays || 'France',
             ticketNumber: t.ticket_number
         }));
-    } catch (error) { return []; }
+    } catch (error) { console.error('❌ loadTicketsFromSupabase exception:', error); return []; }
 }
 
 async function loadEventsFromSupabase() {
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Error loading events from Supabase:', error);
+            return [];
+        }
         return (data || []).map(e => {
             const imagesArray = e.image_urls ? (() => { try { return JSON.parse(e.image_urls); } catch(parseErr) { return []; } })() : [];
             if (imagesArray.length === 0 && e.image_url) imagesArray.push(e.image_url);
@@ -752,7 +766,7 @@ async function loadEventsFromSupabase() {
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-    } catch (error) { return []; }
+    } catch (error) { console.error('❌ loadEventsFromSupabase exception:', error); return []; }
 }
 
 // ============================================================
@@ -782,7 +796,7 @@ function restoreBackupData() {
 }
 
 // ============================================================
-// LOAD ALL FROM SUPABASE (amélioré)
+// LOAD ALL FROM SUPABASE (amélioré avec logs)
 // ============================================================
 async function loadAllFromSupabase() {
     console.log("=== LOAD ALL FROM SUPABASE ===");
@@ -790,8 +804,9 @@ async function loadAllFromSupabase() {
     updateSyncStatus('loading');
     
     // Charger les événements publics depuis Supabase
+    let supabaseEvents = [];
     try {
-        const supabaseEvents = await loadEventsFromSupabase();
+        supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
         // Fusion avec les événements locaux (préserver les locaux si plus récents)
         const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
@@ -800,7 +815,7 @@ async function loadAllFromSupabase() {
         localStorage.setItem('betix_events', JSON.stringify(events));
         saveBackupData(events, tickets);
     } catch (error) {
-        console.error('Error loading events from Supabase:', error);
+        console.error('❌ Error loading events from Supabase:', error);
         const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
         events = localEvents;
     }
@@ -816,7 +831,7 @@ async function loadAllFromSupabase() {
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             saveBackupData(events, tickets);
         } catch (error) {
-            console.error('Error loading tickets from Supabase:', error);
+            console.error('❌ Error loading tickets from Supabase:', error);
             const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
             tickets = localTickets;
         }
@@ -916,6 +931,7 @@ async function syncAllToSupabase(retryCount = 0) {
         updateSyncStatus('success');
         return { events: events.length, tickets: tickets.length };
     } catch (error) {
+        console.error('❌ syncAllToSupabase error:', error);
         if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
         else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
     }
@@ -1428,14 +1444,12 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
 
-    // Construction du carrousel avec défilement horizontal (style X) - amélioré
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
     carouselHtml += `<div class="carousel-track">`;
     images.forEach((img, idx) => {
         carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
     });
     carouselHtml += `</div>`;
-    // Indicateurs (dots) si plus d'une image
     if (images.length > 1) {
         carouselHtml += `<div class="carousel-indicators">`;
         for (let i = 0; i < images.length; i++) {
@@ -1489,7 +1503,6 @@ function renderEventCard(event) {
         durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
     }
 
-    // Info box avec alignement professionnel
     const infoBoxHtml = `
         <div class="event-info-box">
             <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
@@ -1497,7 +1510,6 @@ function renderEventCard(event) {
         </div>
     `;
 
-    // Utilisation de data-id au lieu de onclick
     return `<div class="event-card-classic" data-id="${event.id}">
         <div class="poster-wrapper-classic">
             <span class="category-badge-classic">${escapeHtml(event.category)}</span>
@@ -1540,7 +1552,6 @@ function initCarouselIndicators() {
         };
 
         track.addEventListener('scroll', updateActiveDot);
-        // Initialiser
         setTimeout(updateActiveDot, 100);
     });
 }
@@ -1900,9 +1911,7 @@ async function loadProfileData() {
             currentUser.phone_number = data.phone_number || '';
             currentUser.profile_completed = data.profile_completed || false;
             currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
-            // Sauvegarder dans localStorage
             saveUser();
-            // Pré-remplir le formulaire
             document.getElementById('profileFirstName').value = data.first_name || '';
             document.getElementById('profileLastName').value = data.last_name || '';
             document.getElementById('profileCountry').value = data.country || '';
@@ -2025,7 +2034,6 @@ async function confirmProfileSave() {
             .eq('pi_uid', piUid);
         if (error) throw error;
 
-        // Mise à jour locale
         Object.assign(currentUser, {
             first_name: data.firstName,
             last_name: data.lastName,
@@ -2037,8 +2045,6 @@ async function confirmProfileSave() {
             profile_reminder_shown: true
         });
         saveUser();
-
-        // Synchronisation explicite avec Supabase
         await syncUserToSupabase();
 
         document.getElementById('profileFirstName').value = data.firstName;
@@ -2317,8 +2323,8 @@ async function confirmPurchase(eventId, quantity) {
                             pays: event.pays || event.country || 'France',
                             buyerWallet: piUser ? piUser.username : currentUser.wallet,
                             buyerName: fullName || 'Anonymous',
-                            buyerEmail: buyerEmail,   // AJOUT
-                            buyerPhone: buyerPhone,   // AJOUT
+                            buyerEmail: buyerEmail,
+                            buyerPhone: buyerPhone,
                             userWallet: currentUser.wallet,
                             status: 'Valid',
                             purchaseDate: purchaseDate,
@@ -2330,7 +2336,7 @@ async function confirmPurchase(eventId, quantity) {
                             organizerName: organizerName,
                             organizerPiUid: organizerPiUid,
                             eventPays: event.pays || event.country || 'France',
-                            ticketNumber: nextNumber + i   // Numéro séquentiel
+                            ticketNumber: nextNumber + i
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -2560,7 +2566,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI
+// CONNEXION PI – AVEC SYNC APRÈS CONNEXION
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -2594,6 +2600,7 @@ async function connectToPi() {
                         renderEventsByCategory();
                         updateConnectButtons();
                         await loadAllFromSupabase();
+                        await syncAllToSupabase(); // 🔁 Pousser les données locales vers Supabase
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
@@ -2625,6 +2632,7 @@ async function connectToPi() {
                     renderEventsByCategory();
                     updateConnectButtons();
                     await loadAllFromSupabase();
+                    await syncAllToSupabase(); // 🔁 Pousser les données locales vers Supabase
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
@@ -2661,7 +2669,7 @@ async function connectToPi() {
 }
 
 // ============================================================
-// NOTIFICATION DE COMPLÉTION DE PROFIL (AJOUT)
+// NOTIFICATION DE COMPLÉTION DE PROFIL
 // ============================================================
 function checkAndNotifyProfileCompletion() {
     if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
@@ -3140,7 +3148,6 @@ function renderNotificationsPage() {
         return;
     }
 
-    // En-tête avec bouton "Tout effacer"
     let html = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
             <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
@@ -3225,13 +3232,12 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT – CONSERVATION DES DONNÉES DE PROFIL (CORRECTION)
+// DISCONNECT – AVEC SAUVEGARDE SUPABASE
 // ============================================================
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
         // Sauvegarder l'utilisateur dans Supabase avant de déconnecter
         syncUserToSupabase().then(() => {
-            // Conserver les données de profil
             const profileData = {
                 first_name: currentUser.first_name || '',
                 last_name: currentUser.last_name || '',
@@ -3249,7 +3255,7 @@ function disconnectPi() {
                 piUid: null,
                 memberSince: '2026',
                 loyaltyPoints: 0,
-                ...profileData  // Réintégration des champs de profil
+                ...profileData
             };
             piUser = null;
             saveUser();
@@ -3324,7 +3330,6 @@ function showPage(pageName) {
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
     if (pageName === 'notifications') renderNotificationsPage();
-    // Appel pour initialiser les indicateurs de carrousel après affichage des événements
     if (pageName === 'home' || pageName === 'myevents') {
         setTimeout(initCarouselIndicators, 300);
     }
@@ -3405,7 +3410,6 @@ function renderMyEvents() {
     setTimeout(() => {
         applyStaggeredAnimation('#myEventsList');
     }, 50);
-    // Initialisation des carrousels pour les événements de l'utilisateur
     setTimeout(initCarouselIndicators, 300);
 }
 
@@ -3441,7 +3445,7 @@ function renderMyEventCardModern(event) {
 }
 
 // ============================================================
-// RENDER EVENTS BY CATEGORY – AVEC ÉCOUTEURS D'ÉVÉNEMENTS (CORRECTION)
+// RENDER EVENTS BY CATEGORY – AVEC ÉCOUTEURS D'ÉVÉNEMENTS
 // ============================================================
 function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
@@ -3471,7 +3475,6 @@ function renderEventsByCategory() {
     }
     container.innerHTML = html;
 
-    // Attacher les écouteurs d'événements sur les cartes (CORRECTION)
     container.querySelectorAll('.event-card-classic').forEach(card => {
         card.addEventListener('click', function() {
             const id = this.dataset.id;
@@ -4041,7 +4044,6 @@ async function initApp() {
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
         populateProfileCountrySelect();
-        // Charger le profil et les données depuis Supabase
         if (currentUser.wallet) {
             await loadProfileData();
             checkAndNotifyProfileCompletion();
