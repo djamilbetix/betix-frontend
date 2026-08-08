@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (abrégé – gardez votre version complète)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -565,15 +565,18 @@ async function loadHeroSlides() {
     }
 }
 
+// ============================================================
+// SAUVEGARDE UTILISATEUR DANS SUPABASE (optimisée)
+// ============================================================
 async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
     try {
         const now = new Date().toISOString();
         const userData = {
             pi_uid: piUid,
-            username,
-            wallet,
-            points,
+            username: username || piUid,
+            wallet: wallet || piUid,
+            points: points,
             first_name: currentUser.first_name || '',
             last_name: currentUser.last_name || '',
             country: currentUser.country || '',
@@ -595,8 +598,12 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             const { error } = await supabaseClient.from('users').insert(userData);
             if (error) throw error;
         }
+        console.log('✅ Utilisateur sauvegardé dans Supabase :', piUid);
         return true;
-    } catch (error) { return false; }
+    } catch (error) {
+        console.error('❌ Erreur saveUserToSupabase :', error);
+        return false;
+    }
 }
 
 // ============================================================
@@ -633,7 +640,7 @@ async function saveEventToSupabase(eventData) {
         const { error } = await supabaseClient.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
         if (error) throw error;
         return true;
-    } catch (error) { return false; }
+    } catch (error) { console.error('saveEventToSupabase error:', error); return false; }
 }
 
 async function saveTicketToSupabase(ticketData) {
@@ -775,83 +782,58 @@ function restoreBackupData() {
 }
 
 // ============================================================
-// LOAD ALL FROM SUPABASE (version robuste)
+// LOAD ALL FROM SUPABASE (amélioré)
 // ============================================================
 async function loadAllFromSupabase() {
     console.log("=== LOAD ALL FROM SUPABASE ===");
     loadUsedTickets();
     updateSyncStatus('loading');
     
-    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-    const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-    console.log("Local events:", localEvents.length, "Local tickets:", localTickets.length);
-    
-    saveBackupData(localEvents, localTickets);
-    events = [...localEvents];
-    tickets = [...localTickets];
-    
+    // Charger les événements publics depuis Supabase
     try {
         const supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
-        
-        const userIdentifier = currentUser.piUid || currentUser.wallet;
-        let supabaseTickets = [];
-        if (userIdentifier) {
-            supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
-            console.log("Supabase tickets for user:", supabaseTickets.length);
-        } else {
-            console.warn("No user identifier, skipping Supabase tickets load.");
-        }
-        
-        if (supabaseEvents.length > 0 || supabaseTickets.length > 0) {
-            const mergedEvents = mergeArraysById(localEvents, supabaseEvents);
-            const mergedTickets = mergeArraysById(localTickets, supabaseTickets);
-            events = mergedEvents;
-            tickets = mergedTickets;
-        } else {
-            console.warn("Supabase returned no data, keeping local data.");
-        }
-        
+        // Fusion avec les événements locaux (préserver les locaux si plus récents)
+        const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+        events = mergeArraysById(localEvents, supabaseEvents);
+        // Sauvegarde locale
         localStorage.setItem('betix_events', JSON.stringify(events));
-        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
         saveBackupData(events, tickets);
-        
-        for (const e of events) {
-            if (!supabaseEvents.some(se => se.id === e.id)) {
-                console.log("Saving missing event to Supabase:", e.id);
-                await saveEventToSupabase(e);
-                await new Promise(r => setTimeout(r, 100));
-            }
-        }
-        for (const t of tickets) {
-            if (!supabaseTickets.some(st => st.id === t.id)) {
-                console.log("Saving missing ticket to Supabase:", t.id);
-                const saved = await saveTicketToSupabase(t);
-                if (!saved) {
-                    pendingTickets.push(t);
-                    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-                }
-                await new Promise(r => setTimeout(r, 100));
-            }
-        }
-        
-        // Gestion locale des notifications
-        const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-        notifications = localNotifs;
-        localStorage.setItem('betix_notifications', JSON.stringify(notifications));
-        
-        updateSyncStatus('success');
-        console.log("Load completed successfully. Events:", events.length, "Tickets:", tickets.length);
-        
     } catch (error) {
-        console.error('Erreur lors du chargement depuis Supabase :', error);
-        updateSyncStatus('error');
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-        saveBackupData(events, tickets);
-        console.warn("Supabase error, but keeping local data.");
+        console.error('Error loading events from Supabase:', error);
+        const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+        events = localEvents;
     }
     
+    // Charger les tickets si l'utilisateur est connecté
+    const userIdentifier = currentUser.piUid || currentUser.wallet;
+    if (userIdentifier) {
+        try {
+            const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            console.log("Supabase tickets for user:", supabaseTickets.length);
+            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+            tickets = mergeArraysById(localTickets, supabaseTickets);
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            saveBackupData(events, tickets);
+        } catch (error) {
+            console.error('Error loading tickets from Supabase:', error);
+            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+            tickets = localTickets;
+        }
+    } else {
+        console.log("User not connected, tickets not loaded.");
+        tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+    }
+    
+    // Notifications
+    const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+    notifications = localNotifs;
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    
+    updateSyncStatus('success');
+    console.log("Load completed. Events:", events.length, "Tickets:", tickets.length);
+    
+    // Rafraîchir l'UI
     renderEventsByCategory();
     renderTickets();
     renderHistory();
@@ -861,7 +843,6 @@ async function loadAllFromSupabase() {
     }, 300);
     
     await retryPendingTickets();
-    console.log("=== LOAD COMPLETE ===");
 }
 
 // ============================================================
@@ -884,7 +865,7 @@ function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.str
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    syncUserToSupabase(); 
+    // Ne pas appeler syncUserToSupabase ici pour éviter les boucles, on l'appelle explicitement quand nécessaire
 }
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
@@ -892,10 +873,14 @@ function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ra
 function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
 
 async function syncUserToSupabase() {
-    if (!currentUser.piUid && !currentUser.wallet) return;
+    if (!currentUser.piUid && !currentUser.wallet) {
+        console.warn('No piUid or wallet, cannot sync user.');
+        return;
+    }
     const piUid = currentUser.piUid || currentUser.wallet;
     await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
 }
+
 async function syncEventsToSupabase() {
     let success = 0;
     for (let i = 0; i < events.length; i++) {
@@ -903,7 +888,9 @@ async function syncEventsToSupabase() {
         if (saved) success++;
         if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
     }
+    console.log(`Synced ${success}/${events.length} events to Supabase.`);
 }
+
 async function syncTicketsToSupabase() {
     let success = 0;
     for (let i = 0; i < tickets.length; i++) {
@@ -916,7 +903,9 @@ async function syncTicketsToSupabase() {
         pendingTickets.push(...failed);
         localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
     }
+    console.log(`Synced ${success}/${tickets.length} tickets to Supabase.`);
 }
+
 async function syncAllToSupabase(retryCount = 0) {
     const maxRetries = 3;
     try {
@@ -1883,22 +1872,26 @@ function populateProfileCountrySelect() {
 
 async function loadProfileData() {
     const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) return;
+    if (!piUid) {
+        console.warn('No piUid, cannot load profile data.');
+        return;
+    }
     try {
-        // On sélectionne maintenant aussi profile_completed et profile_reminder_shown
         const { data, error } = await supabaseClient
             .from('users')
             .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
             .eq('pi_uid', piUid)
             .single();
-        if (error) throw error;
+        if (error) {
+            if (error.code === 'PGRST116') {
+                console.log('No profile found for user, will create on save.');
+                enableEditMode(true);
+                return;
+            }
+            throw error;
+        }
         if (data) {
-            document.getElementById('profileFirstName').value = data.first_name || '';
-            document.getElementById('profileLastName').value = data.last_name || '';
-            document.getElementById('profileCountry').value = data.country || '';
-            document.getElementById('profileAddress').value = data.address || '';
-            document.getElementById('profileEmail').value = data.email || '';
-            document.getElementById('profilePhone').value = data.phone_number || '';
+            // Mettre à jour currentUser
             currentUser.first_name = data.first_name || '';
             currentUser.last_name = data.last_name || '';
             currentUser.country = data.country || '';
@@ -1907,13 +1900,22 @@ async function loadProfileData() {
             currentUser.phone_number = data.phone_number || '';
             currentUser.profile_completed = data.profile_completed || false;
             currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
+            // Sauvegarder dans localStorage
+            saveUser();
+            // Pré-remplir le formulaire
+            document.getElementById('profileFirstName').value = data.first_name || '';
+            document.getElementById('profileLastName').value = data.last_name || '';
+            document.getElementById('profileCountry').value = data.country || '';
+            document.getElementById('profileAddress').value = data.address || '';
+            document.getElementById('profileEmail').value = data.email || '';
+            document.getElementById('profilePhone').value = data.phone_number || '';
             updateUserInfo();
             enableEditMode(false);
         } else {
             enableEditMode(true);
         }
     } catch (error) {
-        console.log('No profile data yet or error:', error.message);
+        console.error('Error loading profile data:', error);
         enableEditMode(true);
     }
 }
@@ -3227,38 +3229,74 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 // ============================================================
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
-        // Conserver les données de profil
-        const profileData = {
-            first_name: currentUser.first_name || '',
-            last_name: currentUser.last_name || '',
-            country: currentUser.country || '',
-            address: currentUser.address || '',
-            email: currentUser.email || '',
-            phone_number: currentUser.phone_number || '',
-            profile_completed: currentUser.profile_completed || false,
-            profile_reminder_shown: currentUser.profile_reminder_shown || false
-        };
+        // Sauvegarder l'utilisateur dans Supabase avant de déconnecter
+        syncUserToSupabase().then(() => {
+            // Conserver les données de profil
+            const profileData = {
+                first_name: currentUser.first_name || '',
+                last_name: currentUser.last_name || '',
+                country: currentUser.country || '',
+                address: currentUser.address || '',
+                email: currentUser.email || '',
+                phone_number: currentUser.phone_number || '',
+                profile_completed: currentUser.profile_completed || false,
+                profile_reminder_shown: currentUser.profile_reminder_shown || false
+            };
 
-        currentUser = {
-            name: 'Guest',
-            wallet: null,
-            piUid: null,
-            memberSince: '2026',
-            loyaltyPoints: 0,
-            ...profileData  // Réintégration des champs de profil
-        };
-        piUser = null;
-        saveUser();
-        localStorage.removeItem('betix_last_activity');
-        localStorage.removeItem('betix_pending_payment');
-        updateUserInfo();
-        updateProfilePage();
-        renderEventsByCategory();
-        renderTickets();
-        renderHistory();
-        updateConnectButtons();
-        closeSidebar();
-        alert(t('disconnected'));
+            currentUser = {
+                name: 'Guest',
+                wallet: null,
+                piUid: null,
+                memberSince: '2026',
+                loyaltyPoints: 0,
+                ...profileData  // Réintégration des champs de profil
+            };
+            piUser = null;
+            saveUser();
+            localStorage.removeItem('betix_last_activity');
+            localStorage.removeItem('betix_pending_payment');
+            updateUserInfo();
+            updateProfilePage();
+            renderEventsByCategory();
+            renderTickets();
+            renderHistory();
+            updateConnectButtons();
+            closeSidebar();
+            alert(t('disconnected'));
+        }).catch(() => {
+            // En cas d'erreur, on déconnecte quand même
+            const profileData = {
+                first_name: currentUser.first_name || '',
+                last_name: currentUser.last_name || '',
+                country: currentUser.country || '',
+                address: currentUser.address || '',
+                email: currentUser.email || '',
+                phone_number: currentUser.phone_number || '',
+                profile_completed: currentUser.profile_completed || false,
+                profile_reminder_shown: currentUser.profile_reminder_shown || false
+            };
+
+            currentUser = {
+                name: 'Guest',
+                wallet: null,
+                piUid: null,
+                memberSince: '2026',
+                loyaltyPoints: 0,
+                ...profileData
+            };
+            piUser = null;
+            saveUser();
+            localStorage.removeItem('betix_last_activity');
+            localStorage.removeItem('betix_pending_payment');
+            updateUserInfo();
+            updateProfilePage();
+            renderEventsByCategory();
+            renderTickets();
+            renderHistory();
+            updateConnectButtons();
+            closeSidebar();
+            alert(t('disconnected'));
+        });
     }
 }
 
@@ -3971,7 +4009,7 @@ async function initApp() {
         if (loader && main) {
             setTimeout(() => {
                 loader.classList.add('hidden');
-                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); loadAllFromSupabase(); }, 600);
+                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); }, 600);
             }, 3000);
         }
         await loadAppSettings();
@@ -4003,10 +4041,15 @@ async function initApp() {
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
         populateProfileCountrySelect();
+        // Charger le profil et les données depuis Supabase
         if (currentUser.wallet) {
             await loadProfileData();
             checkAndNotifyProfileCompletion();
+            await loadAllFromSupabase();
+        } else {
+            await loadAllFromSupabase(); // charge les événements publics
         }
+        
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
         document.getElementById('profileReviewConfirmBtn')?.addEventListener('click', confirmProfileSave);
@@ -4070,8 +4113,8 @@ async function initApp() {
         document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
         bindActivityListeners();
         setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
-        setTimeout(() => loadAllFromSupabase(), 1000);
-        setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 30000);
+        setTimeout(() => syncAllToSupabase(), 2000);
+        setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 60000);
         window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
         document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
@@ -4092,6 +4135,7 @@ async function initApp() {
             }, 300);
         });
     } catch (error) {
+        console.error('Init error:', error);
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
         if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
