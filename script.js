@@ -808,10 +808,8 @@ async function loadAllFromSupabase() {
     try {
         supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
-        // Fusion avec les événements locaux (préserver les locaux si plus récents)
         const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
         events = mergeArraysById(localEvents, supabaseEvents);
-        // Sauvegarde locale
         localStorage.setItem('betix_events', JSON.stringify(events));
         saveBackupData(events, tickets);
     } catch (error) {
@@ -848,7 +846,6 @@ async function loadAllFromSupabase() {
     updateSyncStatus('success');
     console.log("Load completed. Events:", events.length, "Tickets:", tickets.length);
     
-    // Rafraîchir l'UI
     renderEventsByCategory();
     renderTickets();
     renderHistory();
@@ -880,7 +877,6 @@ function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.str
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    // Ne pas appeler syncUserToSupabase ici pour éviter les boucles, on l'appelle explicitement quand nécessaire
 }
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
@@ -893,7 +889,13 @@ async function syncUserToSupabase() {
         return;
     }
     const piUid = currentUser.piUid || currentUser.wallet;
-    await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
+    console.log('🔄 Synchronisation de l\'utilisateur vers Supabase...', piUid);
+    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
+    if (success) {
+        console.log('✅ Utilisateur synchronisé avec succès.');
+    } else {
+        console.error('❌ Échec de la synchronisation utilisateur.');
+    }
 }
 
 async function syncEventsToSupabase() {
@@ -1887,6 +1889,7 @@ async function loadProfileData() {
         console.warn('No piUid, cannot load profile data.');
         return;
     }
+    console.log('🔍 Chargement du profil pour piUid:', piUid);
     try {
         const { data, error } = await supabaseClient
             .from('users')
@@ -1895,13 +1898,14 @@ async function loadProfileData() {
             .single();
         if (error) {
             if (error.code === 'PGRST116') {
-                console.log('No profile found for user, will create on save.');
+                console.log('ℹ️ Aucun profil trouvé pour cet utilisateur. Il sera créé lors de la première sauvegarde.');
                 enableEditMode(true);
                 return;
             }
             throw error;
         }
         if (data) {
+            console.log('✅ Profil chargé depuis Supabase :', data);
             // Mettre à jour currentUser
             currentUser.first_name = data.first_name || '';
             currentUser.last_name = data.last_name || '';
@@ -1912,6 +1916,7 @@ async function loadProfileData() {
             currentUser.profile_completed = data.profile_completed || false;
             currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
             saveUser();
+            // Pré-remplir le formulaire
             document.getElementById('profileFirstName').value = data.first_name || '';
             document.getElementById('profileLastName').value = data.last_name || '';
             document.getElementById('profileCountry').value = data.country || '';
@@ -1924,7 +1929,7 @@ async function loadProfileData() {
             enableEditMode(true);
         }
     } catch (error) {
-        console.error('Error loading profile data:', error);
+        console.error('❌ Erreur lors du chargement du profil :', error);
         enableEditMode(true);
     }
 }
@@ -3234,76 +3239,50 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 // ============================================================
 // DISCONNECT – AVEC SAUVEGARDE SUPABASE
 // ============================================================
-function disconnectPi() {
-    if (confirm(t('disconnect') + '?')) {
-        // Sauvegarder l'utilisateur dans Supabase avant de déconnecter
-        syncUserToSupabase().then(() => {
-            const profileData = {
-                first_name: currentUser.first_name || '',
-                last_name: currentUser.last_name || '',
-                country: currentUser.country || '',
-                address: currentUser.address || '',
-                email: currentUser.email || '',
-                phone_number: currentUser.phone_number || '',
-                profile_completed: currentUser.profile_completed || false,
-                profile_reminder_shown: currentUser.profile_reminder_shown || false
-            };
-
-            currentUser = {
-                name: 'Guest',
-                wallet: null,
-                piUid: null,
-                memberSince: '2026',
-                loyaltyPoints: 0,
-                ...profileData
-            };
-            piUser = null;
-            saveUser();
-            localStorage.removeItem('betix_last_activity');
-            localStorage.removeItem('betix_pending_payment');
-            updateUserInfo();
-            updateProfilePage();
-            renderEventsByCategory();
-            renderTickets();
-            renderHistory();
-            updateConnectButtons();
-            closeSidebar();
-            alert(t('disconnected'));
-        }).catch(() => {
-            // En cas d'erreur, on déconnecte quand même
-            const profileData = {
-                first_name: currentUser.first_name || '',
-                last_name: currentUser.last_name || '',
-                country: currentUser.country || '',
-                address: currentUser.address || '',
-                email: currentUser.email || '',
-                phone_number: currentUser.phone_number || '',
-                profile_completed: currentUser.profile_completed || false,
-                profile_reminder_shown: currentUser.profile_reminder_shown || false
-            };
-
-            currentUser = {
-                name: 'Guest',
-                wallet: null,
-                piUid: null,
-                memberSince: '2026',
-                loyaltyPoints: 0,
-                ...profileData
-            };
-            piUser = null;
-            saveUser();
-            localStorage.removeItem('betix_last_activity');
-            localStorage.removeItem('betix_pending_payment');
-            updateUserInfo();
-            updateProfilePage();
-            renderEventsByCategory();
-            renderTickets();
-            renderHistory();
-            updateConnectButtons();
-            closeSidebar();
-            alert(t('disconnected'));
-        });
+async function disconnectPi() {
+    if (!confirm(t('disconnect') + '?')) return;
+    
+    // 1. Sauvegarder le profil dans Supabase avant de déconnecter
+    try {
+        await syncUserToSupabase();
+        console.log('✅ Profil sauvegardé dans Supabase avant déconnexion.');
+    } catch (error) {
+        console.error('❌ Erreur lors de la sauvegarde du profil avant déconnexion :', error);
     }
+
+    // 2. Conserver les données de profil pour les réintégrer
+    const profileData = {
+        first_name: currentUser.first_name || '',
+        last_name: currentUser.last_name || '',
+        country: currentUser.country || '',
+        address: currentUser.address || '',
+        email: currentUser.email || '',
+        phone_number: currentUser.phone_number || '',
+        profile_completed: currentUser.profile_completed || false,
+        profile_reminder_shown: currentUser.profile_reminder_shown || false
+    };
+
+    // 3. Réinitialiser la session en gardant les données de profil
+    currentUser = {
+        name: 'Guest',
+        wallet: null,
+        piUid: null,
+        memberSince: '2026',
+        loyaltyPoints: 0,
+        ...profileData
+    };
+    piUser = null;
+    saveUser();
+    localStorage.removeItem('betix_last_activity');
+    localStorage.removeItem('betix_pending_payment');
+    updateUserInfo();
+    updateProfilePage();
+    renderEventsByCategory();
+    renderTickets();
+    renderHistory();
+    updateConnectButtons();
+    closeSidebar();
+    alert(t('disconnected'));
 }
 
 function logout() { disconnectPi(); }
