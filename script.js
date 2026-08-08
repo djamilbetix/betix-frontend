@@ -134,7 +134,7 @@ const translations = {
         totalSeats: 'Total Seats', ticketTypes: 'Ticket Types',
         enableAtLeastOne: 'Enable at least one ticket type and set its price',
         standard: 'Standard', price: 'Price', active: 'Active', inactive: 'Inactive',
-        photos: 'Photos', imagesRequired: '2 images required', dropImage: 'Drop your image here',
+        photos: 'Photos', imagesRequired: '1 image required', dropImage: 'Drop your image here',
         orClick: 'or click to browse', compressed: 'Compressed',
         imagesAutoCompressed: 'Images automatically compressed to WebP format for better performance',
         publishEvent: 'Publish Event', confirmPublication: 'Confirm Publication',
@@ -211,7 +211,7 @@ const translations = {
         ticketTypes: 'Types de Billets',
         enableAtLeastOne: 'Activez au moins un type de billet et définissez son prix',
         standard: 'Standard', price: 'Prix', active: 'Actif', inactive: 'Inactif',
-        photos: 'Photos', imagesRequired: '2 images requises',
+        photos: 'Photos', imagesRequired: '1 image requise',
         dropImage: 'Déposez votre image ici', orClick: 'ou cliquez pour parcourir',
         compressed: 'Compressée',
         imagesAutoCompressed: 'Images automatiquement compressées au format WebP pour de meilleures performances',
@@ -1508,7 +1508,7 @@ function renderEventCard(event) {
         </div>
     `;
 
-    // Utilisation de data-id au lieu de onclick (CORRECTION)
+    // Utilisation de data-id au lieu de onclick
     return `<div class="event-card-classic" data-id="${event.id}">
         <div class="poster-wrapper-classic">
             <span class="category-badge-classic">${escapeHtml(event.category)}</span>
@@ -2036,7 +2036,7 @@ async function confirmProfileSave() {
         });
         saveUser();
 
-        // Synchronisation explicite avec Supabase (CORRECTION)
+        // Synchronisation explicite avec Supabase
         await syncUserToSupabase();
 
         document.getElementById('profileFirstName').value = data.firstName;
@@ -2672,7 +2672,7 @@ function checkAndNotifyProfileCompletion() {
 }
 
 // ============================================================
-// CRÉATION D'ÉVÉNEMENT (sans limite premium)
+// CRÉATION D'ÉVÉNEMENT – AVEC 3 IMAGES
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
@@ -2698,7 +2698,7 @@ async function createEvent(e) {
     if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
     if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
     const images = getUploadedImages();
-    if (images.length < 1) { alert(t('imagesRequired')); return; }
+    if (images.length < 1) { alert('At least 1 image is required (up to 3)'); return; }
     publishBtn.classList.add('loading');
     publishBtn.disabled = true;
     try {
@@ -2794,7 +2794,7 @@ async function confirmPublishEvent() {
         await saveEventToSupabase(newEvent);
         await syncUserToSupabase();
         document.getElementById('eventForm').reset();
-        for (let i = 0; i < 2; i++) removeImageModern(i);
+        for (let i = 0; i < 3; i++) removeImageModern(i);
         uploadedImages = {};
         addNotification(t('eventPublished') + ' "' + newEvent.title + '"', 'event');
         closePublishConfirmPopup();
