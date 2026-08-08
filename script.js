@@ -1508,7 +1508,7 @@ function renderEventCard(event) {
         </div>
     `;
 
-    // Utilisation de data-id au lieu de onclick
+    // Utilisation de data-id au lieu de onclick (CORRECTION)
     return `<div class="event-card-classic" data-id="${event.id}">
         <div class="poster-wrapper-classic">
             <span class="category-badge-classic">${escapeHtml(event.category)}</span>
@@ -2035,6 +2035,9 @@ async function confirmProfileSave() {
             profile_reminder_shown: true
         });
         saveUser();
+
+        // Synchronisation explicite avec Supabase (CORRECTION)
+        await syncUserToSupabase();
 
         document.getElementById('profileFirstName').value = data.firstName;
         document.getElementById('profileLastName').value = data.lastName;
@@ -3430,7 +3433,7 @@ function renderEventsByCategory() {
     }
     container.innerHTML = html;
 
-    // Attacher les écouteurs d'événements sur les cartes
+    // Attacher les écouteurs d'événements sur les cartes (CORRECTION)
     container.querySelectorAll('.event-card-classic').forEach(card => {
         card.addEventListener('click', function() {
             const id = this.dataset.id;
