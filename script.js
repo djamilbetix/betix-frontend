@@ -1508,7 +1508,8 @@ function renderEventCard(event) {
         </div>
     `;
 
-    return `<div class="event-card-classic" onclick="openEventDetails('${event.id}')">
+    // Utilisation de data-id au lieu de onclick
+    return `<div class="event-card-classic" data-id="${event.id}">
         <div class="poster-wrapper-classic">
             <span class="category-badge-classic">${escapeHtml(event.category)}</span>
             ${carouselHtml}
@@ -3218,17 +3219,46 @@ function calculateLoyaltyPoints() {
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
+// ============================================================
+// DISCONNECT – CONSERVATION DES DONNÉES DE PROFIL (CORRECTION)
+// ============================================================
 function disconnectPi() {
     if (confirm(t('disconnect') + '?')) {
-        currentUser = { name: 'Guest', wallet: null, piUid: null, memberSince: '2026', loyaltyPoints: 0, profile_completed: false, profile_reminder_shown: false };
+        // Conserver les données de profil
+        const profileData = {
+            first_name: currentUser.first_name || '',
+            last_name: currentUser.last_name || '',
+            country: currentUser.country || '',
+            address: currentUser.address || '',
+            email: currentUser.email || '',
+            phone_number: currentUser.phone_number || '',
+            profile_completed: currentUser.profile_completed || false,
+            profile_reminder_shown: currentUser.profile_reminder_shown || false
+        };
+
+        currentUser = {
+            name: 'Guest',
+            wallet: null,
+            piUid: null,
+            memberSince: '2026',
+            loyaltyPoints: 0,
+            ...profileData  // Réintégration des champs de profil
+        };
         piUser = null;
         saveUser();
         localStorage.removeItem('betix_last_activity');
         localStorage.removeItem('betix_pending_payment');
-        updateUserInfo(); updateProfilePage(); renderEventsByCategory(); renderTickets(); renderHistory(); updateConnectButtons(); closeSidebar();
+        updateUserInfo();
+        updateProfilePage();
+        renderEventsByCategory();
+        renderTickets();
+        renderHistory();
+        updateConnectButtons();
+        closeSidebar();
         alert(t('disconnected'));
     }
 }
+
 function logout() { disconnectPi(); }
 function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
 function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
@@ -3369,6 +3399,9 @@ function renderMyEventCardModern(event) {
     </div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ${event.boosts || 0} ${t('views')}</span><span><i class="fas fa-calendar-plus"></i> ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal('${event.id}')"><i class="fas fa-pen"></i> ${t('editEvent')}</button></div></div></div></div>`;
 }
 
+// ============================================================
+// RENDER EVENTS BY CATEGORY – AVEC ÉCOUTEURS D'ÉVÉNEMENTS (CORRECTION)
+// ============================================================
 function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
     if (!container) return;
@@ -3396,6 +3429,15 @@ function renderEventsByCategory() {
         });
     }
     container.innerHTML = html;
+
+    // Attacher les écouteurs d'événements sur les cartes
+    container.querySelectorAll('.event-card-classic').forEach(card => {
+        card.addEventListener('click', function() {
+            const id = this.dataset.id;
+            if (id) openEventDetails(id);
+        });
+    });
+
     setTimeout(() => {
         applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
         initCarouselIndicators();
