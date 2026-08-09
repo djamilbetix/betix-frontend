@@ -803,7 +803,6 @@ async function loadAllFromSupabase() {
     loadUsedTickets();
     updateSyncStatus('loading');
     
-    // Charger les événements publics depuis Supabase
     let supabaseEvents = [];
     try {
         supabaseEvents = await loadEventsFromSupabase();
@@ -818,7 +817,6 @@ async function loadAllFromSupabase() {
         events = localEvents;
     }
     
-    // Charger les tickets si l'utilisateur est connecté
     const userIdentifier = currentUser.piUid || currentUser.wallet;
     if (userIdentifier) {
         try {
@@ -838,7 +836,6 @@ async function loadAllFromSupabase() {
         tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     }
     
-    // Notifications
     const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
     notifications = localNotifs;
     localStorage.setItem('betix_notifications', JSON.stringify(notifications));
@@ -1121,7 +1118,6 @@ function hideLoader() {
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
     
-    // Formatage de la date et de l'heure de l'événement
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
     const dateFormatted = !isNaN(dateEvent.getTime()) 
         ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
@@ -1131,7 +1127,6 @@ function generateTicketHTML(ticket) {
         ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
         : 'To be defined';
     
-    // Formatage de la durée
     const durationValue = safeTicket.durationValue || '';
     const durationUnit = safeTicket.durationUnit || '';
     let durationDisplay = 'N/A';
@@ -1146,7 +1141,6 @@ function generateTicketHTML(ticket) {
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
     
-    // Données client & événement avec email et téléphone
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
     let userEmail = safeTicket.buyerEmail || 'Non renseigné';
     if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
@@ -1445,7 +1439,10 @@ function renderEventCard(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
-
+    
+    // Afficher le nombre d'images dans la console pour debug
+    console.log(`🎨 Événement "${event.title}" a ${images.length} image(s)`);
+    
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
     carouselHtml += `<div class="carousel-track">`;
     images.forEach((img, idx) => {
@@ -1864,7 +1861,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE (CORRIGÉ pour Supabase)
+// PROFIL – FORMULAIRE AVEC REVUE ET PERSISTANCE
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -1881,6 +1878,31 @@ function populateProfileCountrySelect() {
         option.textContent = flag + ' ' + country;
         select.appendChild(option);
     });
+}
+
+// Nouvelle fonction : pré-remplit le formulaire à partir de currentUser
+function populateProfileForm() {
+    const firstName = document.getElementById('profileFirstName');
+    const lastName = document.getElementById('profileLastName');
+    const country = document.getElementById('profileCountry');
+    const address = document.getElementById('profileAddress');
+    const email = document.getElementById('profileEmail');
+    const phone = document.getElementById('profilePhone');
+    
+    if (firstName) firstName.value = currentUser.first_name || '';
+    if (lastName) lastName.value = currentUser.last_name || '';
+    if (country) country.value = currentUser.country || '';
+    if (address) address.value = currentUser.address || '';
+    if (email) email.value = currentUser.email || '';
+    if (phone) phone.value = currentUser.phone_number || '';
+    
+    // Mettre à jour le statut de vérification si les champs sont remplis
+    if (currentUser.email) {
+        document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    }
+    if (currentUser.phone_number) {
+        document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    }
 }
 
 async function loadProfileData() {
@@ -1916,13 +1938,8 @@ async function loadProfileData() {
             currentUser.profile_completed = data.profile_completed || false;
             currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
             saveUser();
-            // Pré-remplir le formulaire
-            document.getElementById('profileFirstName').value = data.first_name || '';
-            document.getElementById('profileLastName').value = data.last_name || '';
-            document.getElementById('profileCountry').value = data.country || '';
-            document.getElementById('profileAddress').value = data.address || '';
-            document.getElementById('profileEmail').value = data.email || '';
-            document.getElementById('profilePhone').value = data.phone_number || '';
+            // Pré-remplir le formulaire si les éléments existent
+            populateProfileForm();
             updateUserInfo();
             enableEditMode(false);
         } else {
@@ -2052,12 +2069,8 @@ async function confirmProfileSave() {
         saveUser();
         await syncUserToSupabase();
 
-        document.getElementById('profileFirstName').value = data.firstName;
-        document.getElementById('profileLastName').value = data.lastName;
-        document.getElementById('profileCountry').value = data.country;
-        document.getElementById('profileAddress').value = data.address;
-        document.getElementById('profileEmail').value = data.email;
-        document.getElementById('profilePhone').value = data.phone;
+        // Pré-remplir le formulaire
+        populateProfileForm();
 
         closeProfileReview();
         const msg = document.getElementById('profileSaveMessage');
@@ -2297,12 +2310,10 @@ async function confirmPurchase(eventId, quantity) {
                     event.seatsLeft -= quantity;
                     event.boosts = (event.boosts || 0) + quantity;
                     
-                    // Calcul du prochain numéro séquentiel pour cet événement
                     const existingTicketsForEvent = tickets.filter(t => t.eventId === event.id && t.ticketNumber !== undefined);
                     const lastNumber = existingTicketsForEvent.reduce((max, t) => Math.max(max, t.ticketNumber || 0), 0);
                     let nextNumber = lastNumber + 1;
                     
-                    // Récupération des informations de profil (email, téléphone)
                     const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                      (currentUser.last_name ? ' ' + currentUser.last_name : '');
                     const buyerEmail = currentUser.email || 'Non renseigné';
@@ -2311,7 +2322,7 @@ async function confirmPurchase(eventId, quantity) {
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
-                        const qrData = ticketId; // QR code contient l'ID unique pour vérification
+                        const qrData = ticketId;
                         
                         const organizerName = event.organizerName || event.organizer || 'Anonymous';
                         const organizerPiUid = event.organizerPiUid || event.organizer || '';
@@ -2605,7 +2616,7 @@ async function connectToPi() {
                         renderEventsByCategory();
                         updateConnectButtons();
                         await loadAllFromSupabase();
-                        await syncAllToSupabase(); // 🔁 Pousser les données locales vers Supabase
+                        await syncAllToSupabase(); 
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
@@ -2637,7 +2648,7 @@ async function connectToPi() {
                     renderEventsByCategory();
                     updateConnectButtons();
                     await loadAllFromSupabase();
-                    await syncAllToSupabase(); // 🔁 Pousser les données locales vers Supabase
+                    await syncAllToSupabase(); 
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
@@ -3242,7 +3253,6 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
     
-    // 1. Sauvegarder le profil dans Supabase avant de déconnecter
     try {
         await syncUserToSupabase();
         console.log('✅ Profil sauvegardé dans Supabase avant déconnexion.');
@@ -3250,7 +3260,6 @@ async function disconnectPi() {
         console.error('❌ Erreur lors de la sauvegarde du profil avant déconnexion :', error);
     }
 
-    // 2. Conserver les données de profil pour les réintégrer
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3262,7 +3271,6 @@ async function disconnectPi() {
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
 
-    // 3. Réinitialiser la session en gardant les données de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3304,7 +3312,12 @@ function showPage(pageName) {
     }
     if (pageName === 'tickets') renderTickets();
     if (pageName === 'history') renderHistory();
-    if (pageName === 'profile') { updateProfilePage(); loadProfileData(); }
+    if (pageName === 'profile') { 
+        updateProfilePage(); 
+        loadProfileData(); 
+        // Remplir le formulaire après le chargement
+        setTimeout(populateProfileForm, 100);
+    }
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
     if (pageName === 'myevents') renderMyEvents();
