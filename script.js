@@ -735,8 +735,26 @@ async function loadEventsFromSupabase() {
             return [];
         }
         return (data || []).map(e => {
-            const imagesArray = e.image_urls ? (() => { try { return JSON.parse(e.image_urls); } catch(parseErr) { return []; } })() : [];
-            if (imagesArray.length === 0 && e.image_url) imagesArray.push(e.image_url);
+            // Récupération robuste des images
+            let imagesArray = [];
+            if (e.image_urls) {
+                try {
+                    const parsed = JSON.parse(e.image_urls);
+                    if (Array.isArray(parsed)) {
+                        imagesArray = parsed.filter(url => url && typeof url === 'string' && url.startsWith('http'));
+                    }
+                } catch(parseErr) {
+                    console.warn('⚠️ Could not parse image_urls for event', e.id, parseErr);
+                }
+            }
+            if (imagesArray.length === 0 && e.image_url && e.image_url.startsWith('http')) {
+                imagesArray.push(e.image_url);
+            }
+            // Si toujours aucune image, on met une image par défaut
+            if (imagesArray.length === 0) {
+                const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+                imagesArray.push(fallback);
+            }
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
@@ -753,7 +771,7 @@ async function loadEventsFromSupabase() {
                 seatsTotal: e.max_tickets || 0,
                 seatsLeft: (e.max_tickets || 0) - standardSold,
                 images: imagesArray,
-                coverImage: (imagesArray.length > 0) ? imagesArray[0] : (e.image_url || ''),
+                coverImage: imagesArray.length > 0 ? imagesArray[0] : '',
                 organizer: e.organizer_pi_uid || '',
                 organizerName: e.organizer_name || '',
                 organizerPiUid: e.organizer_pi_uid || '',
@@ -766,7 +784,10 @@ async function loadEventsFromSupabase() {
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-    } catch (error) { console.error('❌ loadEventsFromSupabase exception:', error); return []; }
+    } catch (error) {
+        console.error('❌ loadEventsFromSupabase exception:', error);
+        return [];
+    }
 }
 
 // ============================================================
@@ -1556,11 +1577,28 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – inchangée
+// PAGE DE DÉTAIL (openEventDetails) – avec fallback et rechargement
 // ============================================================
 function openEventDetails(eventId) {
-    const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
+    console.log('🔍 openEventDetails called with ID:', eventId);
+    let event = events.find(e => e.id === eventId);
+    if (!event) {
+        console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
+        // Recharger les événements depuis Supabase et réessayer
+        loadEventsFromSupabase().then(loadedEvents => {
+            events = loadedEvents;
+            localStorage.setItem('betix_events', JSON.stringify(events));
+            const ev = events.find(e => e.id === eventId);
+            if (ev) {
+                renderEventsByCategory();
+                openEventDetails(ev.id); // récursion avec l'événement trouvé
+            } else {
+                alert(t('eventNotFound'));
+            }
+        }).catch(() => alert(t('eventNotFound')));
+        return;
+    }
+    
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
     const currentPage = pageHistory[pageHistory.length - 1] || 'home';
@@ -3297,6 +3335,9 @@ function logout() { disconnectPi(); }
 function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
 function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
 
+// ============================================================
+// SHOW PAGE – avec remplissage du profil même déconnecté
+// ============================================================
 function showPage(pageName) {
     updateActivity();
     const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
@@ -3314,9 +3355,15 @@ function showPage(pageName) {
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
-        loadProfileData(); 
-        // Remplir le formulaire après le chargement
-        setTimeout(populateProfileForm, 100);
+        // Charger les données depuis Supabase si connecté, sinon utiliser les données locales
+        if (currentUser.piUid || currentUser.wallet) {
+            loadProfileData(); 
+        } else {
+            // Même déconnecté, on remplit le formulaire avec les données locales
+            populateProfileForm();
+            // On désactive les champs en lecture seule
+            enableEditMode(false);
+        }
     }
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
