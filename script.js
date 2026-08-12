@@ -1479,6 +1479,12 @@ function renderEventCard(event) {
     }
     carouselHtml += `</div>`;
 
+    // Badge indiquant le nombre d'images
+    let imageCountHtml = '';
+    if (images.length > 1) {
+        imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
+    }
+
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
     const locationDisplay = event.location ? ` · ${escapeHtml(event.location)}` : '';
@@ -1534,6 +1540,7 @@ function renderEventCard(event) {
         <div class="poster-wrapper-classic">
             <span class="category-badge-classic">${escapeHtml(event.category)}</span>
             ${carouselHtml}
+            ${imageCountHtml}
         </div>
         <div class="card-content-classic">
             <div class="event-title-large">${escapeHtml(event.title)}</div>
@@ -1918,7 +1925,6 @@ function populateProfileCountrySelect() {
     });
 }
 
-// Nouvelle fonction : pré-remplit le formulaire à partir de currentUser
 function populateProfileForm() {
     const firstName = document.getElementById('profileFirstName');
     const lastName = document.getElementById('profileLastName');
@@ -1934,7 +1940,6 @@ function populateProfileForm() {
     if (email) email.value = currentUser.email || '';
     if (phone) phone.value = currentUser.phone_number || '';
     
-    // Mettre à jour le statut de vérification si les champs sont remplis
     if (currentUser.email) {
         document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     }
@@ -1966,7 +1971,6 @@ async function loadProfileData() {
         }
         if (data) {
             console.log('✅ Profil chargé depuis Supabase :', data);
-            // Mettre à jour currentUser
             currentUser.first_name = data.first_name || '';
             currentUser.last_name = data.last_name || '';
             currentUser.country = data.country || '';
@@ -1976,7 +1980,6 @@ async function loadProfileData() {
             currentUser.profile_completed = data.profile_completed || false;
             currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
             saveUser();
-            // Pré-remplir le formulaire si les éléments existent
             populateProfileForm();
             updateUserInfo();
             enableEditMode(false);
@@ -2105,10 +2108,8 @@ async function confirmProfileSave() {
             profile_reminder_shown: true
         });
         saveUser();
+        await loadProfileData();
         await syncUserToSupabase();
-
-        // Pré-remplir le formulaire
-        populateProfileForm();
 
         closeProfileReview();
         const msg = document.getElementById('profileSaveMessage');
@@ -3355,13 +3356,10 @@ function showPage(pageName) {
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
-        // Charger les données depuis Supabase si connecté, sinon utiliser les données locales
         if (currentUser.piUid || currentUser.wallet) {
             loadProfileData(); 
         } else {
-            // Même déconnecté, on remplit le formulaire avec les données locales
             populateProfileForm();
-            // On désactive les champs en lecture seule
             enableEditMode(false);
         }
     }
@@ -4088,7 +4086,7 @@ async function initApp() {
             checkAndNotifyProfileCompletion();
             await loadAllFromSupabase();
         } else {
-            await loadAllFromSupabase(); // charge les événements publics
+            await loadAllFromSupabase();
         }
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
