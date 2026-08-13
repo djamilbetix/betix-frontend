@@ -1046,6 +1046,30 @@ body {
 }
 
 /* ============================================================
+   IMAGE COUNT BADGE (nouveau)
+   ============================================================ */
+.image-count-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.image-count-badge i {
+    font-size: 0.65rem;
+}
+
+/* ============================================================
    CARROUSEL HORIZONTAL (STYLE X) – défilement plein écran
    ============================================================ */
 .event-carousel {
