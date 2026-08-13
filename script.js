@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (complètes et traduites en anglais)
+// TRADUCTIONS (extrait pour économiser de l'espace, gardez votre version complète)
 // ============================================================
 const translations = {
     en: {
@@ -433,14 +433,12 @@ function saveLocalProfile(profileData) {
 
 function mergeProfileWithCurrentUser() {
     const local = loadLocalProfile();
-    // Ne pas écraser les champs de connexion (wallet, piUid, name) avec les données locales
     const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number', 'profile_completed', 'profile_reminder_shown'];
     fields.forEach(f => {
         if (local[f] !== undefined) {
             currentUser[f] = local[f];
         }
     });
-    // Si le profil est complet, on le marque
     if (local.profile_completed) currentUser.profile_completed = true;
     saveUser();
 }
@@ -865,7 +863,7 @@ async function loadEventsFromSupabase() {
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
-                id: e.id,
+                id: String(e.id), // <-- CONVERSION EN CHAÎNE
                 title: e.title || 'Untitled',
                 category: e.category || '',
                 pays: e.pays || 'France',
@@ -1002,7 +1000,6 @@ function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.str
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    // Sauvegarder aussi les données de profil séparément
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -1597,7 +1594,6 @@ function renderEventCard(event) {
     }
     carouselHtml += `</div>`;
 
-    // Badge indiquant le nombre d'images
     let imageCountHtml = '';
     if (images.length > 1) {
         imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
@@ -1706,17 +1702,17 @@ function initCarouselIndicators() {
 // ============================================================
 function openEventDetails(eventId) {
     console.log('🔍 openEventDetails called with ID:', eventId);
-    let event = events.find(e => e.id === eventId);
+    // Comparaison en chaînes pour éviter les problèmes de type
+    let event = events.find(e => String(e.id) === String(eventId));
     if (!event) {
         console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
-        // Recharger les événements depuis Supabase et réessayer
         loadEventsFromSupabase().then(loadedEvents => {
             events = loadedEvents;
             localStorage.setItem('betix_events', JSON.stringify(events));
-            const ev = events.find(e => e.id === eventId);
+            const ev = events.find(e => String(e.id) === String(eventId));
             if (ev) {
                 renderEventsByCategory();
-                openEventDetails(ev.id); // récursion avec l'événement trouvé
+                openEventDetails(ev.id);
             } else {
                 alert(t('eventNotFound'));
             }
@@ -3417,7 +3413,6 @@ async function disconnectPi() {
         console.error('❌ Error saving profile before disconnection:', error);
     }
 
-    // Conserver les données de profil dans un objet séparé avant de réinitialiser
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3429,7 +3424,6 @@ async function disconnectPi() {
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
 
-    // Réinitialiser currentUser mais garder les données de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3439,7 +3433,7 @@ async function disconnectPi() {
         ...profileData
     };
     piUser = null;
-    saveUser(); // sauvegarde aussi dans betix_profile via saveUser()
+    saveUser();
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
     updateUserInfo();
@@ -3524,13 +3518,11 @@ function updateConnectButtons() {
     if (profilePageBtn) {
         if (currentUser.wallet) { 
             profilePageBtn.textContent = t('disconnect');
-            profilePageBtn.style.background = '#dc2626';
-            profilePageBtn.style.color = 'white';
+            profilePageBtn.classList.add('disconnect-btn');
             profilePageBtn.onclick = function() { disconnectPi(); }; 
         } else { 
             profilePageBtn.textContent = t('connectPi');
-            profilePageBtn.style.background = '';
-            profilePageBtn.style.color = '';
+            profilePageBtn.classList.remove('disconnect-btn');
             profilePageBtn.onclick = function() { connectToPi(); }; 
         }
     }
@@ -4173,15 +4165,12 @@ async function initApp() {
     try {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
-        // Charger les données de profil séparées
         const localProfile = loadLocalProfile();
-        // Fusionner avec currentUser
         Object.keys(localProfile).forEach(key => {
             if (localProfile[key] !== undefined) {
                 currentUser[key] = localProfile[key];
             }
         });
-        // Si le profil est marqué comme complet, le refléter
         if (localProfile.profile_completed) currentUser.profile_completed = true;
         
         const loader = document.getElementById('loader');
