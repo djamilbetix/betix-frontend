@@ -418,6 +418,34 @@ let appSettings = {
 };
 
 // ============================================================
+// GESTION DU PROFIL LOCAL (indépendant de la connexion)
+// ============================================================
+function loadLocalProfile() {
+    try {
+        const data = JSON.parse(localStorage.getItem('betix_profile') || '{}');
+        return data;
+    } catch { return {}; }
+}
+
+function saveLocalProfile(profileData) {
+    localStorage.setItem('betix_profile', JSON.stringify(profileData));
+}
+
+function mergeProfileWithCurrentUser() {
+    const local = loadLocalProfile();
+    // Ne pas écraser les champs de connexion (wallet, piUid, name) avec les données locales
+    const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number', 'profile_completed', 'profile_reminder_shown'];
+    fields.forEach(f => {
+        if (local[f] !== undefined) {
+            currentUser[f] = local[f];
+        }
+    });
+    // Si le profil est complet, on le marque
+    if (local.profile_completed) currentUser.profile_completed = true;
+    saveUser();
+}
+
+// ============================================================
 // VÉRIFICATIONS DE CONNEXION ET PROFIL
 // ============================================================
 function requireLogin() {
@@ -974,6 +1002,18 @@ function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.str
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
+    // Sauvegarder aussi les données de profil séparément
+    const profileData = {
+        first_name: currentUser.first_name || '',
+        last_name: currentUser.last_name || '',
+        country: currentUser.country || '',
+        address: currentUser.address || '',
+        email: currentUser.email || '',
+        phone_number: currentUser.phone_number || '',
+        profile_completed: currentUser.profile_completed || false,
+        profile_reminder_shown: currentUser.profile_reminder_shown || false
+    };
+    saveLocalProfile(profileData);
 }
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
@@ -3377,6 +3417,7 @@ async function disconnectPi() {
         console.error('❌ Error saving profile before disconnection:', error);
     }
 
+    // Conserver les données de profil dans un objet séparé avant de réinitialiser
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3388,6 +3429,7 @@ async function disconnectPi() {
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
 
+    // Réinitialiser currentUser mais garder les données de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3397,7 +3439,7 @@ async function disconnectPi() {
         ...profileData
     };
     piUser = null;
-    saveUser();
+    saveUser(); // sauvegarde aussi dans betix_profile via saveUser()
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
     updateUserInfo();
@@ -3480,8 +3522,17 @@ function updateConnectButtons() {
     }
     const profilePageBtn = document.getElementById('profileConnectBtnPage');
     if (profilePageBtn) {
-        if (currentUser.wallet) { profilePageBtn.textContent = t('disconnect'); profilePageBtn.onclick = function() { disconnectPi(); }; }
-        else { profilePageBtn.textContent = t('connectPi'); profilePageBtn.onclick = function() { connectToPi(); }; }
+        if (currentUser.wallet) { 
+            profilePageBtn.textContent = t('disconnect');
+            profilePageBtn.style.background = '#dc2626';
+            profilePageBtn.style.color = 'white';
+            profilePageBtn.onclick = function() { disconnectPi(); }; 
+        } else { 
+            profilePageBtn.textContent = t('connectPi');
+            profilePageBtn.style.background = '';
+            profilePageBtn.style.color = '';
+            profilePageBtn.onclick = function() { connectToPi(); }; 
+        }
     }
 }
 
@@ -4122,6 +4173,17 @@ async function initApp() {
     try {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
+        // Charger les données de profil séparées
+        const localProfile = loadLocalProfile();
+        // Fusionner avec currentUser
+        Object.keys(localProfile).forEach(key => {
+            if (localProfile[key] !== undefined) {
+                currentUser[key] = localProfile[key];
+            }
+        });
+        // Si le profil est marqué comme complet, le refléter
+        if (localProfile.profile_completed) currentUser.profile_completed = true;
+        
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
         if (loader && main) {
