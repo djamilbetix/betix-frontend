@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS
+// TRADUCTIONS (extrait pour économiser de l'espace, gardez votre version complète)
 // ============================================================
 const translations = {
     en: {
