@@ -450,8 +450,14 @@ body {
     position: relative;
 }
 .wallet-sidebar-btn:hover { opacity: 0.85; }
-.wallet-sidebar-btn.disconnect { background: #ef4444; color: white; }
-.wallet-sidebar-btn.disconnect:hover { background: #dc2626; }
+/* Bouton Déconnecter en rouge (sidebar) */
+.wallet-sidebar-btn.disconnect {
+    background: #dc2626 !important;
+    color: white !important;
+}
+.wallet-sidebar-btn.disconnect:hover {
+    background: #b91c1c !important;
+}
 
 .sidebar-nav {
     display: flex;
@@ -858,8 +864,8 @@ body {
     overflow: hidden;
     background: #f3f4f6;
     aspect-ratio: auto;
-    min-height: 340px;   /* Augmenté pour agrandir l'image */
-    max-height: 500px;   /* Augmenté */
+    min-height: 340px;
+    max-height: 500px;
 }
 .event-card-classic .category-badge-classic {
     position: absolute;
@@ -1081,7 +1087,7 @@ body {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     background: #1a1a2e;
-    min-height: 340px;   /* Augmenté pour mieux voir l'image */
+    min-height: 340px;
     max-height: 500px;
     display: flex;
     align-items: center;
@@ -1113,7 +1119,7 @@ body {
 .carousel-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* couvre tout l'espace sans déformation */
+    object-fit: cover;
     background: #1a1a2e;
     pointer-events: none;
     user-select: none;
@@ -1159,7 +1165,6 @@ body.dark-mode .carousel-slide {
 /* ============================================================
    TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
    ============================================================ */
-
 .ticket-overlay-container {
     position: relative;
     max-width: 780px;
@@ -1170,42 +1175,31 @@ body.dark-mode .carousel-slide {
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
-
 .ticket-overlay-bg img {
     width: 100%;
     height: auto;
     display: block;
 }
-
-/* Base commune */
 .ticket-left,
 .ticket-right {
     position: absolute;
     pointer-events: none;
     text-align: left;
 }
-
-/* Colonne gauche : placée juste après le ":" de EVENT/DURATION... */
 .ticket-left {
     left: 25.5%;
     width: 19%;
 }
-
-/* Colonne droite : placée juste après le ":" de NAME/EMAIL... */
 .ticket-right {
     left: 56.5%;
     width: 19%;
 }
-
-/* ===== Hauteurs exactes des 6 lignes (top en %) ===== */
-.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; } /* EVENT & NAME */
-.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; } /* DURATION & EMAIL */
-.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; } /* DATE & PHONE */
-.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; } /* TIME & WALLET ID */
-.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; } /* LOCATION & PURCHASE DATE */
-.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; } /* PRICE & TICKET NUMBER */
-
-/* Style du texte */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; }
 .ticket-value {
     font-size: clamp(6px, 1.05vw, 11px);
     font-weight: 700;
@@ -1217,8 +1211,6 @@ body.dark-mode .carousel-slide {
     display: block;
     width: 100%;
 }
-
-/* ===== QR CODE : Centré parfaitement dans le cadre [ ] ===== */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1233,8 +1225,6 @@ body.dark-mode .carousel-slide {
     width: 14.5%;
     aspect-ratio: 1/1;
 }
-
-/* Ticket ID sur la ligne sous "TICKET ID :" */
 .ticket-qr-id {
     position: absolute;
     right: 9%;
@@ -1246,8 +1236,6 @@ body.dark-mode .carousel-slide {
     color: #1a202c;
     top: 51%;
 }
-
-/* Date d'achat sous "DATE OF PURCHASE :" */
 .ticket-qr-date {
     position: absolute;
     right: 9%;
@@ -1408,7 +1396,6 @@ body.dark-mode .carousel-slide {
 }
 .chat-float-btn:hover { transform: scale(1.05); }
 
-/* BOUTON FLÈCHE VERS LE HAUT : DÉSACTIVÉ ET CACHÉ */
 .scroll-top-btn {
     display: none !important;
 }
@@ -1750,7 +1737,7 @@ body.dark-mode .carousel-slide {
    ============================================================ */
 .image-upload-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* 3 colonnes pour 3 images */
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 16px;
     margin-top: 6px;
 }
@@ -3146,6 +3133,14 @@ body.dark-mode .success-buttons .btn-secondary:hover {
     box-shadow: 0 8px 30px rgba(11,31,92,0.35);
 }
 .profile-actions .btn-primary:active { transform: scale(0.97); }
+/* Bouton Déconnecter en rouge sur la page Profil */
+.profile-actions .btn-primary.disconnect-btn {
+    background: #dc2626 !important;
+    color: white !important;
+}
+.profile-actions .btn-primary.disconnect-btn:hover {
+    background: #b91c1c !important;
+}
 .profile-actions .btn-secondary {
     flex: 1;
     min-width: 80px;
@@ -4686,17 +4681,14 @@ body.dark-mode .toast-notification .toast-close:hover {
     transition: all 0.2s ease;
     cursor: default;
 }
-
 .notification-item.unread {
     background: #f0f7ff;
     border-left-color: #3b82f6;
 }
-
 .notification-item:hover {
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
-
 .notification-item .notif-icon {
     flex-shrink: 0;
     width: 36px;
@@ -4707,31 +4699,26 @@ body.dark-mode .toast-notification .toast-close:hover {
     justify-content: center;
     color: white;
 }
-
 .notification-item.type-purchase .notif-icon { background: #3b82f6; }
 .notification-item.type-event .notif-icon { background: #f59e0b; }
 .notification-item.type-info .notif-icon { background: #10b981; }
 .notification-item.type-warning .notif-icon { background: #ef4444; }
 .notification-item.type-success .notif-icon { background: #10b981; }
-
 .notification-item .notif-content {
     flex: 1;
     min-width: 0;
 }
-
 .notification-item .notif-msg {
     font-size: 0.9rem;
     color: #1f2937;
     font-weight: 500;
     word-break: break-word;
 }
-
 .notification-item .notif-time {
     font-size: 0.7rem;
     color: #6b7280;
     margin-top: 2px;
 }
-
 .notification-item .notif-delete-btn {
     background: none;
     border: none;
@@ -4742,50 +4729,40 @@ body.dark-mode .toast-notification .toast-close:hover {
     flex-shrink: 0;
     transition: color 0.2s;
 }
-
 .notification-item .notif-delete-btn:hover {
     color: #ef4444;
 }
-
 .notification-empty {
     text-align: center;
     padding: 40px 20px;
     color: #6b7280;
 }
-
 .notification-empty i {
     font-size: 2.5rem;
     opacity: 0.3;
     margin-bottom: 12px;
     display: block;
 }
-
 body.dark-mode .notification-item {
     background: #1f2937;
     border-left-color: #4b5563;
 }
-
 body.dark-mode .notification-item.unread {
     background: #1a2332;
     border-left-color: #3b82f6;
 }
-
 body.dark-mode .notification-item .notif-msg {
     color: #f3f4f6;
 }
-
 body.dark-mode .notification-item .notif-time {
     color: #9ca3af;
 }
-
 body.dark-mode .notification-item .notif-icon {
     background: #374151;
 }
-
 body.dark-mode .notification-item .notif-delete-btn {
     color: #9ca3af;
 }
-
 body.dark-mode .notification-item .notif-delete-btn:hover {
     color: #ef4444;
 }
