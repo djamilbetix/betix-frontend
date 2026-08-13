@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (extrait pour économiser de l'espace, gardez votre version complète)
+// TRADUCTIONS (complètes et traduites en anglais)
 // ============================================================
 const translations = {
     en: {
@@ -832,6 +832,9 @@ async function loadTicketsFromSupabase(piUid) {
     } catch (error) { console.error('❌ loadTicketsFromSupabase exception:', error); return []; }
 }
 
+// ============================================================
+// CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE (AVEC ID EN CHAÎNE)
+// ============================================================
 async function loadEventsFromSupabase() {
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
@@ -855,7 +858,6 @@ async function loadEventsFromSupabase() {
             if (imagesArray.length === 0 && e.image_url && e.image_url.startsWith('http')) {
                 imagesArray.push(e.image_url);
             }
-            // Si toujours aucune image, on met une image par défaut
             if (imagesArray.length === 0) {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
@@ -863,7 +865,7 @@ async function loadEventsFromSupabase() {
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
-                id: String(e.id), // <-- CONVERSION EN CHAÎNE
+                id: String(e.id),  // <-- CONVERSION EN CHAÎNE
                 title: e.title || 'Untitled',
                 category: e.category || '',
                 pays: e.pays || 'France',
@@ -1000,6 +1002,7 @@ function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.str
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
+    // Sauvegarder aussi les données de profil séparément
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -1594,6 +1597,7 @@ function renderEventCard(event) {
     }
     carouselHtml += `</div>`;
 
+    // Badge indiquant le nombre d'images
     let imageCountHtml = '';
     if (images.length > 1) {
         imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
@@ -1698,11 +1702,11 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – avec fallback et rechargement
+// PAGE DE DÉTAIL (openEventDetails) – avec fallback et comparaison en chaîne
 // ============================================================
 function openEventDetails(eventId) {
     console.log('🔍 openEventDetails called with ID:', eventId);
-    // Comparaison en chaînes pour éviter les problèmes de type
+    // Comparaison en chaîne pour éviter les problèmes de type
     let event = events.find(e => String(e.id) === String(eventId));
     if (!event) {
         console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
@@ -3401,7 +3405,7 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT – AVEC SAUVEGARDE SUPABASE
+// DISCONNECT – AVEC SAUVEGARDE SUPABASE ET CONSERVATION DU PROFIL
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
@@ -3413,6 +3417,7 @@ async function disconnectPi() {
         console.error('❌ Error saving profile before disconnection:', error);
     }
 
+    // Conserver les données de profil dans un objet séparé avant de réinitialiser
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3424,6 +3429,7 @@ async function disconnectPi() {
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
 
+    // Réinitialiser currentUser mais garder les données de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3433,7 +3439,7 @@ async function disconnectPi() {
         ...profileData
     };
     piUser = null;
-    saveUser();
+    saveUser(); // sauvegarde aussi dans betix_profile via saveUser()
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
     updateUserInfo();
@@ -3497,6 +3503,9 @@ function goBack() {
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); document.body.style.overflow = ''; }
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
 
+// ============================================================
+// UPDATE CONNECT BUTTONS – avec bouton Déconnecter en rouge
+// ============================================================
 function updateConnectButtons() {
     const sidebarBtn = document.getElementById('sidebarWalletBtn');
     if (sidebarBtn) {
@@ -3516,14 +3525,14 @@ function updateConnectButtons() {
     }
     const profilePageBtn = document.getElementById('profileConnectBtnPage');
     if (profilePageBtn) {
-        if (currentUser.wallet) { 
+        if (currentUser.wallet) {
             profilePageBtn.textContent = t('disconnect');
-            profilePageBtn.classList.add('disconnect-btn');
-            profilePageBtn.onclick = function() { disconnectPi(); }; 
-        } else { 
+            profilePageBtn.className = 'btn-primary disconnect-btn';  // <-- CLASSE ROUGE
+            profilePageBtn.onclick = function() { disconnectPi(); };
+        } else {
             profilePageBtn.textContent = t('connectPi');
-            profilePageBtn.classList.remove('disconnect-btn');
-            profilePageBtn.onclick = function() { connectToPi(); }; 
+            profilePageBtn.className = 'btn-primary';  // <-- STYLE NORMAL
+            profilePageBtn.onclick = function() { connectToPi(); };
         }
     }
 }
@@ -4165,6 +4174,7 @@ async function initApp() {
     try {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
+        // Charger les données de profil séparées
         const localProfile = loadLocalProfile();
         Object.keys(localProfile).forEach(key => {
             if (localProfile[key] !== undefined) {
