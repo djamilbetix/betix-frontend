@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (extrait pour économiser de l'espace, gardez votre version complète)
+// TRADUCTIONS (complètes et traduites en anglais)
 // ============================================================
 const translations = {
     en: {
@@ -187,9 +187,88 @@ const translations = {
         footerRights: 'All rights reserved.',
         footerBuiltOn: 'Built on Pi Network | Secured by Blockchain',
         footerSlogan: 'The first decentralized ticketing platform on Pi Network',
-        footerDesc: 'Secure platform to buy and sell event tickets with Pi payment.'
+        footerDesc: 'Secure platform to buy and sell event tickets with Pi payment.',
+        // Additional keys for UI
+        eventDate: 'Event Date', eventTime: 'Event Time', locationLabel: 'Location', countryLabel: 'Country',
+        ticketsSold: 'Tickets Sold', required: 'required', reviews: 'reviews', close: 'Close',
+        connecting: 'Connecting...', pleaseWait: 'Please wait...', 
+        demoMode: 'Pi Browser not detected. Use demo mode?',
+        demoConnected: 'Pi account connected (demo mode)! Welcome Demo User',
+        piConnected: 'Pi account connected! Welcome ',
+        adminActivated: 'Admin activated',
+        adminDenied: 'Access denied. Please authenticate via 5 clicks on the logo.',
+        adminSessionEnded: 'Admin session ended',
+        passwordChanged: 'Password changed successfully!',
+        settingsSaved: 'Settings saved successfully!',
+        errorSavingSettings: 'Error saving settings.',
+        noUsers: 'No users found.',
+        noEventsAdmin: 'No events created',
+        noLogs: 'No logs available',
+        logsCleared: 'Logs cleared',
+        slideSaved: 'Slide saved successfully!',
+        slideDeleted: 'Slide deleted',
+        eventDeleted: 'Event deleted',
+        allEventsDeleted: 'All events have been deleted',
+        uploadError: 'Error uploading image',
+        imageTooLarge: 'Image too large (max 5MB)',
+        selectImage: 'Please select an image',
+        passwordMin: 'Password must be at least 6 characters',
+        passwordsDontMatch: 'Passwords do not match',
+        refreshData: 'Refresh Data',
+        syncing: 'Syncing...',
+        syncSuccess: 'Synchronized!',
+        syncError: 'Sync Error',
+        ready: 'Ready',
+        loading: 'Loading...',
+        sessionActive: 'Session active',
+        logout: 'Logout',
+        changePassword: 'Change Password',
+        currentPassword: 'Current password',
+        lastLogin: 'Last login',
+        loginCount: 'Login count',
+        saveProfile: 'Save Profile',
+        editProfile: 'Edit',
+        verify: 'Verify',
+        verified: 'Verified',
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        address: 'Address',
+        email: 'Email',
+        phone: 'Phone Number',
+        countrySelect: 'Select your country',
+        reviewYourInfo: 'Review Your Information',
+        confirmSave: 'Confirm & Save',
+        saving: 'Saving your information...',
+        profileUpdated: 'Profile Updated Successfully!',
+        profileUpdatedMsg: 'Your information has been saved and is now up to date.',
+        pleaseCompleteProfile: 'Please complete your profile (email and phone) for a better experience.',
+        incompleteProfile: 'Incomplete profile',
+        // payment messages
+        transactionProcessed: 'Transaction processed',
+        transactionProcessedMsg: 'This transaction has already been processed.<br>Your tickets are available in "My Tickets".',
+        accountDebited: 'Your account will be debited in ',
+        seconds: ' second(s).',
+        eventEnded: 'Event ended',
+        eventEndedMsg: 'This event has already taken place and is no longer available for booking.',
+        viewUpcoming: 'View upcoming events',
+        purchaseConfirmed: '✅ Purchase confirmed!',
+        purchaseCongrats: 'Congratulations! Your purchase was successful.',
+        ticketAvailable: 'Your ticket is available in your personal space. You will also receive a confirmation email.',
+        backHome: 'Back to Home',
+        viewMyTicket: 'View My Ticket',
+        // admin
+        adminTitle: 'Administration',
+        adminSubtitle: 'Manage your Betix platform',
+        adminEvents: 'Events',
+        adminTickets: 'Tickets',
+        adminUsers: 'Users',
+        adminSlides: 'Carousel',
+        adminLogs: 'Logs',
+        adminSettings: 'Settings',
+        // ... plus d'autres clés si nécessaire
     },
     fr: {
+        // version française inchangée (pour compatibilité)
         appName: 'Betix', home: 'Accueil', myEvents: 'Mes Événements', profile: 'Profil',
         settings: 'Paramètres', myTickets: 'Mes Tickets', ticketHistory: 'Historique des Tickets',
         faq: 'FAQ', administration: 'Administration', followUs: 'Suivez-nous',
@@ -344,7 +423,7 @@ let appSettings = {
 function requireLogin() {
     if (!currentUser.wallet && !currentUser.piUid) {
         addNotification('Please connect your Pi account before performing this action.', 'warning');
-        alert('Please connect your Pi account first.');
+        alert(t('pleaseConnect'));
         return false;
     }
     return true;
@@ -598,10 +677,10 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             const { error } = await supabaseClient.from('users').insert(userData);
             if (error) throw error;
         }
-        console.log('✅ Utilisateur sauvegardé dans Supabase :', piUid);
+        console.log('✅ User saved to Supabase:', piUid);
         return true;
     } catch (error) {
-        console.error('❌ Erreur saveUserToSupabase :', error);
+        console.error('❌ saveUserToSupabase error:', error);
         return false;
     }
 }
@@ -907,12 +986,12 @@ async function syncUserToSupabase() {
         return;
     }
     const piUid = currentUser.piUid || currentUser.wallet;
-    console.log('🔄 Synchronisation de l\'utilisateur vers Supabase...', piUid);
+    console.log('🔄 Syncing user to Supabase...', piUid);
     const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
     if (success) {
-        console.log('✅ Utilisateur synchronisé avec succès.');
+        console.log('✅ User synced successfully.');
     } else {
-        console.error('❌ Échec de la synchronisation utilisateur.');
+        console.error('❌ User sync failed.');
     }
 }
 
@@ -986,17 +1065,17 @@ function updateSyncStatus(status) {
     if (!icon || !text || !dot) return;
     indicator.className = 'sync-indicator';
     switch(status) {
-        case 'loading': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-spinner fa-spin'; text.textContent = 'Chargement...'; dot.className = 'sync-dot'; break;
-        case 'syncing': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-sync fa-spin'; text.textContent = 'Synchronisation...'; dot.className = 'sync-dot'; break;
-        case 'success': indicator.classList.add('success'); icon.className = 'sync-icon fas fa-check-circle'; text.textContent = 'Synchronisé'; dot.className = 'sync-dot'; break;
-        case 'error': indicator.classList.add('error'); icon.className = 'sync-icon fas fa-exclamation-circle'; text.textContent = 'Erreur de sync'; dot.className = 'sync-dot'; break;
-        default: icon.className = 'sync-icon fas fa-cloud'; text.textContent = 'Prêt'; dot.className = 'sync-dot';
+        case 'loading': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-spinner fa-spin'; text.textContent = t('loading'); dot.className = 'sync-dot'; break;
+        case 'syncing': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-sync fa-spin'; text.textContent = t('syncing'); dot.className = 'sync-dot'; break;
+        case 'success': indicator.classList.add('success'); icon.className = 'sync-icon fas fa-check-circle'; text.textContent = t('syncSuccess'); dot.className = 'sync-dot'; break;
+        case 'error': indicator.classList.add('error'); icon.className = 'sync-icon fas fa-exclamation-circle'; text.textContent = t('syncError'); dot.className = 'sync-dot'; break;
+        default: icon.className = 'sync-icon fas fa-cloud'; text.textContent = t('ready'); dot.className = 'sync-dot';
     }
 }
 
 async function forceRefreshData() {
     const btn = document.getElementById('refreshDataBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('loading'); }
     try {
         await loadAllFromSupabase();
         await loadHeroSlides();
@@ -1005,11 +1084,11 @@ async function forceRefreshData() {
         renderTickets();
         renderHistory();
         updateProfilePage();
-        if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> Synchronisé !'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> Rafraîchir'; btn.disabled = false; }, 2000); }
+        if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> ' + t('syncSuccess'); setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> ' + t('refreshData'); btn.disabled = false; }, 2000); }
         updateSyncStatus('success');
     } catch (error) {
         updateSyncStatus('error');
-        if (btn) { btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> Rafraîchir'; btn.disabled = false; }, 2000); }
+        if (btn) { btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + t('syncError'); setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> ' + t('refreshData'); btn.disabled = false; }, 2000); }
     }
 }
 
@@ -1163,10 +1242,10 @@ function generateTicketHTML(ticket) {
     }
     
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
-    let userEmail = safeTicket.buyerEmail || 'Non renseigné';
+    let userEmail = safeTicket.buyerEmail || 'Not provided';
     if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
     
-    const userPhone = safeTicket.buyerPhone || 'Non renseigné';
+    const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
@@ -1180,10 +1259,10 @@ function generateTicketHTML(ticket) {
     return `
         <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
             <div class="ticket-overlay-bg">
-                <img src="ticket-officiel.png" alt="Ticket officiel" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
+                <img src="ticket-officiel.png" alt="Official ticket" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
             
-            <!-- Colonne Gauche (Infos Événement) -->
+            <!-- Left Column (Event Info) -->
             <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
             <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
             <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
@@ -1191,7 +1270,7 @@ function generateTicketHTML(ticket) {
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
 
-            <!-- Colonne Droite (Infos Acheteur & Transaction) avec Email et Téléphone -->
+            <!-- Right Column (Buyer & Transaction Info) -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
@@ -1199,7 +1278,7 @@ function generateTicketHTML(ticket) {
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
             <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
 
-            <!-- Coupon Droite -->
+            <!-- Coupon Right -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
             <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
@@ -1239,7 +1318,7 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// RENDER TICKETS (sans bouton "Use")
+// RENDER TICKETS
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1287,7 +1366,7 @@ function renderTickets() {
 }
 
 // ============================================================
-// RENDER HISTORY (avec bouton de suppression)
+// RENDER HISTORY
 // ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
@@ -1356,7 +1435,7 @@ function deleteHistoryTicket(ticketId) {
 async function downloadTicketPNG(ticketId) {
     const ticketEl = document.getElementById(`ticket-${ticketId}`);
     if (!ticketEl) { alert('Ticket not found'); return; }
-    showLoader('Génération du ticket PNG...');
+    showLoader('Generating PNG ticket...');
     try {
         const canvas = await html2canvas(ticketEl, {
             scale: 2.5,
@@ -1372,10 +1451,10 @@ async function downloadTicketPNG(ticketId) {
         link.href = canvas.toDataURL('image/png');
         link.click();
         hideLoader();
-        addNotification('Ticket PNG téléchargé avec succès !', 'success');
+        addNotification('Ticket PNG downloaded successfully!', 'success');
     } catch (error) {
         console.error(error);
-        alert('Erreur lors du téléchargement PNG.');
+        alert('Error downloading PNG.');
         hideLoader();
     }
 }
@@ -1383,7 +1462,7 @@ async function downloadTicketPNG(ticketId) {
 async function downloadTicketPDF(ticketId) {
     const ticketEl = document.getElementById(`ticket-${ticketId}`);
     if (!ticketEl) { alert('Ticket not found'); return; }
-    showLoader('Génération du ticket PDF...');
+    showLoader('Generating PDF ticket...');
     try {
         const canvas = await html2canvas(ticketEl, {
             scale: 2.5,
@@ -1402,10 +1481,10 @@ async function downloadTicketPDF(ticketId) {
         doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
         doc.save(`BETIX_TICKET_${ticketId.substring(0, 8)}.pdf`);
         hideLoader();
-        addNotification('Ticket PDF téléchargé avec succès !', 'success');
+        addNotification('Ticket PDF downloaded successfully!', 'success');
     } catch (error) {
         console.error(error);
-        alert('Erreur lors du téléchargement PDF.');
+        alert('Error downloading PDF.');
         hideLoader();
     }
 }
@@ -1461,8 +1540,7 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Afficher le nombre d'images dans la console pour debug
-    console.log(`🎨 Événement "${event.title}" a ${images.length} image(s)`);
+    console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
     carouselHtml += `<div class="carousel-track">`;
@@ -1954,7 +2032,7 @@ async function loadProfileData() {
         console.warn('No piUid, cannot load profile data.');
         return;
     }
-    console.log('🔍 Chargement du profil pour piUid:', piUid);
+    console.log('🔍 Loading profile for piUid:', piUid);
     try {
         const { data, error } = await supabaseClient
             .from('users')
@@ -1963,14 +2041,14 @@ async function loadProfileData() {
             .single();
         if (error) {
             if (error.code === 'PGRST116') {
-                console.log('ℹ️ Aucun profil trouvé pour cet utilisateur. Il sera créé lors de la première sauvegarde.');
+                console.log('ℹ️ No profile found for this user. It will be created on first save.');
                 enableEditMode(true);
                 return;
             }
             throw error;
         }
         if (data) {
-            console.log('✅ Profil chargé depuis Supabase :', data);
+            console.log('✅ Profile loaded from Supabase:', data);
             currentUser.first_name = data.first_name || '';
             currentUser.last_name = data.last_name || '';
             currentUser.country = data.country || '';
@@ -1987,7 +2065,7 @@ async function loadProfileData() {
             enableEditMode(true);
         }
     } catch (error) {
-        console.error('❌ Erreur lors du chargement du profil :', error);
+        console.error('❌ Error loading profile:', error);
         enableEditMode(true);
     }
 }
@@ -2355,8 +2433,8 @@ async function confirmPurchase(eventId, quantity) {
                     
                     const fullName = (currentUser.first_name || currentUser.name || 'Guest') + 
                                      (currentUser.last_name ? ' ' + currentUser.last_name : '');
-                    const buyerEmail = currentUser.email || 'Non renseigné';
-                    const buyerPhone = currentUser.phone_number || 'Non renseigné';
+                    const buyerEmail = currentUser.email || 'Not provided';
+                    const buyerPhone = currentUser.phone_number || 'Not provided';
                     
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
@@ -2541,28 +2619,28 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const price = event.price || 0;
     const totalPrice = qty * price;
 
-    title.textContent = '✅ Achat confirmé !';
-    message.textContent = `Félicitations ! Vous avez acheté ${qty} ticket(s) pour "${event.title}".`;
+    title.textContent = '✅ Purchase confirmed!';
+    message.textContent = `Congratulations! You have purchased ${qty} ticket(s) for "${event.title}".`;
     const subMsg = document.querySelector('.success-submessage');
-    if (subMsg) subMsg.textContent = 'Votre ticket est disponible dans votre espace personnel. Vous recevrez également un e-mail de confirmation.';
+    if (subMsg) subMsg.textContent = 'Your ticket is available in your personal space. You will also receive a confirmation email.';
 
     const dateEvent = new Date(event.date);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date à définir';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Heure à définir';
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const codeDisplay = ticket.qrCode || ticket.id || 'N/A';
     const paysDisplay = event.pays || event.country || 'France';
     const countryFlag = countryFlags[paysDisplay] || '';
     const countryDisplay = countryFlag + ' ' + paysDisplay;
 
     info.innerHTML = `
-        <div class="ticket-line"><span class="ticket-label">Événement</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
         <div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">Standard</span></div>
-        <div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">${dateFormatted} à ${timeFormatted}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Lieu</span><span class="ticket-value">${escapeHtml(event.location || 'En ligne')}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Pays</span><span class="ticket-value">${countryDisplay}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Quantité</span><span class="ticket-value">${qty}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Total payé</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
-        <div class="ticket-line"><span class="ticket-label">Référence</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">${dateFormatted} at ${timeFormatted}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">${escapeHtml(event.location || 'Online')}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">${countryDisplay}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">${qty}</span></div>
+        <div class="ticket-line"><span class="ticket-label">Total paid</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
+        <div class="ticket-line"><span class="ticket-label">Reference</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
     `;
 
     closeBtn.onclick = function(e) {
@@ -2601,10 +2679,10 @@ function showSuccessPopup(event, ticketsList, quantity) {
     popup.style.display = 'flex';
     popup.classList.add('show');
 
-    const eventName = event.title || 'Événement';
+    const eventName = event.title || 'Event';
     showToast(
-        '🎉 Achat réussi !',
-        `Vous avez acheté ${qty} ticket(s) pour "${eventName}". Consultez vos tickets dans "Mes tickets".`,
+        '🎉 Purchase successful!',
+        `You have purchased ${qty} ticket(s) for "${eventName}". Check your tickets in "My Tickets".`,
         'success'
     );
 }
@@ -2627,7 +2705,7 @@ async function connectToPi() {
     showConnectSpinner();
 
     const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connexion timeout (15s)')), 15000);
+        setTimeout(() => reject(new Error('Connection timeout (15s)')), 15000);
     });
 
     try {
@@ -2640,7 +2718,7 @@ async function connectToPi() {
                     }
                 }
                 if (typeof Pi === 'undefined') {
-                    if (confirm("Pi Browser not detected. Use demo mode?")) {
+                    if (confirm(t('demoMode'))) {
                         currentUser.wallet = 'demo_user';
                         currentUser.piUid = 'demo_user';
                         currentUser.name = 'Demo User';
@@ -2660,7 +2738,7 @@ async function connectToPi() {
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
-                        alert('Pi account connected (demo mode)! Welcome Demo User');
+                        alert(t('demoConnected'));
                         closeSidebar();
                         await loadProfileData();
                         checkAndNotifyProfileCompletion();
@@ -2692,7 +2770,7 @@ async function connectToPi() {
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
-                    alert('Pi account connected! Welcome ' + piUser.username);
+                    alert(t('piConnected') + piUser.username);
                     closeSidebar();
                     await loadProfileData();
                     checkAndNotifyProfileCompletion();
@@ -2729,7 +2807,7 @@ async function connectToPi() {
 function checkAndNotifyProfileCompletion() {
     if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
         setTimeout(() => {
-            showToast('Profil incomplet', 'Veuillez compléter votre profil (email et téléphone) pour une meilleure expérience.', 'info');
+            showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
             currentUser.profile_reminder_shown = true;
             saveUser();
         }, 5000);
@@ -3179,13 +3257,13 @@ function deleteNotification(id) {
 
 function clearAllNotifications() {
     if (notifications.length === 0) return;
-    if (confirm('Supprimer toutes les notifications ?')) {
+    if (confirm('Delete all notifications?')) {
         notifications = [];
         saveNotifications();
         renderNotificationsPage();
         updateNotifBadgeHeader();
         updateSidebarNotifBadge();
-        addNotification('Toutes les notifications ont été effacées.', 'info');
+        addNotification('All notifications have been cleared.', 'info');
     }
 }
 
@@ -3207,14 +3285,14 @@ function renderNotificationsPage() {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
             <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
             <button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">
-                <i class="fas fa-trash"></i> Tout effacer
+                <i class="fas fa-trash"></i> Clear all
             </button>
         </div>
     `;
 
     notifications.forEach((notif, index) => {
         const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('fr-FR') + ' ' + time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
         const type = notif.type || 'info';
         const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
@@ -3229,7 +3307,7 @@ function renderNotificationsPage() {
                     <div class="notif-msg">${escapeHtml(notif.message)}</div>
                     <div class="notif-time">${timeStr}</div>
                 </div>
-                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Supprimer">
+                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -3294,9 +3372,9 @@ async function disconnectPi() {
     
     try {
         await syncUserToSupabase();
-        console.log('✅ Profil sauvegardé dans Supabase avant déconnexion.');
+        console.log('✅ Profile saved to Supabase before disconnection.');
     } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde du profil avant déconnexion :', error);
+        console.error('❌ Error saving profile before disconnection:', error);
     }
 
     const profileData = {
@@ -3591,7 +3669,7 @@ function initAdmin() {
                 adminItem.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)';
                 adminItem.style.color = 'white';
                 addAdminLog('Admin authentication', 'Login via logo');
-                alert('Admin activated');
+                alert(t('adminActivated'));
             }
             clicks = 0;
         }
@@ -3615,7 +3693,7 @@ function addAdminLog(action, details) {
 function renderAdminLogs() {
     const container = document.getElementById('adminLogsList');
     if (!container) return;
-    if (adminLogs.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">No logs available</p>'; return; }
+    if (adminLogs.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">' + t('noLogs') + '</p>'; return; }
     container.innerHTML = adminLogs.map(log =>
         `<div class="admin-log-item"><div><span class="log-user">${escapeHtml(log.user)}</span> <span class="log-action">${escapeHtml(log.action)}</span>${log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : ''}</div><span class="log-time">${escapeHtml(log.date)}</span></div>`
     ).join('');
@@ -3627,7 +3705,7 @@ function adminClearLogs() {
         localStorage.setItem('betix_admin_logs', JSON.stringify(adminLogs));
         renderAdminLogs();
         addAdminLog('Logs cleared', 'All logs were deleted');
-        alert('Logs cleared');
+        alert(t('logsCleared'));
     }
 }
 
@@ -3670,7 +3748,7 @@ function adminLogout() {
     localStorage.removeItem('betix_admin_password');
     const adminBtn = document.getElementById('adminMenuItem');
     if (adminBtn) adminBtn.style.display = 'none';
-    alert('Admin session ended');
+    alert(t('adminSessionEnded'));
     showPage('home');
 }
 
@@ -3678,11 +3756,11 @@ function adminChangePassword() {
     const newPassword = document.getElementById('adminNewPassword').value;
     const confirmPassword = document.getElementById('adminConfirmPassword').value;
     const message = document.getElementById('adminPasswordMessage');
-    if (!newPassword || newPassword.length < 6) { message.textContent = 'Password must be at least 6 characters'; message.style.color = '#ef4444'; return; }
-    if (newPassword !== confirmPassword) { message.textContent = 'Passwords do not match'; message.style.color = '#ef4444'; return; }
+    if (!newPassword || newPassword.length < 6) { message.textContent = t('passwordMin'); message.style.color = '#ef4444'; return; }
+    if (newPassword !== confirmPassword) { message.textContent = t('passwordsDontMatch'); message.style.color = '#ef4444'; return; }
     adminPassword = newPassword;
     localStorage.setItem('betix_admin_password', newPassword);
-    message.textContent = 'Password changed successfully!';
+    message.textContent = t('passwordChanged');
     message.style.color = '#10b981';
     document.getElementById('adminNewPassword').value = '';
     document.getElementById('adminConfirmPassword').value = '';
@@ -3708,12 +3786,12 @@ async function adminSaveSettings() {
     const success = await saveAppSettings(settings);
     const msg = document.getElementById('adminSettingsMessage');
     if (success) {
-        msg.textContent = 'Settings saved successfully!';
+        msg.textContent = t('settingsSaved');
         msg.style.color = '#10b981';
         renderEventsByCategory();
         updateProfilePage();
     } else {
-        msg.textContent = 'Error saving settings.';
+        msg.textContent = t('errorSavingSettings');
         msg.style.color = '#ef4444';
     }
     setTimeout(() => { msg.textContent = ''; }, 4000);
@@ -3765,29 +3843,29 @@ async function renderAdminUsers() {
     document.getElementById('adminUserCount').innerText = users.length;
 
     if (!users || users.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">Aucun utilisateur trouvé.</p>';
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noUsers') + '</p>';
         return;
     }
 
     let html = `
         <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
             <button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">
-                <i class="fas fa-sync"></i> Rafraîchir
+                <i class="fas fa-sync"></i> Refresh
             </button>
         </div>
         <table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">
             <thead>
                 <tr style="background: #f3f4f6; color: #1f2937;">
-                    <th style="padding: 10px 8px; text-align: left;">Utilisateur</th>
+                    <th style="padding: 10px 8px; text-align: left;">User</th>
                     <th style="padding: 10px 8px; text-align: left;">Wallet</th>
-                    <th style="padding: 10px 8px; text-align: left;">Événements créés</th>
+                    <th style="padding: 10px 8px; text-align: left;">Events Created</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
     users.forEach(user => {
-        const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'Utilisateur';
+        const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
         const wallet = user.wallet || user.pi_uid || '—';
 
         html += `
@@ -3809,13 +3887,13 @@ async function renderAdminUsers() {
 
 async function refreshUsersList() {
     await renderAdminUsers();
-    addAdminLog('Utilisateurs rafraîchis', 'Liste mise à jour');
+    addAdminLog('Users refreshed', 'List updated');
 }
 
 function loadAdminPage() {
     const storedPassword = localStorage.getItem('betix_admin_password');
     if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
-        alert('Access denied. Please authenticate via 5 clicks on the logo.');
+        alert(t('adminDenied'));
         showPage('home');
         return;
     }
@@ -3858,7 +3936,7 @@ function filterAdminUsers(query) {
 function renderAdminEvents() {
     const container = document.getElementById('adminEventsList');
     if (!container) return;
-    if (events.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No events created</p>'; return; }
+    if (events.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noEventsAdmin') + '</p>'; return; }
     container.innerHTML = events.map(e => {
         const typesDisplay = 'Standard: ' + (e.ticketTypes?.standard?.price || 0).toFixed(6) + ' Pi';
         return `<div class="admin-event-item"><div class="event-info"><strong>${escapeHtml(e.title)}</strong><small>${e.category} | ${e.pays || e.country || 'France'} | ${e.seatsLeft}/${e.seatsTotal} tickets | ${new Date(e.date).toLocaleDateString('en-US')}</small><small>Ticket Types: ${typesDisplay}</small><small>Organizer: ${escapeHtml(e.organizerName || e.organizer)}</small></div><div class="event-actions"><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Cancel</button></div></div>`;
@@ -3873,7 +3951,7 @@ function adminDeleteEvent(id) {
         renderAdminEvents(); renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = events.length;
         addAdminLog('Event deleted', 'ID: ' + id);
-        alert('Event deleted');
+        alert(t('eventDeleted'));
     }
 }
 
@@ -3884,7 +3962,7 @@ function adminDeleteAllEvents() {
         renderAdminEvents(); renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = 0;
         addAdminLog('All events deleted', 'Mass deletion');
-        alert('All events have been deleted');
+        alert(t('allEventsDeleted'));
     }
 }
 
