@@ -1481,11 +1481,11 @@ function renderEventCard(event) {
     
     console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
-    // Correction : la largeur du track doit être de images.length * 100%
+    // Correction : largeur du track = nombre d'images * 100%, chaque slide fait 100% de cette largeur
     let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">
-        <div class="carousel-track" style="width: ${images.length * 100}%; display: flex;">`;
+        <div class="carousel-track" style="display: flex; width: ${images.length * 100}%; flex-shrink: 0;">`;
     images.forEach((img, idx) => {
-        carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
+        carouselHtml += `<div class="carousel-slide" data-index="${idx}" style="flex: 0 0 ${100 / images.length}%; min-width: ${100 / images.length}%;"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
     });
     carouselHtml += `</div>`;
     if (images.length > 1) {
@@ -1593,17 +1593,18 @@ function initCarouselIndicators() {
 // OPEN EVENT DETAILS (avec comparaison en chaîne)
 // ============================================================
 function openEventDetails(eventId) {
-    console.log('🔍 openEventDetails called with ID:', eventId);
-    let event = events.find(e => String(e.id) === String(eventId));
+    const idStr = String(eventId);
+    console.log('🔍 openEventDetails called with normalized ID:', idStr);
+    let event = events.find(e => String(e.id) === idStr);
     if (!event) {
         console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
         loadEventsFromSupabase().then(loadedEvents => {
             events = loadedEvents;
             localStorage.setItem('betix_events', JSON.stringify(events));
-            const ev = events.find(e => String(e.id) === String(eventId));
+            const ev = events.find(e => String(e.id) === idStr);
             if (ev) {
                 renderEventsByCategory();
-                openEventDetails(ev.id);
+                openEventDetails(idStr);
             } else {
                 alert(t('eventNotFound'));
             }
@@ -1944,12 +1945,27 @@ function populateProfileForm() {
     if (email) email.value = currentUser.email || '';
     if (phone) phone.value = currentUser.phone_number || '';
     
+    // Afficher les statuts de vérification
     if (currentUser.email) {
         document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    } else {
+        document.getElementById('emailVerificationStatus').innerHTML = '';
     }
     if (currentUser.phone_number) {
         document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    } else {
+        document.getElementById('phoneVerificationStatus').innerHTML = '';
     }
+    // Mettre à jour les boutons de vérification
+    document.querySelectorAll('.verify-btn').forEach(btn => {
+        if (btn.id === 'verifyEmailBtn' && currentUser.email) {
+            btn.classList.add('verified');
+        } else if (btn.id === 'verifyPhoneBtn' && currentUser.phone_number) {
+            btn.classList.add('verified');
+        } else {
+            btn.classList.remove('verified');
+        }
+    });
 }
 
 async function loadProfileData() {
@@ -1975,18 +1991,29 @@ async function loadProfileData() {
         }
         if (data) {
             console.log('✅ Profile loaded from Supabase:', data);
-            currentUser.first_name = data.first_name || '';
-            currentUser.last_name = data.last_name || '';
-            currentUser.country = data.country || '';
-            currentUser.address = data.address || '';
-            currentUser.email = data.email || '';
-            currentUser.phone_number = data.phone_number || '';
-            currentUser.profile_completed = data.profile_completed || false;
-            currentUser.profile_reminder_shown = data.profile_reminder_shown || false;
-            saveUser();
-            populateProfileForm();
-            updateUserInfo();
-            enableEditMode(false);
+            // Fusion : ne pas écraser avec des valeurs vides
+            const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
+            let hasNewData = false;
+            fields.forEach(f => {
+                if (data[f] && data[f].trim() !== '') {
+                    currentUser[f] = data[f].trim();
+                    hasNewData = true;
+                }
+            });
+            if (data.profile_completed !== undefined) {
+                currentUser.profile_completed = data.profile_completed;
+            }
+            if (data.profile_reminder_shown !== undefined) {
+                currentUser.profile_reminder_shown = data.profile_reminder_shown;
+            }
+            if (hasNewData) {
+                saveUser();
+                populateProfileForm();
+                updateUserInfo();
+            }
+            // Désactiver l'édition si le profil est complet
+            const complete = checkProfileComplete().complete;
+            enableEditMode(!complete);
         } else {
             enableEditMode(true);
         }
@@ -3280,8 +3307,8 @@ function showPage(pageName) {
             loadProfileData(); 
         } else {
             populateProfileForm();
-            enableEditMode(false);
-            // Afficher les statuts de vérification si déjà renseignés
+            const complete = checkProfileComplete().complete;
+            enableEditMode(!complete);
             if (currentUser.email) {
                 document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
             }
