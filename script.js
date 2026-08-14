@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (complètes et traduites en anglais)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -1469,7 +1469,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (avec correction pour le carrousel)
+// RENDER EVENT CARD (avec carrousel à boutons)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1481,21 +1481,24 @@ function renderEventCard(event) {
     
     console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
-    // Correction : largeur du track = nombre d'images * 100%, chaque slide fait 100% de cette largeur
-    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">
-        <div class="carousel-track" style="display: flex; width: ${images.length * 100}%; flex-shrink: 0;">`;
+    // Construction du carrousel avec conteneur, track, boutons et dots
+    let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
+        <div class="event-carousel" id="carousel-${event.id}">
+            <div class="carousel-track" id="track-${event.id}">`;
     images.forEach((img, idx) => {
-        carouselHtml += `<div class="carousel-slide" data-index="${idx}" style="flex: 0 0 ${100 / images.length}%; min-width: ${100 / images.length}%;"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
+        carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
     });
     carouselHtml += `</div>`;
     if (images.length > 1) {
-        carouselHtml += `<div class="carousel-indicators">`;
+        carouselHtml += `<button class="carousel-btn prev" onclick="event.stopPropagation(); carouselPrev('${event.id}')">‹</button>
+                         <button class="carousel-btn next" onclick="event.stopPropagation(); carouselNext('${event.id}')">›</button>
+                         <div class="carousel-dots" id="dots-${event.id}">`;
         for (let i = 0; i < images.length; i++) {
             carouselHtml += `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
         }
         carouselHtml += `</div>`;
     }
-    carouselHtml += `</div>`;
+    carouselHtml += `</div></div>`;
     let imageCountHtml = '';
     if (images.length > 1) {
         imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
@@ -1571,26 +1574,42 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// INITIALISATION DES INDICATEURS DE CARROUSEL
+// FONCTIONS DE NAVIGATION DU CARROUSEL
 // ============================================================
-function initCarouselIndicators() {
-    document.querySelectorAll('.event-carousel').forEach(carousel => {
-        const track = carousel.querySelector('.carousel-track');
-        const dots = carousel.querySelectorAll('.dot');
-        if (!track || dots.length === 0) return;
-        const updateActiveDot = () => {
-            const scrollLeft = track.scrollLeft;
-            const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
-            const activeIndex = Math.round(scrollLeft / slideWidth);
-            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === activeIndex));
-        };
-        track.addEventListener('scroll', updateActiveDot);
-        setTimeout(updateActiveDot, 100);
-    });
+function carouselPrev(eventId) {
+    const track = document.getElementById('track-' + eventId);
+    if (!track) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    const currentIndex = parseInt(track.dataset.currentIndex || '0');
+    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+    goToSlide(track, newIndex);
+}
+
+function carouselNext(eventId) {
+    const track = document.getElementById('track-' + eventId);
+    if (!track) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    const currentIndex = parseInt(track.dataset.currentIndex || '0');
+    const newIndex = (currentIndex + 1) % slides.length;
+    goToSlide(track, newIndex);
+}
+
+function goToSlide(track, index) {
+    const slides = track.querySelectorAll('.carousel-slide');
+    if (index < 0 || index >= slides.length) return;
+    const slideWidth = slides[0].offsetWidth;
+    track.scrollTo({ left: index * slideWidth, behavior: 'smooth' });
+    track.dataset.currentIndex = index;
+    // Mettre à jour les dots
+    const wrapper = track.closest('.event-carousel-wrapper');
+    if (wrapper) {
+        const dots = wrapper.querySelectorAll('.carousel-dots .dot');
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+    }
 }
 
 // ============================================================
-// OPEN EVENT DETAILS (avec comparaison en chaîne)
+// OPEN EVENT DETAILS (avec normalisation de l'ID)
 // ============================================================
 function openEventDetails(eventId) {
     const idStr = String(eventId);
@@ -1753,16 +1772,6 @@ function carouselGoTo(eventId, index) {
     carousel.currentIndex = index;
     track.style.transform = 'translateX(' + (-index * 100) + '%)';
     document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
-}
-function carouselPrev(eventId) {
-    const carousel = window._carousels && window._carousels[eventId];
-    if (!carousel) return;
-    carouselGoTo(eventId, carousel.currentIndex - 1);
-}
-function carouselNext(eventId) {
-    const carousel = window._carousels && window._carousels[eventId];
-    if (!carousel) return;
-    carouselGoTo(eventId, carousel.currentIndex + 1);
 }
 
 function closeEventDetailModalAndGoBack() {
