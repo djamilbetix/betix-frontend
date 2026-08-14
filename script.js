@@ -188,7 +188,6 @@ const translations = {
         footerBuiltOn: 'Built on Pi Network | Secured by Blockchain',
         footerSlogan: 'The first decentralized ticketing platform on Pi Network',
         footerDesc: 'Secure platform to buy and sell event tickets with Pi payment.',
-        // Additional keys for UI
         eventDate: 'Event Date', eventTime: 'Event Time', locationLabel: 'Location', countryLabel: 'Country',
         ticketsSold: 'Tickets Sold', required: 'required', reviews: 'reviews', close: 'Close',
         connecting: 'Connecting...', pleaseWait: 'Please wait...', 
@@ -243,7 +242,6 @@ const translations = {
         profileUpdatedMsg: 'Your information has been saved and is now up to date.',
         pleaseCompleteProfile: 'Please complete your profile (email and phone) for a better experience.',
         incompleteProfile: 'Incomplete profile',
-        // payment messages
         transactionProcessed: 'Transaction processed',
         transactionProcessedMsg: 'This transaction has already been processed.<br>Your tickets are available in "My Tickets".',
         accountDebited: 'Your account will be debited in ',
@@ -256,7 +254,6 @@ const translations = {
         ticketAvailable: 'Your ticket is available in your personal space. You will also receive a confirmation email.',
         backHome: 'Back to Home',
         viewMyTicket: 'View My Ticket',
-        // admin
         adminTitle: 'Administration',
         adminSubtitle: 'Manage your Betix platform',
         adminEvents: 'Events',
@@ -264,11 +261,10 @@ const translations = {
         adminUsers: 'Users',
         adminSlides: 'Carousel',
         adminLogs: 'Logs',
-        adminSettings: 'Settings',
-        // ... plus d'autres clés si nécessaire
+        adminSettings: 'Settings'
     },
     fr: {
-        // version française inchangée (pour compatibilité)
+        // version française conservée pour compatibilité
         appName: 'Betix', home: 'Accueil', myEvents: 'Mes Événements', profile: 'Profil',
         settings: 'Paramètres', myTickets: 'Mes Tickets', ticketHistory: 'Historique des Tickets',
         faq: 'FAQ', administration: 'Administration', followUs: 'Suivez-nous',
@@ -422,8 +418,7 @@ let appSettings = {
 // ============================================================
 function loadLocalProfile() {
     try {
-        const data = JSON.parse(localStorage.getItem('betix_profile') || '{}');
-        return data;
+        return JSON.parse(localStorage.getItem('betix_profile') || '{}');
     } catch { return {}; }
 }
 
@@ -435,9 +430,7 @@ function mergeProfileWithCurrentUser() {
     const local = loadLocalProfile();
     const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number', 'profile_completed', 'profile_reminder_shown'];
     fields.forEach(f => {
-        if (local[f] !== undefined) {
-            currentUser[f] = local[f];
-        }
+        if (local[f] !== undefined) currentUser[f] = local[f];
     });
     if (local.profile_completed) currentUser.profile_completed = true;
     saveUser();
@@ -489,7 +482,6 @@ async function ensurePiSDKReady() {
     const maxAttempts = 15;
     const timeout = 5000;
     const startTime = Date.now();
-
     while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
         initPiSDK();
         await new Promise(r => setTimeout(r, 500));
@@ -671,7 +663,7 @@ async function loadHeroSlides() {
 }
 
 // ============================================================
-// SAUVEGARDE UTILISATEUR DANS SUPABASE (optimisée)
+// SAUVEGARDE UTILISATEUR DANS SUPABASE
 // ============================================================
 async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
@@ -712,7 +704,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// SAVE EVENT ET TICKET (AVEC LOGS D'ERREUR)
+// SAVE EVENT ET TICKET
 // ============================================================
 async function saveEventToSupabase(eventData) {
     try {
@@ -843,7 +835,6 @@ async function loadEventsFromSupabase() {
             return [];
         }
         return (data || []).map(e => {
-            // Récupération robuste des images
             let imagesArray = [];
             if (e.image_urls) {
                 try {
@@ -914,17 +905,13 @@ function restoreBackupData() {
     try {
         const events = JSON.parse(localStorage.getItem('betix_backup_events') || '[]');
         const tickets = JSON.parse(localStorage.getItem('betix_backup_tickets') || '[]');
-        if (events.length === 0 && tickets.length === 0) {
-            return null;
-        }
+        if (events.length === 0 && tickets.length === 0) return null;
         return { events, tickets };
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
 }
 
 // ============================================================
-// LOAD ALL FROM SUPABASE (amélioré avec logs)
+// LOAD ALL FROM SUPABASE
 // ============================================================
 async function loadAllFromSupabase() {
     console.log("=== LOAD ALL FROM SUPABASE ===");
@@ -941,8 +928,7 @@ async function loadAllFromSupabase() {
         saveBackupData(events, tickets);
     } catch (error) {
         console.error('❌ Error loading events from Supabase:', error);
-        const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-        events = localEvents;
+        events = JSON.parse(localStorage.getItem('betix_events') || '[]');
     }
     
     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -956,8 +942,7 @@ async function loadAllFromSupabase() {
             saveBackupData(events, tickets);
         } catch (error) {
             console.error('❌ Error loading tickets from Supabase:', error);
-            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-            tickets = localTickets;
+            tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         }
     } else {
         console.log("User not connected, tickets not loaded.");
@@ -1000,9 +985,12 @@ function saveTickets() {
 
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
+
+// ============================================================
+// SAUVEGARDE UTILISATEUR (localStorage + profil séparé)
+// ============================================================
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    // Sauvegarder aussi les données de profil séparément
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -1015,6 +1003,7 @@ function saveUser() {
     };
     saveLocalProfile(profileData);
 }
+
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
 function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
@@ -1028,11 +1017,8 @@ async function syncUserToSupabase() {
     const piUid = currentUser.piUid || currentUser.wallet;
     console.log('🔄 Syncing user to Supabase...', piUid);
     const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
-    if (success) {
-        console.log('✅ User synced successfully.');
-    } else {
-        console.error('❌ User sync failed.');
-    }
+    if (success) console.log('✅ User synced successfully.');
+    else console.error('❌ User sync failed.');
 }
 
 async function syncEventsToSupabase() {
@@ -1085,17 +1071,12 @@ async function retryPendingTickets() {
     const remaining = [];
     for (const ticket of pendingTickets) {
         const success = await saveTicketToSupabase(ticket);
-        if (!success) {
-            remaining.push(ticket);
-        }
+        if (!success) remaining.push(ticket);
     }
     pendingTickets = remaining;
     localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-    if (pendingTickets.length === 0) {
-        console.log('All pending tickets saved successfully!');
-    } else {
-        console.log('Still', pendingTickets.length, 'tickets pending.');
-    }
+    if (pendingTickets.length === 0) console.log('All pending tickets saved successfully!');
+    else console.log('Still', pendingTickets.length, 'tickets pending.');
 }
 
 function updateSyncStatus(status) {
@@ -1136,11 +1117,8 @@ function mergeArraysById(localArray, supabaseArray) {
     const merged = [...localArray];
     for (const item of supabaseArray) {
         const idx = merged.findIndex(l => l.id === item.id);
-        if (idx !== -1) {
-            merged[idx] = item;
-        } else {
-            merged.push(item);
-        }
+        if (idx !== -1) merged[idx] = item;
+        else merged.push(item);
     }
     return merged;
 }
@@ -1150,22 +1128,15 @@ function mergeArraysById(localArray, supabaseArray) {
 // ============================================================
 async function loadAppSettings() {
     try {
-        const { data, error } = await supabaseClient
-            .from('app_settings')
-            .select('key, value');
+        const { data, error } = await supabaseClient.from('app_settings').select('key, value');
         if (error) throw error;
         if (data && data.length) {
             data.forEach(row => {
-                const key = row.key;
-                const val = row.value;
+                const key = row.key, val = row.value;
                 if (key in appSettings) {
-                    if (typeof appSettings[key] === 'number') {
-                        appSettings[key] = parseFloat(val);
-                    } else if (typeof appSettings[key] === 'boolean') {
-                        appSettings[key] = val === 'true' || val === true;
-                    } else {
-                        appSettings[key] = val;
-                    }
+                    if (typeof appSettings[key] === 'number') appSettings[key] = parseFloat(val);
+                    else if (typeof appSettings[key] === 'boolean') appSettings[key] = val === 'true' || val === true;
+                    else appSettings[key] = val;
                 }
             });
         }
@@ -1173,12 +1144,7 @@ async function loadAppSettings() {
     } catch (error) {
         console.warn('Could not load app settings from Supabase, using default/local:', error);
         const local = localStorage.getItem('betix_app_settings');
-        if (local) {
-            try {
-                const parsed = JSON.parse(local);
-                Object.assign(appSettings, parsed);
-            } catch (e) {}
-        }
+        if (local) try { Object.assign(appSettings, JSON.parse(local)); } catch(e) {}
     }
 }
 
@@ -1186,9 +1152,7 @@ async function saveAppSettings(settings) {
     try {
         for (const [key, value] of Object.entries(settings)) {
             const stringValue = typeof value === 'string' ? value : String(value);
-            const { error } = await supabaseClient
-                .from('app_settings')
-                .upsert({ key, value: stringValue }, { onConflict: 'key' });
+            const { error } = await supabaseClient.from('app_settings').upsert({ key, value: stringValue }, { onConflict: 'key' });
             if (error) throw error;
         }
         Object.assign(appSettings, settings);
@@ -1207,14 +1171,9 @@ function checkProfileComplete() {
     const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
     const missing = [];
     for (let field of required) {
-        if (!currentUser[field] || currentUser[field].trim() === '') {
-            missing.push(field.replace('_', ' '));
-        }
+        if (!currentUser[field] || currentUser[field].trim() === '') missing.push(field.replace('_', ' '));
     }
-    if (missing.length > 0) {
-        return { complete: false, missing: missing };
-    }
-    return { complete: true, missing: [] };
+    return missing.length === 0 ? { complete: true, missing: [] } : { complete: false, missing };
 }
 
 function redirectToProfileWithMessage(message) {
@@ -1253,47 +1212,29 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML – CORRECTION DES EMPLACEMENTS AVEC EMAIL/TEL
+// GÉNÉRATION DU TICKET HTML
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
-    
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
-    const dateFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-        : 'To be defined';
-        
-    const timeFormatted = !isNaN(dateEvent.getTime()) 
-        ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
-        : 'To be defined';
-    
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'To be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'To be defined';
     const durationValue = safeTicket.durationValue || '';
     const durationUnit = safeTicket.durationUnit || '';
     let durationDisplay = 'N/A';
     if (durationValue && durationUnit) {
-        const unitLabels = {
-            hours: durationValue === 1 ? 'Hour' : 'Hours',
-            days: durationValue === 1 ? 'Day' : 'Days',
-            weeks: durationValue === 1 ? 'Week' : 'Weeks',
-            months: durationValue === 1 ? 'Month' : 'Months',
-            years: durationValue === 1 ? 'Year' : 'Years'
-        };
+        const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
         durationDisplay = durationValue + ' ' + (unitLabels[durationUnit] || durationUnit);
     }
-    
     const buyerName = (safeTicket.buyerName || 'Not provided').toUpperCase();
     let userEmail = safeTicket.buyerEmail || 'Not provided';
     if (userEmail.length > 18) userEmail = userEmail.substring(0, 16) + '…';
-    
     const userPhone = safeTicket.buyerPhone || 'Not provided';
     const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
     const eventLocation = safeTicket.eventLocation || 'Online';
-    
-    const purchaseDate = safeTicket.purchaseDate 
-        ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') 
-        : 'N/A';
+    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
 
     return `
@@ -1301,24 +1242,18 @@ function generateTicketHTML(ticket) {
             <div class="ticket-overlay-bg">
                 <img src="ticket-officiel.png" alt="Official ticket" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
             </div>
-            
-            <!-- Left Column (Event Info) -->
             <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
             <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
             <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
             <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
             <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
             <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
-
-            <!-- Right Column (Buyer & Transaction Info) -->
             <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
             <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
             <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
             <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
             <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
             <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
-
-            <!-- Coupon Right -->
             <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
             <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
             <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
@@ -1326,9 +1261,6 @@ function generateTicketHTML(ticket) {
     `;
 }
 
-// ============================================================
-// GÉNÉRER LE QR CODE – AVEC NETTOYAGE
-// ============================================================
 function generateTicketQR(ticketId) {
     const container = document.getElementById(`qr-ticket-${ticketId}`);
     if (!container) return;
@@ -1350,8 +1282,7 @@ function generateTicketQR(ticketId) {
 }
 
 function generateAllQRCodes() {
-    const ticketsList = document.querySelectorAll('.ticket-list-item .ticket-overlay-container');
-    ticketsList.forEach(container => {
+    document.querySelectorAll('.ticket-list-item .ticket-overlay-container').forEach(container => {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
@@ -1363,42 +1294,32 @@ function generateAllQRCodes() {
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
-
     const validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
-
     const uniqueTickets = [];
     const seenIds = new Set();
     for (const t of validTickets) {
-        if (!seenIds.has(t.id)) {
-            seenIds.add(t.id);
-            uniqueTickets.push(t);
-        }
+        if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueTickets.push(t); }
     }
-
     if (uniqueTickets.length === 0) {
         container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noActiveTickets')}</p>`;
         return;
     }
-
     let html = '';
     uniqueTickets.forEach(ticket => {
-        html += `<div class="ticket-list-item">`;
-        html += generateTicketHTML(ticket);
-        html += `<div class="ticket-actions-wrapper">
-                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-                </div>`;
-        html += `</div>`;
+        html += `<div class="ticket-list-item">${generateTicketHTML(ticket)}
+            <div class="ticket-actions-wrapper">
+                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+            </div>
+        </div>`;
     });
-
     container.innerHTML = html;
-
     setTimeout(() => {
         uniqueTickets.forEach(ticket => generateTicketQR(ticket.id));
         applyStaggeredAnimation('#ticketsList .ticket-list-item');
@@ -1411,52 +1332,39 @@ function renderTickets() {
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
-
     const historyTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
         const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
-
     const uniqueHistory = [];
     const seenIds = new Set();
     for (const t of historyTickets) {
-        if (!seenIds.has(t.id)) {
-            seenIds.add(t.id);
-            uniqueHistory.push(t);
-        }
+        if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueHistory.push(t); }
     }
-
     if (uniqueHistory.length === 0) {
         container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noTicketHistory')}</p>`;
         return;
     }
-
     let html = '';
     uniqueHistory.forEach(ticket => {
-        html += `<div class="ticket-list-item">`;
-        html += generateTicketHTML(ticket);
-        html += `<div class="ticket-actions-wrapper">
-                    <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                    <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                    <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-                    <button class="btn-action btn-delete" onclick="deleteHistoryTicket('${ticket.id}')" style="background:#ef4444; color:white;"><i class="fas fa-trash"></i> Delete</button>
-                </div>`;
-        html += `</div>`;
+        html += `<div class="ticket-list-item">${generateTicketHTML(ticket)}
+            <div class="ticket-actions-wrapper">
+                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
+                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
+                <button class="btn-action btn-delete" onclick="deleteHistoryTicket('${ticket.id}')" style="background:#ef4444; color:white;"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>`;
     });
-
     container.innerHTML = html;
-
     setTimeout(() => {
         uniqueHistory.forEach(ticket => generateTicketQR(ticket.id));
         applyStaggeredAnimation('#historyList .ticket-list-item');
     }, 300);
 }
 
-// ============================================================
-// SUPPRIMER UN TICKET DE L'HISTORIQUE
-// ============================================================
 function deleteHistoryTicket(ticketId) {
     if (!confirm('Delete this ticket from history?')) return;
     tickets = tickets.filter(t => t.id !== ticketId);
@@ -1478,13 +1386,9 @@ async function downloadTicketPNG(ticketId) {
     showLoader('Generating PNG ticket...');
     try {
         const canvas = await html2canvas(ticketEl, {
-            scale: 2.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#0a1628',
-            allowTaint: true,
-            width: ticketEl.scrollWidth,
-            height: ticketEl.scrollHeight
+            scale: 2.5, useCORS: true, logging: false,
+            backgroundColor: '#0a1628', allowTaint: true,
+            width: ticketEl.scrollWidth, height: ticketEl.scrollHeight
         });
         const link = document.createElement('a');
         link.download = `BETIX_TICKET_${ticketId.substring(0, 8)}.png`;
@@ -1505,13 +1409,9 @@ async function downloadTicketPDF(ticketId) {
     showLoader('Generating PDF ticket...');
     try {
         const canvas = await html2canvas(ticketEl, {
-            scale: 2.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#0a1628',
-            allowTaint: true,
-            width: ticketEl.scrollWidth,
-            height: ticketEl.scrollHeight
+            scale: 2.5, useCORS: true, logging: false,
+            backgroundColor: '#0a1628', allowTaint: true,
+            width: ticketEl.scrollWidth, height: ticketEl.scrollHeight
         });
         const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
@@ -1529,9 +1429,6 @@ async function downloadTicketPDF(ticketId) {
     }
 }
 
-// ============================================================
-// VIEW TICKET MODAL
-// ============================================================
 function viewTicketWithImage(ticketId) {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) { alert('Ticket not found'); return; }
@@ -1543,7 +1440,6 @@ function viewTicketWithImage(ticketId) {
     document.body.style.overflow = 'hidden';
     setTimeout(() => generateTicketQR(ticket.id), 300);
 }
-
 function viewTicketModal(ticketId) { viewTicketWithImage(ticketId); }
 
 function shareTicket(ticketId) {
@@ -1570,7 +1466,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// CARTE D'ÉVÉNEMENT – AVEC CARROUSEL HORIZONTAL (STYLE X) AMÉLIORÉ
+// RENDER EVENT CARD (avec badge du nombre d'images)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1582,8 +1478,7 @@ function renderEventCard(event) {
     
     console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
-    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">`;
-    carouselHtml += `<div class="carousel-track">`;
+    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}"><div class="carousel-track">`;
     images.forEach((img, idx) => {
         carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
     });
@@ -1596,8 +1491,6 @@ function renderEventCard(event) {
         carouselHtml += `</div>`;
     }
     carouselHtml += `</div>`;
-
-    // Badge indiquant le nombre d'images
     let imageCountHtml = '';
     if (images.length > 1) {
         imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
@@ -1628,7 +1521,6 @@ function renderEventCard(event) {
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? `<span class="stars">${ratingStars}</span> ${avgRating.toFixed(1)} (${ratings.filter(r => r.eventId === event.id).length})` : '';
 
     const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
-
     const priceRightHtml = `<div class="event-price-right">
         <span class="price-label-badge">Price</span>
         <span class="price-amount-green">${(event.price || 0).toFixed(6)}</span>
@@ -1664,13 +1556,8 @@ function renderEventCard(event) {
             <div class="event-title-large">${escapeHtml(event.title)}</div>
             <div class="event-description-full">${escapeHtml(desc)}</div>
             ${infoBoxHtml}
-            <div class="event-meta-row">
-                ${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}
-            </div>
-            <div class="event-tickets-price-row">
-                ${ticketsLabelHtml}
-                ${priceRightHtml}
-            </div>
+            <div class="event-meta-row">${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}</div>
+            <div class="event-tickets-price-row">${ticketsLabelHtml}${priceRightHtml}</div>
             <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
             <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)}</div>
             ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}` : ''}
@@ -1686,27 +1573,22 @@ function initCarouselIndicators() {
         const track = carousel.querySelector('.carousel-track');
         const dots = carousel.querySelectorAll('.dot');
         if (!track || dots.length === 0) return;
-
         const updateActiveDot = () => {
             const scrollLeft = track.scrollLeft;
             const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
             const activeIndex = Math.round(scrollLeft / slideWidth);
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === activeIndex);
-            });
+            dots.forEach((dot, idx) => dot.classList.toggle('active', idx === activeIndex));
         };
-
         track.addEventListener('scroll', updateActiveDot);
         setTimeout(updateActiveDot, 100);
     });
 }
 
 // ============================================================
-// PAGE DE DÉTAIL (openEventDetails) – avec fallback et comparaison en chaîne
+// OPEN EVENT DETAILS (avec comparaison en chaîne)
 // ============================================================
 function openEventDetails(eventId) {
     console.log('🔍 openEventDetails called with ID:', eventId);
-    // Comparaison en chaîne pour éviter les problèmes de type
     let event = events.find(e => String(e.id) === String(eventId));
     if (!event) {
         console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
@@ -1866,7 +1748,6 @@ function carouselGoTo(eventId, index) {
     track.style.transform = 'translateX(' + (-index * 100) + '%)';
     document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
 }
-
 function carouselPrev(eventId) {
     const carousel = window._carousels && window._carousels[eventId];
     if (!carousel) return;
@@ -1888,7 +1769,7 @@ function closeEventDetailModalAndGoBack() {
 }
 
 // ============================================================
-// SLIDER PRINCIPAL (HERO)
+// HERO SLIDER
 // ============================================================
 function initHeroSlider() {
     const slidesContainer = document.getElementById('heroSlides');
@@ -2209,10 +2090,7 @@ async function confirmProfileSave() {
             profile_reminder_shown: true,
             updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient
-            .from('users')
-            .update(updates)
-            .eq('pi_uid', piUid);
+        const { error } = await supabaseClient.from('users').update(updates).eq('pi_uid', piUid);
         if (error) throw error;
 
         Object.assign(currentUser, {
@@ -2331,38 +2209,23 @@ function updateTicketTotal() {
 }
 
 function confirmPurchaseFromPopup() {
-    if (!selectedEventForPurchase) { 
-        alert('No event selected'); 
-        return; 
-    }
+    if (!selectedEventForPurchase) { alert('No event selected'); return; }
     const quantityInput = document.getElementById('ticketQuantity');
     const quantity = parseInt(quantityInput.value) || 1;
-    if (quantity < 1) { 
-        alert('Please select at least 1 ticket'); 
-        return; 
-    }
+    if (quantity < 1) { alert('Please select at least 1 ticket'); return; }
     const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
-    if (quantity > availableSeats) { 
-        alert('No seats available. Remaining: ' + availableSeats); 
-        return; 
-    }
-    if (quantity > 10) { 
-        alert('Maximum 10 tickets per purchase'); 
-        return; 
-    }
+    if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
+    if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
     confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT – AVEC EMAIL ET TÉLÉPHONE DANS LE TICKET
+// CONFIRMATION D'ACHAT
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
 
-function openConfirmPurchasePopup(title, subtotal, serviceFee, total) {
-    return Promise.resolve(false);
-}
-
+function openConfirmPurchasePopup(title, subtotal, serviceFee, total) { return Promise.resolve(false); }
 function closeConfirmPurchasePopup() {}
 
 async function confirmPurchase(eventId, quantity) {
@@ -2387,27 +2250,17 @@ async function confirmPurchase(eventId, quantity) {
     closeQuantityPopup();
 
     const confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) { 
-        confirmBtn.textContent = t('connecting'); 
-        confirmBtn.disabled = true; 
-    }
+    if (confirmBtn) { confirmBtn.textContent = t('connecting'); confirmBtn.disabled = true; }
 
     try {
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
-            if (confirmBtn) { 
-                confirmBtn.textContent = t('confirmPurchase'); 
-                confirmBtn.disabled = false; 
-            }
+            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             return;
         }
-        
         if (!piUser || !piUser.username) {
             alert('Please connect your Pi account first with payments scope.');
-            if (confirmBtn) { 
-                confirmBtn.textContent = t('confirmPurchase'); 
-                confirmBtn.disabled = false; 
-            }
+            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             connectToPi();
             return;
         }
@@ -2419,8 +2272,7 @@ async function confirmPurchase(eventId, quantity) {
         }, {
             onReadyForServerApproval: function(paymentId) {
                 fetch(BACKEND_URL + '/api/pi/approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
                 }).catch(() => {});
             },
@@ -2436,10 +2288,7 @@ async function confirmPurchase(eventId, quantity) {
                         openTransactionProcessedPopup(5);
                         showPage('tickets');
                         processingTransactions.delete(txid);
-                        if (confirmBtn) { 
-                            confirmBtn.textContent = t('confirmPurchase'); 
-                            confirmBtn.disabled = false; 
-                        }
+                        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
                         return;
                     }
                     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -2454,10 +2303,7 @@ async function confirmPurchase(eventId, quantity) {
                             renderHistory();
                             showPage('tickets');
                             processingTransactions.delete(txid);
-                            if (confirmBtn) { 
-                                confirmBtn.textContent = t('confirmPurchase'); 
-                                confirmBtn.disabled = false; 
-                            }
+                            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
                             return;
                         }
                     }
@@ -2480,10 +2326,8 @@ async function confirmPurchase(eventId, quantity) {
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = ticketId;
-                        
                         const organizerName = event.organizerName || event.organizer || 'Anonymous';
                         const organizerPiUid = event.organizerPiUid || event.organizer || '';
-                        
                         const ticket = {
                             id: ticketId,
                             eventId: event.id,
@@ -2565,26 +2409,17 @@ async function confirmPurchase(eventId, quantity) {
             },
             onCancel: function() {
                 alert(t('paymentCancelled'));
-                if (confirmBtn) { 
-                    confirmBtn.textContent = t('confirmPurchase'); 
-                    confirmBtn.disabled = false; 
-                }
+                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             },
             onError: function(error) {
                 alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-                if (confirmBtn) { 
-                    confirmBtn.textContent = t('confirmPurchase'); 
-                    confirmBtn.disabled = false; 
-                }
+                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             },
             onIncompletePaymentFound
         });
     } catch (error) {
         alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-        if (confirmBtn) { 
-            confirmBtn.textContent = t('confirmPurchase'); 
-            confirmBtn.disabled = false; 
-        }
+        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
     }
 }
 
@@ -2608,7 +2443,6 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
 function showToast(title, message, type = 'success') {
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
-
     const toast = document.createElement('div');
     toast.className = `toast-notification toast-${type}`;
     toast.innerHTML = `
@@ -2620,18 +2454,9 @@ function showToast(title, message, type = 'success') {
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     document.body.appendChild(toast);
-
-    toast.querySelector('.toast-close').addEventListener('click', function() {
-        closeToast(toast);
-    });
-
-    requestAnimationFrame(() => {
-        toast.classList.add('show');
-    });
-
-    setTimeout(() => {
-        closeToast(toast);
-    }, 5000);
+    toast.querySelector('.toast-close').addEventListener('click', function() { closeToast(toast); });
+    requestAnimationFrame(() => { toast.classList.add('show'); });
+    setTimeout(() => { closeToast(toast); }, 5000);
 }
 
 function closeToast(toast) {
@@ -2651,7 +2476,6 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const viewBtn = document.getElementById('viewTicketBtn');
     const homeBtn = document.getElementById('successHomeBtn');
     const closeBtn = document.getElementById('closeSuccessXBtn');
-
     if (!popup || popup.classList.contains('show')) return;
 
     const qty = quantity || ticketsList.length;
@@ -2683,11 +2507,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
         <div class="ticket-line"><span class="ticket-label">Reference</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
     `;
 
-    closeBtn.onclick = function(e) {
-        e.preventDefault();
-        closeSuccessPopup();
-    };
-
+    closeBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); };
     homeBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
@@ -2709,7 +2529,6 @@ function showSuccessPopup(event, ticketsList, quantity) {
             }
         }, 500);
     };
-
     viewBtn.onclick = function(e) {
         e.preventDefault();
         closeSuccessPopup();
@@ -2718,13 +2537,8 @@ function showSuccessPopup(event, ticketsList, quantity) {
 
     popup.style.display = 'flex';
     popup.classList.add('show');
-
     const eventName = event.title || 'Event';
-    showToast(
-        '🎉 Purchase successful!',
-        `You have purchased ${qty} ticket(s) for "${eventName}". Check your tickets in "My Tickets".`,
-        'success'
-    );
+    showToast('🎉 Purchase successful!', `You have purchased ${qty} ticket(s) for "${eventName}". Check your tickets in "My Tickets".`, 'success');
 }
 
 function closeSuccessPopup() {
@@ -2739,23 +2553,19 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI – AVEC SYNC APRÈS CONNEXION
+// CONNEXION PI
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
-
     const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Connection timeout (15s)')), 15000);
     });
-
     try {
         await Promise.race([
             (async () => {
                 if (!piSDKReady) {
                     const ready = await ensurePiSDKReady();
-                    if (!ready) {
-                        throw new Error('Pi SDK not available after waiting.');
-                    }
+                    if (!ready) throw new Error('Pi SDK not available after waiting.');
                 }
                 if (typeof Pi === 'undefined') {
                     if (confirm(t('demoMode'))) {
@@ -2855,7 +2665,7 @@ function checkAndNotifyProfileCompletion() {
 }
 
 // ============================================================
-// CRÉATION D'ÉVÉNEMENT – AVEC 3 IMAGES
+// CRÉATION D'ÉVÉNEMENT
 // ============================================================
 async function createEvent(e) {
     e.preventDefault();
@@ -3139,9 +2949,7 @@ function renderMyRatings() {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
         return `<div class="ticket-card"><h3>${escapeHtml(r.eventTitle)}</h3><div>${t('rating')}: ${r.rating}/5 ${stars}</div>${r.comment ? `<p>"${escapeHtml(r.comment)}"</p>` : ''}<small>${new Date(r.date).toLocaleDateString()}</small></div>`;
     }).join('');
-    setTimeout(() => {
-        applyStaggeredAnimation('#myRatingsList');
-    }, 50);
+    setTimeout(() => { applyStaggeredAnimation('#myRatingsList'); }, 50);
 }
 
 function setupTicketTypesUI() { /* no-op */ }
@@ -3285,7 +3093,7 @@ function syncSettingsLanguageSelector() {
 }
 
 // ============================================================
-// NOTIFICATIONS – FONCTIONS DE SUPPRESSION
+// NOTIFICATIONS
 // ============================================================
 function deleteNotification(id) {
     notifications = notifications.filter(n => n.id !== id);
@@ -3310,7 +3118,6 @@ function clearAllNotifications() {
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
-
     if (!notifications || notifications.length === 0) {
         container.innerHTML = `
             <div class="notification-empty">
@@ -3320,7 +3127,6 @@ function renderNotificationsPage() {
         `;
         return;
     }
-
     let html = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
             <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
@@ -3329,33 +3135,25 @@ function renderNotificationsPage() {
             </button>
         </div>
     `;
-
-    notifications.forEach((notif, index) => {
+    notifications.forEach((notif) => {
         const time = new Date(notif.date);
         const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         const unreadClass = notif.read ? '' : 'unread';
         const type = notif.type || 'info';
         const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
         const icon = iconMap[type] || 'fa-info-circle';
-
         html += `
             <div class="notification-item type-${type} ${unreadClass}">
-                <div class="notif-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
+                <div class="notif-icon"><i class="fas ${icon}"></i></div>
                 <div class="notif-content">
                     <div class="notif-msg">${escapeHtml(notif.message)}</div>
                     <div class="notif-time">${timeStr}</div>
                 </div>
-                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete"><i class="fas fa-times"></i></button>
             </div>
         `;
     });
-
     container.innerHTML = html;
-
     notifications.forEach(n => n.read = true);
     saveNotifications();
     updateNotifBadgeHeader();
@@ -3386,7 +3184,7 @@ function addNotification(message, type) {
 }
 
 // ============================================================
-// AUTRES FONCTIONS DE NAVIGATION, PROFIL, ETC.
+// NAVIGATION ET PROFIL
 // ============================================================
 function goToMyEvents() { showPage('myevents'); }
 function goToTickets() { showPage('tickets'); }
@@ -3405,11 +3203,10 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT – AVEC SAUVEGARDE SUPABASE ET CONSERVATION DU PROFIL
+// DISCONNECT – AVEC SAUVEGARDE DU PROFIL
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
-    
     try {
         await syncUserToSupabase();
         console.log('✅ Profile saved to Supabase before disconnection.');
@@ -3417,7 +3214,6 @@ async function disconnectPi() {
         console.error('❌ Error saving profile before disconnection:', error);
     }
 
-    // Conserver les données de profil dans un objet séparé avant de réinitialiser
     const profileData = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3429,7 +3225,6 @@ async function disconnectPi() {
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
 
-    // Réinitialiser currentUser mais garder les données de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3439,7 +3234,7 @@ async function disconnectPi() {
         ...profileData
     };
     piUser = null;
-    saveUser(); // sauvegarde aussi dans betix_profile via saveUser()
+    saveUser();
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
     updateUserInfo();
@@ -3527,11 +3322,11 @@ function updateConnectButtons() {
     if (profilePageBtn) {
         if (currentUser.wallet) {
             profilePageBtn.textContent = t('disconnect');
-            profilePageBtn.className = 'btn-primary disconnect-btn';  // <-- CLASSE ROUGE
+            profilePageBtn.className = 'btn-primary disconnect-btn';
             profilePageBtn.onclick = function() { disconnectPi(); };
         } else {
             profilePageBtn.textContent = t('connectPi');
-            profilePageBtn.className = 'btn-primary';  // <-- STYLE NORMAL
+            profilePageBtn.className = 'btn-primary';
             profilePageBtn.onclick = function() { connectToPi(); };
         }
     }
@@ -3564,9 +3359,7 @@ function renderMyEvents() {
     if (!container) return;
     const userId = currentUser.piUid || currentUser.wallet;
     const myEvents = events.filter(e => 
-        e.organizer === userId || 
-        e.organizerPiUid === userId || 
-        e.organizerName === currentUser.name
+        e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name
     );
     if (myEvents.length === 0) {
         container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">${t('noEvents')}</p><p style="font-size:0.85rem;">${t('createEvent')}</p></div>`;
@@ -3574,9 +3367,7 @@ function renderMyEvents() {
     }
     container.innerHTML = myEvents.map(e => renderMyEventCardModern(e)).join('');
     updateScanButtonVisibility();
-    setTimeout(() => {
-        applyStaggeredAnimation('#myEventsList');
-    }, 50);
+    setTimeout(() => { applyStaggeredAnimation('#myEventsList'); }, 50);
     setTimeout(initCarouselIndicators, 300);
 }
 
@@ -3612,7 +3403,7 @@ function renderMyEventCardModern(event) {
 }
 
 // ============================================================
-// RENDER EVENTS BY CATEGORY – AVEC ÉCOUTEURS D'ÉVÉNEMENTS
+// RENDER EVENTS BY CATEGORY
 // ============================================================
 function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
@@ -3641,14 +3432,12 @@ function renderEventsByCategory() {
         });
     }
     container.innerHTML = html;
-
     container.querySelectorAll('.event-card-classic').forEach(card => {
         card.addEventListener('click', function() {
             const id = this.dataset.id;
             if (id) openEventDetails(id);
         });
     });
-
     setTimeout(() => {
         applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
         initCarouselIndicators();
@@ -3688,7 +3477,6 @@ function updateProfilePage() {
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
-
     updateUserInfo();
     updateScanButtonVisibility();
 }
@@ -3705,6 +3493,9 @@ function updateScanButtonVisibility() {
     scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
 }
 
+// ============================================================
+// ADMIN
+// ============================================================
 function initAdmin() {
     const adminItem = document.getElementById('adminMenuItem');
     if (!adminItem) return;
@@ -3824,17 +3615,10 @@ async function adminSaveSettings() {
     const commission = parseFloat(document.getElementById('adminCommission').value);
     const serviceFee = parseFloat(document.getElementById('adminServiceFee').value);
     const piRate = parseFloat(document.getElementById('adminPiRate').value);
-
     if (isNaN(commission) || commission < 0 || commission > 100) { alert('Commission must be between 0 and 100'); return; }
     if (isNaN(serviceFee) || serviceFee < 0 || serviceFee > 100) { alert('Service Fee must be between 0 and 100'); return; }
     if (isNaN(piRate) || piRate <= 0) { alert('Pi Rate must be greater than 0'); return; }
-
-    const settings = {
-        commissionPercent: commission,
-        serviceFeePercent: serviceFee,
-        piRate: piRate
-    };
-
+    const settings = { commissionPercent: commission, serviceFeePercent: serviceFee, piRate: piRate };
     const success = await saveAppSettings(settings);
     const msg = document.getElementById('adminSettingsMessage');
     if (success) {
@@ -3850,55 +3634,36 @@ async function adminSaveSettings() {
 }
 
 // ============================================================
-// ADMIN – NOUVELLE FONCTION LOAD ALL USERS
+// ADMIN USERS
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
-        const { data: users, error: usersError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const { data: users, error: usersError } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
         if (usersError) throw usersError;
-
-        const { data: eventsData, error: eventsError } = await supabaseClient
-            .from('events')
-            .select('organizer_pi_uid');
+        const { data: eventsData, error: eventsError } = await supabaseClient.from('events').select('organizer_pi_uid');
         if (eventsError) throw eventsError;
-
         const eventCounts = {};
         eventsData.forEach(ev => {
             const uid = ev.organizer_pi_uid;
             if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
         });
-
-        const usersWithEvents = users.map(user => ({
-            ...user,
-            events_created: eventCounts[user.pi_uid] || 0
-        }));
-
-        return usersWithEvents;
+        return users.map(user => ({ ...user, events_created: eventCounts[user.pi_uid] || 0 }));
     } catch (error) {
         console.error('Error loading users from Supabase:', error);
         return [];
     }
 }
 
-// ============================================================
-// ADMIN – RENDER ADMIN USERS (tableau complet)
-// ============================================================
 async function renderAdminUsers() {
     const container = document.getElementById('adminUsersList');
     if (!container) return;
-
     const users = await loadAllUsersFromSupabase();
     allUsersCache = users;
     document.getElementById('adminUserCount').innerText = users.length;
-
     if (!users || users.length === 0) {
         container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noUsers') + '</p>';
         return;
     }
-
     let html = `
         <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
             <button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">
@@ -3915,11 +3680,9 @@ async function renderAdminUsers() {
             </thead>
             <tbody>
     `;
-
     users.forEach(user => {
         const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
         const wallet = user.wallet || user.pi_uid || '—';
-
         html += `
             <tr style="border-bottom: 1px solid #e5e7eb;">
                 <td style="padding: 8px 6px;">${escapeHtml(name)}</td>
@@ -3928,12 +3691,7 @@ async function renderAdminUsers() {
             </tr>
         `;
     });
-
-    html += `
-            </tbody>
-        </table>
-    `;
-
+    html += `</tbody></table>`;
     container.innerHTML = html;
 }
 
@@ -4174,7 +3932,8 @@ async function initApp() {
     try {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
-        // Charger les données de profil séparées
+        
+        // Fusion des données de profil locales
         const localProfile = loadLocalProfile();
         Object.keys(localProfile).forEach(key => {
             if (localProfile[key] !== undefined) {
