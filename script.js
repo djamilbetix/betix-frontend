@@ -1469,7 +1469,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (avec badge du nombre d'images)
+// RENDER EVENT CARD (avec correction pour le carrousel)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1481,7 +1481,9 @@ function renderEventCard(event) {
     
     console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
-    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}"><div class="carousel-track">`;
+    // Correction : la largeur du track doit être de images.length * 100%
+    let carouselHtml = `<div class="event-carousel" id="carousel-${event.id}">
+        <div class="carousel-track" style="width: ${images.length * 100}%; display: flex;">`;
     images.forEach((img, idx) => {
         carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
     });
@@ -3279,6 +3281,13 @@ function showPage(pageName) {
         } else {
             populateProfileForm();
             enableEditMode(false);
+            // Afficher les statuts de vérification si déjà renseignés
+            if (currentUser.email) {
+                document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            }
+            if (currentUser.phone_number) {
+                document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            }
         }
     }
     if (pageName === 'ratings') renderMyRatings();
