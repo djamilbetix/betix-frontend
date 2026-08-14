@@ -853,10 +853,13 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
+            // Log pour vérifier le nombre d'images
+            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images:`, imagesArray);
+            
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
-                id: String(e.id),  // <-- CONVERSION EN CHAÎNE
+                id: String(e.id),  // CONVERSION EN CHAÎNE
                 title: e.title || 'Untitled',
                 category: e.category || '',
                 pays: e.pays || 'France',
@@ -3933,7 +3936,6 @@ async function initApp() {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
         
-        // Fusion des données de profil locales
         const localProfile = loadLocalProfile();
         Object.keys(localProfile).forEach(key => {
             if (localProfile[key] !== undefined) {
