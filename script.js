@@ -264,6 +264,7 @@ const translations = {
         adminSettings: 'Settings'
     },
     fr: {
+        // version française conservée pour compatibilité
         appName: 'Betix', home: 'Accueil', myEvents: 'Mes Événements', profile: 'Profil',
         settings: 'Paramètres', myTickets: 'Mes Tickets', ticketHistory: 'Historique des Tickets',
         faq: 'FAQ', administration: 'Administration', followUs: 'Suivez-nous',
@@ -1599,19 +1600,79 @@ function goToSlide(track, index) {
 }
 
 // ============================================================
-// OPEN EVENT DETAILS (version corrigée avec séparation)
+// HANDLE EVENT CARD CLICK (délégation)
+// ============================================================
+function handleEventCardClick(e) {
+    const card = e.target.closest('.event-card-classic');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (id) {
+        console.log('🖱️ Card clicked, id:', id);
+        openEventDetails(id);
+    }
+}
+
+// ============================================================
+// RENDER EVENTS BY CATEGORY (avec délégation)
+// ============================================================
+function renderEventsByCategory() {
+    const container = document.getElementById('eventsByCategory');
+    if (!container) return;
+    const filtered = events.filter(e => {
+        const matchCategory = currentFilter === 'All' || e.category === currentFilter;
+        const matchCountry = currentCountryFilter === 'All' || (e.pays || e.country) === currentCountryFilter;
+        const matchSearch = e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery));
+        return matchCategory && matchCountry && matchSearch;
+    });
+    if (filtered.length === 0) {
+        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noEvents')}</p>`;
+        return;
+    }
+    const cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
+    let html = '';
+    if (currentFilter !== 'All') {
+        html = '<div class="category-section"><div class="events-grid-centered">';
+        filtered.forEach(e => html += renderEventCard(e));
+        html += '</div></div>';
+    } else {
+        cats.forEach(cat => {
+            const catEvents = filtered.filter(e => e.category === cat);
+            if (catEvents.length) {
+                html += `<div class="category-section"><div class="category-header">${cat}</div><div class="events-grid-centered">`;
+                catEvents.forEach(e => html += renderEventCard(e));
+                html += '</div></div>';
+            }
+        });
+    }
+    container.innerHTML = html;
+
+    // Supprimer l'ancien écouteur et ajouter la délégation
+    container.removeEventListener('click', handleEventCardClick);
+    container.addEventListener('click', handleEventCardClick);
+
+    setTimeout(() => {
+        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+        initCarouselIndicators();
+    }, 50);
+}
+
+// ============================================================
+// OPEN EVENT DETAILS (version robuste)
 // ============================================================
 let openEventDetailsTimeout = null;
 
 function openEventDetails(eventId) {
     const idStr = String(eventId);
     console.log('🔍 openEventDetails called with ID:', idStr);
+    console.log('📋 Current events list:', events.map(e => ({ id: e.id, title: e.title })));
+
     let event = events.find(e => String(e.id) === idStr);
     if (event) {
         console.log('✅ Event found in cache:', event.title);
         _openEventDetails(event);
         return;
     }
+
     console.warn('⚠️ Event not found in cache, reloading from Supabase...');
     if (openEventDetailsTimeout) {
         clearTimeout(openEventDetailsTimeout);
@@ -1625,8 +1686,10 @@ function openEventDetails(eventId) {
                 renderEventsByCategory();
                 const ev = events.find(e => String(e.id) === idStr);
                 if (ev) {
+                    console.log('✅ Event found after reload:', ev.title);
                     _openEventDetails(ev);
                 } else {
+                    console.error('❌ Event not found even after reload.');
                     alert(t('eventNotFound'));
                 }
             } else {
@@ -1641,6 +1704,7 @@ function openEventDetails(eventId) {
 }
 
 function _openEventDetails(event) {
+    // Cette fonction contient le code d'affichage du modal (identique à votre version)
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
     const currentPage = pageHistory[pageHistory.length - 1] || 'home';
@@ -3447,46 +3511,9 @@ function renderMyEventCardModern(event) {
 }
 
 // ============================================================
-// RENDER EVENTS BY CATEGORY
+// RENDER EVENTS BY CATEGORY (déjà modifiée avec délégation)
 // ============================================================
-function renderEventsByCategory() {
-    const container = document.getElementById('eventsByCategory');
-    if (!container) return;
-    const filtered = events.filter(e => {
-        const matchCategory = currentFilter === 'All' || e.category === currentFilter;
-        const matchCountry = currentCountryFilter === 'All' || (e.pays || e.country) === currentCountryFilter;
-        const matchSearch = e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery));
-        return matchCategory && matchCountry && matchSearch;
-    });
-    if (filtered.length === 0) { container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noEvents')}</p>`; return; }
-    const cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
-    let html = '';
-    if (currentFilter !== 'All') {
-        html = '<div class="category-section"><div class="events-grid-centered">';
-        filtered.forEach(e => html += renderEventCard(e));
-        html += '</div></div>';
-    } else {
-        cats.forEach(cat => {
-            const catEvents = filtered.filter(e => e.category === cat);
-            if (catEvents.length) {
-                html += `<div class="category-section"><div class="category-header">${cat}</div><div class="events-grid-centered">`;
-                catEvents.forEach(e => html += renderEventCard(e));
-                html += '</div></div>';
-            }
-        });
-    }
-    container.innerHTML = html;
-    container.querySelectorAll('.event-card-classic').forEach(card => {
-        card.addEventListener('click', function() {
-            const id = this.dataset.id;
-            if (id) openEventDetails(id);
-        });
-    });
-    setTimeout(() => {
-        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
-        initCarouselIndicators();
-    }, 50);
-}
+// (Cette fonction a déjà été remplacée plus haut, ne pas la dupliquer)
 
 function initFilters() {
     const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
