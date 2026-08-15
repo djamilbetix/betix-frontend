@@ -264,7 +264,6 @@ const translations = {
         adminSettings: 'Settings'
     },
     fr: {
-        // version française conservée pour compatibilité
         appName: 'Betix', home: 'Accueil', myEvents: 'Mes Événements', profile: 'Profil',
         settings: 'Paramètres', myTickets: 'Mes Tickets', ticketHistory: 'Historique des Tickets',
         faq: 'FAQ', administration: 'Administration', followUs: 'Suivez-nous',
@@ -414,7 +413,7 @@ let appSettings = {
 };
 
 // ============================================================
-// GESTION DU PROFIL LOCAL (indépendant de la connexion)
+// GESTION DU PROFIL LOCAL
 // ============================================================
 function loadLocalProfile() {
     try {
@@ -570,7 +569,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (SAUVEGARDE / CHARGEMENT)
+// FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -825,7 +824,7 @@ async function loadTicketsFromSupabase(piUid) {
 }
 
 // ============================================================
-// CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE (AVEC ID EN CHAÎNE)
+// CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE
 // ============================================================
 async function loadEventsFromSupabase() {
     try {
@@ -853,13 +852,12 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
-            // Log pour vérifier le nombre d'images
-            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images:`, imagesArray);
+            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images`);
             
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
-                id: String(e.id),  // CONVERSION EN CHAÎNE
+                id: String(e.id),
                 title: e.title || 'Untitled',
                 category: e.category || '',
                 pays: e.pays || 'France',
@@ -892,7 +890,7 @@ async function loadEventsFromSupabase() {
 }
 
 // ============================================================
-// SAUVEGARDE PERMANENTE (backup)
+// SAUVEGARDE PERMANENTE
 // ============================================================
 function saveBackupData(eventsData, ticketsData) {
     try {
@@ -989,9 +987,6 @@ function saveTickets() {
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 
-// ============================================================
-// SAUVEGARDE UTILISATEUR (localStorage + profil séparé)
-// ============================================================
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
     const profileData = {
@@ -1065,9 +1060,6 @@ async function syncAllToSupabase(retryCount = 0) {
     }
 }
 
-// ============================================================
-// RETRY PENDING TICKETS
-// ============================================================
 async function retryPendingTickets() {
     if (!pendingTickets || pendingTickets.length === 0) return;
     console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
@@ -1469,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (avec carrousel à boutons)
+// RENDER EVENT CARD (carrousel corrigé)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1481,7 +1473,6 @@ function renderEventCard(event) {
     
     console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
-    // Construction du carrousel avec conteneur, track, boutons et dots
     let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
         <div class="event-carousel" id="carousel-${event.id}">
             <div class="carousel-track" id="track-${event.id}">`;
@@ -1600,7 +1591,6 @@ function goToSlide(track, index) {
     const slideWidth = slides[0].offsetWidth;
     track.scrollTo({ left: index * slideWidth, behavior: 'smooth' });
     track.dataset.currentIndex = index;
-    // Mettre à jour les dots
     const wrapper = track.closest('.event-carousel-wrapper');
     if (wrapper) {
         const dots = wrapper.querySelectorAll('.carousel-dots .dot');
@@ -1609,28 +1599,48 @@ function goToSlide(track, index) {
 }
 
 // ============================================================
-// OPEN EVENT DETAILS (avec normalisation de l'ID)
+// OPEN EVENT DETAILS (version corrigée avec séparation)
 // ============================================================
+let openEventDetailsTimeout = null;
+
 function openEventDetails(eventId) {
     const idStr = String(eventId);
-    console.log('🔍 openEventDetails called with normalized ID:', idStr);
+    console.log('🔍 openEventDetails called with ID:', idStr);
     let event = events.find(e => String(e.id) === idStr);
-    if (!event) {
-        console.warn('⚠️ Event not found in local cache, reloading from Supabase...');
-        loadEventsFromSupabase().then(loadedEvents => {
-            events = loadedEvents;
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            const ev = events.find(e => String(e.id) === idStr);
-            if (ev) {
+    if (event) {
+        console.log('✅ Event found in cache:', event.title);
+        _openEventDetails(event);
+        return;
+    }
+    console.warn('⚠️ Event not found in cache, reloading from Supabase...');
+    if (openEventDetailsTimeout) {
+        clearTimeout(openEventDetailsTimeout);
+    }
+    openEventDetailsTimeout = setTimeout(async () => {
+        try {
+            const loaded = await loadEventsFromSupabase();
+            if (loaded.length > 0) {
+                events = loaded;
+                localStorage.setItem('betix_events', JSON.stringify(events));
                 renderEventsByCategory();
-                openEventDetails(idStr);
+                const ev = events.find(e => String(e.id) === idStr);
+                if (ev) {
+                    _openEventDetails(ev);
+                } else {
+                    alert(t('eventNotFound'));
+                }
             } else {
                 alert(t('eventNotFound'));
             }
-        }).catch(() => alert(t('eventNotFound')));
-        return;
-    }
-    
+        } catch (error) {
+            console.error('Error reloading events:', error);
+            alert(t('eventNotFound'));
+        }
+        openEventDetailsTimeout = null;
+    }, 300);
+}
+
+function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
     const currentPage = pageHistory[pageHistory.length - 1] || 'home';
@@ -1761,19 +1771,9 @@ function openEventDetails(eventId) {
     }
 }
 
-function carouselGoTo(eventId, index) {
-    const carousel = window._carousels && window._carousels[eventId];
-    if (!carousel) return;
-    const track = document.getElementById(carousel.trackId);
-    if (!track) return;
-    const total = carousel.totalSlides;
-    if (index < 0) index = total - 1;
-    if (index >= total) index = 0;
-    carousel.currentIndex = index;
-    track.style.transform = 'translateX(' + (-index * 100) + '%)';
-    document.querySelectorAll('#' + carousel.dotsId + ' .cdot').forEach((dot, i) => dot.classList.toggle('active', i === index));
-}
-
+// ============================================================
+// CLOSE DETAIL MODAL
+// ============================================================
 function closeEventDetailModalAndGoBack() {
     const modal = document.getElementById('eventDetailModal');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
@@ -1954,7 +1954,6 @@ function populateProfileForm() {
     if (email) email.value = currentUser.email || '';
     if (phone) phone.value = currentUser.phone_number || '';
     
-    // Afficher les statuts de vérification
     if (currentUser.email) {
         document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     } else {
@@ -1965,7 +1964,6 @@ function populateProfileForm() {
     } else {
         document.getElementById('phoneVerificationStatus').innerHTML = '';
     }
-    // Mettre à jour les boutons de vérification
     document.querySelectorAll('.verify-btn').forEach(btn => {
         if (btn.id === 'verifyEmailBtn' && currentUser.email) {
             btn.classList.add('verified');
@@ -2000,7 +1998,6 @@ async function loadProfileData() {
         }
         if (data) {
             console.log('✅ Profile loaded from Supabase:', data);
-            // Fusion : ne pas écraser avec des valeurs vides
             const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
             let hasNewData = false;
             fields.forEach(f => {
@@ -2020,7 +2017,6 @@ async function loadProfileData() {
                 populateProfileForm();
                 updateUserInfo();
             }
-            // Désactiver l'édition si le profil est complet
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
         } else {
@@ -3244,7 +3240,7 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT – AVEC SAUVEGARDE DU PROFIL
+// DISCONNECT
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
@@ -3293,7 +3289,7 @@ function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && i
 function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
 
 // ============================================================
-// SHOW PAGE – avec remplissage du profil même déconnecté
+// SHOW PAGE
 // ============================================================
 function showPage(pageName) {
     updateActivity();
@@ -3347,7 +3343,7 @@ function closeSidebar() { document.getElementById('sidebar').classList.remove('o
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
 
 // ============================================================
-// UPDATE CONNECT BUTTONS – avec bouton Déconnecter en rouge
+// UPDATE CONNECT BUTTONS
 // ============================================================
 function updateConnectButtons() {
     const sidebarBtn = document.getElementById('sidebarWalletBtn');
