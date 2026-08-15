@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (version simplifiée – gardez votre fichier complet)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -662,7 +662,7 @@ async function loadHeroSlides() {
 }
 
 // ============================================================
-// SAUVEGARDE UTILISATEUR DANS SUPABASE (renforcée)
+// SAUVEGARDE UTILISATEUR DANS SUPABASE (avec gestion des données de profil)
 // ============================================================
 async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
@@ -699,26 +699,6 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
     } catch (error) {
         console.error('❌ saveUserToSupabase error:', error);
         return false;
-    }
-}
-
-// ============================================================
-// SYNC USER (avec retry et sauvegarde renforcée)
-// ============================================================
-async function syncUserToSupabase() {
-    if (!currentUser.piUid && !currentUser.wallet) {
-        console.warn('No piUid or wallet, cannot sync user.');
-        return;
-    }
-    const piUid = currentUser.piUid || currentUser.wallet;
-    console.log('🔄 Syncing user to Supabase...', piUid);
-    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
-    if (success) {
-        console.log('✅ User synced successfully.');
-        currentUser._lastSync = Date.now();
-        saveUser();
-    } else {
-        console.error('❌ User sync failed.');
     }
 }
 
@@ -872,6 +852,7 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
+            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images`);
             
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
@@ -1025,6 +1006,18 @@ function saveNotifications() { localStorage.setItem('betix_notifications', JSON.
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
 function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
 function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
+
+async function syncUserToSupabase() {
+    if (!currentUser.piUid && !currentUser.wallet) {
+        console.warn('No piUid or wallet, cannot sync user.');
+        return;
+    }
+    const piUid = currentUser.piUid || currentUser.wallet;
+    console.log('🔄 Syncing user to Supabase...', piUid);
+    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
+    if (success) console.log('✅ User synced successfully.');
+    else console.error('❌ User sync failed.');
+}
 
 async function syncEventsToSupabase() {
     let success = 0;
@@ -1478,6 +1471,8 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
+    console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
+    
     let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
         <div class="event-carousel" id="carousel-${event.id}">
             <div class="carousel-track" id="track-${event.id}">`;
@@ -1569,7 +1564,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL (AMÉLIORÉES)
+// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
 // ============================================================
 function updateCarouselIndicators(track) {
     const wrapper = track.closest('.event-carousel-wrapper');
@@ -1578,52 +1573,31 @@ function updateCarouselIndicators(track) {
     const dots = wrapper.querySelectorAll('.carousel-dots .dot');
     const counter = wrapper.querySelector('.carousel-counter');
     if (slides.length === 0) return;
-    
-    // Utiliser requestAnimationFrame pour éviter les calculs inutiles
-    if (track._updating) return;
-    track._updating = true;
-    requestAnimationFrame(() => {
-        const scrollLeft = track.scrollLeft;
-        const slideWidth = slides[0].offsetWidth || 1;
-        const activeIndex = Math.round(scrollLeft / slideWidth);
-        const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
-        
-        dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
-        if (counter) {
-            counter.textContent = (clampedIndex + 1) + '/' + slides.length;
-        }
-        track._updating = false;
-    });
+    const scrollLeft = track.scrollLeft;
+    const slideWidth = slides[0].offsetWidth || 1;
+    const activeIndex = Math.round(scrollLeft / slideWidth);
+    const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
+    if (counter) {
+        counter.textContent = (clampedIndex + 1) + '/' + slides.length;
+    }
 }
 
 function initCarouselIndicators() {
     document.querySelectorAll('.event-carousel .carousel-track').forEach(track => {
         // Supprimer les anciens écouteurs pour éviter les doublons
         track.removeEventListener('scroll', track._scrollHandler);
-        track.removeEventListener('load', track._loadHandler);
-        
         const handler = function() {
-            updateCarouselIndicators(this);
+            if (!this._rafId) {
+                this._rafId = requestAnimationFrame(() => {
+                    updateCarouselIndicators(this);
+                    this._rafId = null;
+                });
+            }
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
-        
-        // Mettre à jour après le chargement des images
-        const loadHandler = function() {
-            setTimeout(() => updateCarouselIndicators(this), 50);
-        };
-        track._loadHandler = loadHandler;
-        track.addEventListener('load', loadHandler, true);
-        
-        // Mettre à jour immédiatement après un court délai
         setTimeout(() => updateCarouselIndicators(track), 100);
-        
-        // Mettre à jour également au redimensionnement
-        const resizeHandler = function() {
-            updateCarouselIndicators(track);
-        };
-        track._resizeHandler = resizeHandler;
-        window.addEventListener('resize', resizeHandler);
     });
 }
 
@@ -1680,7 +1654,7 @@ function renderEventsByCategory() {
     setTimeout(() => {
         applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
         initCarouselIndicators();
-    }, 100);
+    }, 50);
 }
 
 // ============================================================
@@ -1691,6 +1665,7 @@ let openEventDetailsTimeout = null;
 function openEventDetails(eventId) {
     const idStr = String(eventId);
     console.log('🔍 openEventDetails called with ID:', idStr);
+    console.log('📋 Current events list:', events.map(e => ({ id: e.id, title: e.title })));
 
     let event = events.find(e => String(e.id) === idStr);
     if (event) {
@@ -1743,7 +1718,6 @@ function _openEventDetails(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Price: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
@@ -1799,16 +1773,20 @@ function _openEventDetails(event) {
                 <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
                 <div class="grid-item"><i class="fas fa-clock"></i> ${timeFormatted}</div>
                 ${durationDisplay ? `<div class="grid-item"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
-                <!-- Prix avec badges alignés et police réduite -->
-                <div class="grid-item" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;">
-                    <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.6rem;">Price</span>
-                    <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:0.9rem;">${(event.price || 0).toFixed(6)}</span>
-                    <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:0.9rem;">Pi</span>
+                <!-- Prix avec badges -->
+                <div class="grid-item">
+                    <span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Price</span>
+                        <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:0.85rem;">${(event.price || 0).toFixed(6)}</span>
+                        <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:0.85rem;">Pi</span>
+                    </span>
                 </div>
-                <!-- Tickets avec badges alignés et police réduite -->
-                <div class="grid-item" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;">
-                    <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.6rem;">Tickets</span>
-                    <span style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">${event.seatsLeft}/${event.seatsTotal}</span>
+                <!-- Tickets avec badges -->
+                <div class="grid-item">
+                    <span style="display:flex; align-items:center; gap:4px;">
+                        <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Tickets</span>
+                        <span style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">${event.seatsLeft}/${event.seatsTotal}</span>
+                    </span>
                 </div>
             </div>
             ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
@@ -1832,12 +1810,16 @@ function _openEventDetails(event) {
     document.body.style.overflow = 'hidden';
     setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
 
-    // Attacher l'écouteur sur le track du carrousel des détails
     const track = document.getElementById('track-detail-' + event.id);
     if (track) {
         track.removeEventListener('scroll', track._scrollHandler);
         const handler = function() {
-            updateCarouselIndicators(this);
+            if (!this._rafId) {
+                this._rafId = requestAnimationFrame(() => {
+                    updateCarouselIndicators(this);
+                    this._rafId = null;
+                });
+            }
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
@@ -2065,6 +2047,21 @@ async function loadProfileData() {
         if (error) {
             if (error.code === 'PGRST116') {
                 console.log('ℹ️ No profile found for this user. It will be created on first save.');
+                // Tenter de restaurer depuis la sauvegarde locale
+                const backup = localStorage.getItem('betix_profile_backup');
+                if (backup) {
+                    try {
+                        const backupData = JSON.parse(backup);
+                        console.log('Restoring profile from backup:', backupData);
+                        Object.assign(currentUser, backupData);
+                        saveUser();
+                        populateProfileForm();
+                        updateUserInfo();
+                        // Supprimer le backup après restauration
+                        localStorage.removeItem('betix_profile_backup');
+                        return;
+                    } catch(e) {}
+                }
                 enableEditMode(true);
                 return;
             }
@@ -2091,6 +2088,8 @@ async function loadProfileData() {
                 populateProfileForm();
                 updateUserInfo();
             }
+            // Supprimer le backup après chargement réussi
+            localStorage.removeItem('betix_profile_backup');
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
         } else {
@@ -2098,6 +2097,21 @@ async function loadProfileData() {
         }
     } catch (error) {
         console.error('❌ Error loading profile:', error);
+        // En cas d'erreur, essayer de restaurer depuis le backup
+        const backup = localStorage.getItem('betix_profile_backup');
+        if (backup) {
+            try {
+                const backupData = JSON.parse(backup);
+                console.log('Restoring profile from backup due to error:', backupData);
+                Object.assign(currentUser, backupData);
+                saveUser();
+                populateProfileForm();
+                updateUserInfo();
+                localStorage.removeItem('betix_profile_backup');
+                enableEditMode(false);
+                return;
+            } catch(e) {}
+        }
         enableEditMode(true);
     }
 }
@@ -2216,8 +2230,6 @@ async function confirmProfileSave() {
         });
         saveUser();
         await loadProfileData();
-        
-        // FORCER LA SYNCHRONISATION AVEC SUPABASE
         await syncUserToSupabase();
 
         closeProfileReview();
@@ -2666,7 +2678,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI
+// CONNEXION PI (avec rechargement du profil)
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -2687,6 +2699,7 @@ async function connectToPi() {
                         currentUser.name = 'Demo User';
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
+                        // Laisser les champs de profil vides (seront chargés plus tard)
                         saveUser();
                         await syncUserToSupabase();
                         updateActivity();
@@ -2719,6 +2732,15 @@ async function connectToPi() {
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+                    // Réinitialiser les champs de profil pour les recharger
+                    currentUser.first_name = '';
+                    currentUser.last_name = '';
+                    currentUser.country = '';
+                    currentUser.address = '';
+                    currentUser.email = '';
+                    currentUser.phone_number = '';
+                    currentUser.profile_completed = false;
+                    currentUser.profile_reminder_shown = false;
                     saveUser();
                     await syncUserToSupabase();
                     updateActivity();
@@ -2735,6 +2757,7 @@ async function connectToPi() {
                     renderEventsByCategory();
                     alert(t('piConnected') + piUser.username);
                     closeSidebar();
+                    // Charger le profil depuis Supabase
                     await loadProfileData();
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
@@ -3316,19 +3339,21 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT (avec sauvegarde renforcée)
+// DISCONNECT (avec sauvegarde du profil avant déconnexion)
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
+    
+    // Sauvegarder le profil dans Supabase avant de déconnecter
     try {
-        // Sauvegarde forcée avant déconnexion
         await syncUserToSupabase();
         console.log('✅ Profile saved to Supabase before disconnection.');
     } catch (error) {
         console.error('❌ Error saving profile before disconnection:', error);
     }
 
-    const profileData = {
+    // Sauvegarder une copie des données de profil dans localStorage (backup)
+    const profileBackup = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
         country: currentUser.country || '',
@@ -3338,14 +3363,23 @@ async function disconnectPi() {
         profile_completed: currentUser.profile_completed || false,
         profile_reminder_shown: currentUser.profile_reminder_shown || false
     };
+    localStorage.setItem('betix_profile_backup', JSON.stringify(profileBackup));
 
+    // Réinitialiser les champs de session et de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
         piUid: null,
         memberSince: '2026',
         loyaltyPoints: 0,
-        ...profileData
+        first_name: '',
+        last_name: '',
+        country: '',
+        address: '',
+        email: '',
+        phone_number: '',
+        profile_completed: false,
+        profile_reminder_shown: false
     };
     piUser = null;
     saveUser();
@@ -3522,11 +3556,6 @@ function renderMyEventCardModern(event) {
         <div class="detail-item-modern" style="grid-column:${durationDisplay ? '2' : '1'}/-1;"><i class="fas fa-tags"></i> <span class="detail-label">${t('ticketTypes')}</span> <span class="detail-value" style="font-size:0.7rem;">${escapeHtml(typesDisplay)}</span></div>
     </div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ${event.boosts || 0} ${t('views')}</span><span><i class="fas fa-calendar-plus"></i> ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal('${event.id}')"><i class="fas fa-pen"></i> ${t('editEvent')}</button></div></div></div></div>`;
 }
-
-// ============================================================
-// RENDER EVENTS BY CATEGORY (déjà modifiée)
-// ============================================================
-// (fonction déjà fournie plus haut)
 
 function initFilters() {
     const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
@@ -3718,7 +3747,7 @@ async function adminSaveSettings() {
 }
 
 // ============================================================
-// ADMIN USERS – Tableau enrichi
+// ADMIN USERS – Tableau enrichi (avec toutes les colonnes)
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
@@ -4024,7 +4053,7 @@ function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.cle
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
 
 // ============================================================
-// INITIALISATION DE L'APPLICATION (avec synchro régulière)
+// INITIALISATION DE L'APPLICATION
 // ============================================================
 async function initApp() {
     try {
@@ -4083,13 +4112,6 @@ async function initApp() {
         } else {
             await loadAllFromSupabase();
         }
-        
-        // Synchronisation régulière du profil toutes les 30 secondes
-        setInterval(() => {
-            if (currentUser.wallet) {
-                syncUserToSupabase().catch(() => {});
-            }
-        }, 30000);
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
