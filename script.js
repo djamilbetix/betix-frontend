@@ -1461,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (sans flèches, avec compteur et dots)
+// RENDER EVENT CARD (sans flèches, avec mise à jour des indicateurs)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1564,41 +1564,37 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// FONCTIONS DE NAVIGATION DU CARROUSEL (page d'accueil)
+// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
 // ============================================================
-function carouselPrev(eventId) {
-    const track = document.getElementById('track-' + eventId);
-    if (!track) return;
-    const slides = track.querySelectorAll('.carousel-slide');
-    const currentIndex = parseInt(track.dataset.currentIndex || '0');
-    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-    goToSlide(track, newIndex);
-}
-
-function carouselNext(eventId) {
-    const track = document.getElementById('track-' + eventId);
-    if (!track) return;
-    const slides = track.querySelectorAll('.carousel-slide');
-    const currentIndex = parseInt(track.dataset.currentIndex || '0');
-    const newIndex = (currentIndex + 1) % slides.length;
-    goToSlide(track, newIndex);
-}
-
-function goToSlide(track, index) {
-    const slides = track.querySelectorAll('.carousel-slide');
-    if (index < 0 || index >= slides.length) return;
-    const slideWidth = slides[0].offsetWidth;
-    track.scrollTo({ left: index * slideWidth, behavior: 'smooth' });
-    track.dataset.currentIndex = index;
+function updateCarouselIndicators(track) {
     const wrapper = track.closest('.event-carousel-wrapper');
-    if (wrapper) {
-        const dots = wrapper.querySelectorAll('.carousel-dots .dot');
-        dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-        const counter = wrapper.querySelector('.carousel-counter');
-        if (counter) {
-            counter.textContent = (index + 1) + '/' + slides.length;
-        }
+    if (!wrapper) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    const dots = wrapper.querySelectorAll('.carousel-dots .dot');
+    const counter = wrapper.querySelector('.carousel-counter');
+    if (slides.length === 0) return;
+    const scrollLeft = track.scrollLeft;
+    const slideWidth = slides[0].offsetWidth || 1;
+    const activeIndex = Math.round(scrollLeft / slideWidth);
+    const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
+    if (counter) {
+        counter.textContent = (clampedIndex + 1) + '/' + slides.length;
     }
+}
+
+function initCarouselIndicators() {
+    document.querySelectorAll('.event-carousel .carousel-track').forEach(track => {
+        // Supprimer les anciens écouteurs pour éviter les doublons
+        track.removeEventListener('scroll', track._scrollHandler);
+        const handler = function() {
+            updateCarouselIndicators(this);
+        };
+        track._scrollHandler = handler;
+        track.addEventListener('scroll', handler);
+        // Mettre à jour immédiatement après un court délai pour le rendu
+        setTimeout(() => updateCarouselIndicators(track), 100);
+    });
 }
 
 // ============================================================
@@ -1705,7 +1701,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (sans flèches, avec "Price" et compteur)
+// _openEventDetails (sans flèches, avec indicateurs mis à jour)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1718,12 +1714,10 @@ function _openEventDetails(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    // Remplacer "Ticket" par "Price"
     const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Price: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel sans flèches, avec dots et compteur
     let carouselHtml = '';
     if (images.length > 0) {
         carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-detail-${event.id}">
@@ -1800,32 +1794,18 @@ function _openEventDetails(event) {
     document.body.style.overflow = 'hidden';
     setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
 
-    if (images.length > 1) {
-        const track = document.getElementById('track-detail-' + event.id);
-        const dots = document.querySelectorAll('#dots-detail-' + event.id + ' .dot');
-        const counter = document.getElementById('counter-detail-' + event.id);
-        if (track) {
-            track.dataset.currentIndex = '0';
-            const updateActive = () => {
-                const scrollLeft = track.scrollLeft;
-                const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
-                const activeIndex = Math.round(scrollLeft / slideWidth);
-                dots.forEach((dot, idx) => dot.classList.toggle('active', idx === activeIndex));
-                if (counter) {
-                    counter.textContent = (activeIndex + 1) + '/' + images.length;
-                }
-            };
-            track.addEventListener('scroll', updateActive);
-            setTimeout(updateActive, 100);
-        }
+    // Attacher l'écouteur sur le track du carrousel des détails
+    const track = document.getElementById('track-detail-' + event.id);
+    if (track) {
+        track.removeEventListener('scroll', track._scrollHandler);
+        const handler = function() {
+            updateCarouselIndicators(this);
+        };
+        track._scrollHandler = handler;
+        track.addEventListener('scroll', handler);
+        setTimeout(() => updateCarouselIndicators(track), 100);
     }
 }
-
-// ============================================================
-// FONCTIONS DE NAVIGATION POUR LE CARROUSEL DES DÉTAILS (supprimées)
-// Nous n'avons plus besoin de carouselPrevDetail/NextDetail car les flèches sont retirées.
-// On peut garder goToSlideDetail pour le scroll, mais on ne l'utilise plus.
-// ============================================================
 
 // ============================================================
 // CLOSE DETAIL MODAL
