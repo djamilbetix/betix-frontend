@@ -4323,7 +4323,7 @@ body.dark-mode .ticket-actions .btn-share {
 }
 
 /* ============================================================
-   PAGE DE DÉTAIL D'ÉVÉNEMENT – DESIGN AMÉLIORÉ
+   PAGE DE DÉTAIL D'ÉVÉNEMENT – DESIGN ÉPURÉ ET PROFESSIONNEL
    ============================================================ */
 .event-detail-modal .modal-content {
     max-width: 700px;
@@ -4383,209 +4383,197 @@ body.dark-mode .ticket-actions .btn-share {
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
+
 .event-detail-body {
     padding: 20px 24px 16px;
     max-height: 65vh;
     overflow-y: auto;
 }
-.event-detail-body .detail-block {
-    margin-bottom: 24px;
+
+.event-detail-about {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #4b5563;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
 }
-.event-detail-body .detail-block h4 {
+
+.event-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    background: #f9fafb;
+    padding: 16px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.event-detail-grid .grid-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.event-detail-grid .grid-item i {
+    width: 18px;
+    text-align: center;
+    color: #F5B400;
     font-size: 0.9rem;
-    font-weight: 700;
+}
+
+.event-detail-conditions {
+    margin-bottom: 20px;
+}
+
+.event-detail-conditions h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+}
+
+.event-detail-conditions ul {
+    padding-left: 20px;
+    margin: 4px 0;
+}
+
+.event-detail-conditions ul li {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin-bottom: 4px;
+}
+
+.event-detail-conditions p {
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.event-detail-reviews {
+    margin-bottom: 16px;
+}
+
+.event-detail-reviews h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
     color: #1a1a2e;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 6px;
 }
-.event-detail-body .detail-block h4 i {
+
+.event-detail-reviews .rating-stars {
+    font-size: 0.85rem;
     color: #F5B400;
-    font-size: 1rem;
 }
-.event-detail-body .description-block p {
-    font-size: 0.95rem;
-    color: #4b5563;
-    line-height: 1.6;
-}
-.event-detail-body .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-    background: #f8fafc;
-    padding: 14px 16px;
-    border-radius: 12px;
-}
-.event-detail-body .info-grid div {
-    font-size: 0.85rem;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.event-detail-body .info-grid div i {
-    color: #F5B400;
-    width: 18px;
-    text-align: center;
-}
-.event-detail-body .price-seats-block {
-    background: #fef8f0;
-    border-radius: 12px;
-    padding: 12px 16px;
-    border: 1px solid rgba(245, 180, 0, 0.15);
-}
-.event-detail-body .price-seats {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-.event-detail-body .price-seats .price {
-    color: #0B1F5C;
-}
-.event-detail-body .price-seats .seats {
-    color: #6b7280;
-}
-.event-detail-body .conditions-block ul {
-    padding-left: 20px;
-    margin: 4px 0;
-}
-.event-detail-body .conditions-block ul li {
-    font-size: 0.85rem;
-    color: #4b5563;
-    margin-bottom: 4px;
-}
-.event-detail-body .meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-    background: #f8fafc;
-    padding: 14px 16px;
-    border-radius: 12px;
-}
-.event-detail-body .meta-grid .meta-label {
-    font-size: 0.7rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    font-weight: 600;
-    display: block;
-}
-.event-detail-body .meta-grid .meta-value {
-    font-size: 0.85rem;
-    color: #1a1a2e;
-    font-weight: 500;
-}
-.event-detail-body .reviews-list {
-    max-height: 160px;
+
+.event-detail-reviews .reviews-list {
+    max-height: 140px;
     overflow-y: auto;
 }
-.event-detail-body .review-item {
-    padding: 10px 0;
+
+.event-detail-reviews .review-item {
+    padding: 8px 0;
     border-bottom: 1px solid #f0f0f0;
 }
-.event-detail-body .review-item:last-child {
+
+.event-detail-reviews .review-item:last-child {
     border-bottom: none;
 }
-.event-detail-body .review-item .review-header {
+
+.event-detail-reviews .review-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.event-detail-body .review-item .review-user {
+
+.event-detail-reviews .review-user {
     font-weight: 600;
     font-size: 0.85rem;
     color: #1a1a2e;
 }
-.event-detail-body .review-item .review-stars {
+
+.event-detail-reviews .review-stars {
     color: #F5B400;
     font-size: 0.85rem;
     letter-spacing: 1px;
 }
-.event-detail-body .review-item .review-text {
+
+.event-detail-reviews .review-text {
     font-size: 0.85rem;
     color: #4b5563;
     margin: 4px 0;
 }
-.event-detail-body .review-item .review-date {
+
+.event-detail-reviews .review-date {
     font-size: 0.7rem;
     color: #6b7280;
 }
-.event-detail-footer {
-    padding: 14px 24px 20px;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
+
+.event-detail-meta {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.8rem;
+    color: #6b7280;
 }
-.event-detail-footer .btn-buy {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 40px;
-    font-size: 1rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(11, 31, 92, 0.25);
+
+.event-detail-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.event-detail-footer .btn-buy:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(11, 31, 92, 0.35);
+
+.event-detail-meta i {
+    color: #F5B400;
 }
-body.dark-mode .event-detail-modal .modal-content {
-    background: #1f2937;
-}
-body.dark-mode .event-detail-header {
-    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-}
-body.dark-mode .event-detail-body .detail-block h4 {
-    color: #f3f4f6;
+
+body.dark-mode .event-detail-about {
+    color: #d1d5db;
     border-bottom-color: #374151;
 }
-body.dark-mode .event-detail-body .description-block p {
-    color: #d1d5db;
-}
-body.dark-mode .event-detail-body .info-grid {
-    background: #2d3748;
-}
-body.dark-mode .event-detail-body .info-grid div {
-    color: #e5e7eb;
-}
-body.dark-mode .event-detail-body .price-seats-block {
+
+body.dark-mode .event-detail-grid {
     background: #2d3748;
     border-color: #4b5563;
 }
-body.dark-mode .event-detail-body .price-seats .price {
-    color: #F5B400;
+
+body.dark-mode .event-detail-grid .grid-item {
+    color: #e5e7eb;
 }
-body.dark-mode .event-detail-body .price-seats .seats {
-    color: #9ca3af;
-}
-body.dark-mode .event-detail-body .conditions-block ul li {
-    color: #d1d5db;
-}
-body.dark-mode .event-detail-body .meta-grid {
-    background: #2d3748;
-}
-body.dark-mode .event-detail-body .meta-grid .meta-value {
+
+body.dark-mode .event-detail-conditions h4,
+body.dark-mode .event-detail-reviews h4 {
     color: #f3f4f6;
 }
-body.dark-mode .event-detail-body .review-item {
+
+body.dark-mode .event-detail-conditions ul li,
+body.dark-mode .event-detail-conditions p {
+    color: #d1d5db;
+}
+
+body.dark-mode .event-detail-reviews .review-item {
     border-bottom-color: #374151;
 }
-body.dark-mode .event-detail-body .review-item .review-user {
+
+body.dark-mode .event-detail-reviews .review-user {
     color: #f3f4f6;
 }
-body.dark-mode .event-detail-body .review-item .review-text {
+
+body.dark-mode .event-detail-reviews .review-text {
     color: #d1d5db;
 }
-body.dark-mode .event-detail-footer {
+
+body.dark-mode .event-detail-meta {
     border-top-color: #374151;
-    background: #1a2332;
+    color: #9ca3af;
 }
 
 /* ============================================================
