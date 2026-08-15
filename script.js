@@ -1702,7 +1702,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (version épurée et professionnelle)
+// _openEventDetails (version épurée sans Reviews)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1719,7 +1719,6 @@ function _openEventDetails(event) {
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel
     let carouselHtml = '';
     if (images.length > 0) {
         const trackId = 'carousel-track-' + event.id;
@@ -1742,26 +1741,11 @@ function _openEventDetails(event) {
         carouselHtml += '</div>';
     }
 
-    // Conditions
     let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
 
-    // Avis
-    const eventRatings = ratings.filter(r => r.eventId === event.id);
-    let reviewsHtml = eventRatings.length ? eventRatings.map(r => {
-        const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return `<div class="review-item"><div class="review-header"><span class="review-user">${escapeHtml(r.userName || r.userWallet)}</span><span class="review-stars">${stars}</span></div>${r.comment ? `<div class="review-text">"${escapeHtml(r.comment)}"</div>` : ''}<div class="review-date">${new Date(r.date).toLocaleDateString('en-US')}</div></div>`;
-    }).join('') : `<p>${t('noReviews')}</p>`;
-
-    // Note moyenne
-    const avgRating = eventRatings.length ? eventRatings.reduce((a,r) => a + r.rating, 0) / eventRatings.length : 0;
-    const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
-    const ratingDisplay = eventRatings.length > 0 ? ratingStars + ' ' + avgRating.toFixed(1) + ' (' + eventRatings.length + ' ' + t('reviews') + ')' : t('notYetRated');
-
-    // Organisateur
     let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
 
-    // Durée
     let durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
         const unitLabels = {
@@ -1774,7 +1758,7 @@ function _openEventDetails(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Construction du HTML épuré
+    // Construction du HTML épuré sans Reviews
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1784,10 +1768,8 @@ function _openEventDetails(event) {
         </div>
         ${carouselHtml}
         <div class="event-detail-body">
-            <!-- About / Description -->
             ${event.description ? `<div class="event-detail-about"><p>${escapeHtml(event.description)}</p></div>` : ''}
             
-            <!-- Détails en grille -->
             <div class="event-detail-grid">
                 <div class="grid-item"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? `, ${escapeHtml(event.location)}` : ''}</div>
                 <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
@@ -1797,23 +1779,15 @@ function _openEventDetails(event) {
                 <div class="grid-item"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</div>
             </div>
 
-            <!-- Conditions -->
             ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
 
-            <!-- Avis -->
-            <div class="event-detail-reviews">
-                <h4>${t('reviews')} <span class="rating-stars">${ratingDisplay}</span></h4>
-                <div class="reviews-list">${reviewsHtml}</div>
-            </div>
-
-            <!-- Meta (organisateur, créé le) -->
             <div class="event-detail-meta">
                 <span><i class="fas fa-user"></i> ${escapeHtml(organizerDisplay)}</span>
                 <span><i class="far fa-calendar-alt"></i> ${t('createdOn')} ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             </div>
         </div>
         <div class="event-detail-footer">
-            <button class="btn-buy" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
+            <button class="detail-buy-btn" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
         </div>
     `;
 
