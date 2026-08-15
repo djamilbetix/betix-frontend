@@ -1461,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD
+// RENDER EVENT CARD (avec carrousel dynamique)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1487,7 +1487,8 @@ function renderEventCard(event) {
         for (let i = 0; i < images.length; i++) {
             carouselHtml += `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
         }
-        carouselHtml += `</div>`;
+        carouselHtml += `</div>
+                         <div class="carousel-counter" id="counter-${event.id}">1/${images.length}</div>`;
     }
     carouselHtml += `</div></div>`;
     let imageCountHtml = '';
@@ -1565,7 +1566,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// FONCTIONS DE NAVIGATION DU CARROUSEL
+// FONCTIONS DE NAVIGATION DU CARROUSEL (page d'accueil)
 // ============================================================
 function carouselPrev(eventId) {
     const track = document.getElementById('track-' + eventId);
@@ -1595,6 +1596,10 @@ function goToSlide(track, index) {
     if (wrapper) {
         const dots = wrapper.querySelectorAll('.carousel-dots .dot');
         dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+        const counter = wrapper.querySelector('.carousel-counter');
+        if (counter) {
+            counter.textContent = (index + 1) + '/' + slides.length;
+        }
     }
 }
 
@@ -1702,7 +1707,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (version harmonisée avec "Ticket" au lieu de "Standard")
+// _openEventDetails (carrousel dynamique)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1715,12 +1720,11 @@ function _openEventDetails(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    // REMPLACÉ "Standard" par "Ticket"
     const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Ticket: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel identique à celui de la page d'accueil
+    // Carrousel identique à la page d'accueil (avec compteur)
     let carouselHtml = '';
     if (images.length > 0) {
         carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-detail-${event.id}">
@@ -1737,12 +1741,12 @@ function _openEventDetails(event) {
             for (let d = 0; d < images.length; d++) {
                 carouselHtml += `<span class="dot ${d === 0 ? 'active' : ''}" data-index="${d}"></span>`;
             }
-            carouselHtml += `</div>`;
+            carouselHtml += `</div>
+                             <div class="carousel-counter" id="counter-detail-${event.id}">1/${images.length}</div>`;
         }
         carouselHtml += `</div></div>`;
     }
 
-    // Conditions
     let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
 
     let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
@@ -1760,7 +1764,6 @@ function _openEventDetails(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Construction du HTML harmonisé avec la carte
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1771,7 +1774,6 @@ function _openEventDetails(event) {
         ${carouselHtml}
         <div class="event-detail-body">
             ${event.description ? `<div class="event-detail-about"><p>${escapeHtml(event.description)}</p></div>` : ''}
-            
             <div class="event-detail-grid">
                 <div class="grid-item"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? `, ${escapeHtml(event.location)}` : ''}</div>
                 <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
@@ -1780,9 +1782,7 @@ function _openEventDetails(event) {
                 <div class="grid-item"><i class="fas fa-tag"></i> ${priceDisplay}</div>
                 <div class="grid-item"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</div>
             </div>
-
             ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
-
             <div class="event-detail-meta">
                 <span><i class="fas fa-user"></i> ${escapeHtml(organizerDisplay)}</span>
                 <span><i class="far fa-calendar-alt"></i> ${t('createdOn')} ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -1803,20 +1803,23 @@ function _openEventDetails(event) {
     document.body.style.overflow = 'hidden';
     setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
 
-    // Initialiser le carrousel des détails
     if (images.length > 1) {
         const track = document.getElementById('track-detail-' + event.id);
         const dots = document.querySelectorAll('#dots-detail-' + event.id + ' .dot');
+        const counter = document.getElementById('counter-detail-' + event.id);
         if (track) {
             track.dataset.currentIndex = '0';
-            const updateActiveDot = () => {
+            const updateActive = () => {
                 const scrollLeft = track.scrollLeft;
                 const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
                 const activeIndex = Math.round(scrollLeft / slideWidth);
                 dots.forEach((dot, idx) => dot.classList.toggle('active', idx === activeIndex));
+                if (counter) {
+                    counter.textContent = (activeIndex + 1) + '/' + images.length;
+                }
             };
-            track.addEventListener('scroll', updateActiveDot);
-            setTimeout(updateActiveDot, 100);
+            track.addEventListener('scroll', updateActive);
+            setTimeout(updateActive, 100);
         }
     }
 }
@@ -1852,6 +1855,10 @@ function goToSlideDetail(track, index) {
     if (wrapper) {
         const dots = wrapper.querySelectorAll('.carousel-dots .dot');
         dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+        const counter = wrapper.querySelector('.carousel-counter');
+        if (counter) {
+            counter.textContent = (index + 1) + '/' + slides.length;
+        }
     }
 }
 
