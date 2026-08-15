@@ -1461,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (sans flèches, avec mise à jour des indicateurs)
+// RENDER EVENT CARD (amélioration du carrousel)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1588,7 +1588,13 @@ function initCarouselIndicators() {
         // Supprimer les anciens écouteurs pour éviter les doublons
         track.removeEventListener('scroll', track._scrollHandler);
         const handler = function() {
-            updateCarouselIndicators(this);
+            // Utiliser requestAnimationFrame pour optimiser les performances
+            if (!this._rafId) {
+                this._rafId = requestAnimationFrame(() => {
+                    updateCarouselIndicators(this);
+                    this._rafId = null;
+                });
+            }
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
@@ -1701,7 +1707,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (sans flèches, avec indicateurs mis à jour)
+// _openEventDetails (avec badges améliorés)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1770,8 +1776,21 @@ function _openEventDetails(event) {
                 <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
                 <div class="grid-item"><i class="fas fa-clock"></i> ${timeFormatted}</div>
                 ${durationDisplay ? `<div class="grid-item"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
-                <div class="grid-item"><i class="fas fa-tag"></i> ${priceDisplay}</div>
-                <div class="grid-item"><i class="fas fa-users"></i> ${event.seatsLeft}/${event.seatsTotal} ${t('tickets')}</div>
+                <!-- Prix avec badges -->
+                <div class="grid-item">
+                    <span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.7rem;">Price</span>
+                        <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:1rem;">${(event.price || 0).toFixed(6)}</span>
+                        <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:1rem;">Pi</span>
+                    </span>
+                </div>
+                <!-- Tickets avec badges -->
+                <div class="grid-item">
+                    <span style="display:flex; align-items:center; gap:6px;">
+                        <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.7rem;">Tickets</span>
+                        <span style="font-weight:600; color:#1a1a2e;">${event.seatsLeft}/${event.seatsTotal}</span>
+                    </span>
+                </div>
             </div>
             ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
             <div class="event-detail-meta">
@@ -1799,7 +1818,12 @@ function _openEventDetails(event) {
     if (track) {
         track.removeEventListener('scroll', track._scrollHandler);
         const handler = function() {
-            updateCarouselIndicators(this);
+            if (!this._rafId) {
+                this._rafId = requestAnimationFrame(() => {
+                    updateCarouselIndicators(this);
+                    this._rafId = null;
+                });
+            }
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
@@ -3677,7 +3701,7 @@ async function adminSaveSettings() {
 }
 
 // ============================================================
-// ADMIN USERS
+// ADMIN USERS – Tableau enrichi
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
@@ -3716,21 +3740,35 @@ async function renderAdminUsers() {
         <table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">
             <thead>
                 <tr style="background: #f3f4f6; color: #1f2937;">
-                    <th style="padding: 10px 8px; text-align: left;">User</th>
+                    <th style="padding: 10px 8px; text-align: left;">Name</th>
+                    <th style="padding: 10px 8px; text-align: left;">Email</th>
+                    <th style="padding: 10px 8px; text-align: left;">Phone</th>
+                    <th style="padding: 10px 8px; text-align: left;">Address</th>
+                    <th style="padding: 10px 8px; text-align: left;">Country</th>
                     <th style="padding: 10px 8px; text-align: left;">Wallet</th>
-                    <th style="padding: 10px 8px; text-align: left;">Events Created</th>
+                    <th style="padding: 10px 8px; text-align: center;">Events</th>
                 </tr>
             </thead>
             <tbody>
     `;
     users.forEach(user => {
-        const name = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
+        const fullName = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
+        const email = user.email || '—';
+        const phone = user.phone_number || '—';
+        const address = user.address || '—';
+        const country = user.country || '—';
         const wallet = user.wallet || user.pi_uid || '—';
+        const events = user.events_created || 0;
+
         html += `
             <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 8px 6px;">${escapeHtml(name)}</td>
+                <td style="padding: 8px 6px;">${escapeHtml(fullName)}</td>
+                <td style="padding: 8px 6px;">${escapeHtml(email)}</td>
+                <td style="padding: 8px 6px;">${escapeHtml(phone)}</td>
+                <td style="padding: 8px 6px;">${escapeHtml(address)}</td>
+                <td style="padding: 8px 6px;">${escapeHtml(country)}</td>
                 <td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">${escapeHtml(wallet)}</td>
-                <td style="padding: 8px 6px; text-align: center;">${user.events_created}</td>
+                <td style="padding: 8px 6px; text-align: center;">${events}</td>
             </tr>
         `;
     });
