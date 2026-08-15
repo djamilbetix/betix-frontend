@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS
+// TRADUCTIONS (version simplifiée – gardez votre fichier complet)
 // ============================================================
 const translations = {
     en: {
@@ -662,7 +662,7 @@ async function loadHeroSlides() {
 }
 
 // ============================================================
-// SAUVEGARDE UTILISATEUR DANS SUPABASE
+// SAUVEGARDE UTILISATEUR DANS SUPABASE (renforcée)
 // ============================================================
 async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
@@ -699,6 +699,26 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
     } catch (error) {
         console.error('❌ saveUserToSupabase error:', error);
         return false;
+    }
+}
+
+// ============================================================
+// SYNC USER (avec retry et sauvegarde renforcée)
+// ============================================================
+async function syncUserToSupabase() {
+    if (!currentUser.piUid && !currentUser.wallet) {
+        console.warn('No piUid or wallet, cannot sync user.');
+        return;
+    }
+    const piUid = currentUser.piUid || currentUser.wallet;
+    console.log('🔄 Syncing user to Supabase...', piUid);
+    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
+    if (success) {
+        console.log('✅ User synced successfully.');
+        currentUser._lastSync = Date.now();
+        saveUser();
+    } else {
+        console.error('❌ User sync failed.');
     }
 }
 
@@ -852,7 +872,6 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
-            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images`);
             
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
@@ -1006,18 +1025,6 @@ function saveNotifications() { localStorage.setItem('betix_notifications', JSON.
 function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
 function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
 function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
-
-async function syncUserToSupabase() {
-    if (!currentUser.piUid && !currentUser.wallet) {
-        console.warn('No piUid or wallet, cannot sync user.');
-        return;
-    }
-    const piUid = currentUser.piUid || currentUser.wallet;
-    console.log('🔄 Syncing user to Supabase...', piUid);
-    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
-    if (success) console.log('✅ User synced successfully.');
-    else console.error('❌ User sync failed.');
-}
 
 async function syncEventsToSupabase() {
     let success = 0;
@@ -1471,8 +1478,6 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
-    
     let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
         <div class="event-carousel" id="carousel-${event.id}">
             <div class="carousel-track" id="track-${event.id}">`;
@@ -1564,7 +1569,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
+// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL (AMÉLIORÉES)
 // ============================================================
 function updateCarouselIndicators(track) {
     const wrapper = track.closest('.event-carousel-wrapper');
@@ -1573,33 +1578,52 @@ function updateCarouselIndicators(track) {
     const dots = wrapper.querySelectorAll('.carousel-dots .dot');
     const counter = wrapper.querySelector('.carousel-counter');
     if (slides.length === 0) return;
-    const scrollLeft = track.scrollLeft;
-    const slideWidth = slides[0].offsetWidth || 1;
-    const activeIndex = Math.round(scrollLeft / slideWidth);
-    const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
-    dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
-    if (counter) {
-        counter.textContent = (clampedIndex + 1) + '/' + slides.length;
-    }
+    
+    // Utiliser requestAnimationFrame pour éviter les calculs inutiles
+    if (track._updating) return;
+    track._updating = true;
+    requestAnimationFrame(() => {
+        const scrollLeft = track.scrollLeft;
+        const slideWidth = slides[0].offsetWidth || 1;
+        const activeIndex = Math.round(scrollLeft / slideWidth);
+        const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
+        
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
+        if (counter) {
+            counter.textContent = (clampedIndex + 1) + '/' + slides.length;
+        }
+        track._updating = false;
+    });
 }
 
 function initCarouselIndicators() {
     document.querySelectorAll('.event-carousel .carousel-track').forEach(track => {
         // Supprimer les anciens écouteurs pour éviter les doublons
         track.removeEventListener('scroll', track._scrollHandler);
+        track.removeEventListener('load', track._loadHandler);
+        
         const handler = function() {
-            // Utiliser requestAnimationFrame pour optimiser les performances
-            if (!this._rafId) {
-                this._rafId = requestAnimationFrame(() => {
-                    updateCarouselIndicators(this);
-                    this._rafId = null;
-                });
-            }
+            updateCarouselIndicators(this);
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
-        // Mettre à jour immédiatement après un court délai pour le rendu
+        
+        // Mettre à jour après le chargement des images
+        const loadHandler = function() {
+            setTimeout(() => updateCarouselIndicators(this), 50);
+        };
+        track._loadHandler = loadHandler;
+        track.addEventListener('load', loadHandler, true);
+        
+        // Mettre à jour immédiatement après un court délai
         setTimeout(() => updateCarouselIndicators(track), 100);
+        
+        // Mettre à jour également au redimensionnement
+        const resizeHandler = function() {
+            updateCarouselIndicators(track);
+        };
+        track._resizeHandler = resizeHandler;
+        window.addEventListener('resize', resizeHandler);
     });
 }
 
@@ -1656,7 +1680,7 @@ function renderEventsByCategory() {
     setTimeout(() => {
         applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
         initCarouselIndicators();
-    }, 50);
+    }, 100);
 }
 
 // ============================================================
@@ -1667,7 +1691,6 @@ let openEventDetailsTimeout = null;
 function openEventDetails(eventId) {
     const idStr = String(eventId);
     console.log('🔍 openEventDetails called with ID:', idStr);
-    console.log('📋 Current events list:', events.map(e => ({ id: e.id, title: e.title })));
 
     let event = events.find(e => String(e.id) === idStr);
     if (event) {
@@ -1707,7 +1730,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (avec badges améliorés)
+// _openEventDetails (avec badges améliorés et police réduite)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1776,20 +1799,16 @@ function _openEventDetails(event) {
                 <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
                 <div class="grid-item"><i class="fas fa-clock"></i> ${timeFormatted}</div>
                 ${durationDisplay ? `<div class="grid-item"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
-                <!-- Prix avec badges -->
-                <div class="grid-item">
-                    <span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.7rem;">Price</span>
-                        <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:1rem;">${(event.price || 0).toFixed(6)}</span>
-                        <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:1rem;">Pi</span>
-                    </span>
+                <!-- Prix avec badges alignés et police réduite -->
+                <div class="grid-item" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;">
+                    <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.6rem;">Price</span>
+                    <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:0.9rem;">${(event.price || 0).toFixed(6)}</span>
+                    <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:0.9rem;">Pi</span>
                 </div>
-                <!-- Tickets avec badges -->
-                <div class="grid-item">
-                    <span style="display:flex; align-items:center; gap:6px;">
-                        <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.7rem;">Tickets</span>
-                        <span style="font-weight:600; color:#1a1a2e;">${event.seatsLeft}/${event.seatsTotal}</span>
-                    </span>
+                <!-- Tickets avec badges alignés et police réduite -->
+                <div class="grid-item" style="display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;">
+                    <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:2px 10px; border-radius:12px; font-weight:700; font-size:0.6rem;">Tickets</span>
+                    <span style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">${event.seatsLeft}/${event.seatsTotal}</span>
                 </div>
             </div>
             ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
@@ -1818,12 +1837,7 @@ function _openEventDetails(event) {
     if (track) {
         track.removeEventListener('scroll', track._scrollHandler);
         const handler = function() {
-            if (!this._rafId) {
-                this._rafId = requestAnimationFrame(() => {
-                    updateCarouselIndicators(this);
-                    this._rafId = null;
-                });
-            }
+            updateCarouselIndicators(this);
         };
         track._scrollHandler = handler;
         track.addEventListener('scroll', handler);
@@ -2202,6 +2216,8 @@ async function confirmProfileSave() {
         });
         saveUser();
         await loadProfileData();
+        
+        // FORCER LA SYNCHRONISATION AVEC SUPABASE
         await syncUserToSupabase();
 
         closeProfileReview();
@@ -3300,11 +3316,12 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT
+// DISCONNECT (avec sauvegarde renforcée)
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
     try {
+        // Sauvegarde forcée avant déconnexion
         await syncUserToSupabase();
         console.log('✅ Profile saved to Supabase before disconnection.');
     } catch (error) {
@@ -4007,7 +4024,7 @@ function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.cle
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
 
 // ============================================================
-// INITIALISATION DE L'APPLICATION
+// INITIALISATION DE L'APPLICATION (avec synchro régulière)
 // ============================================================
 async function initApp() {
     try {
@@ -4066,6 +4083,13 @@ async function initApp() {
         } else {
             await loadAllFromSupabase();
         }
+        
+        // Synchronisation régulière du profil toutes les 30 secondes
+        setInterval(() => {
+            if (currentUser.wallet) {
+                syncUserToSupabase().catch(() => {});
+            }
+        }, 30000);
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
