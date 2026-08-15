@@ -1461,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (avec carrousel dynamique)
+// RENDER EVENT CARD (sans flèches, avec compteur et dots)
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1481,9 +1481,7 @@ function renderEventCard(event) {
     });
     carouselHtml += `</div>`;
     if (images.length > 1) {
-        carouselHtml += `<button class="carousel-btn prev" onclick="event.stopPropagation(); carouselPrev('${event.id}')">‹</button>
-                         <button class="carousel-btn next" onclick="event.stopPropagation(); carouselNext('${event.id}')">›</button>
-                         <div class="carousel-dots" id="dots-${event.id}">`;
+        carouselHtml += `<div class="carousel-dots" id="dots-${event.id}">`;
         for (let i = 0; i < images.length; i++) {
             carouselHtml += `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
         }
@@ -1707,7 +1705,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (carrousel dynamique)
+// _openEventDetails (sans flèches, avec "Price" et compteur)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1720,11 +1718,12 @@ function _openEventDetails(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Ticket: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
+    // Remplacer "Ticket" par "Price"
+    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Price: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    // Carrousel identique à la page d'accueil (avec compteur)
+    // Carrousel sans flèches, avec dots et compteur
     let carouselHtml = '';
     if (images.length > 0) {
         carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-detail-${event.id}">
@@ -1735,9 +1734,7 @@ function _openEventDetails(event) {
         });
         carouselHtml += `</div>`;
         if (images.length > 1) {
-            carouselHtml += `<button class="carousel-btn prev" onclick="event.stopPropagation(); carouselPrevDetail('${event.id}')">‹</button>
-                             <button class="carousel-btn next" onclick="event.stopPropagation(); carouselNextDetail('${event.id}')">›</button>
-                             <div class="carousel-dots" id="dots-detail-${event.id}">`;
+            carouselHtml += `<div class="carousel-dots" id="dots-detail-${event.id}">`;
             for (let d = 0; d < images.length; d++) {
                 carouselHtml += `<span class="dot ${d === 0 ? 'active' : ''}" data-index="${d}"></span>`;
             }
@@ -1825,42 +1822,10 @@ function _openEventDetails(event) {
 }
 
 // ============================================================
-// FONCTIONS DE NAVIGATION POUR LE CARROUSEL DES DÉTAILS
+// FONCTIONS DE NAVIGATION POUR LE CARROUSEL DES DÉTAILS (supprimées)
+// Nous n'avons plus besoin de carouselPrevDetail/NextDetail car les flèches sont retirées.
+// On peut garder goToSlideDetail pour le scroll, mais on ne l'utilise plus.
 // ============================================================
-function carouselPrevDetail(eventId) {
-    const track = document.getElementById('track-detail-' + eventId);
-    if (!track) return;
-    const slides = track.querySelectorAll('.carousel-slide');
-    const currentIndex = parseInt(track.dataset.currentIndex || '0');
-    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-    goToSlideDetail(track, newIndex);
-}
-
-function carouselNextDetail(eventId) {
-    const track = document.getElementById('track-detail-' + eventId);
-    if (!track) return;
-    const slides = track.querySelectorAll('.carousel-slide');
-    const currentIndex = parseInt(track.dataset.currentIndex || '0');
-    const newIndex = (currentIndex + 1) % slides.length;
-    goToSlideDetail(track, newIndex);
-}
-
-function goToSlideDetail(track, index) {
-    const slides = track.querySelectorAll('.carousel-slide');
-    if (index < 0 || index >= slides.length) return;
-    const slideWidth = slides[0].offsetWidth;
-    track.scrollTo({ left: index * slideWidth, behavior: 'smooth' });
-    track.dataset.currentIndex = index;
-    const wrapper = track.closest('.event-carousel-wrapper');
-    if (wrapper) {
-        const dots = wrapper.querySelectorAll('.carousel-dots .dot');
-        dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-        const counter = wrapper.querySelector('.carousel-counter');
-        if (counter) {
-            counter.textContent = (index + 1) + '/' + slides.length;
-        }
-    }
-}
 
 // ============================================================
 // CLOSE DETAIL MODAL
