@@ -1702,7 +1702,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (version épurée sans Reviews)
+// _openEventDetails (version harmonisée avec "Ticket" au lieu de "Standard")
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1715,32 +1715,34 @@ function _openEventDetails(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
+    // REMPLACÉ "Standard" par "Ticket"
+    const priceDisplay = event.ticketTypes?.standard?.enabled ? 'Ticket: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : (event.price || 0).toFixed(6) + ' Pi';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
+    // Carrousel identique à celui de la page d'accueil
     let carouselHtml = '';
     if (images.length > 0) {
-        const trackId = 'carousel-track-' + event.id;
-        const dotsId = 'carousel-dots-' + event.id;
-        carouselHtml = `<div class="event-detail-carousel" id="carousel-${event.id}">
-            <div class="carousel-track" id="${trackId}">`;
+        carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-detail-${event.id}">
+            <div class="event-carousel" id="carousel-detail-${event.id}">
+                <div class="carousel-track" id="track-detail-${event.id}">`;
         images.forEach(img => {
             carouselHtml += `<div class="carousel-slide"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
         });
-        carouselHtml += '</div>';
+        carouselHtml += `</div>`;
         if (images.length > 1) {
-            carouselHtml += `<button class="carousel-btn prev" onclick="carouselPrev('${event.id}')">‹</button>
-                             <button class="carousel-btn next" onclick="carouselNext('${event.id}')">›</button>
-                             <div class="carousel-dots" id="${dotsId}">`;
+            carouselHtml += `<button class="carousel-btn prev" onclick="event.stopPropagation(); carouselPrevDetail('${event.id}')">‹</button>
+                             <button class="carousel-btn next" onclick="event.stopPropagation(); carouselNextDetail('${event.id}')">›</button>
+                             <div class="carousel-dots" id="dots-detail-${event.id}">`;
             for (let d = 0; d < images.length; d++) {
-                carouselHtml += `<button class="cdot${d === 0 ? ' active' : ''}" onclick="carouselGoTo('${event.id}', ${d})"></button>`;
+                carouselHtml += `<span class="dot ${d === 0 ? 'active' : ''}" data-index="${d}"></span>`;
             }
-            carouselHtml += '</div>';
+            carouselHtml += `</div>`;
         }
-        carouselHtml += '</div>';
+        carouselHtml += `</div></div>`;
     }
 
+    // Conditions
     let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
 
     let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
@@ -1758,7 +1760,7 @@ function _openEventDetails(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    // Construction du HTML épuré sans Reviews
+    // Construction du HTML harmonisé avec la carte
     content.innerHTML = `
         <div class="event-detail-header">
             <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
@@ -1801,9 +1803,55 @@ function _openEventDetails(event) {
     document.body.style.overflow = 'hidden';
     setTimeout(() => { const body = document.querySelector('.event-detail-body'); if (body) body.scrollTop = 0; }, 100);
 
+    // Initialiser le carrousel des détails
     if (images.length > 1) {
-        window._carousels = window._carousels || {};
-        window._carousels[event.id] = { currentIndex: 0, totalSlides: images.length, trackId: 'carousel-track-' + event.id, dotsId: 'carousel-dots-' + event.id, eventId: event.id };
+        const track = document.getElementById('track-detail-' + event.id);
+        const dots = document.querySelectorAll('#dots-detail-' + event.id + ' .dot');
+        if (track) {
+            track.dataset.currentIndex = '0';
+            const updateActiveDot = () => {
+                const scrollLeft = track.scrollLeft;
+                const slideWidth = track.querySelector('.carousel-slide')?.offsetWidth || 1;
+                const activeIndex = Math.round(scrollLeft / slideWidth);
+                dots.forEach((dot, idx) => dot.classList.toggle('active', idx === activeIndex));
+            };
+            track.addEventListener('scroll', updateActiveDot);
+            setTimeout(updateActiveDot, 100);
+        }
+    }
+}
+
+// ============================================================
+// FONCTIONS DE NAVIGATION POUR LE CARROUSEL DES DÉTAILS
+// ============================================================
+function carouselPrevDetail(eventId) {
+    const track = document.getElementById('track-detail-' + eventId);
+    if (!track) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    const currentIndex = parseInt(track.dataset.currentIndex || '0');
+    const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+    goToSlideDetail(track, newIndex);
+}
+
+function carouselNextDetail(eventId) {
+    const track = document.getElementById('track-detail-' + eventId);
+    if (!track) return;
+    const slides = track.querySelectorAll('.carousel-slide');
+    const currentIndex = parseInt(track.dataset.currentIndex || '0');
+    const newIndex = (currentIndex + 1) % slides.length;
+    goToSlideDetail(track, newIndex);
+}
+
+function goToSlideDetail(track, index) {
+    const slides = track.querySelectorAll('.carousel-slide');
+    if (index < 0 || index >= slides.length) return;
+    const slideWidth = slides[0].offsetWidth;
+    track.scrollTo({ left: index * slideWidth, behavior: 'smooth' });
+    track.dataset.currentIndex = index;
+    const wrapper = track.closest('.event-carousel-wrapper');
+    if (wrapper) {
+        const dots = wrapper.querySelectorAll('.carousel-dots .dot');
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
     }
 }
 
