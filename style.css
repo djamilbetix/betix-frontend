@@ -962,7 +962,7 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.8rem !important; /* Agrandi */
+    font-size: 0.8rem !important;
     color: #1f2937;
     font-weight: 500;
 }
@@ -996,7 +996,7 @@ body {
 .price-amount-green {
     color: #10b981;
     font-weight: 800;
-    font-size: 1.1rem !important; /* Agrandi */
+    font-size: 1.1rem !important;
     line-height: 1.2;
 }
 .price-currency-gray {
@@ -4452,8 +4452,6 @@ body.dark-mode .ticket-actions .btn-share {
     color: #4b5563;
 }
 
-/* ===== SECTION REVIEWS SUPPRIMÉE ===== */
-
 .event-detail-meta {
     display: flex;
     justify-content: space-between;
@@ -4475,7 +4473,6 @@ body.dark-mode .ticket-actions .btn-share {
     color: #F5B400;
 }
 
-/* ===== BOUTON BUY TICKET DANS LES DÉTAILS ===== */
 .detail-buy-btn {
     width: 100%;
     padding: 14px;
@@ -4731,4 +4728,4 @@ body.dark-mode .notification-item .notif-delete-btn {
 }
 body.dark-mode .notification-item .notif-delete-btn:hover {
     color: #ef4444;
-} 
+}
