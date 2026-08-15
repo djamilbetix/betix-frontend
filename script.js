@@ -114,7 +114,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS
+// TRADUCTIONS (raccourci pour la lisibilité)
 // ============================================================
 const translations = {
     en: {
@@ -662,7 +662,7 @@ async function loadHeroSlides() {
 }
 
 // ============================================================
-// SAUVEGARDE UTILISATEUR DANS SUPABASE (avec gestion des données de profil)
+// SAUVEGARDE UTILISATEUR DANS SUPABASE
 // ============================================================
 async function saveUserToSupabase(piUid, username, wallet, points) {
     points = points || 0;
@@ -1461,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (amélioration du carrousel)
+// RENDER EVENT CARD
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1470,8 +1470,6 @@ function renderEventCard(event) {
     const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
-    
-    console.log(`🎨 Event "${event.title}" has ${images.length} image(s)`);
     
     let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
         <div class="event-carousel" id="carousel-${event.id}">
@@ -1585,7 +1583,6 @@ function updateCarouselIndicators(track) {
 
 function initCarouselIndicators() {
     document.querySelectorAll('.event-carousel .carousel-track').forEach(track => {
-        // Supprimer les anciens écouteurs pour éviter les doublons
         track.removeEventListener('scroll', track._scrollHandler);
         const handler = function() {
             if (!this._rafId) {
@@ -1602,20 +1599,17 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// HANDLE EVENT CARD CLICK (délégation)
+// HANDLE EVENT CARD CLICK
 // ============================================================
 function handleEventCardClick(e) {
     const card = e.target.closest('.event-card-classic');
     if (!card) return;
     const id = card.dataset.id;
-    if (id) {
-        console.log('🖱️ Card clicked, id:', id);
-        openEventDetails(id);
-    }
+    if (id) openEventDetails(id);
 }
 
 // ============================================================
-// RENDER EVENTS BY CATEGORY (avec délégation)
+// RENDER EVENTS BY CATEGORY
 // ============================================================
 function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
@@ -1658,26 +1652,18 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// OPEN EVENT DETAILS (version robuste)
+// OPEN EVENT DETAILS
 // ============================================================
 let openEventDetailsTimeout = null;
 
 function openEventDetails(eventId) {
     const idStr = String(eventId);
-    console.log('🔍 openEventDetails called with ID:', idStr);
-    console.log('📋 Current events list:', events.map(e => ({ id: e.id, title: e.title })));
-
     let event = events.find(e => String(e.id) === idStr);
     if (event) {
-        console.log('✅ Event found in cache:', event.title);
         _openEventDetails(event);
         return;
     }
-
-    console.warn('⚠️ Event not found in cache, reloading from Supabase...');
-    if (openEventDetailsTimeout) {
-        clearTimeout(openEventDetailsTimeout);
-    }
+    if (openEventDetailsTimeout) clearTimeout(openEventDetailsTimeout);
     openEventDetailsTimeout = setTimeout(async () => {
         try {
             const loaded = await loadEventsFromSupabase();
@@ -1686,18 +1672,10 @@ function openEventDetails(eventId) {
                 localStorage.setItem('betix_events', JSON.stringify(events));
                 renderEventsByCategory();
                 const ev = events.find(e => String(e.id) === idStr);
-                if (ev) {
-                    console.log('✅ Event found after reload:', ev.title);
-                    _openEventDetails(ev);
-                } else {
-                    console.error('❌ Event not found even after reload.');
-                    alert(t('eventNotFound'));
-                }
-            } else {
-                alert(t('eventNotFound'));
-            }
+                if (ev) _openEventDetails(ev);
+                else alert(t('eventNotFound'));
+            } else alert(t('eventNotFound'));
         } catch (error) {
-            console.error('Error reloading events:', error);
             alert(t('eventNotFound'));
         }
         openEventDetailsTimeout = null;
@@ -1833,7 +1811,6 @@ function _openEventDetails(event) {
 function closeEventDetailModalAndGoBack() {
     const modal = document.getElementById('eventDetailModal');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
-    if (window._carousels) { for (let key in window._carousels) delete window._carousels[key]; }
     setTimeout(() => {
         if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
     }, 50);
@@ -1976,7 +1953,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE ET PERSISTANCE
+// PROFIL – FORMULAIRE AVEC REVUE ET PERSISTANCE (CORRIGÉ)
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -2010,25 +1987,25 @@ function populateProfileForm() {
     if (email) email.value = currentUser.email || '';
     if (phone) phone.value = currentUser.phone_number || '';
     
-    if (currentUser.email) {
+    // Mettre à jour les statuts de vérification
+    if (currentUser.email && currentUser.email.trim()) {
         document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        document.getElementById('verifyEmailBtn').classList.add('verified');
     } else {
         document.getElementById('emailVerificationStatus').innerHTML = '';
+        document.getElementById('verifyEmailBtn').classList.remove('verified');
     }
-    if (currentUser.phone_number) {
+    if (currentUser.phone_number && currentUser.phone_number.trim()) {
         document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        document.getElementById('verifyPhoneBtn').classList.add('verified');
     } else {
         document.getElementById('phoneVerificationStatus').innerHTML = '';
+        document.getElementById('verifyPhoneBtn').classList.remove('verified');
     }
-    document.querySelectorAll('.verify-btn').forEach(btn => {
-        if (btn.id === 'verifyEmailBtn' && currentUser.email) {
-            btn.classList.add('verified');
-        } else if (btn.id === 'verifyPhoneBtn' && currentUser.phone_number) {
-            btn.classList.add('verified');
-        } else {
-            btn.classList.remove('verified');
-        }
-    });
+
+    // Mettre à jour le mode édition
+    const complete = checkProfileComplete().complete;
+    enableEditMode(!complete);
 }
 
 async function loadProfileData() {
@@ -2046,8 +2023,8 @@ async function loadProfileData() {
             .single();
         if (error) {
             if (error.code === 'PGRST116') {
-                console.log('ℹ️ No profile found for this user. It will be created on first save.');
-                // Tenter de restaurer depuis la sauvegarde locale
+                console.log('ℹ️ No profile found. It will be created on first save.');
+                // Tenter de restaurer depuis le backup
                 const backup = localStorage.getItem('betix_profile_backup');
                 if (backup) {
                     try {
@@ -2057,8 +2034,9 @@ async function loadProfileData() {
                         saveUser();
                         populateProfileForm();
                         updateUserInfo();
-                        // Supprimer le backup après restauration
+                        updateProfilePage();
                         localStorage.removeItem('betix_profile_backup');
+                        enableEditMode(true);
                         return;
                     } catch(e) {}
                 }
@@ -2072,26 +2050,29 @@ async function loadProfileData() {
             const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
             let hasNewData = false;
             fields.forEach(f => {
-                if (data[f] && data[f].trim() !== '') {
-                    currentUser[f] = data[f].trim();
-                    hasNewData = true;
+                if (data[f] !== undefined && data[f] !== null && data[f].trim) {
+                    const val = data[f].trim();
+                    if (val) {
+                        currentUser[f] = val;
+                        hasNewData = true;
+                    }
                 }
             });
-            if (data.profile_completed !== undefined) {
-                currentUser.profile_completed = data.profile_completed;
-            }
-            if (data.profile_reminder_shown !== undefined) {
-                currentUser.profile_reminder_shown = data.profile_reminder_shown;
-            }
-            if (hasNewData) {
-                saveUser();
-                populateProfileForm();
-                updateUserInfo();
-            }
+            currentUser.profile_completed = data.profile_completed === true;
+            currentUser.profile_reminder_shown = data.profile_reminder_shown === true;
+            
+            saveUser();
+            populateProfileForm();
+            updateUserInfo();
+            updateProfilePage();
+            
             // Supprimer le backup après chargement réussi
             localStorage.removeItem('betix_profile_backup');
+            
+            // Activer/désactiver l'édition selon la complétude
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
+            return;
         } else {
             enableEditMode(true);
         }
@@ -2102,13 +2083,14 @@ async function loadProfileData() {
         if (backup) {
             try {
                 const backupData = JSON.parse(backup);
-                console.log('Restoring profile from backup due to error:', backupData);
+                console.log('Restoring from backup due to error:', backupData);
                 Object.assign(currentUser, backupData);
                 saveUser();
                 populateProfileForm();
                 updateUserInfo();
+                updateProfilePage();
                 localStorage.removeItem('betix_profile_backup');
-                enableEditMode(false);
+                enableEditMode(true);
                 return;
             } catch(e) {}
         }
@@ -2130,11 +2112,13 @@ function enableEditMode(edit) {
     } else {
         saveBtn.style.display = 'none';
         editBtn.style.display = 'inline-block';
-        if (currentUser.email) {
+        if (currentUser.email && currentUser.email.trim()) {
             document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            document.getElementById('verifyEmailBtn').classList.add('verified');
         }
-        if (currentUser.phone_number) {
+        if (currentUser.phone_number && currentUser.phone_number.trim()) {
             document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            document.getElementById('verifyPhoneBtn').classList.add('verified');
         }
     }
 }
@@ -2699,7 +2683,6 @@ async function connectToPi() {
                         currentUser.name = 'Demo User';
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
-                        // Laisser les champs de profil vides (seront chargés plus tard)
                         saveUser();
                         await syncUserToSupabase();
                         updateActivity();
@@ -3419,6 +3402,7 @@ function showPage(pageName) {
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
+        // Toujours recharger les données du profil si l'utilisateur est connecté
         if (currentUser.piUid || currentUser.wallet) {
             loadProfileData(); 
         } else {
