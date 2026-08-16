@@ -2662,7 +2662,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI (avec rechargement du profil)
+// CONNEXION PI (CORRIGÉE – chargement du profil avant sync)
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -2684,6 +2684,8 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
+                        // Charger le profil après connexion (important)
+                        await loadProfileData();
                         await syncUserToSupabase();
                         updateActivity();
                         updateUserInfo();
@@ -2692,14 +2694,13 @@ async function connectToPi() {
                         renderEventsByCategory();
                         updateConnectButtons();
                         await loadAllFromSupabase();
-                        await syncAllToSupabase(); 
+                        await syncAllToSupabase();
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
                         alert(t('demoConnected'));
                         closeSidebar();
-                        await loadProfileData();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
                         return;
@@ -2711,21 +2712,19 @@ async function connectToPi() {
                 const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
                 if (auth && auth.user) {
                     piUser = auth.user;
+                    // Définir l'identifiant utilisateur
                     currentUser.wallet = piUser.username;
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
-                    // Réinitialiser les champs de profil pour les recharger
-                    currentUser.first_name = '';
-                    currentUser.last_name = '';
-                    currentUser.country = '';
-                    currentUser.address = '';
-                    currentUser.email = '';
-                    currentUser.phone_number = '';
-                    currentUser.profile_completed = false;
-                    currentUser.profile_reminder_shown = false;
-                    saveUser();
+
+                    // ⚠️ NE PAS réinitialiser les champs de profil ici
+                    // Charger d'abord les données existantes depuis Supabase
+                    await loadProfileData();
+
+                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
                     await syncUserToSupabase();
+
                     updateActivity();
                     updateUserInfo();
                     updateProfilePage();
@@ -2733,15 +2732,16 @@ async function connectToPi() {
                     renderEventsByCategory();
                     updateConnectButtons();
                     await loadAllFromSupabase();
-                    await syncAllToSupabase(); 
+                    await syncAllToSupabase();
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
                     alert(t('piConnected') + piUser.username);
                     closeSidebar();
-                    // Charger le profil depuis Supabase
-                    await loadProfileData();
+
+                    // La vérification de complétion du profil est faite par loadProfileData
+                    // On la rappelle au cas où
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
                     hideConnectSpinner();
