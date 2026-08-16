@@ -2159,7 +2159,7 @@ body {
 }
 #confirmBuyBtn { margin-top: 14px; }
 
-/* SUCCESS POPUP – VERSION AMÉLIORÉE */
+/* SUCCESS POPUP – VERSION AMÉLIORÉE (sans émoji dans le titre) */
 .success-popup {
     display: none;
     position: fixed;
@@ -4790,4 +4790,151 @@ body.dark-mode .notification-item .notif-delete-btn {
 }
 body.dark-mode .notification-item .notif-delete-btn:hover {
     color: #ef4444;
+}
+
+/* ============================================================
+   TRANSACTION PROCESSED POPUP – version modale centrée
+   ============================================================ */
+.transaction-processed-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 99999 !important;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.transaction-processed-popup.show {
+    display: flex !important;
+}
+.transaction-processed-popup-content {
+    background: white;
+    border-radius: 24px;
+    padding: 30px 28px 24px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    animation: popIn 0.3s ease;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    position: relative;
+}
+.transaction-processed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e6e6e6;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.transaction-processed-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+}
+.transaction-processed-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+.transaction-processed-close:hover {
+    color: #1a1a2e;
+}
+.transaction-processed-body {
+    margin-bottom: 16px;
+}
+.transaction-processed-body p {
+    font-size: 0.95rem;
+    color: #1f2937;
+    margin: 8px 0;
+}
+.transaction-processed-timer {
+    font-weight: 600;
+    color: #0B1F5C;
+    margin-top: 12px;
+}
+.transaction-processed-footer {
+    display: flex;
+    justify-content: center;
+}
+.transaction-processed-footer .btn-primary {
+    width: auto;
+    padding: 10px 40px;
+    border-radius: 40px;
+    background: #0B1F5C;
+    color: white;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.transaction-processed-footer .btn-primary:hover {
+    background: #1a2a4a;
+}
+
+/* ============================================================
+   BOUTONS D'ACTION POUR TICKETS (PDF, PNG, SHARE, DELETE)
+   ============================================================ */
+.ticket-actions-wrapper {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    justify-content: center;
+}
+.btn-action {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+}
+.btn-action i {
+    font-size: 0.8rem;
+}
+.btn-pdf {
+    background: #dc2626;
+}
+.btn-pdf:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+}
+.btn-png {
+    background: #16a34a;
+}
+.btn-png:hover {
+    background: #15803d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(22,163,74,0.3);
+}
+.btn-share {
+    background: #2563eb;
+}
+.btn-share:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+.btn-delete {
+    background: #6b7280;
+}
+.btn-delete:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107,114,128,0.3);
 }
