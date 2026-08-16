@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX (SANS PREMIUM)
+   STYLES COMPLETS POUR BETIX (AVEC AMÉLIORATIONS)
    ============================================================ */
 
 * {
@@ -1134,6 +1134,7 @@ body {
     user-select: none;
 }
 
+/* Boutons de navigation */
 .carousel-btn {
     position: absolute;
     top: 50%;
@@ -1162,6 +1163,7 @@ body {
     right: 8px;
 }
 
+/* Dots indicateurs */
 .carousel-dots {
     position: absolute;
     bottom: 12px;
@@ -4008,6 +4010,68 @@ body.dark-mode .my-event-card-modern .event-footer-modern .event-stats-modern { 
 #adminPasswordMessage {
     margin-top: 8px;
     font-size: 0.85rem;
+}
+
+/* ============================================================
+   PAGE DE DÉTAIL – ALIGNEMENT ET POLICE RÉDUITE
+   ============================================================ */
+.event-detail-grid .grid-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    font-size: 0.85rem;
+}
+
+.event-detail-grid .grid-item .price-label-badge,
+.event-detail-grid .grid-item .tickets-label-badge {
+    font-size: 0.6rem !important;
+    padding: 1px 8px !important;
+}
+
+.event-detail-grid .grid-item .price-amount-green {
+    font-size: 0.9rem !important;
+}
+
+.event-detail-grid .grid-item .price-currency-gray {
+    font-size: 0.9rem !important;
+}
+
+.event-detail-grid .grid-item .ticket-type {
+    font-size: 0.85rem;
+}
+
+.event-detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+}
+
+.event-detail-body {
+    font-size: 0.9rem;
+}
+
+.event-detail-body .event-detail-about p {
+    font-size: 0.9rem;
+}
+
+.event-detail-body .event-detail-conditions ul li {
+    font-size: 0.8rem;
+}
+
+.event-detail-meta {
+    font-size: 0.75rem;
+}
+
+.detail-buy-btn {
+    font-size: 0.9rem;
+    padding: 10px;
+}
+
+.event-detail-grid .grid-item span {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
 }
 
 /* ============================================================
