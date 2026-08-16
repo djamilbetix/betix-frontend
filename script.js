@@ -15,7 +15,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 });
 
 // ============================================================
-// LISTES ET TRADUCTIONS
+// LISTES ET TRADUCTIONS (complètes)
 // ============================================================
 const countriesList = [
     'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
@@ -113,6 +113,9 @@ const countryFlags = {
     'Zimbabwe': '🇿🇼'
 };
 
+// ============================================================
+// TRADUCTIONS (raccourci pour la lisibilité)
+// ============================================================
 const translations = {
     en: {
         appName: 'Betix', home: 'Home', myEvents: 'My Events', profile: 'Profile', settings: 'Settings',
@@ -399,6 +402,10 @@ let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
 let allUsersCache = [];
+
+// ============================================================
+// PARAMÈTRES DE L'APPLICATION
+// ============================================================
 let appSettings = {
     commissionPercent: 5,
     serviceFeePercent: 2,
@@ -406,7 +413,106 @@ let appSettings = {
 };
 
 // ============================================================
-// UTILITAIRES
+// GESTION DU PROFIL LOCAL
+// ============================================================
+function loadLocalProfile() {
+    try {
+        return JSON.parse(localStorage.getItem('betix_profile') || '{}');
+    } catch { return {}; }
+}
+
+function saveLocalProfile(profileData) {
+    localStorage.setItem('betix_profile', JSON.stringify(profileData));
+}
+
+function mergeProfileWithCurrentUser() {
+    const local = loadLocalProfile();
+    const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number', 'profile_completed', 'profile_reminder_shown'];
+    fields.forEach(f => {
+        if (local[f] !== undefined) currentUser[f] = local[f];
+    });
+    if (local.profile_completed) currentUser.profile_completed = true;
+    saveUser();
+}
+
+// ============================================================
+// VÉRIFICATIONS DE CONNEXION ET PROFIL
+// ============================================================
+function requireLogin() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        addNotification('Please connect your Pi account before performing this action.', 'warning');
+        alert(t('pleaseConnect'));
+        return false;
+    }
+    return true;
+}
+
+function requireProfileComplete() {
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        const missing = check.missing.join(', ');
+        const msg = 'Please complete your profile before performing this action. Missing: ' + missing;
+        addNotification(msg, 'warning');
+        redirectToProfileWithMessage(msg);
+        return false;
+    }
+    return true;
+}
+
+// ============================================================
+// PI SDK
+// ============================================================
+let piSDKReady = false;
+function initPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
+    }
+    return false;
+}
+initPiSDK();
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
+
+async function ensurePiSDKReady() {
+    let attempts = 0;
+    const maxAttempts = 15;
+    const timeout = 5000;
+    const startTime = Date.now();
+    while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
+        initPiSDK();
+        await new Promise(r => setTimeout(r, 500));
+        attempts++;
+    }
+    return piSDKReady;
+}
+
+const BACKEND_URL = "https://betix-backend.onrender.com";
+let isResolving = false;
+let resolveAttempts = 0;
+async function onIncompletePaymentFound(payment) {
+    if (isResolving || resolveAttempts > 3) return null;
+    isResolving = true;
+    resolveAttempts++;
+    try {
+        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier })
+        });
+        const result = await response.json();
+        if (result.status === 'completed' || result.status === 'cancelled') {
+            setTimeout(() => window.location.reload(), 2000);
+            return result;
+        }
+    } catch(e) {}
+    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
+    return null;
+}
+
+// ============================================================
+// FONCTIONS UTILITAIRES
 // ============================================================
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function formatDate(dateStr) { 
@@ -463,475 +569,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// PERSISTANCE DU PROFIL (CACHE LOCAL)
-// ============================================================
-function saveProfileCache() {
-    const profileData = {
-        first_name: currentUser.first_name || '',
-        last_name: currentUser.last_name || '',
-        country: currentUser.country || '',
-        address: currentUser.address || '',
-        email: currentUser.email || '',
-        phone_number: currentUser.phone_number || '',
-        profile_completed: currentUser.profile_completed || false,
-        profile_reminder_shown: currentUser.profile_reminder_shown || false
-    };
-    localStorage.setItem('betix_profile_cache', JSON.stringify(profileData));
-}
-
-function loadProfileCache() {
-    try {
-        const cached = localStorage.getItem('betix_profile_cache');
-        if (cached) {
-            const data = JSON.parse(cached);
-            Object.assign(currentUser, data);
-            return true;
-        }
-        return false;
-    } catch (e) {
-        return false;
-    }
-}
-
-function saveUser() {
-    localStorage.setItem('betix_user', JSON.stringify(currentUser));
-    saveProfileCache();
-}
-
-// ============================================================
-// CHARGEMENT DU PROFIL DEPUIS SUPABASE AVEC FALLBACK CACHE
-// ============================================================
-async function loadProfileData() {
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) {
-        if (loadProfileCache()) {
-            populateProfileForm();
-            updateUserInfo();
-            updateProfilePage();
-        }
-        return;
-    }
-    console.log('🔍 Loading profile from Supabase for:', piUid);
-    try {
-        const { data, error } = await supabaseClient
-            .from('users')
-            .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
-            .eq('pi_uid', piUid)
-            .single();
-        if (error) {
-            if (error.code === 'PGRST116') {
-                console.log('ℹ️ No profile in Supabase, using cache.');
-                loadProfileCache();
-                populateProfileForm();
-                updateUserInfo();
-                updateProfilePage();
-                return;
-            }
-            throw error;
-        }
-        if (data) {
-            console.log('✅ Profile loaded from Supabase:', data);
-            const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
-            fields.forEach(f => {
-                if (data[f] !== undefined && data[f] !== null) {
-                    currentUser[f] = data[f].trim ? data[f].trim() : data[f];
-                }
-            });
-            currentUser.profile_completed = data.profile_completed === true;
-            currentUser.profile_reminder_shown = data.profile_reminder_shown === true;
-            saveProfileCache();
-            populateProfileForm();
-            updateUserInfo();
-            updateProfilePage();
-            const complete = checkProfileComplete().complete;
-            enableEditMode(!complete);
-            return;
-        } else {
-            loadProfileCache();
-            populateProfileForm();
-            updateUserInfo();
-            updateProfilePage();
-        }
-    } catch (error) {
-        console.error('❌ Error loading profile:', error);
-        if (loadProfileCache()) {
-            populateProfileForm();
-            updateUserInfo();
-            updateProfilePage();
-        } else {
-            populateProfileForm();
-        }
-        enableEditMode(true);
-    }
-}
-
-// ============================================================
-// SAUVEGARDE DU PROFIL DANS SUPABASE
-// ============================================================
-async function saveUserToSupabase(piUid, username, wallet, points) {
-    points = points || 0;
-    try {
-        const now = new Date().toISOString();
-        const userData = {
-            pi_uid: piUid,
-            username: username || piUid,
-            wallet: wallet || piUid,
-            points: points,
-            first_name: currentUser.first_name || '',
-            last_name: currentUser.last_name || '',
-            country: currentUser.country || '',
-            address: currentUser.address || '',
-            email: currentUser.email || '',
-            phone_number: currentUser.phone_number || '',
-            profile_completed: currentUser.profile_completed || false,
-            profile_reminder_shown: currentUser.profile_reminder_shown || false,
-            updated_at: now,
-            last_seen: now
-        };
-        const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
-        if (checkError && checkError.code !== 'PGRST116') throw checkError;
-        if (existing) {
-            const { error } = await supabaseClient.from('users').update(userData).eq('pi_uid', piUid);
-            if (error) throw error;
-        } else {
-            userData.created_at = now;
-            const { error } = await supabaseClient.from('users').insert(userData);
-            if (error) throw error;
-        }
-        console.log('✅ User saved to Supabase:', piUid);
-        saveProfileCache();
-        return true;
-    } catch (error) {
-        console.error('❌ saveUserToSupabase error:', error);
-        return false;
-    }
-}
-
-async function syncUserToSupabase() {
-    if (!currentUser.piUid && !currentUser.wallet) {
-        console.warn('No piUid or wallet, cannot sync user.');
-        return;
-    }
-    const piUid = currentUser.piUid || currentUser.wallet;
-    console.log('🔄 Syncing user to Supabase...', piUid);
-    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
-    if (success) console.log('✅ User synced successfully.');
-    else console.error('❌ User sync failed.');
-}
-
-// ============================================================
-// FONCTIONS DE L'INTERFACE PROFIL
-// ============================================================
-function populateProfileForm() {
-    const firstName = document.getElementById('profileFirstName');
-    const lastName = document.getElementById('profileLastName');
-    const country = document.getElementById('profileCountry');
-    const address = document.getElementById('profileAddress');
-    const email = document.getElementById('profileEmail');
-    const phone = document.getElementById('profilePhone');
-    if (firstName) firstName.value = currentUser.first_name || '';
-    if (lastName) lastName.value = currentUser.last_name || '';
-    if (country) country.value = currentUser.country || '';
-    if (address) address.value = currentUser.address || '';
-    if (email) email.value = currentUser.email || '';
-    if (phone) phone.value = currentUser.phone_number || '';
-    const emailStatus = document.getElementById('emailVerificationStatus');
-    const phoneStatus = document.getElementById('phoneVerificationStatus');
-    const verifyEmailBtn = document.getElementById('verifyEmailBtn');
-    const verifyPhoneBtn = document.getElementById('verifyPhoneBtn');
-    if (currentUser.email && currentUser.email.trim()) {
-        if (emailStatus) emailStatus.innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-        if (verifyEmailBtn) verifyEmailBtn.classList.add('verified');
-    } else {
-        if (emailStatus) emailStatus.innerHTML = '';
-        if (verifyEmailBtn) verifyEmailBtn.classList.remove('verified');
-    }
-    if (currentUser.phone_number && currentUser.phone_number.trim()) {
-        if (phoneStatus) phoneStatus.innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-        if (verifyPhoneBtn) verifyPhoneBtn.classList.add('verified');
-    } else {
-        if (phoneStatus) phoneStatus.innerHTML = '';
-        if (verifyPhoneBtn) verifyPhoneBtn.classList.remove('verified');
-    }
-    const complete = checkProfileComplete().complete;
-    enableEditMode(!complete);
-}
-
-function enableEditMode(edit) {
-    const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
-    const saveBtn = document.getElementById('saveProfileBtn');
-    const editBtn = document.getElementById('editProfileBtn');
-    inputs.forEach(inp => inp.disabled = !edit);
-    if (edit) {
-        saveBtn.style.display = 'inline-block';
-        editBtn.style.display = 'none';
-        document.getElementById('emailVerificationStatus').innerHTML = '';
-        document.getElementById('phoneVerificationStatus').innerHTML = '';
-        document.querySelectorAll('.verify-btn').forEach(btn => btn.classList.remove('verified'));
-    } else {
-        saveBtn.style.display = 'none';
-        editBtn.style.display = 'inline-block';
-        if (currentUser.email && currentUser.email.trim()) {
-            document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-            document.getElementById('verifyEmailBtn').classList.add('verified');
-        }
-        if (currentUser.phone_number && currentUser.phone_number.trim()) {
-            document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-            document.getElementById('verifyPhoneBtn').classList.add('verified');
-        }
-    }
-}
-
-function checkProfileComplete() {
-    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
-    const missing = [];
-    for (let field of required) {
-        if (!currentUser[field] || currentUser[field].trim() === '') missing.push(field.replace('_', ' '));
-    }
-    return missing.length === 0 ? { complete: true, missing: [] } : { complete: false, missing };
-}
-
-// ============================================================
-// CONFIRMATION DE SAUVEGARDE DU PROFIL
-// ============================================================
-let profileDataForReview = {};
-
-function fillProfileReview() {
-    const firstName = document.getElementById('profileFirstName').value.trim();
-    const lastName = document.getElementById('profileLastName').value.trim();
-    const country = document.getElementById('profileCountry').value;
-    const address = document.getElementById('profileAddress').value.trim();
-    const email = document.getElementById('profileEmail').value.trim();
-    const phone = document.getElementById('profilePhone').value.trim();
-
-    profileDataForReview = { firstName, lastName, country, address, email, phone };
-
-    const content = document.getElementById('profileReviewContent');
-    if (!content) return;
-    content.innerHTML = `
-        <div class="review-item"><span class="review-label">First Name</span><span class="review-value">${escapeHtml(firstName) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Last Name</span><span class="review-value">${escapeHtml(lastName) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Country</span><span class="review-value">${escapeHtml(country) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Address</span><span class="review-value">${escapeHtml(address) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Email</span><span class="review-value">${escapeHtml(email) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Phone</span><span class="review-value">${escapeHtml(phone) || '—'}</span></div>
-    `;
-}
-
-function openProfileReview() {
-    const firstName = document.getElementById('profileFirstName').value.trim();
-    const lastName = document.getElementById('profileLastName').value.trim();
-    if (!firstName || !lastName) {
-        alert('First name and last name are required.');
-        return;
-    }
-    fillProfileReview();
-    document.getElementById('profileReviewModal').classList.add('show');
-    document.getElementById('profileReviewLoading').style.display = 'none';
-    document.getElementById('profileReviewConfirmBtn').style.display = 'inline-block';
-    document.getElementById('profileReviewEditBtn').style.display = 'inline-block';
-}
-
-function closeProfileReview() {
-    document.getElementById('profileReviewModal').classList.remove('show');
-}
-
-async function confirmProfileSave() {
-    const data = profileDataForReview;
-    if (!data.firstName || !data.lastName) {
-        alert('First name and last name are required.');
-        return;
-    }
-    if (data.email && !data.email.includes('@')) {
-        alert('Please enter a valid email address.');
-        return;
-    }
-
-    document.getElementById('profileReviewConfirmBtn').style.display = 'none';
-    document.getElementById('profileReviewEditBtn').style.display = 'none';
-    document.getElementById('profileReviewLoading').style.display = 'block';
-
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const piUid = currentUser.piUid || currentUser.wallet;
-    if (!piUid) {
-        alert('Please connect your Pi account first.');
-        closeProfileReview();
-        return;
-    }
-
-    try {
-        const updates = {
-            first_name: data.firstName,
-            last_name: data.lastName,
-            country: data.country,
-            address: data.address,
-            email: data.email,
-            phone_number: data.phone,
-            profile_completed: true,
-            profile_reminder_shown: true,
-            updated_at: new Date().toISOString()
-        };
-        const { error } = await supabaseClient.from('users').update(updates).eq('pi_uid', piUid);
-        if (error) throw error;
-
-        Object.assign(currentUser, {
-            first_name: data.firstName,
-            last_name: data.lastName,
-            country: data.country,
-            address: data.address,
-            email: data.email,
-            phone_number: data.phone,
-            profile_completed: true,
-            profile_reminder_shown: true
-        });
-        saveUser();
-        await syncUserToSupabase();
-
-        closeProfileReview();
-        const msg = document.getElementById('profileSaveMessage');
-        msg.innerHTML = `
-            <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>
-                <div>
-                    <strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>
-                    <p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>
-                </div>
-            </div>
-        `;
-        setTimeout(() => { msg.innerHTML = ''; }, 5000);
-
-        updateUserInfo();
-        updateProfilePage();
-        enableEditMode(false);
-        await loadProfileData();
-    } catch (error) {
-        alert('Error saving profile: ' + error.message);
-        closeProfileReview();
-    }
-}
-
-function verifyEmail() {
-    const email = document.getElementById('profileEmail').value.trim();
-    if (!email || !email.includes('@')) {
-        alert('Please enter a valid email address.');
-        return;
-    }
-    const code = Math.floor(100000 + Math.random() * 900000);
-    alert(`A verification code has been sent to ${email}.\nCode: ${code} (demo)`);
-    document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-    document.getElementById('verifyEmailBtn').classList.add('verified');
-}
-
-function verifyPhone() {
-    const phone = document.getElementById('profilePhone').value.trim();
-    if (!phone || phone.length < 6) {
-        alert('Please enter a valid phone number.');
-        return;
-    }
-    const code = Math.floor(100000 + Math.random() * 900000);
-    alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
-    document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-    document.getElementById('verifyPhoneBtn').classList.add('verified');
-}
-
-// ============================================================
-// DÉCONNEXION (avec sauvegarde et cache)
-// ============================================================
-async function disconnectPi() {
-    if (!confirm(t('disconnect') + '?')) return;
-    try {
-        await syncUserToSupabase();
-        console.log('✅ Profile saved to Supabase before disconnection.');
-    } catch (error) {
-        console.error('❌ Error saving profile before disconnection:', error);
-    }
-
-    currentUser = {
-        name: 'Guest',
-        wallet: null,
-        piUid: null,
-        memberSince: '2026',
-        loyaltyPoints: 0,
-        first_name: '',
-        last_name: '',
-        country: '',
-        address: '',
-        email: '',
-        phone_number: '',
-        profile_completed: false,
-        profile_reminder_shown: false
-    };
-    piUser = null;
-    saveUser();
-    localStorage.removeItem('betix_last_activity');
-    localStorage.removeItem('betix_pending_payment');
-    updateUserInfo();
-    updateProfilePage();
-    renderEventsByCategory();
-    renderTickets();
-    renderHistory();
-    updateConnectButtons();
-    closeSidebar();
-    alert(t('disconnected'));
-}
-
-function logout() { disconnectPi(); }
-
-// ============================================================
-// FONCTIONS PI SDK
-// ============================================================
-let piSDKReady = false;
-function initPiSDK() {
-    if (typeof Pi !== 'undefined') {
-        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
-    }
-    return false;
-}
-initPiSDK();
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
-setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
-
-async function ensurePiSDKReady() {
-    let attempts = 0;
-    const maxAttempts = 15;
-    const timeout = 5000;
-    const startTime = Date.now();
-    while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
-        initPiSDK();
-        await new Promise(r => setTimeout(r, 500));
-        attempts++;
-    }
-    return piSDKReady;
-}
-
-const BACKEND_URL = "https://betix-backend.onrender.com";
-let isResolving = false;
-let resolveAttempts = 0;
-async function onIncompletePaymentFound(payment) {
-    if (isResolving || resolveAttempts > 3) return null;
-    isResolving = true;
-    resolveAttempts++;
-    try {
-        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId: payment.identifier })
-        });
-        const result = await response.json();
-        if (result.status === 'completed' || result.status === 'cancelled') {
-            setTimeout(() => window.location.reload(), 2000);
-            return result;
-        }
-    } catch(e) {}
-    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
-    return null;
-}
-
-// ============================================================
-// FONCTIONS SUPABASE - ÉVÉNEMENTS ET TICKETS
+// FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -975,6 +613,10 @@ async function deleteHeroSlideFromSupabase(id) {
     } catch (error) { return false; }
 }
 
+async function migrateHeroSlides(slides) {
+    for (let i = 0; i < slides.length; i++) await saveHeroSlideToSupabase(slides[i], i);
+}
+
 async function uploadHeroImage(base64Data, filename) {
     try {
         const response = await fetch(base64Data);
@@ -987,6 +629,82 @@ async function uploadHeroImage(base64Data, filename) {
     } catch (error) { return null; }
 }
 
+async function loadHeroSlides() {
+    try {
+        const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
+        if (error) throw error;
+        if (data && data.length > 0) {
+            heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        } else {
+            let local = localStorage.getItem('betix_hero_slides');
+            if (local) try { heroSlides = JSON.parse(local); await migrateHeroSlides(heroSlides); } catch(e) { heroSlides = []; }
+            else {
+                heroSlides = [
+                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
+                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
+                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
+                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
+                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
+                ];
+                await migrateHeroSlides(heroSlides);
+            }
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        }
+        initHeroSlider();
+        renderAdminSlides();
+        return heroSlides;
+    } catch (error) {
+        let local = localStorage.getItem('betix_hero_slides');
+        if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
+        return heroSlides;
+    }
+}
+
+// ============================================================
+// SAUVEGARDE UTILISATEUR DANS SUPABASE
+// ============================================================
+async function saveUserToSupabase(piUid, username, wallet, points) {
+    points = points || 0;
+    try {
+        const now = new Date().toISOString();
+        const userData = {
+            pi_uid: piUid,
+            username: username || piUid,
+            wallet: wallet || piUid,
+            points: points,
+            first_name: currentUser.first_name || '',
+            last_name: currentUser.last_name || '',
+            country: currentUser.country || '',
+            address: currentUser.address || '',
+            email: currentUser.email || '',
+            phone_number: currentUser.phone_number || '',
+            profile_completed: currentUser.profile_completed || false,
+            profile_reminder_shown: currentUser.profile_reminder_shown || false,
+            updated_at: now,
+            last_seen: now
+        };
+        const { data: existing, error: checkError } = await supabaseClient.from('users').select('pi_uid').eq('pi_uid', piUid).single();
+        if (checkError && checkError.code !== 'PGRST116') throw checkError;
+        if (existing) {
+            const { error } = await supabaseClient.from('users').update(userData).eq('pi_uid', piUid);
+            if (error) throw error;
+        } else {
+            userData.created_at = now;
+            const { error } = await supabaseClient.from('users').insert(userData);
+            if (error) throw error;
+        }
+        console.log('✅ User saved to Supabase:', piUid);
+        return true;
+    } catch (error) {
+        console.error('❌ saveUserToSupabase error:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// SAVE EVENT ET TICKET
+// ============================================================
 async function saveEventToSupabase(eventData) {
     try {
         if (!eventData || !eventData.id) return false;
@@ -1069,6 +787,9 @@ async function saveTicketToSupabase(ticketData) {
     }
 }
 
+// ============================================================
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE
+// ============================================================
 async function loadTicketsFromSupabase(piUid) {
     try {
         if (!piUid) return [];
@@ -1102,6 +823,9 @@ async function loadTicketsFromSupabase(piUid) {
     } catch (error) { console.error('❌ loadTicketsFromSupabase exception:', error); return []; }
 }
 
+// ============================================================
+// CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE
+// ============================================================
 async function loadEventsFromSupabase() {
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
@@ -1128,6 +852,8 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
+            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images`);
+            
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
@@ -1164,7 +890,7 @@ async function loadEventsFromSupabase() {
 }
 
 // ============================================================
-// SYNCHRONISATION ET PERSISTANCE
+// SAUVEGARDE PERMANENTE
 // ============================================================
 function saveBackupData(eventsData, ticketsData) {
     try {
@@ -1176,83 +902,18 @@ function saveBackupData(eventsData, ticketsData) {
     }
 }
 
-function saveEvents() {
-    localStorage.setItem('betix_events', JSON.stringify(events));
-    saveBackupData(events, tickets);
-    syncEventsToSupabase();
-}
-
-function saveTickets() {
-    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-    saveUsedTickets();
-    saveBackupData(events, tickets);
-    syncTicketsToSupabase().catch(() => {});
-}
-
-function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
-function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
-
-function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
-function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
-function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
-function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
-
-async function syncEventsToSupabase() {
-    let success = 0;
-    for (let i = 0; i < events.length; i++) {
-        const saved = await saveEventToSupabase(events[i]);
-        if (saved) success++;
-        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
-    }
-    console.log(`Synced ${success}/${events.length} events to Supabase.`);
-}
-
-async function syncTicketsToSupabase() {
-    let success = 0;
-    for (let i = 0; i < tickets.length; i++) {
-        const saved = await saveTicketToSupabase(tickets[i]);
-        if (saved) success++;
-        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
-    }
-    if (success < tickets.length) {
-        const failed = tickets.slice(success);
-        pendingTickets.push(...failed);
-        localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-    }
-    console.log(`Synced ${success}/${tickets.length} tickets to Supabase.`);
-}
-
-async function syncAllToSupabase(retryCount = 0) {
-    const maxRetries = 3;
+function restoreBackupData() {
     try {
-        updateSyncStatus('syncing');
-        await syncUserToSupabase();
-        await syncEventsToSupabase();
-        await syncTicketsToSupabase();
-        updateSyncStatus('success');
-        return { events: events.length, tickets: tickets.length };
-    } catch (error) {
-        console.error('❌ syncAllToSupabase error:', error);
-        if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
-        else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
-    }
+        const events = JSON.parse(localStorage.getItem('betix_backup_events') || '[]');
+        const tickets = JSON.parse(localStorage.getItem('betix_backup_tickets') || '[]');
+        if (events.length === 0 && tickets.length === 0) return null;
+        return { events, tickets };
+    } catch (e) { return null; }
 }
 
-function updateSyncStatus(status) {
-    const indicator = document.getElementById('syncStatusIndicator');
-    if (!indicator) return;
-    const icon = indicator.querySelector('.sync-icon'), text = indicator.querySelector('.sync-text'), dot = indicator.querySelector('.sync-dot');
-    if (!icon || !text || !dot) return;
-    indicator.className = 'sync-indicator';
-    switch(status) {
-        case 'loading': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-spinner fa-spin'; text.textContent = t('loading'); dot.className = 'sync-dot'; break;
-        case 'syncing': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-sync fa-spin'; text.textContent = t('syncing'); dot.className = 'sync-dot'; break;
-        case 'success': indicator.classList.add('success'); icon.className = 'sync-icon fas fa-check-circle'; text.textContent = t('syncSuccess'); dot.className = 'sync-dot'; break;
-        case 'error': indicator.classList.add('error'); icon.className = 'sync-icon fas fa-exclamation-circle'; text.textContent = t('syncError'); dot.className = 'sync-dot'; break;
-        default: icon.className = 'sync-icon fas fa-cloud'; text.textContent = t('ready'); dot.className = 'sync-dot';
-    }
-}
-
+// ============================================================
+// LOAD ALL FROM SUPABASE
+// ============================================================
 async function loadAllFromSupabase() {
     console.log("=== LOAD ALL FROM SUPABASE ===");
     loadUsedTickets();
@@ -1307,6 +968,127 @@ async function loadAllFromSupabase() {
     await retryPendingTickets();
 }
 
+// ============================================================
+// SYNCHRONISATION
+// ============================================================
+function saveEvents() {
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    saveBackupData(events, tickets);
+    syncEventsToSupabase();
+}
+
+function saveTickets() {
+    localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+    saveUsedTickets();
+    saveBackupData(events, tickets);
+    syncTicketsToSupabase().catch(() => {});
+}
+
+function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
+function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
+
+function saveUser() { 
+    localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
+    const profileData = {
+        first_name: currentUser.first_name || '',
+        last_name: currentUser.last_name || '',
+        country: currentUser.country || '',
+        address: currentUser.address || '',
+        email: currentUser.email || '',
+        phone_number: currentUser.phone_number || '',
+        profile_completed: currentUser.profile_completed || false,
+        profile_reminder_shown: currentUser.profile_reminder_shown || false
+    };
+    saveLocalProfile(profileData);
+}
+
+function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
+function saveChatMessages() { localStorage.setItem('betix_chat_messages', JSON.stringify(chatMessages)); }
+function saveRatings() { localStorage.setItem('betix_ratings', JSON.stringify(ratings)); }
+function saveConnectedUsers() { localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers)); }
+
+async function syncUserToSupabase() {
+    if (!currentUser.piUid && !currentUser.wallet) {
+        console.warn('No piUid or wallet, cannot sync user.');
+        return;
+    }
+    const piUid = currentUser.piUid || currentUser.wallet;
+    console.log('🔄 Syncing user to Supabase...', piUid);
+    const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
+    if (success) console.log('✅ User synced successfully.');
+    else console.error('❌ User sync failed.');
+}
+
+async function syncEventsToSupabase() {
+    let success = 0;
+    for (let i = 0; i < events.length; i++) {
+        const saved = await saveEventToSupabase(events[i]);
+        if (saved) success++;
+        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
+    }
+    console.log(`Synced ${success}/${events.length} events to Supabase.`);
+}
+
+async function syncTicketsToSupabase() {
+    let success = 0;
+    for (let i = 0; i < tickets.length; i++) {
+        const saved = await saveTicketToSupabase(tickets[i]);
+        if (saved) success++;
+        if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
+    }
+    if (success < tickets.length) {
+        const failed = tickets.slice(success);
+        pendingTickets.push(...failed);
+        localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    }
+    console.log(`Synced ${success}/${tickets.length} tickets to Supabase.`);
+}
+
+async function syncAllToSupabase(retryCount = 0) {
+    const maxRetries = 3;
+    try {
+        updateSyncStatus('syncing');
+        await syncUserToSupabase();
+        await syncEventsToSupabase();
+        await syncTicketsToSupabase();
+        updateSyncStatus('success');
+        return { events: events.length, tickets: tickets.length };
+    } catch (error) {
+        console.error('❌ syncAllToSupabase error:', error);
+        if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
+        else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
+    }
+}
+
+async function retryPendingTickets() {
+    if (!pendingTickets || pendingTickets.length === 0) return;
+    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
+    const remaining = [];
+    for (const ticket of pendingTickets) {
+        const success = await saveTicketToSupabase(ticket);
+        if (!success) remaining.push(ticket);
+    }
+    pendingTickets = remaining;
+    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
+    if (pendingTickets.length === 0) console.log('All pending tickets saved successfully!');
+    else console.log('Still', pendingTickets.length, 'tickets pending.');
+}
+
+function updateSyncStatus(status) {
+    const indicator = document.getElementById('syncStatusIndicator');
+    if (!indicator) return;
+    const icon = indicator.querySelector('.sync-icon'), text = indicator.querySelector('.sync-text'), dot = indicator.querySelector('.sync-dot');
+    if (!icon || !text || !dot) return;
+    indicator.className = 'sync-indicator';
+    switch(status) {
+        case 'loading': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-spinner fa-spin'; text.textContent = t('loading'); dot.className = 'sync-dot'; break;
+        case 'syncing': indicator.classList.add('syncing'); icon.className = 'sync-icon fas fa-sync fa-spin'; text.textContent = t('syncing'); dot.className = 'sync-dot'; break;
+        case 'success': indicator.classList.add('success'); icon.className = 'sync-icon fas fa-check-circle'; text.textContent = t('syncSuccess'); dot.className = 'sync-dot'; break;
+        case 'error': indicator.classList.add('error'); icon.className = 'sync-icon fas fa-exclamation-circle'; text.textContent = t('syncError'); dot.className = 'sync-dot'; break;
+        default: icon.className = 'sync-icon fas fa-cloud'; text.textContent = t('ready'); dot.className = 'sync-dot';
+    }
+}
+
 async function forceRefreshData() {
     const btn = document.getElementById('refreshDataBtn');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('loading'); }
@@ -1324,20 +1106,6 @@ async function forceRefreshData() {
         updateSyncStatus('error');
         if (btn) { btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + t('syncError'); setTimeout(() => { btn.innerHTML = '<i class="fas fa-sync"></i> ' + t('refreshData'); btn.disabled = false; }, 2000); }
     }
-}
-
-async function retryPendingTickets() {
-    if (!pendingTickets || pendingTickets.length === 0) return;
-    console.log('Retrying to save', pendingTickets.length, 'pending tickets...');
-    const remaining = [];
-    for (const ticket of pendingTickets) {
-        const success = await saveTicketToSupabase(ticket);
-        if (!success) remaining.push(ticket);
-    }
-    pendingTickets = remaining;
-    localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
-    if (pendingTickets.length === 0) console.log('All pending tickets saved successfully!');
-    else console.log('Still', pendingTickets.length, 'tickets pending.');
 }
 
 function mergeArraysById(localArray, supabaseArray) {
@@ -1392,7 +1160,54 @@ async function saveAppSettings(settings) {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML ET QR
+// VÉRIFICATION DU PROFIL COMPLET
+// ============================================================
+function checkProfileComplete() {
+    const required = ['first_name', 'last_name', 'email', 'address', 'phone_number'];
+    const missing = [];
+    for (let field of required) {
+        if (!currentUser[field] || currentUser[field].trim() === '') missing.push(field.replace('_', ' '));
+    }
+    return missing.length === 0 ? { complete: true, missing: [] } : { complete: false, missing };
+}
+
+function redirectToProfileWithMessage(message) {
+    alert(message);
+    showPage('profile');
+    const msgDiv = document.getElementById('profileSaveMessage');
+    if (msgDiv) {
+        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+        </div>`;
+        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
+    }
+}
+
+// ============================================================
+// QR CODE SÉCURISÉ
+// ============================================================
+function generateSecureQRData(ticketId, userId, eventId) {
+    return ticketId;
+}
+
+// ============================================================
+// SPINNER GLOBAL
+// ============================================================
+function showLoader(text = 'Loading...') {
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+        document.getElementById('loaderText').textContent = text;
+        loader.style.display = 'flex';
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('globalLoader');
+    if (loader) loader.style.display = 'none';
+}
+
+// ============================================================
+// GÉNÉRATION DU TICKET HTML
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1469,7 +1284,7 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// RENDER TICKETS ET HISTORY
+// RENDER TICKETS
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1506,6 +1321,9 @@ function renderTickets() {
     }, 300);
 }
 
+// ============================================================
+// RENDER HISTORY
+// ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
@@ -1554,6 +1372,9 @@ function deleteHistoryTicket(ticketId) {
     addNotification('Ticket deleted from history.', 'info');
 }
 
+// ============================================================
+// EXPORT PNG ET PDF
+// ============================================================
 async function downloadTicketPNG(ticketId) {
     const ticketEl = document.getElementById(`ticket-${ticketId}`);
     if (!ticketEl) { alert('Ticket not found'); return; }
@@ -1640,7 +1461,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (avec carrousel et indicateurs)
+// RENDER EVENT CARD
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1741,7 +1562,7 @@ function renderEventCard(event) {
 }
 
 // ============================================================
-// INDICATEURS DE CARROUSEL (mise à jour pendant défilement)
+// FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
 // ============================================================
 function updateCarouselIndicators(track) {
     const wrapper = track.closest('.event-carousel-wrapper');
@@ -1778,16 +1599,13 @@ function initCarouselIndicators() {
 }
 
 // ============================================================
-// GESTION DES CLICS SUR LES CARTES ÉVÉNEMENTS
+// HANDLE EVENT CARD CLICK
 // ============================================================
 function handleEventCardClick(e) {
     const card = e.target.closest('.event-card-classic');
     if (!card) return;
     const id = card.dataset.id;
-    if (id) {
-        console.log('🖱️ Card clicked, id:', id);
-        openEventDetails(id);
-    }
+    if (id) openEventDetails(id);
 }
 
 // ============================================================
@@ -1834,7 +1652,7 @@ function renderEventsByCategory() {
 }
 
 // ============================================================
-// OPEN EVENT DETAILS (avec badges améliorés)
+// OPEN EVENT DETAILS
 // ============================================================
 let openEventDetailsTimeout = null;
 
@@ -1864,6 +1682,9 @@ function openEventDetails(eventId) {
     }, 300);
 }
 
+// ============================================================
+// _openEventDetails (avec badges améliorés et police réduite)
+// ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
     const content = document.getElementById('eventDetailContent');
@@ -1984,6 +1805,9 @@ function _openEventDetails(event) {
     }
 }
 
+// ============================================================
+// CLOSE DETAIL MODAL
+// ============================================================
 function closeEventDetailModalAndGoBack() {
     const modal = document.getElementById('eventDetailModal');
     if (modal) { modal.classList.remove('show'); modal.style.display = 'none'; document.body.style.overflow = ''; }
@@ -2055,37 +1879,6 @@ function initHeroSlider() {
     const hero = document.querySelector('.hero');
     if (hero) { hero.onmouseenter = stopAutoPlay; hero.onmouseleave = startAutoPlay; }
     startAutoPlay();
-}
-
-async function loadHeroSlides() {
-    try {
-        const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
-        if (error) throw error;
-        if (data && data.length > 0) {
-            heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
-            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-        } else {
-            let local = localStorage.getItem('betix_hero_slides');
-            if (local) try { heroSlides = JSON.parse(local); } catch(e) { heroSlides = []; }
-            else {
-                heroSlides = [
-                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
-                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
-                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
-                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
-                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
-                ];
-            }
-            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-        }
-        initHeroSlider();
-        renderAdminSlides();
-        return heroSlides;
-    } catch (error) {
-        let local = localStorage.getItem('betix_hero_slides');
-        if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
-        return heroSlides;
-    }
 }
 
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
@@ -2160,8 +1953,11 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – AUTRES FONCTIONS (country select, etc.)
+// PROFIL – FORMULAIRE AVEC REVUE ET PERSISTANCE (CORRIGÉ)
 // ============================================================
+let profileDataForReview = {};
+let isEditingProfile = false;
+
 function populateProfileCountrySelect() {
     const select = document.getElementById('profileCountry');
     if (!select) return;
@@ -2176,50 +1972,294 @@ function populateProfileCountrySelect() {
     });
 }
 
-function initCountrySelectors() {
-    const filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === currentCountryFilter) option.selected = true;
-            filterSelect.appendChild(option);
-        });
+function populateProfileForm() {
+    const firstName = document.getElementById('profileFirstName');
+    const lastName = document.getElementById('profileLastName');
+    const country = document.getElementById('profileCountry');
+    const address = document.getElementById('profileAddress');
+    const email = document.getElementById('profileEmail');
+    const phone = document.getElementById('profilePhone');
+    
+    if (firstName) firstName.value = currentUser.first_name || '';
+    if (lastName) lastName.value = currentUser.last_name || '';
+    if (country) country.value = currentUser.country || '';
+    if (address) address.value = currentUser.address || '';
+    if (email) email.value = currentUser.email || '';
+    if (phone) phone.value = currentUser.phone_number || '';
+    
+    // Mettre à jour les statuts de vérification
+    if (currentUser.email && currentUser.email.trim()) {
+        document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        document.getElementById('verifyEmailBtn').classList.add('verified');
+    } else {
+        document.getElementById('emailVerificationStatus').innerHTML = '';
+        document.getElementById('verifyEmailBtn').classList.remove('verified');
     }
-    const eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            if (country === 'All') return;
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === 'France') option.selected = true;
-            eventSelect.appendChild(option);
-        });
+    if (currentUser.phone_number && currentUser.phone_number.trim()) {
+        document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+        document.getElementById('verifyPhoneBtn').classList.add('verified');
+    } else {
+        document.getElementById('phoneVerificationStatus').innerHTML = '';
+        document.getElementById('verifyPhoneBtn').classList.remove('verified');
     }
-    setTimeout(() => {
-        const filterSelect = document.getElementById('countrySelect');
-        if (filterSelect) {
-            const options = filterSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
-            });
+
+    // Mettre à jour le mode édition
+    const complete = checkProfileComplete().complete;
+    enableEditMode(!complete);
+}
+
+async function loadProfileData() {
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        console.warn('No piUid, cannot load profile data.');
+        return;
+    }
+    console.log('🔍 Loading profile for piUid:', piUid);
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('first_name, last_name, country, address, email, phone_number, profile_completed, profile_reminder_shown')
+            .eq('pi_uid', piUid)
+            .single();
+        if (error) {
+            if (error.code === 'PGRST116') {
+                console.log('ℹ️ No profile found. It will be created on first save.');
+                // Tenter de restaurer depuis le backup
+                const backup = localStorage.getItem('betix_profile_backup');
+                if (backup) {
+                    try {
+                        const backupData = JSON.parse(backup);
+                        console.log('Restoring profile from backup:', backupData);
+                        Object.assign(currentUser, backupData);
+                        saveUser();
+                        populateProfileForm();
+                        updateUserInfo();
+                        updateProfilePage();
+                        localStorage.removeItem('betix_profile_backup');
+                        enableEditMode(true);
+                        return;
+                    } catch(e) {}
+                }
+                enableEditMode(true);
+                return;
+            }
+            throw error;
         }
-        const eventSelect = document.getElementById('eventCountry');
-        if (eventSelect) {
-            const options = eventSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
+        if (data) {
+            console.log('✅ Profile loaded from Supabase:', data);
+            const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
+            let hasNewData = false;
+            fields.forEach(f => {
+                if (data[f] !== undefined && data[f] !== null && data[f].trim) {
+                    const val = data[f].trim();
+                    if (val) {
+                        currentUser[f] = val;
+                        hasNewData = true;
+                    }
+                }
             });
+            currentUser.profile_completed = data.profile_completed === true;
+            currentUser.profile_reminder_shown = data.profile_reminder_shown === true;
+            
+            saveUser();
+            populateProfileForm();
+            updateUserInfo();
+            updateProfilePage();
+            
+            // Supprimer le backup après chargement réussi
+            localStorage.removeItem('betix_profile_backup');
+            
+            // Activer/désactiver l'édition selon la complétude
+            const complete = checkProfileComplete().complete;
+            enableEditMode(!complete);
+            return;
+        } else {
+            enableEditMode(true);
         }
-    }, 50);
+    } catch (error) {
+        console.error('❌ Error loading profile:', error);
+        // En cas d'erreur, essayer de restaurer depuis le backup
+        const backup = localStorage.getItem('betix_profile_backup');
+        if (backup) {
+            try {
+                const backupData = JSON.parse(backup);
+                console.log('Restoring from backup due to error:', backupData);
+                Object.assign(currentUser, backupData);
+                saveUser();
+                populateProfileForm();
+                updateUserInfo();
+                updateProfilePage();
+                localStorage.removeItem('betix_profile_backup');
+                enableEditMode(true);
+                return;
+            } catch(e) {}
+        }
+        enableEditMode(true);
+    }
+}
+
+function enableEditMode(edit) {
+    const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+    const saveBtn = document.getElementById('saveProfileBtn');
+    const editBtn = document.getElementById('editProfileBtn');
+    inputs.forEach(inp => inp.disabled = !edit);
+    if (edit) {
+        saveBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+        document.getElementById('emailVerificationStatus').innerHTML = '';
+        document.getElementById('phoneVerificationStatus').innerHTML = '';
+        document.querySelectorAll('.verify-btn').forEach(btn => btn.classList.remove('verified'));
+    } else {
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        if (currentUser.email && currentUser.email.trim()) {
+            document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            document.getElementById('verifyEmailBtn').classList.add('verified');
+        }
+        if (currentUser.phone_number && currentUser.phone_number.trim()) {
+            document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            document.getElementById('verifyPhoneBtn').classList.add('verified');
+        }
+    }
+}
+
+function fillProfileReview() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    const country = document.getElementById('profileCountry').value;
+    const address = document.getElementById('profileAddress').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+
+    profileDataForReview = { firstName, lastName, country, address, email, phone };
+
+    const content = document.getElementById('profileReviewContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div class="review-item"><span class="review-label">First Name</span><span class="review-value">${escapeHtml(firstName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Last Name</span><span class="review-value">${escapeHtml(lastName) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Country</span><span class="review-value">${escapeHtml(country) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Address</span><span class="review-value">${escapeHtml(address) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Email</span><span class="review-value">${escapeHtml(email) || '—'}</span></div>
+        <div class="review-item"><span class="review-label">Phone</span><span class="review-value">${escapeHtml(phone) || '—'}</span></div>
+    `;
+}
+
+function openProfileReview() {
+    const firstName = document.getElementById('profileFirstName').value.trim();
+    const lastName = document.getElementById('profileLastName').value.trim();
+    if (!firstName || !lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    fillProfileReview();
+    document.getElementById('profileReviewModal').classList.add('show');
+    document.getElementById('profileReviewLoading').style.display = 'none';
+    document.getElementById('profileReviewConfirmBtn').style.display = 'inline-block';
+    document.getElementById('profileReviewEditBtn').style.display = 'inline-block';
+}
+
+function closeProfileReview() {
+    document.getElementById('profileReviewModal').classList.remove('show');
+}
+
+async function confirmProfileSave() {
+    const data = profileDataForReview;
+    if (!data.firstName || !data.lastName) {
+        alert('First name and last name are required.');
+        return;
+    }
+    if (data.email && !data.email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    document.getElementById('profileReviewConfirmBtn').style.display = 'none';
+    document.getElementById('profileReviewEditBtn').style.display = 'none';
+    document.getElementById('profileReviewLoading').style.display = 'block';
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const piUid = currentUser.piUid || currentUser.wallet;
+    if (!piUid) {
+        alert('Please connect your Pi account first.');
+        closeProfileReview();
+        return;
+    }
+
+    try {
+        const updates = {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone,
+            profile_completed: true,
+            profile_reminder_shown: true,
+            updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient.from('users').update(updates).eq('pi_uid', piUid);
+        if (error) throw error;
+
+        Object.assign(currentUser, {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            country: data.country,
+            address: data.address,
+            email: data.email,
+            phone_number: data.phone,
+            profile_completed: true,
+            profile_reminder_shown: true
+        });
+        saveUser();
+        await loadProfileData();
+        await syncUserToSupabase();
+
+        closeProfileReview();
+        const msg = document.getElementById('profileSaveMessage');
+        msg.innerHTML = `
+            <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>
+                <div>
+                    <strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>
+                    <p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>
+                </div>
+            </div>
+        `;
+        setTimeout(() => { msg.innerHTML = ''; }, 5000);
+
+        updateUserInfo();
+        updateProfilePage();
+        enableEditMode(false);
+    } catch (error) {
+        alert('Error saving profile: ' + error.message);
+        closeProfileReview();
+    }
+}
+
+function verifyEmail() {
+    const email = document.getElementById('profileEmail').value.trim();
+    if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${email}.\nCode: ${code} (demo)`);
+    document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyEmailBtn').classList.add('verified');
+}
+
+function verifyPhone() {
+    const phone = document.getElementById('profilePhone').value.trim();
+    if (!phone || phone.length < 6) {
+        alert('Please enter a valid phone number.');
+        return;
+    }
+    const code = Math.floor(100000 + Math.random() * 900000);
+    alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
+    document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+    document.getElementById('verifyPhoneBtn').classList.add('verified');
 }
 
 // ============================================================
@@ -2289,7 +2329,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT (avec Pi)
+// CONFIRMATION D'ACHAT
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2492,6 +2532,9 @@ async function confirmPurchase(eventId, quantity) {
     }
 }
 
+// ============================================================
+// STAGGERED ANIMATION
+// ============================================================
 function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
@@ -2503,6 +2546,9 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
     }
 }
 
+// ============================================================
+// TOAST NOTIFICATION
+// ============================================================
 function showToast(title, message, type = 'success') {
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
@@ -2528,6 +2574,9 @@ function closeToast(toast) {
     setTimeout(() => toast.remove(), 400);
 }
 
+// ============================================================
+// SUCCESS POPUP
+// ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
     const title = document.getElementById('successTitle');
@@ -2612,57 +2661,8 @@ function closeSuccessPopup() {
     localStorage.removeItem('betix_success_popup_shown');
 }
 
-function showLoader(text = 'Loading...') {
-    const loader = document.getElementById('globalLoader');
-    if (loader) {
-        document.getElementById('loaderText').textContent = text;
-        loader.style.display = 'flex';
-    }
-}
-
-function hideLoader() {
-    const loader = document.getElementById('globalLoader');
-    if (loader) loader.style.display = 'none';
-}
-
-function openTransactionProcessedPopup(seconds) {
-    transactionProcessedSeconds = seconds || 5;
-    document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
-    document.getElementById('transactionProcessedPopup').style.display = 'flex';
-    if (transactionProcessedTimer) clearInterval(transactionProcessedTimer);
-    transactionProcessedTimer = setInterval(() => {
-        transactionProcessedSeconds--;
-        document.getElementById('timerSeconds').textContent = Math.max(0, transactionProcessedSeconds);
-        if (transactionProcessedSeconds <= 0) {
-            clearInterval(transactionProcessedTimer);
-            transactionProcessedTimer = null;
-        }
-    }, 1000);
-}
-
-function closeTransactionProcessedPopup() {
-    if (transactionProcessedTimer) {
-        clearInterval(transactionProcessedTimer);
-        transactionProcessedTimer = null;
-    }
-    document.getElementById('transactionProcessedPopup').style.display = 'none';
-}
-
-let transactionProcessedTimer = null;
-let transactionProcessedSeconds = 0;
-
-function openPastEventPopup() {
-    const popup = document.getElementById('pastEventPopup');
-    if (popup) popup.style.display = 'flex';
-}
-
-function closePastEventPopup() {
-    const popup = document.getElementById('pastEventPopup');
-    if (popup) popup.style.display = 'none';
-}
-
 // ============================================================
-// CONNEXION PI
+// CONNEXION PI (avec rechargement du profil)
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -2770,15 +2770,6 @@ async function connectToPi() {
     }
 }
 
-function showConnectSpinner() {
-    const btn = document.getElementById('sidebarWalletBtn');
-    if (btn) { btn.textContent = t('connecting'); btn.disabled = true; btn.classList.add('loading'); }
-}
-function hideConnectSpinner() {
-    const btn = document.getElementById('sidebarWalletBtn');
-    if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
-}
-
 // ============================================================
 // NOTIFICATION DE COMPLÉTION DE PROFIL
 // ============================================================
@@ -2790,125 +2781,6 @@ function checkAndNotifyProfileCompletion() {
             saveUser();
         }, 5000);
     }
-}
-
-function requireLogin() {
-    if (!currentUser.wallet && !currentUser.piUid) {
-        addNotification('Please connect your Pi account before performing this action.', 'warning');
-        alert(t('pleaseConnect'));
-        return false;
-    }
-    return true;
-}
-
-function requireProfileComplete() {
-    const check = checkProfileComplete();
-    if (!check.complete) {
-        const missing = check.missing.join(', ');
-        const msg = 'Please complete your profile before performing this action. Missing: ' + missing;
-        addNotification(msg, 'warning');
-        redirectToProfileWithMessage(msg);
-        return false;
-    }
-    return true;
-}
-
-function redirectToProfileWithMessage(message) {
-    alert(message);
-    showPage('profile');
-    const msgDiv = document.getElementById('profileSaveMessage');
-    if (msgDiv) {
-        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
-            <i class="fas fa-exclamation-triangle"></i> ${message}
-        </div>`;
-        setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
-    }
-}
-
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) { reject(new Error('Not an image')); return; }
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const img = new Image();
-            img.onload = function() {
-                let width = img.width, height = img.height;
-                const maxWidth = 1200, maxHeight = 1200;
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.round(width * ratio); height = Math.round(height * ratio);
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, width, height);
-                let format = 'image/webp';
-                const testCanvas = document.createElement('canvas');
-                testCanvas.width = 1; testCanvas.height = 1;
-                if (!testCanvas.toDataURL('image/webp').includes('image/webp')) format = 'image/jpeg';
-                resolve(canvas.toDataURL(format, 0.7));
-            };
-            img.onerror = function() { reject(new Error('Failed to load image')); };
-            img.src = ev.target.result;
-        };
-        reader.onerror = function() { reject(new Error('Failed to read file')); };
-        reader.readAsDataURL(file);
-    });
-}
-
-async function handleImageUploadModern(file, index) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
-    if (file.size > 10 * 1024 * 1024) { alert('Image is too large (max 10MB)'); return; }
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const progress = document.getElementById('progress' + (index + 1));
-    const progressFill = document.getElementById('progressFill' + (index + 1));
-    const progressText = document.getElementById('progressText' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    progress.style.display = 'block';
-    progressFill.style.width = '0%';
-    progressText.textContent = '0%';
-    box.classList.add('compress');
-    try {
-        let interval = setInterval(() => {
-            let cur = parseInt(progressFill.style.width) || 0;
-            if (cur < 90) { let nw = cur + Math.random() * 15; if (nw > 90) nw = 90; progressFill.style.width = nw + '%'; progressText.textContent = Math.round(nw) + '%'; }
-        }, 200);
-        const compressedData = await compressImage(file);
-        clearInterval(interval);
-        progressFill.style.width = '100%';
-        progressText.textContent = '100%';
-        setTimeout(() => {
-            progress.style.display = 'none';
-            progressFill.style.width = '0%';
-            previewImage.src = compressedData;
-            previewContainer.style.display = 'block';
-            box.classList.add('has-image');
-            box.classList.remove('compress');
-            uploadedImages[index] = compressedData;
-        }, 300);
-    } catch (error) { alert('Error compressing image. Please try with a smaller image.'); progress.style.display = 'none'; box.classList.remove('compress'); }
-}
-
-function removeImageModern(index) {
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    const input = document.getElementById('imageInput' + index);
-    previewContainer.style.display = 'none';
-    previewImage.src = '#';
-    box.classList.remove('has-image');
-    box.classList.remove('compress');
-    input.value = '';
-    delete uploadedImages[index];
-}
-
-function getUploadedImages() {
-    const images = [];
-    for (let key in uploadedImages) if (uploadedImages.hasOwnProperty(key)) images.push(uploadedImages[key]);
-    return images;
 }
 
 // ============================================================
@@ -3048,6 +2920,92 @@ async function confirmPublishEvent() {
     } catch (error) { alert(t('paymentError') + ': ' + error.message); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
 }
 
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) { reject(new Error('Not an image')); return; }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width, height = img.height;
+                const maxWidth = 1200, maxHeight = 1200;
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * ratio); height = Math.round(height * ratio);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, width, height);
+                let format = 'image/webp';
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 1; testCanvas.height = 1;
+                if (!testCanvas.toDataURL('image/webp').includes('image/webp')) format = 'image/jpeg';
+                resolve(canvas.toDataURL(format, 0.7));
+            };
+            img.onerror = function() { reject(new Error('Failed to load image')); };
+            img.src = ev.target.result;
+        };
+        reader.onerror = function() { reject(new Error('Failed to read file')); };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleImageUploadModern(file, index) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('Image is too large (max 10MB)'); return; }
+    const box = document.getElementById('uploadBox' + (index + 1));
+    const progress = document.getElementById('progress' + (index + 1));
+    const progressFill = document.getElementById('progressFill' + (index + 1));
+    const progressText = document.getElementById('progressText' + (index + 1));
+    const previewContainer = document.getElementById('previewContainer' + index);
+    const previewImage = document.getElementById('previewImage' + index);
+    progress.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = '0%';
+    box.classList.add('compress');
+    try {
+        let interval = setInterval(() => {
+            let cur = parseInt(progressFill.style.width) || 0;
+            if (cur < 90) { let nw = cur + Math.random() * 15; if (nw > 90) nw = 90; progressFill.style.width = nw + '%'; progressText.textContent = Math.round(nw) + '%'; }
+        }, 200);
+        const compressedData = await compressImage(file);
+        clearInterval(interval);
+        progressFill.style.width = '100%';
+        progressText.textContent = '100%';
+        setTimeout(() => {
+            progress.style.display = 'none';
+            progressFill.style.width = '0%';
+            previewImage.src = compressedData;
+            previewContainer.style.display = 'block';
+            box.classList.add('has-image');
+            box.classList.remove('compress');
+            uploadedImages[index] = compressedData;
+        }, 300);
+    } catch (error) { alert('Error compressing image. Please try with a smaller image.'); progress.style.display = 'none'; box.classList.remove('compress'); }
+}
+
+function removeImageModern(index) {
+    const box = document.getElementById('uploadBox' + (index + 1));
+    const previewContainer = document.getElementById('previewContainer' + index);
+    const previewImage = document.getElementById('previewImage' + index);
+    const input = document.getElementById('imageInput' + index);
+    previewContainer.style.display = 'none';
+    previewImage.src = '#';
+    box.classList.remove('has-image');
+    box.classList.remove('compress');
+    input.value = '';
+    delete uploadedImages[index];
+}
+
+function getUploadedImages() {
+    const images = [];
+    for (let key in uploadedImages) if (uploadedImages.hasOwnProperty(key)) images.push(uploadedImages[key]);
+    return images;
+}
+
 function openEditEventModal(eventId) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
@@ -3115,80 +3073,218 @@ function renderMyRatings() {
 
 function setupTicketTypesUI() { /* no-op */ }
 
-function initFilters() {
-    const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
-    const container = document.getElementById('filtersContainer');
-    if (!container) return;
-    container.innerHTML = cats.map(c => `<div class="filter-chip ${c === currentFilter ? 'active' : ''}" data-category="${c}">${c === 'All' ? t('all') : c}</div>`).join('');
-    document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }));
+function initCountrySelectors() {
+    const filterSelect = document.getElementById('countrySelect');
+    if (filterSelect) {
+        filterSelect.innerHTML = '';
+        countriesList.forEach(country => {
+            const flag = countryFlags[country] || '';
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = flag + ' ' + country;
+            if (country === currentCountryFilter) option.selected = true;
+            filterSelect.appendChild(option);
+        });
+    }
+    const eventSelect = document.getElementById('eventCountry');
+    if (eventSelect) {
+        eventSelect.innerHTML = '';
+        countriesList.forEach(country => {
+            if (country === 'All') return;
+            const flag = countryFlags[country] || '';
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = flag + ' ' + country;
+            if (country === 'France') option.selected = true;
+            eventSelect.appendChild(option);
+        });
+    }
+    setTimeout(() => {
+        const filterSelect = document.getElementById('countrySelect');
+        if (filterSelect) {
+            const options = filterSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+        const eventSelect = document.getElementById('eventCountry');
+        if (eventSelect) {
+            const options = eventSelect.querySelectorAll('option');
+            options.forEach((opt, i) => {
+                opt.classList.add('stagger-item');
+                opt.style.animationDelay = (i * 0.015) + 's';
+            });
+        }
+    }, 50);
 }
 
-function goToMyEvents() { showPage('myevents'); }
-function goToTickets() { showPage('tickets'); }
-function goToHistory() { showPage('history'); }
-function goToRatings() { showPage('ratings'); }
-
 // ============================================================
-// MISE À JOUR DE L'INTERFACE UTILISATEUR
+// LANGUE, TRADUCTIONS ET UI
 // ============================================================
-function updateUserInfo() {
-    const displayName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = displayName);
-    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = displayName);
-    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
-    document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
-    document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
-    document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
-    updateConnectButtons();
-    updateSidebarNotifBadge();
+function changeLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('betix_language', lang);
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) settingsSelect.value = lang;
     updateUITranslations();
-    updateScanButtonVisibility();
+    const googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
+    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
 }
 
-function updateProfilePage() {
-    const userId = currentUser.piUid || currentUser.wallet;
-    const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
-    const userTickets = tickets.filter(t => t.userWallet === userId || t.buyerWallet === userId);
-    const userRatings = ratings.filter(r => r.userWallet === userId || r.userWallet === currentUser.name);
-    document.getElementById('myEventsCount') && (document.getElementById('myEventsCount').textContent = myEvents.length);
-    document.getElementById('ticketCount') && (document.getElementById('ticketCount').textContent = userTickets.length);
-    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === userId || t.buyerWallet === userId)).length);
-    document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
-    document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
-    document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
-    updateUserInfo();
-    updateScanButtonVisibility();
+function updateUITranslations() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+    const pageMap = { home: t('home'), myevents: t('myEvents'), profile: t('profile'), settings: t('settings'), tickets: t('myTickets'), history: t('ticketHistory'), faq: t('faq'), admin: t('administration'), scan: 'Scan Ticket' };
+    sidebarItems.forEach(item => {
+        const page = item.dataset.page;
+        if (pageMap[page]) {
+            const icon = item.querySelector('i');
+            item.innerHTML = '';
+            if (icon) item.appendChild(icon);
+            item.appendChild(document.createTextNode(' ' + pageMap[page]));
+        }
+    });
+    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
+    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
+    document.getElementById('sidebarWalletBtn') && (document.getElementById('sidebarWalletBtn').textContent = currentUser.wallet ? t('disconnect') : t('connectPi'));
+    const socialTitle = document.querySelector('.sidebar-social-title');
+    if (socialTitle) socialTitle.textContent = t('followUs');
+    const heroTitle = document.querySelector('.hero-text h1');
+    if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.placeholder = t('searchEvent');
+    const countryLabel = document.querySelector('.filter-country-select label');
+    if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
+    const eventsTitle = document.querySelector('.events-title');
+    if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
+    const eventsSub = document.querySelector('.events-sub');
+    if (eventsSub) eventsSub.textContent = t('joinCommunity');
+    document.querySelector('#navHome span') && (document.querySelector('#navHome span').textContent = t('home'));
+    document.querySelector('#navCreate span') && (document.querySelector('#navCreate span').textContent = 'Create');
+    document.querySelector('#navMenu span') && (document.querySelector('#navMenu span').textContent = 'Menu');
+    const backLabel = document.querySelector('.back-btn .back-btn-label');
+    if (backLabel) backLabel.textContent = t('back');
+    const footerTitles = document.querySelectorAll('.footer-col h4');
+    if (footerTitles.length >= 3) {
+        footerTitles[0].textContent = t('footerTitleInfo');
+        footerTitles[1].textContent = t('footerTitleBetix');
+        footerTitles[2].textContent = t('footerTitlePartners');
+    }
+    const footerLinks = document.querySelectorAll('.footer-col ul li a');
+    const footerLinkTexts = [
+        t('footerTermsSale'), t('footerTermsUse'), t('footerPrivacy'), t('footerAccessibility'),
+        t('footerPrivacyChoices'), t('footerFanGuide'), t('footerLegal'), t('footerCookies'),
+        t('footerAbout'), t('footerContact'), t('footerFeedback'), t('footerHelp'),
+        t('footerJoinCommunity'), t('footerPiNetwork'), t('footerSecure')
+    ];
+    footerLinks.forEach((link, index) => { if (index < footerLinkTexts.length) link.textContent = footerLinkTexts[index]; });
+    const footerSlogan = document.querySelector('.footer-slogan');
+    if (footerSlogan) footerSlogan.textContent = t('footerSlogan');
+    const footerDesc = document.querySelector('.footer-desc');
+    if (footerDesc) footerDesc.textContent = t('footerDesc');
+    const footerRights = document.querySelectorAll('.footer-bottom span');
+    if (footerRights.length >= 1) footerRights[0].textContent = '© 2026 Betix. ' + t('footerRights');
+    if (footerRights.length >= 2) footerRights[footerRights.length - 1].textContent = t('footerBuiltOn');
 }
 
-function updateConnectButtons() {
-    const sidebarBtn = document.getElementById('sidebarWalletBtn');
-    if (sidebarBtn) {
-        if (currentUser.wallet) {
-            sidebarBtn.textContent = t('disconnect');
-            sidebarBtn.classList.add('disconnect');
-            sidebarBtn.classList.remove('loading');
-            sidebarBtn.onclick = function() { disconnectPi(); };
-            sidebarBtn.disabled = false;
-        } else {
-            sidebarBtn.textContent = t('connectPi');
-            sidebarBtn.classList.remove('disconnect');
-            sidebarBtn.classList.remove('loading');
-            sidebarBtn.onclick = function() { connectToPi(); };
-            sidebarBtn.disabled = false;
-        }
+function detectLanguage() {
+    let savedLang = localStorage.getItem('betix_language') || 'en';
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
+    currentLang = savedLang;
+    const nativeSelect = document.getElementById('nativeLangSelect');
+    if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) settingsSelect.value = savedLang;
+    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
+    setTimeout(() => updateUITranslations(), 500);
+    return savedLang;
+}
+
+function syncSettingsLanguageSelector() {
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) {
+        settingsSelect.value = currentLang;
+        settingsSelect.addEventListener('change', function() { changeLanguage(this.value); });
     }
-    const profilePageBtn = document.getElementById('profileConnectBtnPage');
-    if (profilePageBtn) {
-        if (currentUser.wallet) {
-            profilePageBtn.textContent = t('disconnect');
-            profilePageBtn.className = 'btn-primary disconnect-btn';
-            profilePageBtn.onclick = function() { disconnectPi(); };
-        } else {
-            profilePageBtn.textContent = t('connectPi');
-            profilePageBtn.className = 'btn-primary';
-            profilePageBtn.onclick = function() { connectToPi(); };
-        }
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function deleteNotification(id) {
+    notifications = notifications.filter(n => n.id !== id);
+    saveNotifications();
+    renderNotificationsPage();
+    updateNotifBadgeHeader();
+    updateSidebarNotifBadge();
+}
+
+function clearAllNotifications() {
+    if (notifications.length === 0) return;
+    if (confirm('Delete all notifications?')) {
+        notifications = [];
+        saveNotifications();
+        renderNotificationsPage();
+        updateNotifBadgeHeader();
+        updateSidebarNotifBadge();
+        addNotification('All notifications have been cleared.', 'info');
     }
+}
+
+function renderNotificationsPage() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+            <div class="notification-empty">
+                <i class="fas fa-bell-slash"></i>
+                <p style="font-size:0.95rem;">${t('noNotifications')}</p>
+            </div>
+        `;
+        return;
+    }
+    let html = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
+            <button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">
+                <i class="fas fa-trash"></i> Clear all
+            </button>
+        </div>
+    `;
+    notifications.forEach((notif) => {
+        const time = new Date(notif.date);
+        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const unreadClass = notif.read ? '' : 'unread';
+        const type = notif.type || 'info';
+        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
+        const icon = iconMap[type] || 'fa-info-circle';
+        html += `
+            <div class="notification-item type-${type} ${unreadClass}">
+                <div class="notif-icon"><i class="fas ${icon}"></i></div>
+                <div class="notif-content">
+                    <div class="notif-msg">${escapeHtml(notif.message)}</div>
+                    <div class="notif-time">${timeStr}</div>
+                </div>
+                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    notifications.forEach(n => n.read = true);
+    saveNotifications();
+    updateNotifBadgeHeader();
+    updateSidebarNotifBadge();
+}
+
+function updateNotifBadgeHeader() {
+    const badge = document.getElementById('notifBadgeHeader');
+    if (!badge) return;
+    const unread = notifications.filter(n => !n.read).length;
+    if (unread > 0) { badge.textContent = unread; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
+    updateSidebarNotifBadge();
 }
 
 function updateSidebarNotifBadge() {
@@ -3198,29 +3294,96 @@ function updateSidebarNotifBadge() {
     if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
 }
 
-function updateScanButtonVisibility() {
-    const scanBtn = document.getElementById('scanMenuItem');
-    if (!scanBtn) return;
-    const userId = currentUser.piUid || currentUser.wallet;
-    const hasEvents = events.some(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
-    scanBtn.style.display = hasEvents ? 'block' : 'none';
+function addNotification(message, type) {
+    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
+    notifications.unshift(notif);
+    if (notifications.length > 100) notifications = notifications.slice(0, 100);
+    saveNotifications();
+    updateNotifBadgeHeader();
 }
 
-function trackUserConnection() {
-    if (!currentUser.wallet) return;
-    let existing = connectedUsers.find(u => u.wallet === currentUser.wallet);
-    const userData = { name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString(), loyaltyPoints: currentUser.loyaltyPoints || 0, memberSince: currentUser.memberSince || '2026' };
-    if (!existing) connectedUsers.push(userData);
-    else { Object.assign(existing, userData); }
-    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
-    syncUserToSupabase();
+// ============================================================
+// NAVIGATION ET PROFIL
+// ============================================================
+function goToMyEvents() { showPage('myevents'); }
+function goToTickets() { showPage('tickets'); }
+function goToHistory() { showPage('history'); }
+function goToRatings() { showPage('ratings'); }
+
+function calculateLoyaltyPoints() {
+    let points = 0;
+    for (let i = 0; i < ratings.length; i++) if (ratings[i].userWallet === (currentUser.wallet || currentUser.name)) points += ratings[i].rating;
+    currentUser.loyaltyPoints = points;
+    saveUser();
+    return points;
 }
 
 function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// NAVIGATION ET PAGES
+// DISCONNECT (avec sauvegarde du profil avant déconnexion)
+// ============================================================
+async function disconnectPi() {
+    if (!confirm(t('disconnect') + '?')) return;
+    
+    // Sauvegarder le profil dans Supabase avant de déconnecter
+    try {
+        await syncUserToSupabase();
+        console.log('✅ Profile saved to Supabase before disconnection.');
+    } catch (error) {
+        console.error('❌ Error saving profile before disconnection:', error);
+    }
+
+    // Sauvegarder une copie des données de profil dans localStorage (backup)
+    const profileBackup = {
+        first_name: currentUser.first_name || '',
+        last_name: currentUser.last_name || '',
+        country: currentUser.country || '',
+        address: currentUser.address || '',
+        email: currentUser.email || '',
+        phone_number: currentUser.phone_number || '',
+        profile_completed: currentUser.profile_completed || false,
+        profile_reminder_shown: currentUser.profile_reminder_shown || false
+    };
+    localStorage.setItem('betix_profile_backup', JSON.stringify(profileBackup));
+
+    // Réinitialiser les champs de session et de profil
+    currentUser = {
+        name: 'Guest',
+        wallet: null,
+        piUid: null,
+        memberSince: '2026',
+        loyaltyPoints: 0,
+        first_name: '',
+        last_name: '',
+        country: '',
+        address: '',
+        email: '',
+        phone_number: '',
+        profile_completed: false,
+        profile_reminder_shown: false
+    };
+    piUser = null;
+    saveUser();
+    localStorage.removeItem('betix_last_activity');
+    localStorage.removeItem('betix_pending_payment');
+    updateUserInfo();
+    updateProfilePage();
+    renderEventsByCategory();
+    renderTickets();
+    renderHistory();
+    updateConnectButtons();
+    closeSidebar();
+    alert(t('disconnected'));
+}
+
+function logout() { disconnectPi(); }
+function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
+function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
+
+// ============================================================
+// SHOW PAGE
 // ============================================================
 function showPage(pageName) {
     updateActivity();
@@ -3239,6 +3402,7 @@ function showPage(pageName) {
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
+        // Toujours recharger les données du profil si l'utilisateur est connecté
         if (currentUser.piUid || currentUser.wallet) {
             loadProfileData(); 
         } else {
@@ -3272,6 +3436,59 @@ function goBack() {
 
 function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); document.body.style.overflow = ''; }
 function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+
+// ============================================================
+// UPDATE CONNECT BUTTONS
+// ============================================================
+function updateConnectButtons() {
+    const sidebarBtn = document.getElementById('sidebarWalletBtn');
+    if (sidebarBtn) {
+        if (currentUser.wallet) {
+            sidebarBtn.textContent = t('disconnect');
+            sidebarBtn.classList.add('disconnect');
+            sidebarBtn.classList.remove('loading');
+            sidebarBtn.onclick = function() { disconnectPi(); };
+            sidebarBtn.disabled = false;
+        } else {
+            sidebarBtn.textContent = t('connectPi');
+            sidebarBtn.classList.remove('disconnect');
+            sidebarBtn.classList.remove('loading');
+            sidebarBtn.onclick = function() { connectToPi(); };
+            sidebarBtn.disabled = false;
+        }
+    }
+    const profilePageBtn = document.getElementById('profileConnectBtnPage');
+    if (profilePageBtn) {
+        if (currentUser.wallet) {
+            profilePageBtn.textContent = t('disconnect');
+            profilePageBtn.className = 'btn-primary disconnect-btn';
+            profilePageBtn.onclick = function() { disconnectPi(); };
+        } else {
+            profilePageBtn.textContent = t('connectPi');
+            profilePageBtn.className = 'btn-primary';
+            profilePageBtn.onclick = function() { connectToPi(); };
+        }
+    }
+}
+
+function showConnectSpinner() {
+    const btn = document.getElementById('sidebarWalletBtn');
+    if (btn) { btn.textContent = t('connecting'); btn.disabled = true; btn.classList.add('loading'); }
+}
+function hideConnectSpinner() {
+    const btn = document.getElementById('sidebarWalletBtn');
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); updateConnectButtons(); }
+}
+
+function trackUserConnection() {
+    if (!currentUser.wallet) return;
+    let existing = connectedUsers.find(u => u.wallet === currentUser.wallet);
+    const userData = { name: currentUser.name, wallet: currentUser.wallet, ticketCount: tickets.length, lastSeen: new Date().toLocaleString(), loyaltyPoints: currentUser.loyaltyPoints || 0, memberSince: currentUser.memberSince || '2026' };
+    if (!existing) connectedUsers.push(userData);
+    else { Object.assign(existing, userData); }
+    localStorage.setItem('betix_connected_users', JSON.stringify(connectedUsers));
+    syncUserToSupabase();
+}
 
 // ============================================================
 // RENDER MY EVENTS
@@ -3322,6 +3539,55 @@ function renderMyEventCardModern(event) {
         ${durationDisplay ? `<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">${t('duration')}</span> <span class="detail-value">${durationDisplay}</span></div>` : ''}
         <div class="detail-item-modern" style="grid-column:${durationDisplay ? '2' : '1'}/-1;"><i class="fas fa-tags"></i> <span class="detail-label">${t('ticketTypes')}</span> <span class="detail-value" style="font-size:0.7rem;">${escapeHtml(typesDisplay)}</span></div>
     </div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ${event.boosts || 0} ${t('views')}</span><span><i class="fas fa-calendar-plus"></i> ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal('${event.id}')"><i class="fas fa-pen"></i> ${t('editEvent')}</button></div></div></div></div>`;
+}
+
+function initFilters() {
+    const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
+    const container = document.getElementById('filtersContainer');
+    if (!container) return;
+    container.innerHTML = cats.map(c => `<div class="filter-chip ${c === currentFilter ? 'active' : ''}" data-category="${c}">${c === 'All' ? t('all') : c}</div>`).join('');
+    document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }));
+}
+
+function updateUserInfo() {
+    const displayName = (currentUser.first_name || currentUser.name || 'Guest') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = displayName);
+    document.getElementById('profileNameDisplay') && (document.getElementById('profileNameDisplay').textContent = displayName);
+    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
+    document.getElementById('sidebarAvatarText') && (document.getElementById('sidebarAvatarText').textContent = (displayName || 'U')[0].toUpperCase());
+    document.getElementById('profileWalletDisplay') && (document.getElementById('profileWalletDisplay').textContent = currentUser.wallet || t('notConnected'));
+    document.getElementById('memberSince') && (document.getElementById('memberSince').textContent = currentUser.memberSince || '2026');
+    updateConnectButtons();
+    updateSidebarNotifBadge();
+    updateUITranslations();
+    updateScanButtonVisibility();
+}
+
+function updateProfilePage() {
+    const userId = currentUser.piUid || currentUser.wallet;
+    const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+    const userTickets = tickets.filter(t => t.userWallet === userId || t.buyerWallet === userId);
+    const userRatings = ratings.filter(r => r.userWallet === userId || r.userWallet === currentUser.name);
+    document.getElementById('myEventsCount') && (document.getElementById('myEventsCount').textContent = myEvents.length);
+    document.getElementById('ticketCount') && (document.getElementById('ticketCount').textContent = userTickets.length);
+    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === userId || t.buyerWallet === userId)).length);
+    document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
+    document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
+    document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
+    updateUserInfo();
+    updateScanButtonVisibility();
+}
+
+function userHasPublishedEvents() {
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    const userId = currentUser.piUid || currentUser.wallet;
+    return events.some(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+}
+
+function updateScanButtonVisibility() {
+    const scanBtn = document.getElementById('scanMenuItem');
+    if (!scanBtn) return;
+    scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
 }
 
 // ============================================================
@@ -3635,179 +3901,42 @@ function initAdminTabs() {
 }
 
 // ============================================================
-// NOTIFICATIONS
+// TRANSACTION PROCESSED ET PAST EVENT POPUPS
 // ============================================================
-function addNotification(message, type) {
-    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    saveNotifications();
-    updateNotifBadgeHeader();
-}
+let transactionProcessedTimer = null;
+let transactionProcessedSeconds = 0;
 
-function deleteNotification(id) {
-    notifications = notifications.filter(n => n.id !== id);
-    saveNotifications();
-    renderNotificationsPage();
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-function clearAllNotifications() {
-    if (notifications.length === 0) return;
-    if (confirm('Delete all notifications?')) {
-        notifications = [];
-        saveNotifications();
-        renderNotificationsPage();
-        updateNotifBadgeHeader();
-        updateSidebarNotifBadge();
-        addNotification('All notifications have been cleared.', 'info');
-    }
-}
-
-function renderNotificationsPage() {
-    const container = document.getElementById('notificationsList');
-    if (!container) return;
-    if (!notifications || notifications.length === 0) {
-        container.innerHTML = `
-            <div class="notification-empty">
-                <i class="fas fa-bell-slash"></i>
-                <p style="font-size:0.95rem;">${t('noNotifications')}</p>
-            </div>
-        `;
-        return;
-    }
-    let html = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
-            <button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">
-                <i class="fas fa-trash"></i> Clear all
-            </button>
-        </div>
-    `;
-    notifications.forEach((notif) => {
-        const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const unreadClass = notif.read ? '' : 'unread';
-        const type = notif.type || 'info';
-        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
-        const icon = iconMap[type] || 'fa-info-circle';
-        html += `
-            <div class="notification-item type-${type} ${unreadClass}">
-                <div class="notif-icon"><i class="fas ${icon}"></i></div>
-                <div class="notif-content">
-                    <div class="notif-msg">${escapeHtml(notif.message)}</div>
-                    <div class="notif-time">${timeStr}</div>
-                </div>
-                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete"><i class="fas fa-times"></i></button>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-    notifications.forEach(n => n.read = true);
-    saveNotifications();
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-function updateNotifBadgeHeader() {
-    const badge = document.getElementById('notifBadgeHeader');
-    if (!badge) return;
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) { badge.textContent = unread; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
-    updateSidebarNotifBadge();
-}
-
-// ============================================================
-// LANGUE, TRADUCTIONS ET UI
-// ============================================================
-function changeLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('betix_language', lang);
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = lang;
-    updateUITranslations();
-    const googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
-    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
-}
-
-function updateUITranslations() {
-    const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
-    const pageMap = { home: t('home'), myevents: t('myEvents'), profile: t('profile'), settings: t('settings'), tickets: t('myTickets'), history: t('ticketHistory'), faq: t('faq'), admin: t('administration'), scan: 'Scan Ticket' };
-    sidebarItems.forEach(item => {
-        const page = item.dataset.page;
-        if (pageMap[page]) {
-            const icon = item.querySelector('i');
-            item.innerHTML = '';
-            if (icon) item.appendChild(icon);
-            item.appendChild(document.createTextNode(' ' + pageMap[page]));
+function openTransactionProcessedPopup(seconds) {
+    transactionProcessedSeconds = seconds || 5;
+    document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
+    document.getElementById('transactionProcessedPopup').style.display = 'flex';
+    if (transactionProcessedTimer) clearInterval(transactionProcessedTimer);
+    transactionProcessedTimer = setInterval(() => {
+        transactionProcessedSeconds--;
+        document.getElementById('timerSeconds').textContent = Math.max(0, transactionProcessedSeconds);
+        if (transactionProcessedSeconds <= 0) {
+            clearInterval(transactionProcessedTimer);
+            transactionProcessedTimer = null;
         }
-    });
-    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
-    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
-    document.getElementById('sidebarWalletBtn') && (document.getElementById('sidebarWalletBtn').textContent = currentUser.wallet ? t('disconnect') : t('connectPi'));
-    const socialTitle = document.querySelector('.sidebar-social-title');
-    if (socialTitle) socialTitle.textContent = t('followUs');
-    const heroTitle = document.querySelector('.hero-text h1');
-    if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.placeholder = t('searchEvent');
-    const countryLabel = document.querySelector('.filter-country-select label');
-    if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
-    const eventsTitle = document.querySelector('.events-title');
-    if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
-    const eventsSub = document.querySelector('.events-sub');
-    if (eventsSub) eventsSub.textContent = t('joinCommunity');
-    document.querySelector('#navHome span') && (document.querySelector('#navHome span').textContent = t('home'));
-    document.querySelector('#navCreate span') && (document.querySelector('#navCreate span').textContent = 'Create');
-    document.querySelector('#navMenu span') && (document.querySelector('#navMenu span').textContent = 'Menu');
-    const backLabel = document.querySelector('.back-btn .back-btn-label');
-    if (backLabel) backLabel.textContent = t('back');
-    const footerTitles = document.querySelectorAll('.footer-col h4');
-    if (footerTitles.length >= 3) {
-        footerTitles[0].textContent = t('footerTitleInfo');
-        footerTitles[1].textContent = t('footerTitleBetix');
-        footerTitles[2].textContent = t('footerTitlePartners');
-    }
-    const footerLinks = document.querySelectorAll('.footer-col ul li a');
-    const footerLinkTexts = [
-        t('footerTermsSale'), t('footerTermsUse'), t('footerPrivacy'), t('footerAccessibility'),
-        t('footerPrivacyChoices'), t('footerFanGuide'), t('footerLegal'), t('footerCookies'),
-        t('footerAbout'), t('footerContact'), t('footerFeedback'), t('footerHelp'),
-        t('footerJoinCommunity'), t('footerPiNetwork'), t('footerSecure')
-    ];
-    footerLinks.forEach((link, index) => { if (index < footerLinkTexts.length) link.textContent = footerLinkTexts[index]; });
-    const footerSlogan = document.querySelector('.footer-slogan');
-    if (footerSlogan) footerSlogan.textContent = t('footerSlogan');
-    const footerDesc = document.querySelector('.footer-desc');
-    if (footerDesc) footerDesc.textContent = t('footerDesc');
-    const footerRights = document.querySelectorAll('.footer-bottom span');
-    if (footerRights.length >= 1) footerRights[0].textContent = '© 2026 Betix. ' + t('footerRights');
-    if (footerRights.length >= 2) footerRights[footerRights.length - 1].textContent = t('footerBuiltOn');
+    }, 1000);
 }
 
-function detectLanguage() {
-    let savedLang = localStorage.getItem('betix_language') || 'en';
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlLang = urlParams.get('lang');
-    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
-    currentLang = savedLang;
-    const nativeSelect = document.getElementById('nativeLangSelect');
-    if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = savedLang;
-    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
-    setTimeout(() => updateUITranslations(), 500);
-    return savedLang;
+function closeTransactionProcessedPopup() {
+    if (transactionProcessedTimer) {
+        clearInterval(transactionProcessedTimer);
+        transactionProcessedTimer = null;
+    }
+    document.getElementById('transactionProcessedPopup').style.display = 'none';
 }
 
-function syncSettingsLanguageSelector() {
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) {
-        settingsSelect.value = currentLang;
-        settingsSelect.addEventListener('change', function() { changeLanguage(this.value); });
-    }
+function openPastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'flex';
+}
+
+function closePastEventPopup() {
+    const popup = document.getElementById('pastEventPopup');
+    if (popup) popup.style.display = 'none';
 }
 
 // ============================================================
@@ -3906,9 +4035,6 @@ function showLegal(type) {
 
 function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.clear(); location.reload(); } }
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
-
-function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
-function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
 
 // ============================================================
 // INITIALISATION DE L'APPLICATION
@@ -4098,9 +4224,6 @@ window.refreshUsersList = refreshUsersList;
 window.loadAllUsersFromSupabase = loadAllUsersFromSupabase;
 window.deleteNotification = deleteNotification;
 window.clearAllNotifications = clearAllNotifications;
-window.loadProfileData = loadProfileData;
-window.populateProfileForm = populateProfileForm;
-window.confirmProfileSave = confirmProfileSave;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
