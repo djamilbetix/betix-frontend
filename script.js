@@ -249,7 +249,7 @@ const translations = {
         eventEnded: 'Event ended',
         eventEndedMsg: 'This event has already taken place and is no longer available for booking.',
         viewUpcoming: 'View upcoming events',
-        purchaseConfirmed: '✅ Purchase confirmed!',
+        purchaseConfirmed: 'Purchase confirmed!',
         purchaseCongrats: 'Congratulations! Your purchase was successful.',
         ticketAvailable: 'Your ticket is available in your personal space. You will also receive a confirmation email.',
         backHome: 'Back to Home',
@@ -694,10 +694,10 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
             const { error } = await supabaseClient.from('users').insert(userData);
             if (error) throw error;
         }
-        console.log('✅ User saved to Supabase:', piUid);
+        console.log('User saved to Supabase:', piUid);
         return true;
     } catch (error) {
-        console.error('❌ saveUserToSupabase error:', error);
+        console.error('saveUserToSupabase error:', error);
         return false;
     }
 }
@@ -735,13 +735,13 @@ async function saveEventToSupabase(eventData) {
         };
         const { error } = await supabaseClient.from('events').upsert(dbEvent, { onConflict: 'id', ignoreDuplicates: false });
         if (error) {
-            console.error('❌ Supabase error saving event:', error);
+            console.error('Supabase error saving event:', error);
             return false;
         }
-        console.log('✅ Event saved to Supabase:', eventData.id);
+        console.log('Event saved to Supabase:', eventData.id);
         return true;
     } catch (error) {
-        console.error('❌ saveEventToSupabase exception:', error);
+        console.error('saveEventToSupabase exception:', error);
         return false;
     }
 }
@@ -776,13 +776,13 @@ async function saveTicketToSupabase(ticketData) {
         };
         const { error } = await supabaseClient.from('tickets').upsert(dbTicket, { onConflict: 'id', ignoreDuplicates: false });
         if (error) {
-            console.error('❌ Supabase error saving ticket:', error);
+            console.error('Supabase error saving ticket:', error);
             return false;
         }
-        console.log('✅ Ticket saved to Supabase:', ticketData.id);
+        console.log('Ticket saved to Supabase:', ticketData.id);
         return true;
     } catch (error) {
-        console.error('❌ saveTicketToSupabase exception:', error);
+        console.error('saveTicketToSupabase exception:', error);
         return false;
     }
 }
@@ -795,7 +795,7 @@ async function loadTicketsFromSupabase(piUid) {
         if (!piUid) return [];
         const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
         if (error) {
-            console.error('❌ Error loading tickets from Supabase:', error);
+            console.error('Error loading tickets from Supabase:', error);
             return [];
         }
         return (data || []).map(t => ({
@@ -820,7 +820,7 @@ async function loadTicketsFromSupabase(piUid) {
             pays: t.pays || 'France',
             ticketNumber: t.ticket_number
         }));
-    } catch (error) { console.error('❌ loadTicketsFromSupabase exception:', error); return []; }
+    } catch (error) { console.error('loadTicketsFromSupabase exception:', error); return []; }
 }
 
 // ============================================================
@@ -830,7 +830,7 @@ async function loadEventsFromSupabase() {
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
         if (error) {
-            console.error('❌ Error loading events from Supabase:', error);
+            console.error('Error loading events from Supabase:', error);
             return [];
         }
         return (data || []).map(e => {
@@ -842,7 +842,7 @@ async function loadEventsFromSupabase() {
                         imagesArray = parsed.filter(url => url && typeof url === 'string' && url.startsWith('http'));
                     }
                 } catch(parseErr) {
-                    console.warn('⚠️ Could not parse image_urls for event', e.id, parseErr);
+                    console.warn('Could not parse image_urls for event', e.id, parseErr);
                 }
             }
             if (imagesArray.length === 0 && e.image_url && e.image_url.startsWith('http')) {
@@ -852,7 +852,7 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
-            console.log(`📸 Event "${e.title}" has ${imagesArray.length} images`);
+            console.log('Event "' + e.title + '" has ' + imagesArray.length + ' images');
             
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
@@ -884,7 +884,7 @@ async function loadEventsFromSupabase() {
             };
         });
     } catch (error) {
-        console.error('❌ loadEventsFromSupabase exception:', error);
+        console.error('loadEventsFromSupabase exception:', error);
         return [];
     }
 }
@@ -928,7 +928,7 @@ async function loadAllFromSupabase() {
         localStorage.setItem('betix_events', JSON.stringify(events));
         saveBackupData(events, tickets);
     } catch (error) {
-        console.error('❌ Error loading events from Supabase:', error);
+        console.error('Error loading events from Supabase:', error);
         events = JSON.parse(localStorage.getItem('betix_events') || '[]');
     }
     
@@ -942,7 +942,7 @@ async function loadAllFromSupabase() {
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
             saveBackupData(events, tickets);
         } catch (error) {
-            console.error('❌ Error loading tickets from Supabase:', error);
+            console.error('Error loading tickets from Supabase:', error);
             tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         }
     } else {
@@ -1013,10 +1013,10 @@ async function syncUserToSupabase() {
         return;
     }
     const piUid = currentUser.piUid || currentUser.wallet;
-    console.log('🔄 Syncing user to Supabase...', piUid);
+    console.log('Syncing user to Supabase...', piUid);
     const success = await saveUserToSupabase(piUid, currentUser.name || 'User', currentUser.wallet || piUid, currentUser.loyaltyPoints || 0);
-    if (success) console.log('✅ User synced successfully.');
-    else console.error('❌ User sync failed.');
+    if (success) console.log('User synced successfully.');
+    else console.error('User sync failed.');
 }
 
 async function syncEventsToSupabase() {
@@ -1026,7 +1026,7 @@ async function syncEventsToSupabase() {
         if (saved) success++;
         if (i % 5 === 0) await new Promise(r => setTimeout(r, 100));
     }
-    console.log(`Synced ${success}/${events.length} events to Supabase.`);
+    console.log('Synced ' + success + '/' + events.length + ' events to Supabase.');
 }
 
 async function syncTicketsToSupabase() {
@@ -1041,7 +1041,7 @@ async function syncTicketsToSupabase() {
         pendingTickets.push(...failed);
         localStorage.setItem('betix_pending_tickets', JSON.stringify(pendingTickets));
     }
-    console.log(`Synced ${success}/${tickets.length} tickets to Supabase.`);
+    console.log('Synced ' + success + '/' + tickets.length + ' tickets to Supabase.');
 }
 
 async function syncAllToSupabase(retryCount = 0) {
@@ -1054,7 +1054,7 @@ async function syncAllToSupabase(retryCount = 0) {
         updateSyncStatus('success');
         return { events: events.length, tickets: tickets.length };
     } catch (error) {
-        console.error('❌ syncAllToSupabase error:', error);
+        console.error('syncAllToSupabase error:', error);
         if (retryCount < maxRetries) { await new Promise(r => setTimeout(r, 2000)); return syncAllToSupabase(retryCount + 1); }
         else { updateSyncStatus('error'); return { events: 0, tickets: 0, error: error.message }; }
     }
@@ -1176,9 +1176,9 @@ function redirectToProfileWithMessage(message) {
     showPage('profile');
     const msgDiv = document.getElementById('profileSaveMessage');
     if (msgDiv) {
-        msgDiv.innerHTML = `<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">
-            <i class="fas fa-exclamation-triangle"></i> ${message}
-        </div>`;
+        msgDiv.innerHTML = '<div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:12px; color:#92400e;">' +
+            '<i class="fas fa-exclamation-triangle"></i> ' + message +
+        '</div>';
         setTimeout(() => { msgDiv.innerHTML = ''; }, 8000);
     }
 }
@@ -1193,7 +1193,8 @@ function generateSecureQRData(ticketId, userId, eventId) {
 // ============================================================
 // SPINNER GLOBAL
 // ============================================================
-function showLoader(text = 'Loading...') {
+function showLoader(text) {
+    text = text || 'Loading...';
     const loader = document.getElementById('globalLoader');
     if (loader) {
         document.getElementById('loaderText').textContent = text;
@@ -1232,32 +1233,30 @@ function generateTicketHTML(ticket) {
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
 
-    return `
-        <div class="ticket-overlay-container" id="ticket-${safeTicket.id || 'unknown'}">
-            <div class="ticket-overlay-bg">
-                <img src="ticket-officiel.png" alt="Official ticket" onerror="this.style.display='none'; this.parentElement.style.background='#0a1628';">
-            </div>
-            <div class="ticket-left line-1"><span class="ticket-value">${escapeHtml(eventTitle)}</span></div>
-            <div class="ticket-left line-2"><span class="ticket-value">${escapeHtml(durationDisplay)}</span></div>
-            <div class="ticket-left line-3"><span class="ticket-value">${escapeHtml(dateFormatted)}</span></div>
-            <div class="ticket-left line-4"><span class="ticket-value">${escapeHtml(timeFormatted)}</span></div>
-            <div class="ticket-left line-5"><span class="ticket-value">${escapeHtml(eventLocation)}</span></div>
-            <div class="ticket-left line-6"><span class="ticket-value">${escapeHtml(price)}</span></div>
-            <div class="ticket-right line-1"><span class="ticket-value">${escapeHtml(buyerName)}</span></div>
-            <div class="ticket-right line-2"><span class="ticket-value">${escapeHtml(userEmail)}</span></div>
-            <div class="ticket-right line-3"><span class="ticket-value">${escapeHtml(userPhone)}</span></div>
-            <div class="ticket-right line-4"><span class="ticket-value">#${escapeHtml(ticketIdShort)}</span></div>
-            <div class="ticket-right line-5"><span class="ticket-value">${escapeHtml(purchaseDate)}</span></div>
-            <div class="ticket-right line-6"><span class="ticket-value">#${escapeHtml(String(ticketNumber))}</span></div>
-            <div class="ticket-qr" id="qr-ticket-${safeTicket.id || 'unknown'}"></div>
-            <div class="ticket-qr-id">${escapeHtml(ticketIdShort)}</div>
-            <div class="ticket-qr-date">${escapeHtml(purchaseDate)}</div>
-        </div>
-    `;
+    return '<div class="ticket-overlay-container" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
+        '<div class="ticket-overlay-bg">' +
+            '<img src="ticket-officiel.png" alt="Official ticket" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#0a1628\';">' +
+        '</div>' +
+        '<div class="ticket-left line-1"><span class="ticket-value">' + escapeHtml(eventTitle) + '</span></div>' +
+        '<div class="ticket-left line-2"><span class="ticket-value">' + escapeHtml(durationDisplay) + '</span></div>' +
+        '<div class="ticket-left line-3"><span class="ticket-value">' + escapeHtml(dateFormatted) + '</span></div>' +
+        '<div class="ticket-left line-4"><span class="ticket-value">' + escapeHtml(timeFormatted) + '</span></div>' +
+        '<div class="ticket-left line-5"><span class="ticket-value">' + escapeHtml(eventLocation) + '</span></div>' +
+        '<div class="ticket-left line-6"><span class="ticket-value">' + escapeHtml(price) + '</span></div>' +
+        '<div class="ticket-right line-1"><span class="ticket-value">' + escapeHtml(buyerName) + '</span></div>' +
+        '<div class="ticket-right line-2"><span class="ticket-value">' + escapeHtml(userEmail) + '</span></div>' +
+        '<div class="ticket-right line-3"><span class="ticket-value">' + escapeHtml(userPhone) + '</span></div>' +
+        '<div class="ticket-right line-4"><span class="ticket-value">#' + escapeHtml(ticketIdShort) + '</span></div>' +
+        '<div class="ticket-right line-5"><span class="ticket-value">' + escapeHtml(purchaseDate) + '</span></div>' +
+        '<div class="ticket-right line-6"><span class="ticket-value">#' + escapeHtml(String(ticketNumber)) + '</span></div>' +
+        '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
+        '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
+        '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
+    '</div>';
 }
 
 function generateTicketQR(ticketId) {
-    const container = document.getElementById(`qr-ticket-${ticketId}`);
+    const container = document.getElementById('qr-ticket-' + ticketId);
     if (!container) return;
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket) return;
@@ -1284,7 +1283,7 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// RENDER TICKETS
+// RENDER TICKETS – Inversé (plus récents en premier)
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1295,24 +1294,26 @@ function renderTickets() {
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
+    // Trier par date d'achat décroissante (les plus récents en premier)
+    validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueTickets = [];
     const seenIds = new Set();
     for (const t of validTickets) {
         if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueTickets.push(t); }
     }
     if (uniqueTickets.length === 0) {
-        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noActiveTickets')}</p>`;
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>';
         return;
     }
     let html = '';
     uniqueTickets.forEach(ticket => {
-        html += `<div class="ticket-list-item">${generateTicketHTML(ticket)}
-            <div class="ticket-actions-wrapper">
-                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-            </div>
-        </div>`;
+        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
+            '<div class="ticket-actions-wrapper">' +
+                '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
+                '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
+                '<button class="btn-action btn-share" onclick="shareTicket(\'' + ticket.id + '\')"><i class="fas fa-share-alt"></i> Share</button>' +
+            '</div>' +
+        '</div>';
     });
     container.innerHTML = html;
     setTimeout(() => {
@@ -1322,7 +1323,7 @@ function renderTickets() {
 }
 
 // ============================================================
-// RENDER HISTORY
+// RENDER HISTORY – Inversé (plus récents en premier)
 // ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
@@ -1333,25 +1334,27 @@ function renderHistory() {
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
+    // Trier par date d'achat décroissante
+    historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueHistory = [];
     const seenIds = new Set();
     for (const t of historyTickets) {
         if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueHistory.push(t); }
     }
     if (uniqueHistory.length === 0) {
-        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noTicketHistory')}</p>`;
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noTicketHistory') + '</p>';
         return;
     }
     let html = '';
     uniqueHistory.forEach(ticket => {
-        html += `<div class="ticket-list-item">${generateTicketHTML(ticket)}
-            <div class="ticket-actions-wrapper">
-                <button class="btn-action btn-pdf" onclick="downloadTicketPDF('${ticket.id}')"><i class="fas fa-file-pdf"></i> PDF</button>
-                <button class="btn-action btn-png" onclick="downloadTicketPNG('${ticket.id}')"><i class="fas fa-image"></i> PNG</button>
-                <button class="btn-action btn-share" onclick="shareTicket('${ticket.id}')"><i class="fas fa-share-alt"></i> Share</button>
-                <button class="btn-action btn-delete" onclick="deleteHistoryTicket('${ticket.id}')" style="background:#ef4444; color:white;"><i class="fas fa-trash"></i> Delete</button>
-            </div>
-        </div>`;
+        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
+            '<div class="ticket-actions-wrapper">' +
+                '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
+                '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
+                '<button class="btn-action btn-share" onclick="shareTicket(\'' + ticket.id + '\')"><i class="fas fa-share-alt"></i> Share</button>' +
+                '<button class="btn-action btn-delete" onclick="deleteHistoryTicket(\'' + ticket.id + '\')"><i class="fas fa-trash"></i> Delete</button>' +
+            '</div>' +
+        '</div>';
     });
     container.innerHTML = html;
     setTimeout(() => {
@@ -1376,7 +1379,7 @@ function deleteHistoryTicket(ticketId) {
 // EXPORT PNG ET PDF
 // ============================================================
 async function downloadTicketPNG(ticketId) {
-    const ticketEl = document.getElementById(`ticket-${ticketId}`);
+    const ticketEl = document.getElementById('ticket-' + ticketId);
     if (!ticketEl) { alert('Ticket not found'); return; }
     showLoader('Generating PNG ticket...');
     try {
@@ -1386,7 +1389,7 @@ async function downloadTicketPNG(ticketId) {
             width: ticketEl.scrollWidth, height: ticketEl.scrollHeight
         });
         const link = document.createElement('a');
-        link.download = `BETIX_TICKET_${ticketId.substring(0, 8)}.png`;
+        link.download = 'BETIX_TICKET_' + ticketId.substring(0, 8) + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         hideLoader();
@@ -1399,7 +1402,7 @@ async function downloadTicketPNG(ticketId) {
 }
 
 async function downloadTicketPDF(ticketId) {
-    const ticketEl = document.getElementById(`ticket-${ticketId}`);
+    const ticketEl = document.getElementById('ticket-' + ticketId);
     if (!ticketEl) { alert('Ticket not found'); return; }
     showLoader('Generating PDF ticket...');
     try {
@@ -1414,7 +1417,7 @@ async function downloadTicketPDF(ticketId) {
         const imgWidth = 210;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        doc.save(`BETIX_TICKET_${ticketId.substring(0, 8)}.pdf`);
+        doc.save('BETIX_TICKET_' + ticketId.substring(0, 8) + '.pdf');
         hideLoader();
         addNotification('Ticket PDF downloaded successfully!', 'success');
     } catch (error) {
@@ -1442,8 +1445,8 @@ function shareTicket(ticketId) {
     if (!ticket) return;
     if (navigator.share) {
         navigator.share({
-            title: `Ticket for ${ticket.eventTitle}`,
-            text: `My ticket for ${ticket.eventTitle} on Betix`,
+            title: 'Ticket for ' + ticket.eventTitle,
+            text: 'My ticket for ' + ticket.eventTitle + ' on Betix',
             url: window.location.href + '?ticket=' + ticket.id
         }).catch(() => {});
     } else {
@@ -1471,30 +1474,30 @@ function renderEventCard(event) {
     const fallbackImage = eventImagesList[event.category] || eventImagesList.Concert;
     const images = event.images && event.images.length > 0 ? event.images : [fallbackImage];
     
-    let carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-${event.id}">
-        <div class="event-carousel" id="carousel-${event.id}">
-            <div class="carousel-track" id="track-${event.id}">`;
+    let carouselHtml = '<div class="event-carousel-wrapper" id="carousel-wrapper-' + event.id + '">' +
+        '<div class="event-carousel" id="carousel-' + event.id + '">' +
+            '<div class="carousel-track" id="track-' + event.id + '">';
     images.forEach((img, idx) => {
-        carouselHtml += `<div class="carousel-slide" data-index="${idx}"><img src="${img}" alt="${escapeHtml(event.title)} - Image ${idx+1}" loading="lazy" onerror="this.src='${fallbackImage}'"></div>`;
+        carouselHtml += '<div class="carousel-slide" data-index="' + idx + '"><img src="' + img + '" alt="' + escapeHtml(event.title) + ' - Image ' + (idx+1) + '" loading="lazy" onerror="this.src=\'' + fallbackImage + '\'"></div>';
     });
-    carouselHtml += `</div>`;
+    carouselHtml += '</div>';
     if (images.length > 1) {
-        carouselHtml += `<div class="carousel-dots" id="dots-${event.id}">`;
+        carouselHtml += '<div class="carousel-dots" id="dots-' + event.id + '">';
         for (let i = 0; i < images.length; i++) {
-            carouselHtml += `<span class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
+            carouselHtml += '<span class="dot ' + (i === 0 ? 'active' : '') + '" data-index="' + i + '"></span>';
         }
-        carouselHtml += `</div>
-                         <div class="carousel-counter" id="counter-${event.id}">1/${images.length}</div>`;
+        carouselHtml += '</div>' +
+                         '<div class="carousel-counter" id="counter-' + event.id + '">1/' + images.length + '</div>';
     }
-    carouselHtml += `</div></div>`;
+    carouselHtml += '</div></div>';
     let imageCountHtml = '';
     if (images.length > 1) {
-        imageCountHtml = `<div class="image-count-badge"><i class="fas fa-images"></i> ${images.length} photos</div>`;
+        imageCountHtml = '<div class="image-count-badge"><i class="fas fa-images"></i> ' + images.length + ' photos</div>';
     }
 
     const countryFlag = countryFlags[event.pays || event.country] || '';
     const countryDisplay = event.pays || event.country || 'International';
-    const locationDisplay = event.location ? ` · ${escapeHtml(event.location)}` : '';
+    const locationDisplay = event.location ? ' · ' + escapeHtml(event.location) : '';
     let desc = event.description || '';
     let organizerDisplay = event.organizerName || event.organizer || 'Anonymous';
     if (organizerDisplay.length > 20) organizerDisplay = organizerDisplay.substring(0, 18) + '...';
@@ -1514,14 +1517,14 @@ function renderEventCard(event) {
     }
 
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
-    const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? `<span class="stars">${ratingStars}</span> ${avgRating.toFixed(1)} (${ratings.filter(r => r.eventId === event.id).length})` : '';
+    const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? '<span class="stars">' + ratingStars + '</span> ' + avgRating.toFixed(1) + ' (' + ratings.filter(r => r.eventId === event.id).length + ')' : '';
 
-    const ticketsLabelHtml = `<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">${event.seatsLeft}/${event.seatsTotal}</span></div>`;
-    const priceRightHtml = `<div class="event-price-right">
-        <span class="price-label-badge">Price</span>
-        <span class="price-amount-green">${(event.price || 0).toFixed(6)}</span>
-        <span class="price-currency-gray">Pi</span>
-    </div>`;
+    const ticketsLabelHtml = '<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>';
+    const priceRightHtml = '<div class="event-price-right">' +
+        '<span class="price-label-badge">Price</span>' +
+        '<span class="price-amount-green">' + (event.price || 0).toFixed(6) + '</span>' +
+        '<span class="price-currency-gray">Pi</span>' +
+    '</div>';
 
     let durationDisplay = '';
     if (event.durationValue && event.durationUnit) {
@@ -1532,33 +1535,31 @@ function renderEventCard(event) {
             months: event.durationValue === 1 ? 'Month' : 'Months',
             years: event.durationValue === 1 ? 'Year' : 'Years'
         };
-        durationDisplay = `${event.durationValue} ${unitLabels[event.durationUnit] || event.durationUnit}`;
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    const infoBoxHtml = `
-        <div class="event-info-box">
-            <div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${locationDisplay}</div>
-            <div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ${dateFormatted} · <i class="fas fa-clock" style="color:#F5B400;"></i> ${timeFormatted}${durationDisplay ? ` · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ${durationDisplay}` : ''}</div>
-        </div>
-    `;
+    const infoBoxHtml = '<div class="event-info-box">' +
+        '<div class="event-location-line"><i class="fas fa-map-marker-alt" style="color:#F5B400;"></i> ' + countryFlag + ' ' + escapeHtml(countryDisplay) + locationDisplay + '</div>' +
+        '<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ' + dateFormatted + ' · <i class="fas fa-clock" style="color:#F5B400;"></i> ' + timeFormatted + (durationDisplay ? ' · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ' + durationDisplay : '') + '</div>' +
+    '</div>';
 
-    return `<div class="event-card-classic" data-id="${event.id}">
-        <div class="poster-wrapper-classic">
-            <span class="category-badge-classic">${escapeHtml(event.category)}</span>
-            ${carouselHtml}
-            ${imageCountHtml}
-        </div>
-        <div class="card-content-classic">
-            <div class="event-title-large">${escapeHtml(event.title)}</div>
-            <div class="event-description-full">${escapeHtml(desc)}</div>
-            ${infoBoxHtml}
-            <div class="event-meta-row">${ratingDisplay ? `<div class="event-rating-classic">${ratingDisplay}</div>` : ''}</div>
-            <div class="event-tickets-price-row">${ticketsLabelHtml}${priceRightHtml}</div>
-            <button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup('${event.id}')">${t('buyTicket')}</button>
-            <div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ${t('by')} ${escapeHtml(organizerDisplay)}</div>
-            ${publishDateDisplay ? `<div class="event-publish-date"><i class="far fa-clock"></i> ${publishDateDisplay}` : ''}
-        </div>
-    </div>`;
+    return '<div class="event-card-classic" data-id="' + event.id + '">' +
+        '<div class="poster-wrapper-classic">' +
+            '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
+            carouselHtml +
+            imageCountHtml +
+        '</div>' +
+        '<div class="card-content-classic">' +
+            '<div class="event-title-large">' + escapeHtml(event.title) + '</div>' +
+            '<div class="event-description-full">' + escapeHtml(desc) + '</div>' +
+            infoBoxHtml +
+            '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
+            '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
+            '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
+            (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
+        '</div>' +
+    '</div>';
 }
 
 // ============================================================
@@ -1621,7 +1622,7 @@ function renderEventsByCategory() {
         return matchCategory && matchCountry && matchSearch;
     });
     if (filtered.length === 0) {
-        container.innerHTML = `<p style="text-align:center;padding:2rem;color:var(--gray);">${t('noEvents')}</p>`;
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>';
         return;
     }
     const cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
@@ -1634,7 +1635,7 @@ function renderEventsByCategory() {
         cats.forEach(cat => {
             const catEvents = filtered.filter(e => e.category === cat);
             if (catEvents.length) {
-                html += `<div class="category-section"><div class="category-header">${cat}</div><div class="events-grid-centered">`;
+                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
                 catEvents.forEach(e => html += renderEventCard(e));
                 html += '</div></div>';
             }
@@ -1701,25 +1702,25 @@ function _openEventDetails(event) {
     
     let carouselHtml = '';
     if (images.length > 0) {
-        carouselHtml = `<div class="event-carousel-wrapper" id="carousel-wrapper-detail-${event.id}">
-            <div class="event-carousel" id="carousel-detail-${event.id}">
-                <div class="carousel-track" id="track-detail-${event.id}">`;
+        carouselHtml = '<div class="event-carousel-wrapper" id="carousel-wrapper-detail-' + event.id + '">' +
+            '<div class="event-carousel" id="carousel-detail-' + event.id + '">' +
+                '<div class="carousel-track" id="track-detail-' + event.id + '">';
         images.forEach(img => {
-            carouselHtml += `<div class="carousel-slide"><img src="${img}" alt="Image" onerror="this.src='${fallbackImage}'"></div>`;
+            carouselHtml += '<div class="carousel-slide"><img src="' + img + '" alt="Image" onerror="this.src=\'' + fallbackImage + '\'"></div>';
         });
-        carouselHtml += `</div>`;
+        carouselHtml += '</div>';
         if (images.length > 1) {
-            carouselHtml += `<div class="carousel-dots" id="dots-detail-${event.id}">`;
+            carouselHtml += '<div class="carousel-dots" id="dots-detail-' + event.id + '">';
             for (let d = 0; d < images.length; d++) {
-                carouselHtml += `<span class="dot ${d === 0 ? 'active' : ''}" data-index="${d}"></span>`;
+                carouselHtml += '<span class="dot ' + (d === 0 ? 'active' : '') + '" data-index="' + d + '"></span>';
             }
-            carouselHtml += `</div>
-                             <div class="carousel-counter" id="counter-detail-${event.id}">1/${images.length}</div>`;
+            carouselHtml += '</div>' +
+                             '<div class="carousel-counter" id="counter-detail-' + event.id + '">1/' + images.length + '</div>';
         }
-        carouselHtml += `</div></div>`;
+        carouselHtml += '</div></div>';
     }
 
-    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? `<ul>${event.conditions.split('\n').filter(l => l.trim()).map(l => `<li>${escapeHtml(l.trim())}</li>`).join('')}</ul>` : `<p>${escapeHtml(event.conditions)}</p>`) : `<p>${t('noConditions')}</p>`;
+    let conditionsHtml = event.conditions ? (event.conditions.split('\n').filter(l => l.trim()).length ? '<ul>' + event.conditions.split('\n').filter(l => l.trim()).map(l => '<li>' + escapeHtml(l.trim()) + '</li>').join('') + '</ul>' : '<p>' + escapeHtml(event.conditions) + '</p>') : '<p>' + t('noConditions') + '</p>';
 
     let organizerDisplay = event.organizerName || event.organizer || 'Unknown';
     if (!organizerDisplay.startsWith('@')) organizerDisplay = '@' + organizerDisplay;
@@ -1736,47 +1737,43 @@ function _openEventDetails(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
 
-    content.innerHTML = `
-        <div class="event-detail-header">
-            <button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('back')}"><i class="fas fa-arrow-left"></i></button>
-            <span class="detail-title">${escapeHtml(event.title)}</span>
-            <span class="detail-category">${escapeHtml(event.category)}</span>
-            <button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="${t('close')}"><i class="fas fa-times"></i></button>
-        </div>
-        ${carouselHtml}
-        <div class="event-detail-body">
-            ${event.description ? `<div class="event-detail-about"><p>${escapeHtml(event.description)}</p></div>` : ''}
-            <div class="event-detail-grid">
-                <div class="grid-item"><i class="fas fa-map-marker-alt"></i> ${countryFlag} ${escapeHtml(countryDisplay)}${event.location ? `, ${escapeHtml(event.location)}` : ''}</div>
-                <div class="grid-item"><i class="fas fa-calendar-day"></i> ${dateFormatted}</div>
-                <div class="grid-item"><i class="fas fa-clock"></i> ${timeFormatted}</div>
-                ${durationDisplay ? `<div class="grid-item"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</div>` : ''}
-                <!-- Prix avec badges -->
-                <div class="grid-item">
-                    <span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <span class="price-label-badge" style="background:#0B1F5C; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Price</span>
-                        <span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:0.85rem;">${(event.price || 0).toFixed(6)}</span>
-                        <span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:0.85rem;">Pi</span>
-                    </span>
-                </div>
-                <!-- Tickets avec badges -->
-                <div class="grid-item">
-                    <span style="display:flex; align-items:center; gap:4px;">
-                        <span class="tickets-label-badge" style="background:#ef4444; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Tickets</span>
-                        <span style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">${event.seatsLeft}/${event.seatsTotal}</span>
-                    </span>
-                </div>
-            </div>
-            ${event.conditions ? `<div class="event-detail-conditions"><h4>${t('conditions')}</h4>${conditionsHtml}</div>` : ''}
-            <div class="event-detail-meta">
-                <span><i class="fas fa-user"></i> ${escapeHtml(organizerDisplay)}</span>
-                <span><i class="far fa-calendar-alt"></i> ${t('createdOn')} ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            </div>
-        </div>
-        <div class="event-detail-footer">
-            <button class="detail-buy-btn" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ${t('buyTicket')}</button>
-        </div>
-    `;
+    content.innerHTML = '<div class="event-detail-header">' +
+        '<button class="back-btn-detail" onclick="closeEventDetailModalAndGoBack()" title="' + t('back') + '"><i class="fas fa-arrow-left"></i></button>' +
+        '<span class="detail-title">' + escapeHtml(event.title) + '</span>' +
+        '<span class="detail-category">' + escapeHtml(event.category) + '</span>' +
+        '<button class="modal-close-detail" onclick="closeEventDetailModalAndGoBack()" title="' + t('close') + '"><i class="fas fa-times"></i></button>' +
+    '</div>' +
+    carouselHtml +
+    '<div class="event-detail-body">' +
+        (event.description ? '<div class="event-detail-about"><p>' + escapeHtml(event.description) + '</p></div>' : '') +
+        '<div class="event-detail-grid">' +
+            '<div class="grid-item"><i class="fas fa-map-marker-alt"></i> ' + countryFlag + ' ' + escapeHtml(countryDisplay) + (event.location ? ', ' + escapeHtml(event.location) : '') + '</div>' +
+            '<div class="grid-item"><i class="fas fa-calendar-day"></i> ' + dateFormatted + '</div>' +
+            '<div class="grid-item"><i class="fas fa-clock"></i> ' + timeFormatted + '</div>' +
+            (durationDisplay ? '<div class="grid-item"><i class="fas fa-hourglass-half"></i> ' + durationDisplay + '</div>' : '') +
+            '<div class="grid-item">' +
+                '<span style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
+                    '<span class="price-label-badge" style="background:#0B1F5C; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Price</span>' +
+                    '<span class="price-amount-green" style="color:#10b981; font-weight:800; font-size:0.85rem;">' + (event.price || 0).toFixed(6) + '</span>' +
+                    '<span class="price-currency-gray" style="color:#6b7280; font-weight:700; font-size:0.85rem;">Pi</span>' +
+                '</span>' +
+            '</div>' +
+            '<div class="grid-item">' +
+                '<span style="display:flex; align-items:center; gap:4px;">' +
+                    '<span class="tickets-label-badge" style="background:#ef4444; color:white; padding:1px 8px; border-radius:12px; font-weight:700; font-size:0.6rem;">Tickets</span>' +
+                    '<span style="font-weight:600; color:#1a1a2e; font-size:0.85rem;">' + event.seatsLeft + '/' + event.seatsTotal + '</span>' +
+                '</span>' +
+            '</div>' +
+        '</div>' +
+        (event.conditions ? '<div class="event-detail-conditions"><h4>' + t('conditions') + '</h4>' + conditionsHtml + '</div>' : '') +
+        '<div class="event-detail-meta">' +
+            '<span><i class="fas fa-user"></i> ' + escapeHtml(organizerDisplay) + '</span>' +
+            '<span><i class="far fa-calendar-alt"></i> ' + t('createdOn') + ' ' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</span>' +
+        '</div>' +
+    '</div>' +
+    '<div class="event-detail-footer">' +
+        '<button class="detail-buy-btn" id="detailBuyBtn"><i class="fas fa-ticket-alt"></i> ' + t('buyTicket') + '</button>' +
+    '</div>';
 
     document.getElementById('detailBuyBtn').onclick = function() {
         closeEventDetailModalAndGoBack();
@@ -1826,7 +1823,7 @@ function initHeroSlider() {
     heroSlides.forEach((slide, index) => {
         const div = document.createElement('div');
         div.className = 'hero-slide' + (index === 0 ? ' active' : '');
-        div.innerHTML = `<div class="hero-slide-bg" style="background-image: url('${slide.image}');"></div>`;
+        div.innerHTML = '<div class="hero-slide-bg" style="background-image: url(\'' + slide.image + '\');"></div>';
         slidesContainer.appendChild(div);
     });
     const dotsContainer = document.getElementById('heroDots');
@@ -1891,7 +1888,7 @@ function renderAdminSlides() {
     if (!container) return;
     if (heroSlides.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">No images in carousel</p>'; return; }
     container.innerHTML = heroSlides.map((slide, index) =>
-        `<div class="admin-slide-item"><img src="${slide.image}" class="slide-preview" onerror="this.style.display='none'"><div class="slide-info"><h4>Image ${index+1}</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(${index})">Delete</button></div></div>`
+        '<div class="admin-slide-item"><img src="' + slide.image + '" class="slide-preview" onerror="this.style.display=\'none\'"><div class="slide-info"><h4>Image ' + (index+1) + '</h4></div><div class="slide-actions"><button class="delete-btn" onclick="adminDeleteSlide(' + index + ')">Delete</button></div></div>'
     ).join('');
 }
 
@@ -2014,7 +2011,7 @@ async function loadProfileData() {
         console.warn('No piUid, cannot load profile data.');
         return;
     }
-    console.log('🔍 Loading profile for piUid:', piUid);
+    console.log('Loading profile for piUid:', piUid);
     try {
         const { data, error } = await supabaseClient
             .from('users')
@@ -2023,8 +2020,7 @@ async function loadProfileData() {
             .single();
         if (error) {
             if (error.code === 'PGRST116') {
-                console.log('ℹ️ No profile found. It will be created on first save.');
-                // Tenter de restaurer depuis le backup
+                console.log('No profile found. It will be created on first save.');
                 const backup = localStorage.getItem('betix_profile_backup');
                 if (backup) {
                     try {
@@ -2046,7 +2042,7 @@ async function loadProfileData() {
             throw error;
         }
         if (data) {
-            console.log('✅ Profile loaded from Supabase:', data);
+            console.log('Profile loaded from Supabase:', data);
             const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
             let hasNewData = false;
             fields.forEach(f => {
@@ -2066,10 +2062,8 @@ async function loadProfileData() {
             updateUserInfo();
             updateProfilePage();
             
-            // Supprimer le backup après chargement réussi
             localStorage.removeItem('betix_profile_backup');
             
-            // Activer/désactiver l'édition selon la complétude
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
             return;
@@ -2077,8 +2071,7 @@ async function loadProfileData() {
             enableEditMode(true);
         }
     } catch (error) {
-        console.error('❌ Error loading profile:', error);
-        // En cas d'erreur, essayer de restaurer depuis le backup
+        console.error('Error loading profile:', error);
         const backup = localStorage.getItem('betix_profile_backup');
         if (backup) {
             try {
@@ -2135,14 +2128,12 @@ function fillProfileReview() {
 
     const content = document.getElementById('profileReviewContent');
     if (!content) return;
-    content.innerHTML = `
-        <div class="review-item"><span class="review-label">First Name</span><span class="review-value">${escapeHtml(firstName) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Last Name</span><span class="review-value">${escapeHtml(lastName) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Country</span><span class="review-value">${escapeHtml(country) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Address</span><span class="review-value">${escapeHtml(address) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Email</span><span class="review-value">${escapeHtml(email) || '—'}</span></div>
-        <div class="review-item"><span class="review-label">Phone</span><span class="review-value">${escapeHtml(phone) || '—'}</span></div>
-    `;
+    content.innerHTML = '<div class="review-item"><span class="review-label">First Name</span><span class="review-value">' + escapeHtml(firstName) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Last Name</span><span class="review-value">' + escapeHtml(lastName) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Country</span><span class="review-value">' + escapeHtml(country) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Address</span><span class="review-value">' + escapeHtml(address) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Email</span><span class="review-value">' + escapeHtml(email) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Phone</span><span class="review-value">' + escapeHtml(phone) || '—' + '</span></div>';
 }
 
 function openProfileReview() {
@@ -2218,15 +2209,13 @@ async function confirmProfileSave() {
 
         closeProfileReview();
         const msg = document.getElementById('profileSaveMessage');
-        msg.innerHTML = `
-            <div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>
-                <div>
-                    <strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>
-                    <p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>
-                </div>
-            </div>
-        `;
+        msg.innerHTML = '<div style="background:#f0fdf4; border:1px solid #10b981; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px;">' +
+            '<i class="fas fa-check-circle" style="color:#10b981; font-size:1.5rem;"></i>' +
+            '<div>' +
+                '<strong style="color:#1a1a2e;">Profile Updated Successfully!</strong>' +
+                '<p style="margin:4px 0 0; font-size:0.85rem; color:#4b5563;">Your information has been saved and is now up to date.</p>' +
+            '</div>' +
+        '</div>';
         setTimeout(() => { msg.innerHTML = ''; }, 5000);
 
         updateUserInfo();
@@ -2245,7 +2234,7 @@ function verifyEmail() {
         return;
     }
     const code = Math.floor(100000 + Math.random() * 900000);
-    alert(`A verification code has been sent to ${email}.\nCode: ${code} (demo)`);
+    alert('A verification code has been sent to ' + email + '.\nCode: ' + code + ' (demo)');
     document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     document.getElementById('verifyEmailBtn').classList.add('verified');
 }
@@ -2257,7 +2246,7 @@ function verifyPhone() {
         return;
     }
     const code = Math.floor(100000 + Math.random() * 900000);
-    alert(`A verification code has been sent to ${phone}.\nCode: ${code} (demo)`);
+    alert('A verification code has been sent to ' + phone + '.\nCode: ' + code + ' (demo)');
     document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
     document.getElementById('verifyPhoneBtn').classList.add('verified');
 }
@@ -2535,7 +2524,8 @@ async function confirmPurchase(eventId, quantity) {
 // ============================================================
 // STAGGERED ANIMATION
 // ============================================================
-function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
+function applyStaggeredAnimation(containerSelector, delayIncrement) {
+    delayIncrement = delayIncrement || 0.06;
     const container = document.querySelector(containerSelector);
     if (!container) return;
     const items = container.children;
@@ -2549,19 +2539,18 @@ function applyStaggeredAnimation(containerSelector, delayIncrement = 0.06) {
 // ============================================================
 // TOAST NOTIFICATION
 // ============================================================
-function showToast(title, message, type = 'success') {
+function showToast(title, message, type) {
+    type = type || 'success';
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
     const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `
-        <div class="toast-icon"><i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
-        <div class="toast-content">
-            <div class="toast-title">${escapeHtml(title)}</div>
-            <div class="toast-message">${escapeHtml(message)}</div>
-        </div>
-        <button class="toast-close"><i class="fas fa-times"></i></button>
-    `;
+    toast.className = 'toast-notification toast-' + type;
+    toast.innerHTML = '<div class="toast-icon"><i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-info-circle') + '"></i></div>' +
+        '<div class="toast-content">' +
+            '<div class="toast-title">' + escapeHtml(title) + '</div>' +
+            '<div class="toast-message">' + escapeHtml(message) + '</div>' +
+        '</div>' +
+        '<button class="toast-close"><i class="fas fa-times"></i></button>';
     document.body.appendChild(toast);
     toast.querySelector('.toast-close').addEventListener('click', function() { closeToast(toast); });
     requestAnimationFrame(() => { toast.classList.add('show'); });
@@ -2575,7 +2564,7 @@ function closeToast(toast) {
 }
 
 // ============================================================
-// SUCCESS POPUP
+// SUCCESS POPUP – sans émoji
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2592,8 +2581,8 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const price = event.price || 0;
     const totalPrice = qty * price;
 
-    title.textContent = '✅ Purchase confirmed!';
-    message.textContent = `Congratulations! You have purchased ${qty} ticket(s) for "${event.title}".`;
+    title.textContent = 'Purchase confirmed!';
+    message.textContent = 'Congratulations! You have purchased ' + qty + ' ticket(s) for "' + event.title + '".';
     const subMsg = document.querySelector('.success-submessage');
     if (subMsg) subMsg.textContent = 'Your ticket is available in your personal space. You will also receive a confirmation email.';
 
@@ -2605,16 +2594,14 @@ function showSuccessPopup(event, ticketsList, quantity) {
     const countryFlag = countryFlags[paysDisplay] || '';
     const countryDisplay = countryFlag + ' ' + paysDisplay;
 
-    info.innerHTML = `
-        <div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">${escapeHtml(event.title)}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">Standard</span></div>
-        <div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">${dateFormatted} at ${timeFormatted}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">${escapeHtml(event.location || 'Online')}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">${countryDisplay}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">${qty}</span></div>
-        <div class="ticket-line"><span class="ticket-label">Total paid</span><span class="ticket-value">${totalPrice.toFixed(6)} Pi</span></div>
-        <div class="ticket-line"><span class="ticket-label">Reference</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">${escapeHtml(codeDisplay)}</span></div>
-    `;
+    info.innerHTML = '<div class="ticket-line"><span class="ticket-label">Event</span><span class="ticket-value">' + escapeHtml(event.title) + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Type</span><span class="ticket-value">Standard</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Date</span><span class="ticket-value">' + dateFormatted + ' at ' + timeFormatted + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Location</span><span class="ticket-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Country</span><span class="ticket-value">' + countryDisplay + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Quantity</span><span class="ticket-value">' + qty + '</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Total paid</span><span class="ticket-value">' + totalPrice.toFixed(6) + ' Pi</span></div>' +
+        '<div class="ticket-line"><span class="ticket-label">Reference</span><span class="ticket-value" style="font-size:0.7rem;font-family:monospace;">' + escapeHtml(codeDisplay) + '</span></div>';
 
     closeBtn.onclick = function(e) { e.preventDefault(); closeSuccessPopup(); };
     homeBtn.onclick = function(e) {
@@ -2647,7 +2634,7 @@ function showSuccessPopup(event, ticketsList, quantity) {
     popup.style.display = 'flex';
     popup.classList.add('show');
     const eventName = event.title || 'Event';
-    showToast('🎉 Purchase successful!', `You have purchased ${qty} ticket(s) for "${eventName}". Check your tickets in "My Tickets".`, 'success');
+    showToast('Purchase successful!', 'You have purchased ' + qty + ' ticket(s) for "' + eventName + '". Check your tickets in "My Tickets".', 'success');
 }
 
 function closeSuccessPopup() {
@@ -2684,7 +2671,6 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
-                        // Charger le profil après connexion (important)
                         await loadProfileData();
                         await syncUserToSupabase();
                         updateActivity();
@@ -2712,13 +2698,12 @@ async function connectToPi() {
                 const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
                 if (auth && auth.user) {
                     piUser = auth.user;
-                    // Définir l'identifiant utilisateur
                     currentUser.wallet = piUser.username;
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
-                    // ⚠️ NE PAS réinitialiser les champs de profil ici
+                    // NE PAS réinitialiser les champs de profil ici
                     // Charger d'abord les données existantes depuis Supabase
                     await loadProfileData();
 
@@ -2740,8 +2725,6 @@ async function connectToPi() {
                     alert(t('piConnected') + piUser.username);
                     closeSidebar();
 
-                    // La vérification de complétion du profil est faite par loadProfileData
-                    // On la rappelle au cas où
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
                     hideConnectSpinner();
@@ -3066,7 +3049,7 @@ function renderMyRatings() {
     if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">' + t('noReviews') + '</p>'; return; }
     container.innerHTML = myRatings.map(r => {
         const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return `<div class="ticket-card"><h3>${escapeHtml(r.eventTitle)}</h3><div>${t('rating')}: ${r.rating}/5 ${stars}</div>${r.comment ? `<p>"${escapeHtml(r.comment)}"</p>` : ''}<small>${new Date(r.date).toLocaleDateString()}</small></div>`;
+        return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>' + t('rating') + ': ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>';
     }).join('');
     setTimeout(() => { applyStaggeredAnimation('#myRatingsList'); }, 50);
 }
@@ -3238,22 +3221,18 @@ function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = `
-            <div class="notification-empty">
-                <i class="fas fa-bell-slash"></i>
-                <p style="font-size:0.95rem;">${t('noNotifications')}</p>
-            </div>
-        `;
+        container.innerHTML = '<div class="notification-empty">' +
+            '<i class="fas fa-bell-slash"></i>' +
+            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
+        '</div>';
         return;
     }
-    let html = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <span style="font-size:0.85rem;color:#6b7280;">${notifications.length} notification(s)</span>
-            <button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">
-                <i class="fas fa-trash"></i> Clear all
-            </button>
-        </div>
-    `;
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
+        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
+            '<i class="fas fa-trash"></i> Clear all' +
+        '</button>' +
+    '</div>';
     notifications.forEach((notif) => {
         const time = new Date(notif.date);
         const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -3261,16 +3240,14 @@ function renderNotificationsPage() {
         const type = notif.type || 'info';
         const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
         const icon = iconMap[type] || 'fa-info-circle';
-        html += `
-            <div class="notification-item type-${type} ${unreadClass}">
-                <div class="notif-icon"><i class="fas ${icon}"></i></div>
-                <div class="notif-content">
-                    <div class="notif-msg">${escapeHtml(notif.message)}</div>
-                    <div class="notif-time">${timeStr}</div>
-                </div>
-                <button class="notif-delete-btn" onclick="deleteNotification('${notif.id}')" title="Delete"><i class="fas fa-times"></i></button>
-            </div>
-        `;
+        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
+                '<div class="notif-time">' + timeStr + '</div>' +
+            '</div>' +
+            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
+        '</div>';
     });
     container.innerHTML = html;
     notifications.forEach(n => n.read = true);
@@ -3327,15 +3304,13 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
     
-    // Sauvegarder le profil dans Supabase avant de déconnecter
     try {
         await syncUserToSupabase();
-        console.log('✅ Profile saved to Supabase before disconnection.');
+        console.log('Profile saved to Supabase before disconnection.');
     } catch (error) {
-        console.error('❌ Error saving profile before disconnection:', error);
+        console.error('Error saving profile before disconnection:', error);
     }
 
-    // Sauvegarder une copie des données de profil dans localStorage (backup)
     const profileBackup = {
         first_name: currentUser.first_name || '',
         last_name: currentUser.last_name || '',
@@ -3348,7 +3323,6 @@ async function disconnectPi() {
     };
     localStorage.setItem('betix_profile_backup', JSON.stringify(profileBackup));
 
-    // Réinitialiser les champs de session et de profil
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -3402,7 +3376,6 @@ function showPage(pageName) {
     if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
-        // Toujours recharger les données du profil si l'utilisateur est connecté
         if (currentUser.piUid || currentUser.wallet) {
             loadProfileData(); 
         } else {
@@ -3501,7 +3474,7 @@ function renderMyEvents() {
         e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name
     );
     if (myEvents.length === 0) {
-        container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">${t('noEvents')}</p><p style="font-size:0.85rem;">${t('createEvent')}</p></div>`;
+        container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">' + t('noEvents') + '</p><p style="font-size:0.85rem;">' + t('createEvent') + '</p></div>';
         return;
     }
     container.innerHTML = myEvents.map(e => renderMyEventCardModern(e)).join('');
@@ -3529,23 +3502,23 @@ function renderMyEventCardModern(event) {
         durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
     }
     const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : 'No ticket types';
-    return `<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="${imageUrl}" class="event-image" alt="${escapeHtml(event.title)}" onerror="this.src='${fallbackImage}'"><span class="event-status-badge-modern ${statusClass}">${statusBadge}</span></div><div class="event-body-modern"><div class="event-title-modern">${escapeHtml(event.title)}</div><div class="event-details-modern">
-        <div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">${t('eventDate')}</span> <span class="detail-value">${dateFormatted}</span></div>
-        <div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">${t('eventTime')}</span> <span class="detail-value">${timeFormatted}</span></div>
-        <div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">${t('locationLabel')}</span> <span class="detail-value">${escapeHtml(event.location || 'Online')}</span></div>
-        <div class="detail-item-modern"><span style="font-size:1rem;">${countryFlag}</span> <span class="detail-label">${t('countryLabel')}</span> <span class="detail-value">${escapeHtml(countryDisplay)}</span></div>
-        <div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">${t('tickets')} Sold</span> <span class="detail-value">${ticketSold}</span></div>
-        <div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">${t('seatsLeft')}</span> <span class="detail-value">${event.seatsLeft}/${event.seatsTotal}</span></div>
-        ${durationDisplay ? `<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">${t('duration')}</span> <span class="detail-value">${durationDisplay}</span></div>` : ''}
-        <div class="detail-item-modern" style="grid-column:${durationDisplay ? '2' : '1'}/-1;"><i class="fas fa-tags"></i> <span class="detail-label">${t('ticketTypes')}</span> <span class="detail-value" style="font-size:0.7rem;">${escapeHtml(typesDisplay)}</span></div>
-    </div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ${event.boosts || 0} ${t('views')}</span><span><i class="fas fa-calendar-plus"></i> ${new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal('${event.id}')"><i class="fas fa-pen"></i> ${t('editEvent')}</button></div></div></div></div>`;
+    return '<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="' + imageUrl + '" class="event-image" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'"><span class="event-status-badge-modern ' + statusClass + '">' + statusBadge + '</span></div><div class="event-body-modern"><div class="event-title-modern">' + escapeHtml(event.title) + '</div><div class="event-details-modern">' +
+        '<div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">' + t('eventDate') + '</span> <span class="detail-value">' + dateFormatted + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">' + t('eventTime') + '</span> <span class="detail-value">' + timeFormatted + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">' + t('locationLabel') + '</span> <span class="detail-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+        '<div class="detail-item-modern"><span style="font-size:1rem;">' + countryFlag + '</span> <span class="detail-label">' + t('countryLabel') + '</span> <span class="detail-value">' + escapeHtml(countryDisplay) + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">' + t('tickets') + ' Sold</span> <span class="detail-value">' + ticketSold + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">' + t('seatsLeft') + '</span> <span class="detail-value">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>' +
+        (durationDisplay ? '<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">' + t('duration') + '</span> <span class="detail-value">' + durationDisplay + '</span></div>' : '') +
+        '<div class="detail-item-modern" style="grid-column:' + (durationDisplay ? '2' : '1') + '/-1;"><i class="fas fa-tags"></i> <span class="detail-label">' + t('ticketTypes') + '</span> <span class="detail-value" style="font-size:0.7rem;">' + escapeHtml(typesDisplay) + '</span></div>' +
+    '</div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ' + (event.boosts || 0) + ' ' + t('views') + '</span><span><i class="fas fa-calendar-plus"></i> ' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')"><i class="fas fa-pen"></i> ' + t('editEvent') + '</button></div></div></div></div>';
 }
 
 function initFilters() {
     const cats = ['All', 'Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
     const container = document.getElementById('filtersContainer');
     if (!container) return;
-    container.innerHTML = cats.map(c => `<div class="filter-chip ${c === currentFilter ? 'active' : ''}" data-category="${c}">${c === 'All' ? t('all') : c}</div>`).join('');
+    container.innerHTML = cats.map(c => '<div class="filter-chip ' + (c === currentFilter ? 'active' : '') + '" data-category="' + c + '">' + (c === 'All' ? t('all') : c) + '</div>').join('');
     document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', function() { currentFilter = this.dataset.category; initFilters(); renderEventsByCategory(); }));
 }
 
@@ -3635,7 +3608,7 @@ function renderAdminLogs() {
     if (!container) return;
     if (adminLogs.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">' + t('noLogs') + '</p>'; return; }
     container.innerHTML = adminLogs.map(log =>
-        `<div class="admin-log-item"><div><span class="log-user">${escapeHtml(log.user)}</span> <span class="log-action">${escapeHtml(log.action)}</span>${log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : ''}</div><span class="log-time">${escapeHtml(log.date)}</span></div>`
+        '<div class="admin-log-item"><div><span class="log-user">' + escapeHtml(log.user) + '</span> <span class="log-action">' + escapeHtml(log.action) + '</span>' + (log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : '') + '</div><span class="log-time">' + escapeHtml(log.date) + '</span></div>'
     ).join('');
 }
 
@@ -3761,26 +3734,24 @@ async function renderAdminUsers() {
         container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noUsers') + '</p>';
         return;
     }
-    let html = `
-        <div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
-            <button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">
-                <i class="fas fa-sync"></i> Refresh
-            </button>
-        </div>
-        <table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">
-            <thead>
-                <tr style="background: #f3f4f6; color: #1f2937;">
-                    <th style="padding: 10px 8px; text-align: left;">Name</th>
-                    <th style="padding: 10px 8px; text-align: left;">Email</th>
-                    <th style="padding: 10px 8px; text-align: left;">Phone</th>
-                    <th style="padding: 10px 8px; text-align: left;">Address</th>
-                    <th style="padding: 10px 8px; text-align: left;">Country</th>
-                    <th style="padding: 10px 8px; text-align: left;">Wallet</th>
-                    <th style="padding: 10px 8px; text-align: center;">Events</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    let html = '<div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">' +
+        '<button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">' +
+            '<i class="fas fa-sync"></i> Refresh' +
+        '</button>' +
+    '</div>' +
+    '<table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">' +
+        '<thead>' +
+            '<tr style="background: #f3f4f6; color: #1f2937;">' +
+                '<th style="padding: 10px 8px; text-align: left;">Name</th>' +
+                '<th style="padding: 10px 8px; text-align: left;">Email</th>' +
+                '<th style="padding: 10px 8px; text-align: left;">Phone</th>' +
+                '<th style="padding: 10px 8px; text-align: left;">Address</th>' +
+                '<th style="padding: 10px 8px; text-align: left;">Country</th>' +
+                '<th style="padding: 10px 8px; text-align: left;">Wallet</th>' +
+                '<th style="padding: 10px 8px; text-align: center;">Events</th>' +
+            '</tr>' +
+        '</thead>' +
+        '<tbody>';
     users.forEach(user => {
         const fullName = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
         const email = user.email || '—';
@@ -3790,19 +3761,17 @@ async function renderAdminUsers() {
         const wallet = user.wallet || user.pi_uid || '—';
         const events = user.events_created || 0;
 
-        html += `
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 8px 6px;">${escapeHtml(fullName)}</td>
-                <td style="padding: 8px 6px;">${escapeHtml(email)}</td>
-                <td style="padding: 8px 6px;">${escapeHtml(phone)}</td>
-                <td style="padding: 8px 6px;">${escapeHtml(address)}</td>
-                <td style="padding: 8px 6px;">${escapeHtml(country)}</td>
-                <td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">${escapeHtml(wallet)}</td>
-                <td style="padding: 8px 6px; text-align: center;">${events}</td>
-            </tr>
-        `;
+        html += '<tr style="border-bottom: 1px solid #e5e7eb;">' +
+            '<td style="padding: 8px 6px;">' + escapeHtml(fullName) + '</td>' +
+            '<td style="padding: 8px 6px;">' + escapeHtml(email) + '</td>' +
+            '<td style="padding: 8px 6px;">' + escapeHtml(phone) + '</td>' +
+            '<td style="padding: 8px 6px;">' + escapeHtml(address) + '</td>' +
+            '<td style="padding: 8px 6px;">' + escapeHtml(country) + '</td>' +
+            '<td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">' + escapeHtml(wallet) + '</td>' +
+            '<td style="padding: 8px 6px; text-align: center;">' + events + '</td>' +
+        '</tr>';
     });
-    html += `</tbody></table>`;
+    html += '</tbody></table>';
     container.innerHTML = html;
 }
 
@@ -3860,7 +3829,7 @@ function renderAdminEvents() {
     if (events.length === 0) { container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noEventsAdmin') + '</p>'; return; }
     container.innerHTML = events.map(e => {
         const typesDisplay = 'Standard: ' + (e.ticketTypes?.standard?.price || 0).toFixed(6) + ' Pi';
-        return `<div class="admin-event-item"><div class="event-info"><strong>${escapeHtml(e.title)}</strong><small>${e.category} | ${e.pays || e.country || 'France'} | ${e.seatsLeft}/${e.seatsTotal} tickets | ${new Date(e.date).toLocaleDateString('en-US')}</small><small>Ticket Types: ${typesDisplay}</small><small>Organizer: ${escapeHtml(e.organizerName || e.organizer)}</small></div><div class="event-actions"><button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Cancel</button></div></div>`;
+        return '<div class="admin-event-item"><div class="event-info"><strong>' + escapeHtml(e.title) + '</strong><small>' + e.category + ' | ' + (e.pays || e.country || 'France') + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' tickets | ' + new Date(e.date).toLocaleDateString('en-US') + '</small><small>Ticket Types: ' + typesDisplay + '</small><small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small></div><div class="event-actions"><button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Cancel</button></div></div>';
     }).join('');
 }
 
@@ -3909,7 +3878,9 @@ let transactionProcessedSeconds = 0;
 function openTransactionProcessedPopup(seconds) {
     transactionProcessedSeconds = seconds || 5;
     document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
-    document.getElementById('transactionProcessedPopup').style.display = 'flex';
+    const popup = document.getElementById('transactionProcessedPopup');
+    popup.style.display = 'flex';
+    popup.classList.add('show');
     if (transactionProcessedTimer) clearInterval(transactionProcessedTimer);
     transactionProcessedTimer = setInterval(() => {
         transactionProcessedSeconds--;
@@ -3922,11 +3893,13 @@ function openTransactionProcessedPopup(seconds) {
 }
 
 function closeTransactionProcessedPopup() {
+    const popup = document.getElementById('transactionProcessedPopup');
+    popup.classList.remove('show');
+    popup.style.display = 'none';
     if (transactionProcessedTimer) {
         clearInterval(transactionProcessedTimer);
         transactionProcessedTimer = null;
     }
-    document.getElementById('transactionProcessedPopup').style.display = 'none';
 }
 
 function openPastEventPopup() {
@@ -3966,7 +3939,7 @@ function initChat() {
         if (!msgs) return;
         const d = document.createElement('div');
         d.className = 'chat-message ' + (m.isUser ? 'user' : 'support');
-        d.innerHTML = `<div class="message-bubble">${escapeHtml(m.text)}</div><span class="message-time">${m.time}</span>`;
+        d.innerHTML = '<div class="message-bubble">' + escapeHtml(m.text) + '</div><span class="message-time">' + m.time + '</span>';
         msgs.appendChild(d);
         msgs.scrollTop = msgs.scrollHeight;
     }
