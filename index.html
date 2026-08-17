@@ -750,7 +750,7 @@
     </div>
 </div>
 
-<!-- TRANSACTION PROCESSED POPUP (corrigée) -->
+<!-- TRANSACTION PROCESSED POPUP (modifié avec 2 boutons) -->
 <div id="transactionProcessedPopup" class="transaction-processed-popup" style="display:none;">
     <div class="transaction-processed-popup-content">
         <div class="transaction-processed-header">
@@ -763,7 +763,12 @@
             <p class="transaction-processed-timer" id="transactionProcessedTimer">Your account will be debited in <span id="timerSeconds">5</span> second(s).</p>
         </div>
         <div class="transaction-processed-footer">
-            <button class="btn-primary" id="transactionProcessedOkBtn">OK</button>
+            <button class="btn-secondary-modal" id="transactionProcessedHomeBtn">
+                <i class="fas fa-home"></i> Back to Home
+            </button>
+            <button class="btn-primary" id="transactionProcessedViewTicketsBtn">
+                <i class="fas fa-ticket-alt"></i> View My Tickets
+            </button>
         </div>
     </div>
 </div>
