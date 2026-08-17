@@ -1228,7 +1228,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC IMAGE DYNAMIQUE)
+// GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC PAYS + IMAGE DYNAMIQUE)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1249,10 +1249,22 @@ function generateTicketHTML(ticket) {
     const ticketIdShort = safeTicket.id ? String(safeTicket.id).substring(0, 8).toUpperCase() : '00000000';
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
-    const eventLocation = safeTicket.eventLocation || 'Online';
+
+    // ---- Construction de la localisation avec pays ----
+    const eventLocationRaw = safeTicket.eventLocation || 'Online';
+    const pays = safeTicket.pays || safeTicket.eventPays || '';
+    let locationDisplay = '';
+    if (pays && eventLocationRaw && eventLocationRaw !== 'Online') {
+        locationDisplay = pays + ', ' + eventLocationRaw;
+    } else if (pays) {
+        locationDisplay = pays;
+    } else {
+        locationDisplay = eventLocationRaw;
+    }
+    // -------------------------------------------------------
+
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
-    // Image dynamique selon la catégorie
     const category = safeTicket.category || 'default';
     const ticketImage = ticketImages[category] || ticketImages['default'];
 
@@ -1264,7 +1276,7 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-left line-2"><span class="ticket-value">' + escapeHtml(durationDisplay) + '</span></div>' +
         '<div class="ticket-left line-3"><span class="ticket-value">' + escapeHtml(dateFormatted) + '</span></div>' +
         '<div class="ticket-left line-4"><span class="ticket-value">' + escapeHtml(timeFormatted) + '</span></div>' +
-        '<div class="ticket-left line-5"><span class="ticket-value">' + escapeHtml(eventLocation) + '</span></div>' +
+        '<div class="ticket-left line-5"><span class="ticket-value">' + escapeHtml(locationDisplay) + '</span></div>' +
         '<div class="ticket-left line-6"><span class="ticket-value">' + escapeHtml(price) + '</span></div>' +
         '<div class="ticket-right line-1"><span class="ticket-value">' + escapeHtml(buyerName) + '</span></div>' +
         '<div class="ticket-right line-2"><span class="ticket-value">' + escapeHtml(userEmail) + '</span></div>' +
@@ -1276,9 +1288,7 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
     '</div>';
-}
-
-function generateTicketQR(ticketId) {
+}function generateTicketQR(ticketId) {
     const container = document.getElementById('qr-ticket-' + ticketId);
     if (!container) return;
     const ticket = tickets.find(t => t.id === ticketId);
