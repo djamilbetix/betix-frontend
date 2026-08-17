@@ -1190,7 +1190,6 @@ body {
     width: 18px;
     border-radius: 4px;
 }
-
 /* ============================================================
    TICKET – POSITIONNEMENT EXACT ET ALIGNÉ
    ============================================================ */
@@ -1215,9 +1214,11 @@ body {
     pointer-events: none;
     text-align: left;
 }
+
+/* 1. TEXTES DE GAUCHE : Réduction de 'left' de 25.5% à 22% et élargissement */
 .ticket-left {
-    left: 25.5%;
-    width: 19%;
+    left: 22%;
+    width: 22.5%;
 }
 .ticket-right {
     left: 56.5%;
@@ -1229,6 +1230,7 @@ body {
 .ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; }
 .ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; }
 .ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; }
+
 .ticket-value {
     font-size: clamp(6px, 1.05vw, 11px);
     font-weight: 700;
@@ -1240,6 +1242,8 @@ body {
     display: block;
     width: 100%;
 }
+
+/* 2. QR CODE : Ajustement du 'right' de 10.5% à 8% et du 'top' de 14% à 15% pour le centrer dans les repères noirs */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1249,32 +1253,34 @@ body {
     padding: 3px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    top: 14%;
-    right: 10.5%;
+    top: 15%;
+    right: 8%;
     width: 14.5%;
     aspect-ratio: 1/1;
 }
+
+/* 3. ÉLÉMENTS SOUS LE QR CODE : Alignement sous le bloc et repositionnement */
 .ticket-qr-id {
     position: absolute;
-    right: 9%;
+    right: 6.75%;
     width: 17%;
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 51%;
+    top: 50%;
 }
 .ticket-qr-date {
     position: absolute;
-    right: 9%;
+    right: 6.75%;
     width: 17%;
     text-align: center;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 64%;
+    top: 61.5%;
 }
 
 /* ============================================================
