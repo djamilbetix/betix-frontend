@@ -1225,22 +1225,19 @@ body {
 
 .ticket-right {
     left: 58%;
-    width: 17%;
+    width: 15%; /* Réduit pour éviter d'empiéter sur la bande jaune */
 }
 
-/* 
-   Ajustement top pour chaque ligne.
-   'transform: translateY(-100%)' force le texte à se poser direct AU-DESSUS de la ligne
-*/
-.ticket-left.line-1, .ticket-right.line-1 { top: 32.5%; }
-.ticket-left.line-2, .ticket-right.line-2 { top: 39.5%; }
-.ticket-left.line-3, .ticket-right.line-3 { top: 46.5%; }
-.ticket-left.line-4, .ticket-right.line-4 { top: 53.5%; }
-.ticket-left.line-5, .ticket-right.line-5 { top: 60.5%; }
-.ticket-left.line-6, .ticket-right.line-6 { top: 67.5%; }
+/* Positionnement vertical relevé pour que le texte reste BIEN au-dessus du trait */
+.ticket-left.line-1, .ticket-right.line-1 { top: 28%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 35%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 42%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 49%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 56.5%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 63.5%; }
 
 .ticket-value {
-    font-size: clamp(6px, 1.05vw, 11px);
+    font-size: clamp(6px, 1vw, 11px);
     font-weight: 700;
     color: #1a202c;
     line-height: 1;
@@ -1249,12 +1246,9 @@ body {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
-    /* Calage parfait sur la ligne */
-    transform: translateY(-100%);
-    padding-bottom: 2px; 
 }
 
-/* --- QR CODE (Centré dans le cadre à coins noirs) --- */
+/* --- QR CODE (Replacé au centre parfait du cadre jaune) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1264,10 +1258,10 @@ body {
     padding: 2px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    /* Coordonnées ajustées pour le centrage exact dans le repère */
+    /* Ajustement précis pour se fixer DANS les coins noirs */
     top: 15.5%;
-    right: 12.8%;
-    width: 14.2%;
+    right: 6.8%;
+    width: 12.8%;
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
@@ -1279,7 +1273,7 @@ body {
     object-fit: contain;
 }
 
-/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Conservés intacts) --- */
+/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Conservés) --- */
 .ticket-qr-id {
     position: absolute;
     right: 4.8%;
