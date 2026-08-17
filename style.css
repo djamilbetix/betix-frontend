@@ -1218,24 +1218,24 @@ body {
     text-align: left;
 }
 
-/* Première colonne décalée vers la gauche (18%) */
+/* Première colonne décalée encore plus à gauche */
 .ticket-left {
-    left: 18%;
-    width: 22%;
+    left: 16.5%;
+    width: 23%;
 }
 
 .ticket-right {
-    left: 55%;
+    left: 54.5%;
     width: 17%;
 }
 
-/* Progression verticale constante */
-.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
-.ticket-left.line-2, .ticket-right.line-2 { top: 36.8%; }
-.ticket-left.line-3, .ticket-right.line-3 { top: 44.1%; }
-.ticket-left.line-4, .ticket-right.line-4 { top: 51.4%; }
-.ticket-left.line-5, .ticket-right.line-5 { top: 58.7%; }
-.ticket-left.line-6, .ticket-right.line-6 { top: 66.0%; }
+/* Hauteurs des lignes descendues légèrement pour poser le texte sur les traits */
+.ticket-left.line-1, .ticket-right.line-1 { top: 30.5%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 37.8%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 45.1%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 52.4%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 59.7%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 67.0%; }
 
 .ticket-value {
     font-size: clamp(6px, 1.02vw, 11px);
@@ -1247,11 +1247,11 @@ body {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
-    transform: translateY(-100%);
-    margin-top: -1px;
+    /* Incliné à -85% pour faire descendre les lettres pile sur la ligne */
+    transform: translateY(-85%);
 }
 
-/* --- QR CODE (Remonté + décalé à droite) --- */
+/* --- QR CODE (Agrandit vers le haut et mieux calé) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1261,10 +1261,10 @@ body {
     padding: 2px;
     border-radius: 5px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    /* Remonté (top: 14.8%) et décalé vers la droite (right: 8.8%) */
-    top: 14.8%;
-    right: 8.8%;
-    width: 13.5%;
+    /* Remonté plus haut (13.5%) et légèrement agrandi (14.2%) */
+    top: 13.5%;
+    right: 8.5%;
+    width: 14.2%;
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
