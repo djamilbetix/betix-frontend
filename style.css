@@ -1210,7 +1210,7 @@ body {
     display: block;
 }
 
-/* --- STRUCTURE ET DÉCALAGE DES TEXTES --- */
+/* --- STRUCTURE ET DÉCALAGE DES TEXTES VERS LA GAUCHE --- */
 .ticket-left,
 .ticket-right {
     position: absolute;
@@ -1218,26 +1218,27 @@ body {
     text-align: left;
 }
 
+/* Colonnes décalées vers la gauche */
 .ticket-left {
-    left: 22%;
-    width: 20%;
+    left: 19.5%;
+    width: 21%;
 }
 
 .ticket-right {
-    left: 58%;
-    width: 15%; /* Réduit pour éviter d'empiéter sur la bande jaune */
+    left: 55.5%;
+    width: 17%;
 }
 
-/* Positionnement vertical relevé pour que le texte reste BIEN au-dessus du trait */
-.ticket-left.line-1, .ticket-right.line-1 { top: 28%; }
-.ticket-left.line-2, .ticket-right.line-2 { top: 35%; }
-.ticket-left.line-3, .ticket-right.line-3 { top: 42%; }
-.ticket-left.line-4, .ticket-right.line-4 { top: 49%; }
-.ticket-left.line-5, .ticket-right.line-5 { top: 56.5%; }
-.ticket-left.line-6, .ticket-right.line-6 { top: 63.5%; }
+/* Hauteurs des lignes ajustées pour poser le texte au millimètre */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.8%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 36.8%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 43.8%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 50.8%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 57.8%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.8%; }
 
 .ticket-value {
-    font-size: clamp(6px, 1vw, 11px);
+    font-size: clamp(6px, 1.05vw, 11px);
     font-weight: 700;
     color: #1a202c;
     line-height: 1;
@@ -1246,9 +1247,11 @@ body {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
+    /* Rehausse la base des lettres pour poser le texte SUR la ligne */
+    transform: translateY(-88%);
 }
 
-/* --- QR CODE (Replacé au centre parfait du cadre jaune) --- */
+/* --- QR CODE (Centré au milieu des 4 coins noirs) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1258,10 +1261,10 @@ body {
     padding: 2px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    /* Ajustement précis pour se fixer DANS les coins noirs */
-    top: 15.5%;
-    right: 6.8%;
-    width: 12.8%;
+    /* Décalé vers la gauche et recentré dans les repères */
+    top: 16.2%;
+    right: 10.3%;
+    width: 12.4%;
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
@@ -1273,7 +1276,7 @@ body {
     object-fit: contain;
 }
 
-/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Conservés) --- */
+/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Conservés intacts) --- */
 .ticket-qr-id {
     position: absolute;
     right: 4.8%;
@@ -1297,7 +1300,6 @@ body {
     color: #1a202c;
     top: 62%;
 }
-
 
 /* ============================================================
    FOOTER – textes réduits, logos centrés
