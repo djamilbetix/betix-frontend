@@ -1275,7 +1275,7 @@ body {
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 52%; /* Remonté pour poser le numéro de ticket juste au-dessus de la ligne */
+    top: 51%; /* Remonté pour poser le numéro de ticket juste au-dessus de la ligne */
 }
 
 .ticket-qr-date {
