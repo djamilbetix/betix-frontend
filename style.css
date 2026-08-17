@@ -1231,7 +1231,7 @@ body {
 }
 
 /* Positionnement vertical des lignes - Colonne Gauche */
-.ticket-left.line-1 { top: 30.5%; }
+.ticket-left.line-1 { top: 29.5%; }
 .ticket-left.line-2 { top: 37.8%; }
 .ticket-left.line-3 { top: 45.1%; }
 .ticket-left.line-4 { top: 52.4%; }
