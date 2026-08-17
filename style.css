@@ -4895,21 +4895,42 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
 }
 .transaction-processed-footer {
     display: flex;
+    gap: 12px;
     justify-content: center;
+    flex-wrap: wrap;
+}
+.transaction-processed-footer .btn-secondary-modal,
+.transaction-processed-footer .btn-primary {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.transaction-processed-footer .btn-secondary-modal {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+.transaction-processed-footer .btn-secondary-modal:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
 }
 .transaction-processed-footer .btn-primary {
-    width: auto;
-    padding: 10px 40px;
-    border-radius: 40px;
-    background: #0B1F5C;
+    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
     color: white;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 0 4px 15px rgba(11,31,92,0.25);
 }
 .transaction-processed-footer .btn-primary:hover {
-    background: #1a2a4a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(11,31,92,0.35);
 }
 
 /* ============================================================
@@ -4969,4 +4990,16 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
     background: #4b5563;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(107,114,128,0.3);
+}
+
+/* ============================================================
+   LOCALISATION SUR LE TICKET – RETOUR À LA LIGNE AUTOMATIQUE
+   ============================================================ */
+.ticket-left.line-5 .ticket-value {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
 }
