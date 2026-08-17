@@ -1218,24 +1218,24 @@ body {
     text-align: left;
 }
 
-/* Alignement des colonnes */
 .ticket-left {
     left: 22%;
     width: 22.5%;
 }
 
+/* Colonne de droite : 'left' poussé de 56.5% à 58% pour décaler la date d'achat */
 .ticket-right {
-    left: 56.5%;
+    left: 58%;
     width: 19%;
 }
 
-/* Lignes verticales principales (line-6 descendue à 65.5% pour aligner le prix et le ticket number) */
+/* Lignes verticales principales */
 .ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
 .ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; }
 .ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; }
 .ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; }
 .ticket-left.line-5, .ticket-right.line-5 { top: 57.5%; }
-.ticket-left.line-6, .ticket-right.line-6 { top: 65.5%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 64.5%; }
 
 .ticket-value {
     font-size: clamp(6px, 1.05vw, 11px);
@@ -1249,7 +1249,7 @@ body {
     width: 100%;
 }
 
-/* --- QR CODE (Taille réduite et parfaitement cadré) --- */
+/* --- QR CODE (Centré au milieu du cadre à coins noirs) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1259,13 +1259,13 @@ body {
     padding: 3px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    top: 14%;
-    right: 9.2%;
-    width: 12.5%; /* Taille réduite pour bien entrer dans les coins noirs */
+    top: 15.5%;
+    right: 8.5%;
+    width: 13.5%;
     aspect-ratio: 1/1;
 }
 
-/* --- ÉLÉMENTS SUR LES LIGNES EN BAS À DROITE --- */
+/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Calés sur les lignes) --- */
 .ticket-qr-id {
     position: absolute;
     right: 6.8%;
@@ -1275,7 +1275,7 @@ body {
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 51.5%; /* Calé exactement sur la ligne "TICKET ID" */
+    top: 50%; /* Remonté pour poser le numéro de ticket juste au-dessus de la ligne */
 }
 
 .ticket-qr-date {
@@ -1287,8 +1287,9 @@ body {
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 64.8%; /* Calé exactement sur la ligne "DATE OF PURCHASE" */
+    top: 63.5%; /* Descendu sous "DATE OF PURCHASE :" pour poser la date sur sa ligne */
 }
+
 
 /* ============================================================
    FOOTER – textes réduits, logos centrés
