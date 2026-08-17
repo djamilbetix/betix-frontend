@@ -1220,22 +1220,24 @@ body {
 
 .ticket-left {
     left: 22%;
-    width: 22.5%;
+    width: 20%;
 }
 
-/* Colonne de droite : 'left' poussé de 56.5% à 58% pour décaler la date d'achat */
 .ticket-right {
     left: 58%;
-    width: 19%;
+    width: 17%;
 }
 
-/* Lignes verticales principales */
-.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
-.ticket-left.line-2, .ticket-right.line-2 { top: 36.5%; }
-.ticket-left.line-3, .ticket-right.line-3 { top: 43.5%; }
-.ticket-left.line-4, .ticket-right.line-4 { top: 50.5%; }
-.ticket-left.line-5, .ticket-right.line-5 { top: 58.5%; }
-.ticket-left.line-6, .ticket-right.line-6 { top: 66.5%; }
+/* 
+   Ajustement top pour chaque ligne.
+   'transform: translateY(-100%)' force le texte à se poser direct AU-DESSUS de la ligne
+*/
+.ticket-left.line-1, .ticket-right.line-1 { top: 32.5%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 39.5%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 46.5%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 53.5%; }
+.ticket-left.line-5, .ticket-right.line-5 { top: 60.5%; }
+.ticket-left.line-6, .ticket-right.line-6 { top: 67.5%; }
 
 .ticket-value {
     font-size: clamp(6px, 1.05vw, 11px);
@@ -1247,25 +1249,37 @@ body {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
+    /* Calage parfait sur la ligne */
+    transform: translateY(-100%);
+    padding-bottom: 2px; 
 }
 
-/* --- QR CODE (Centré au milieu du cadre à coins noirs) --- */
+/* --- QR CODE (Centré dans le cadre à coins noirs) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 3px;
+    padding: 2px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    top: 13.5%;
-    right: 7.5%;
-    width: 13.5%;
+    /* Coordonnées ajustées pour le centrage exact dans le repère */
+    top: 15.5%;
+    right: 12.8%;
+    width: 14.2%;
     aspect-ratio: 1/1;
+    box-sizing: border-box;
 }
 
-/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Calés sur les lignes) --- */
+.ticket-qr img,
+.ticket-qr svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Conservés intacts) --- */
 .ticket-qr-id {
     position: absolute;
     right: 4.8%;
@@ -1275,7 +1289,7 @@ body {
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 51%; /* Remonté pour poser le numéro de ticket juste au-dessus de la ligne */
+    top: 51%;
 }
 
 .ticket-qr-date {
@@ -1287,7 +1301,7 @@ body {
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 62%; /* Descendu sous "DATE OF PURCHASE :" pour poser la date sur sa ligne */
+    top: 62%;
 }
 
 
