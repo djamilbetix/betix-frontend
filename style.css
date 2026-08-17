@@ -1287,7 +1287,7 @@ body {
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 63.5%; /* Descendu sous "DATE OF PURCHASE :" pour poser la date sur sa ligne */
+    top: 65.5%; /* Descendu sous "DATE OF PURCHASE :" pour poser la date sur sa ligne */
 }
 
 
