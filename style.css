@@ -1236,7 +1236,7 @@ body {
 .ticket-left.line-3 { top: 45.1%; }
 .ticket-left.line-4 { top: 52.4%; }
 .ticket-left.line-5 { top: 59.7%; }
-.ticket-left.line-6 { top: 67.2%; } /* Ajusté spécifiquement pour le Prix */
+.ticket-left.line-6 { top: 69.2%; } /* Ajusté spécifiquement pour le Prix */
 
 /* Positionnement vertical des lignes - Colonne Droite */
 .ticket-right.line-1 { top: 29.5%; }
