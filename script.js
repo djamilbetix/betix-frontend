@@ -359,6 +359,26 @@ function t(key) {
 }
 
 // ============================================================
+// IMAGES DE TICKET PAR CATÉGORIE (AJOUT)
+// ============================================================
+const ticketImages = {
+    'Concert': 'ticket-concert.png',
+    'Sport': 'ticket-sport.png',
+    'Football': 'ticket-football.png',
+    'Conference': 'ticket-conference.png',
+    'Training': 'ticket-training.png',
+    'Cinema': 'ticket-cinema.png',
+    'Festival': 'ticket-festival.png',
+    'Theatre': 'ticket-theatre.png',
+    'Dance': 'ticket-dance.png',
+    'Exhibition': 'ticket-exhibition.png',
+    'Gala': 'ticket-gala.png',
+    'Seminar': 'ticket-seminar.png',
+    'Formation': 'ticket-formation.png',
+    'default': 'ticket-default.png'
+};
+
+// ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let events = [];
@@ -1208,7 +1228,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML
+// GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC IMAGE DYNAMIQUE)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1232,10 +1252,13 @@ function generateTicketHTML(ticket) {
     const eventLocation = safeTicket.eventLocation || 'Online';
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
+    // Image dynamique selon la catégorie
+    const category = safeTicket.category || 'default';
+    const ticketImage = ticketImages[category] || ticketImages['default'];
 
     return '<div class="ticket-overlay-container" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
         '<div class="ticket-overlay-bg">' +
-            '<img src="ticket-officiel.png" alt="Official ticket" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#0a1628\';">' +
+            '<img src="' + ticketImage + '" alt="Official ticket" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#0a1628\';">' +
         '</div>' +
         '<div class="ticket-left line-1"><span class="ticket-value">' + escapeHtml(eventTitle) + '</span></div>' +
         '<div class="ticket-left line-2"><span class="ticket-value">' + escapeHtml(durationDisplay) + '</span></div>' +
@@ -3875,6 +3898,7 @@ function initAdminTabs() {
 let transactionProcessedTimer = null;
 let transactionProcessedSeconds = 0;
 
+// NOUVELLE FONCTION openTransactionProcessedPopup avec deux boutons
 function openTransactionProcessedPopup(seconds) {
     transactionProcessedSeconds = seconds || 5;
     document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
@@ -3890,6 +3914,29 @@ function openTransactionProcessedPopup(seconds) {
             transactionProcessedTimer = null;
         }
     }, 1000);
+
+    // Attacher les événements aux boutons (clonage pour éviter les doublons)
+    const homeBtn = document.getElementById('transactionProcessedHomeBtn');
+    const viewBtn = document.getElementById('transactionProcessedViewTicketsBtn');
+    if (homeBtn) {
+        const newHomeBtn = homeBtn.cloneNode(true);
+        homeBtn.parentNode.replaceChild(newHomeBtn, homeBtn);
+        newHomeBtn.addEventListener('click', function() {
+            closeTransactionProcessedPopup();
+            showPage('home');
+        });
+    }
+    if (viewBtn) {
+        const newViewBtn = viewBtn.cloneNode(true);
+        viewBtn.parentNode.replaceChild(newViewBtn, viewBtn);
+        newViewBtn.addEventListener('click', function() {
+            closeTransactionProcessedPopup();
+            showPage('tickets');
+            setTimeout(() => {
+                renderTickets();
+            }, 300);
+        });
+    }
 }
 
 function closeTransactionProcessedPopup() {
@@ -4092,6 +4139,9 @@ async function initApp() {
         updateConnectButtons();
         document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
         document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
+        // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
+        
         const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
         const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
         const adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
@@ -4145,7 +4195,7 @@ async function initApp() {
                 confirmPurchaseResolve = null;
             }
         });
-        document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup);
+        // Le listener sur transactionProcessedOkBtn a été supprimé, la nouvelle fonction gère les boutons
         document.getElementById('viewUpcomingEventsBtn')?.addEventListener('click', function() {
             closePastEventPopup();
             showPage('home');
