@@ -1268,7 +1268,7 @@ body {
 /* --- ÉLÉMENTS SUR LA PARTIE JAUNE (Calés sur les lignes) --- */
 .ticket-qr-id {
     position: absolute;
-    right: 6.8%;
+    right: 5.8%;
     width: 17%;
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
@@ -1280,7 +1280,7 @@ body {
 
 .ticket-qr-date {
     position: absolute;
-    right: 6.8%;
+    right: 5.8%;
     width: 17%;
     text-align: center;
     font-family: 'Inter', sans-serif;
