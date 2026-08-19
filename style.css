@@ -1261,19 +1261,21 @@ body {
     transform: none;
     /* La taille de police est héritée de .ticket-value (taille normale) */
 }
-/* --- QR Code (remplit tout le cadre) --- */
+/* --- QR Code (Agrandit avec fond blanc conservé) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 0; /* Suppression des marges internes */
-    border-radius: 0; /* Suppression des coins arrondis si le cadre est droit */
-    box-shadow: none; /* Suppression de l'ombre interne si besoin */
-    top: 12.8%;
-    right: 9.0%;
-    width: 12.8%;
+    padding: 3px; /* Conserve la bordure blanche autour */
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    
+    /* Dimensions et position ajustées pour couvrir les repères noirs */
+    top: 10.5%;
+    right: 7.2%;
+    width: 16.5%; 
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
@@ -1281,8 +1283,7 @@ body {
 .ticket-qr img, .ticket-qr svg {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Remplit tout l'espace du conteneur */
-    display: block;
+    object-fit: contain; /* Garde le QR code net et lisible */
 }
 
 
