@@ -1,5 +1,5 @@
 /* ============================================================
-   STYLES COMPLETS POUR BETIX (AVEC AMÉLIORATIONS)
+   STYLES COMPLETS POUR BETIX (AVEC SECTIONS PAR CATÉGORIE)
    ============================================================ */
 
 * {
@@ -1190,8 +1190,9 @@ body {
     width: 18px;
     border-radius: 4px;
 }
+
 /* ============================================================
-   TICKET – POSITIONNEMENT EXACT ET ALIGNÉ (RÉFÉRENCE DANCE)
+   TICKET – POSITIONNEMENT DE BASE (RÉFÉRENCE DANCE)
    ============================================================ */
 .ticket-overlay-container {
     position: relative;
@@ -1210,6 +1211,7 @@ body {
     display: block;
 }
 
+/* --- Colonnes --- */
 .ticket-left,
 .ticket-right {
     position: absolute;
@@ -1217,45 +1219,30 @@ body {
     text-align: left;
 }
 
-/* Colonne de gauche */
 .ticket-left {
     left: 16.5%;
     width: 23%;
 }
 
-/* Colonne de droite */
 .ticket-right {
     left: 54.5%;
     width: 17%;
 }
 
-/* --- POSITIONNEMENT VERTICAL HARMONISÉ (valeurs du ticket DANCE) --- */
+/* --- Valeurs communes (par défaut) --- */
 .ticket-left.line-1,
-.ticket-right.line-1 {
-    top: 29.5%;
-}
+.ticket-right.line-1 { top: 29.5%; }
 .ticket-left.line-2,
-.ticket-right.line-2 {
-    top: 37.4%;
-}
+.ticket-right.line-2 { top: 37.4%; }
 .ticket-left.line-3,
-.ticket-right.line-3 {
-    top: 44.5%;
-}
+.ticket-right.line-3 { top: 44.5%; }
 .ticket-left.line-4,
-.ticket-right.line-4 {
-    top: 52.0%;
-}
+.ticket-right.line-4 { top: 52.0%; }
 .ticket-left.line-5,
-.ticket-right.line-5 {
-    top: 56.4%;
-}
+.ticket-right.line-5 { top: 56.4%; }
 .ticket-left.line-6,
-.ticket-right.line-6 {
-    top: 69.2%;
-}
+.ticket-right.line-6 { top: 69.2%; }
 
-/* --- STYLE DU TEXTE --- */
 .ticket-value {
     font-size: clamp(6px, 1.02vw, 11px);
     font-weight: 700;
@@ -1269,7 +1256,7 @@ body {
     transform: translateY(-85%);
 }
 
-/* --- GESTION SPÉCIALE POUR LA LOCALISATION (line-5) : permet le retour à la ligne --- */
+/* Gestion spéciale pour la localisation (line-5) : retour à la ligne */
 .ticket-left.line-5 .ticket-value,
 .ticket-right.line-5 .ticket-value {
     white-space: normal;
@@ -1278,10 +1265,10 @@ body {
     word-wrap: break-word;
     overflow-wrap: break-word;
     line-height: 1.3;
-    transform: none;  /* annule le décalage vertical pour aligner en haut */
+    transform: none;
 }
 
-/* --- QR CODE --- */
+/* --- QR Code --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1329,6 +1316,183 @@ body {
     color: #1a202c;
     top: 62%;
 }
+
+/* ============================================================
+   SECTIONS PAR CATÉGORIE – AJUSTEZ ICI INDIVIDUELLEMENT
+   (Valeurs par défaut identiques à celles du ticket DANCE)
+   ============================================================ */
+
+/* --- CONCERT --- */
+.ticket-category-concert .ticket-left.line-1,
+.ticket-category-concert .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-concert .ticket-left.line-2,
+.ticket-category-concert .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-concert .ticket-left.line-3,
+.ticket-category-concert .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-concert .ticket-left.line-4,
+.ticket-category-concert .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-concert .ticket-left.line-5,
+.ticket-category-concert .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-concert .ticket-left.line-6,
+.ticket-category-concert .ticket-right.line-6 { top: 69.2%; }
+
+/* --- SPORT --- */
+.ticket-category-sport .ticket-left.line-1,
+.ticket-category-sport .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-sport .ticket-left.line-2,
+.ticket-category-sport .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-sport .ticket-left.line-3,
+.ticket-category-sport .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-sport .ticket-left.line-4,
+.ticket-category-sport .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-sport .ticket-left.line-5,
+.ticket-category-sport .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-sport .ticket-left.line-6,
+.ticket-category-sport .ticket-right.line-6 { top: 69.2%; }
+
+/* --- CONFERENCE --- */
+.ticket-category-conference .ticket-left.line-1,
+.ticket-category-conference .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-conference .ticket-left.line-2,
+.ticket-category-conference .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-conference .ticket-left.line-3,
+.ticket-category-conference .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-conference .ticket-left.line-4,
+.ticket-category-conference .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-conference .ticket-left.line-5,
+.ticket-category-conference .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-conference .ticket-left.line-6,
+.ticket-category-conference .ticket-right.line-6 { top: 69.2%; }
+
+/* --- TRAINING --- */
+.ticket-category-training .ticket-left.line-1,
+.ticket-category-training .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-training .ticket-left.line-2,
+.ticket-category-training .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-training .ticket-left.line-3,
+.ticket-category-training .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-training .ticket-left.line-4,
+.ticket-category-training .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-training .ticket-left.line-5,
+.ticket-category-training .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-training .ticket-left.line-6,
+.ticket-category-training .ticket-right.line-6 { top: 69.2%; }
+
+/* --- CINEMA --- */
+.ticket-category-cinema .ticket-left.line-1,
+.ticket-category-cinema .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-cinema .ticket-left.line-2,
+.ticket-category-cinema .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-cinema .ticket-left.line-3,
+.ticket-category-cinema .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-cinema .ticket-left.line-4,
+.ticket-category-cinema .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-cinema .ticket-left.line-5,
+.ticket-category-cinema .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-cinema .ticket-left.line-6,
+.ticket-category-cinema .ticket-right.line-6 { top: 69.2%; }
+
+/* --- FESTIVAL --- */
+.ticket-category-festival .ticket-left.line-1,
+.ticket-category-festival .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-festival .ticket-left.line-2,
+.ticket-category-festival .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-festival .ticket-left.line-3,
+.ticket-category-festival .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-festival .ticket-left.line-4,
+.ticket-category-festival .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-festival .ticket-left.line-5,
+.ticket-category-festival .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-festival .ticket-left.line-6,
+.ticket-category-festival .ticket-right.line-6 { top: 69.2%; }
+
+/* --- THEATRE --- */
+.ticket-category-theatre .ticket-left.line-1,
+.ticket-category-theatre .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-theatre .ticket-left.line-2,
+.ticket-category-theatre .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-theatre .ticket-left.line-3,
+.ticket-category-theatre .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-theatre .ticket-left.line-4,
+.ticket-category-theatre .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-theatre .ticket-left.line-5,
+.ticket-category-theatre .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-theatre .ticket-left.line-6,
+.ticket-category-theatre .ticket-right.line-6 { top: 69.2%; }
+
+/* --- DANCE --- */
+.ticket-category-dance .ticket-left.line-1,
+.ticket-category-dance .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-dance .ticket-left.line-2,
+.ticket-category-dance .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-dance .ticket-left.line-3,
+.ticket-category-dance .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-dance .ticket-left.line-4,
+.ticket-category-dance .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-dance .ticket-left.line-5,
+.ticket-category-dance .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-dance .ticket-left.line-6,
+.ticket-category-dance .ticket-right.line-6 { top: 69.2%; }
+
+/* --- EXHIBITION --- */
+.ticket-category-exhibition .ticket-left.line-1,
+.ticket-category-exhibition .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-exhibition .ticket-left.line-2,
+.ticket-category-exhibition .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-exhibition .ticket-left.line-3,
+.ticket-category-exhibition .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-exhibition .ticket-left.line-4,
+.ticket-category-exhibition .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-exhibition .ticket-left.line-5,
+.ticket-category-exhibition .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-exhibition .ticket-left.line-6,
+.ticket-category-exhibition .ticket-right.line-6 { top: 69.2%; }
+
+/* --- GALA --- */
+.ticket-category-gala .ticket-left.line-1,
+.ticket-category-gala .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-gala .ticket-left.line-2,
+.ticket-category-gala .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-gala .ticket-left.line-3,
+.ticket-category-gala .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-gala .ticket-left.line-4,
+.ticket-category-gala .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-gala .ticket-left.line-5,
+.ticket-category-gala .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-gala .ticket-left.line-6,
+.ticket-category-gala .ticket-right.line-6 { top: 69.2%; }
+
+/* --- SEMINAR --- */
+.ticket-category-seminar .ticket-left.line-1,
+.ticket-category-seminar .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-seminar .ticket-left.line-2,
+.ticket-category-seminar .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-seminar .ticket-left.line-3,
+.ticket-category-seminar .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-seminar .ticket-left.line-4,
+.ticket-category-seminar .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-seminar .ticket-left.line-5,
+.ticket-category-seminar .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-seminar .ticket-left.line-6,
+.ticket-category-seminar .ticket-right.line-6 { top: 69.2%; }
+
+/* --- FORMATION --- */
+.ticket-category-formation .ticket-left.line-1,
+.ticket-category-formation .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-formation .ticket-left.line-2,
+.ticket-category-formation .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-formation .ticket-left.line-3,
+.ticket-category-formation .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-formation .ticket-left.line-4,
+.ticket-category-formation .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-formation .ticket-left.line-5,
+.ticket-category-formation .ticket-right.line-5 { top: 56.4%; }
+.ticket-category-formation .ticket-left.line-6,
+.ticket-category-formation .ticket-right.line-6 { top: 69.2%; }
+
+/* ============================================================
+   FIN DES SECTIONS PAR CATÉGORIE
+   ============================================================ */
 
 /* ============================================================
    FOOTER – textes réduits, logos centrés
