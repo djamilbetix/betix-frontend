@@ -1192,7 +1192,7 @@ body {
 }
 
 /* ============================================================
-   TICKET – POSITIONNEMENT DE BASE (RÉFÉRENCE DANCE)
+   TICKET – POSITIONNEMENT INDÉPENDANT (CHAQUE ÉLÉMENT MODIFIABLE)
    ============================================================ */
 .ticket-overlay-container {
     position: relative;
@@ -1219,30 +1219,24 @@ body {
     text-align: left;
 }
 
-.ticket-left {
-    left: 16.5%;
-    width: 23%;
-}
+.ticket-left { left: 16.5%; width: 23%; }
+.ticket-right { left: 54.5%; width: 17%; }
 
-.ticket-right {
-    left: 54.5%;
-    width: 17%;
-}
+/* --- Positionnement vertical : chaque ligne a son propre top --- */
+/* Lignes 1 à 4 (inchangées) */
+.ticket-left.line-1, .ticket-right.line-1 { top: 29.5%; }
+.ticket-left.line-2, .ticket-right.line-2 { top: 37.4%; }
+.ticket-left.line-3, .ticket-right.line-3 { top: 44.5%; }
+.ticket-left.line-4, .ticket-right.line-4 { top: 52.0%; }
 
-/* --- Valeurs communes (par défaut) --- */
-.ticket-left.line-1,
-.ticket-right.line-1 { top: 29.5%; }
-.ticket-left.line-2,
-.ticket-right.line-2 { top: 37.4%; }
-.ticket-left.line-3,
-.ticket-right.line-3 { top: 44.5%; }
-.ticket-left.line-4,
-.ticket-right.line-4 { top: 52.0%; }
-.ticket-left.line-5,
-.ticket-right.line-5 { top: 56.4%; }
-.ticket-left.line-6,
-.ticket-right.line-6 { top: 69.2%; }
+/* --- Ligne 5 (LOCATION) – indépendante --- */
+.ticket-left.line-5, .ticket-right.line-5 { top: 56.4%; }
 
+/* --- Ligne 6 (PRICE) – INDÉPENDANTE (vous pouvez la décaler vers le bas) --- */
+.ticket-left.line-6, .ticket-right.line-6 { top: 69.2%; }
+/* ↑ Ajustez cette valeur pour remonter/descendre le prix sans toucher aux autres lignes */
+
+/* --- Style commun des textes --- */
 .ticket-value {
     font-size: clamp(6px, 1.02vw, 11px);
     font-weight: 700;
@@ -1256,7 +1250,7 @@ body {
     transform: translateY(-85%);
 }
 
-/* Gestion spéciale pour la localisation (line-5) : retour à la ligne */
+/* --- Gestion spéciale pour la localisation (line-5) : retour à la ligne et alignement haut --- */
 .ticket-left.line-5 .ticket-value,
 .ticket-right.line-5 .ticket-value {
     white-space: normal;
@@ -1266,9 +1260,10 @@ body {
     overflow-wrap: break-word;
     line-height: 1.3;
     transform: none;
+    font-size: clamp(5px, 0.9vw, 10px); /* légèrement plus petit pour limiter les lignes */
 }
 
-/* --- QR Code --- */
+/* --- QR Code (position fixe) --- */
 .ticket-qr {
     position: absolute;
     display: flex;
@@ -1285,14 +1280,13 @@ body {
     box-sizing: border-box;
 }
 
-.ticket-qr img,
-.ticket-qr svg {
+.ticket-qr img, .ticket-qr svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-/* --- ÉLÉMENTS SUR LA PARTIE JAUNE --- */
+/* --- Éléments jaunes (indépendants du QR code) --- */
 .ticket-qr-id {
     position: absolute;
     right: 4.8%;
@@ -1302,7 +1296,7 @@ body {
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 51%;
+    top: 51%;                   /* Ajustez pour déplacer le Ticket ID */
 }
 
 .ticket-qr-date {
@@ -1314,12 +1308,11 @@ body {
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 62%;
+    top: 62%;                   /* Ajustez pour déplacer la Date d'achat */
 }
 
 /* ============================================================
-   SECTIONS PAR CATÉGORIE – AJUSTEZ ICI INDIVIDUELLEMENT
-   (Valeurs par défaut identiques à celles du ticket DANCE)
+   SECTIONS PAR CATÉGORIE – vos réglages conservés
    ============================================================ */
 
 /* --- CONCERT --- */
@@ -1392,7 +1385,7 @@ body {
 .ticket-category-cinema .ticket-left.line-6,
 .ticket-category-cinema .ticket-right.line-6 { top: 69.2%; }
 
-/* --- FESTIVAL --- */
+/* --- FESTIVAL (vos valeurs personnalisées conservées) --- */
 .ticket-category-festival .ticket-left.line-1,
 .ticket-category-festival .ticket-right.line-1 { top: 29.5%; }
 .ticket-category-festival .ticket-left.line-2,
@@ -1404,7 +1397,7 @@ body {
 .ticket-category-festival .ticket-left.line-5,
 .ticket-category-festival .ticket-right.line-5 { top: 55.7%; }
 .ticket-category-festival .ticket-left.line-6,
-.ticket-category-festival .ticket-right.line-6 { top: 66.2%; }
+.ticket-category-festival .ticket-right.line-6 { top: 66.2%; }   /* ← Vous pouvez ajuster cette valeur */
 
 /* --- THEATRE --- */
 .ticket-category-theatre .ticket-left.line-1,
@@ -1493,7 +1486,6 @@ body {
 /* ============================================================
    FIN DES SECTIONS PAR CATÉGORIE
    ============================================================ */
-
 /* ============================================================
    FOOTER – textes réduits, logos centrés
    ============================================================ */
