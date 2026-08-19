@@ -1366,9 +1366,9 @@ body {
 .ticket-category-conference .ticket-left.line-5,
 .ticket-category-conference .ticket-right.line-5 { top: 53.5%; }
 .ticket-category-conference .ticket-left.line-6 { top: 66.2%; } /* Price */
-.ticket-category-conference .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
-.ticket-category-conference .ticket-qr-id { top: 49%; }
-.ticket-category-conference .ticket-qr-date { top: 59.2%; }
+.ticket-category-conference .ticket-right.line-6 { top: 63.8%; } /* Ticket Number */
+.ticket-category-conference .ticket-qr-id { top: 48.7%; }
+.ticket-category-conference .ticket-qr-date { top: 57.8%; }
 
 /* --- TRAINING --- */
 .ticket-category-training .ticket-left.line-1,
