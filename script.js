@@ -1288,7 +1288,8 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
     '</div>';
-}function generateTicketQR(ticketId) {
+}
+function generateTicketQR(ticketId) {
     const container = document.getElementById('qr-ticket-' + ticketId);
     if (!container) return;
     const ticket = tickets.find(t => t.id === ticketId);
