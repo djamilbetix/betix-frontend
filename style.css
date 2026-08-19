@@ -1259,23 +1259,23 @@ body {
     overflow-wrap: break-word;
     line-height: 1.3;
     transform: none;
-    /* La taille de police est héritée de .ticket-value (taille normale) */
 }
-/* --- QR Code (Agrandit avec fond blanc conservé) --- */
+
+/* ============================================================
+   QR CODE – GLOBAL (modifiable ici pour toutes les catégories)
+   ============================================================ */
 .ticket-qr {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 3px; /* Conserve la bordure blanche autour */
+    padding: 3px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    
-    /* Dimensions et position ajustées pour couvrir les repères noirs */
     top: 9.5%;
     right: 7.2%;
-    width: 16%; 
+    width: 16%;
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
@@ -1283,11 +1283,12 @@ body {
 .ticket-qr img, .ticket-qr svg {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Garde le QR code net et lisible */
+    object-fit: contain;
 }
 
-
-/* --- Éléments jaunes (indépendants du QR code) --- */
+/* ============================================================
+   ÉLÉMENTS JAUNES (valeurs par défaut – utilisées si non redéfinies)
+   ============================================================ */
 .ticket-qr-id {
     position: absolute;
     right: 4.8%;
@@ -1313,10 +1314,10 @@ body {
 }
 
 /* ============================================================
-   SECTIONS PAR CATÉGORIE – vos réglages conservés
+   SECTIONS PAR CATÉGORIE – MODIFIEZ ICI INDIVIDUELLEMENT
    ============================================================ */
 
-/* --- CONCERT --- */
+/* --- CONCERT (vos valeurs personnalisées) --- */
 .ticket-category-concert .ticket-left.line-1,
 .ticket-category-concert .ticket-right.line-1 { top: 29%; }
 .ticket-category-concert .ticket-left.line-2,
@@ -1329,6 +1330,14 @@ body {
 .ticket-category-concert .ticket-right.line-5 { top: 53.4%; }
 .ticket-category-concert .ticket-left.line-6,
 .ticket-category-concert .ticket-right.line-6 { top: 65.2%; }
+
+/* --- ÉLÉMENTS JAUNES pour CONCERT --- */
+.ticket-category-concert .ticket-qr-id {
+    top: 51%;    /* ← Ajustez ici pour le Ticket ID de Concert */
+}
+.ticket-category-concert .ticket-qr-date {
+    top: 62%;    /* ← Ajustez ici pour la Date d'achat de Concert */
+}
 
 /* --- SPORT --- */
 .ticket-category-sport .ticket-left.line-1,
@@ -1344,6 +1353,9 @@ body {
 .ticket-category-sport .ticket-left.line-6,
 .ticket-category-sport .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-sport .ticket-qr-id { top: 51%; }
+.ticket-category-sport .ticket-qr-date { top: 62%; }
+
 /* --- CONFERENCE --- */
 .ticket-category-conference .ticket-left.line-1,
 .ticket-category-conference .ticket-right.line-1 { top: 29.5%; }
@@ -1357,6 +1369,9 @@ body {
 .ticket-category-conference .ticket-right.line-5 { top: 56.4%; }
 .ticket-category-conference .ticket-left.line-6,
 .ticket-category-conference .ticket-right.line-6 { top: 69.2%; }
+
+.ticket-category-conference .ticket-qr-id { top: 51%; }
+.ticket-category-conference .ticket-qr-date { top: 62%; }
 
 /* --- TRAINING --- */
 .ticket-category-training .ticket-left.line-1,
@@ -1372,6 +1387,9 @@ body {
 .ticket-category-training .ticket-left.line-6,
 .ticket-category-training .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-training .ticket-qr-id { top: 51%; }
+.ticket-category-training .ticket-qr-date { top: 62%; }
+
 /* --- CINEMA --- */
 .ticket-category-cinema .ticket-left.line-1,
 .ticket-category-cinema .ticket-right.line-1 { top: 29.5%; }
@@ -1386,7 +1404,10 @@ body {
 .ticket-category-cinema .ticket-left.line-6,
 .ticket-category-cinema .ticket-right.line-6 { top: 69.2%; }
 
-/* --- FESTIVAL (vos valeurs personnalisées conservées) --- */
+.ticket-category-cinema .ticket-qr-id { top: 51%; }
+.ticket-category-cinema .ticket-qr-date { top: 62%; }
+
+/* --- FESTIVAL (vos valeurs personnalisées) --- */
 .ticket-category-festival .ticket-left.line-1,
 .ticket-category-festival .ticket-right.line-1 { top: 29.5%; }
 .ticket-category-festival .ticket-left.line-2,
@@ -1399,6 +1420,9 @@ body {
 .ticket-category-festival .ticket-right.line-5 { top: 55.7%; }
 .ticket-category-festival .ticket-left.line-6,
 .ticket-category-festival .ticket-right.line-6 { top: 66.2%; }
+
+.ticket-category-festival .ticket-qr-id { top: 51%; }
+.ticket-category-festival .ticket-qr-date { top: 62%; }
 
 /* --- THEATRE --- */
 .ticket-category-theatre .ticket-left.line-1,
@@ -1414,6 +1438,9 @@ body {
 .ticket-category-theatre .ticket-left.line-6,
 .ticket-category-theatre .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-theatre .ticket-qr-id { top: 51%; }
+.ticket-category-theatre .ticket-qr-date { top: 62%; }
+
 /* --- DANCE --- */
 .ticket-category-dance .ticket-left.line-1,
 .ticket-category-dance .ticket-right.line-1 { top: 29.5%; }
@@ -1427,6 +1454,9 @@ body {
 .ticket-category-dance .ticket-right.line-5 { top: 56.4%; }
 .ticket-category-dance .ticket-left.line-6,
 .ticket-category-dance .ticket-right.line-6 { top: 69.2%; }
+
+.ticket-category-dance .ticket-qr-id { top: 51%; }
+.ticket-category-dance .ticket-qr-date { top: 62%; }
 
 /* --- EXHIBITION --- */
 .ticket-category-exhibition .ticket-left.line-1,
@@ -1442,6 +1472,9 @@ body {
 .ticket-category-exhibition .ticket-left.line-6,
 .ticket-category-exhibition .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-exhibition .ticket-qr-id { top: 51%; }
+.ticket-category-exhibition .ticket-qr-date { top: 62%; }
+
 /* --- GALA --- */
 .ticket-category-gala .ticket-left.line-1,
 .ticket-category-gala .ticket-right.line-1 { top: 29.5%; }
@@ -1455,6 +1488,9 @@ body {
 .ticket-category-gala .ticket-right.line-5 { top: 56.4%; }
 .ticket-category-gala .ticket-left.line-6,
 .ticket-category-gala .ticket-right.line-6 { top: 69.2%; }
+
+.ticket-category-gala .ticket-qr-id { top: 51%; }
+.ticket-category-gala .ticket-qr-date { top: 62%; }
 
 /* --- SEMINAR --- */
 .ticket-category-seminar .ticket-left.line-1,
@@ -1470,6 +1506,9 @@ body {
 .ticket-category-seminar .ticket-left.line-6,
 .ticket-category-seminar .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-seminar .ticket-qr-id { top: 51%; }
+.ticket-category-seminar .ticket-qr-date { top: 62%; }
+
 /* --- FORMATION --- */
 .ticket-category-formation .ticket-left.line-1,
 .ticket-category-formation .ticket-right.line-1 { top: 29.5%; }
@@ -1484,9 +1523,13 @@ body {
 .ticket-category-formation .ticket-left.line-6,
 .ticket-category-formation .ticket-right.line-6 { top: 69.2%; }
 
+.ticket-category-formation .ticket-qr-id { top: 51%; }
+.ticket-category-formation .ticket-qr-date { top: 62%; }
+
 /* ============================================================
    FIN DES SECTIONS PAR CATÉGORIE
    ============================================================ */
+
 /* ============================================================
    FOOTER – textes réduits, logos centrés
    ============================================================ */
