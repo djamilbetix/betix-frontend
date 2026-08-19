@@ -1331,12 +1331,12 @@ body {
 .ticket-category-concert .ticket-right.line-5 { top: 53.5%; }
 
 /* --- LIGNE 6 : Price (gauche) et Ticket Number (droite) séparés --- */
-.ticket-category-concert .ticket-left.line-6 { top: 65.2%; } /* Price */
+.ticket-category-concert .ticket-left.line-6 { top: 66.2%; } /* Price */
 .ticket-category-concert .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
 
 /* --- ÉLÉMENTS JAUNES pour CONCERT --- */
-.ticket-category-concert .ticket-qr-id { top: 51%; }
-.ticket-category-concert .ticket-qr-date { top: 62%; }
+.ticket-category-concert .ticket-qr-id { top: 49%; }
+.ticket-category-concert .ticket-qr-date { top: 60%; }
 
 /* --- SPORT --- */
 .ticket-category-sport .ticket-left.line-1,
