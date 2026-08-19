@@ -1324,11 +1324,11 @@ body {
 .ticket-category-concert .ticket-left.line-2,
 .ticket-category-concert .ticket-right.line-2 { top: 36.4%; }
 .ticket-category-concert .ticket-left.line-3,
-.ticket-category-concert .ticket-right.line-3 { top: 42.7%; }
+.ticket-category-concert .ticket-right.line-3 { top: 43%; }
 .ticket-category-concert .ticket-left.line-4,
 .ticket-category-concert .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-concert .ticket-left.line-5,
-.ticket-category-concert .ticket-right.line-5 { top: 53.8%; }
+.ticket-category-concert .ticket-right.line-5 { top: 54%; }
 .ticket-category-concert .ticket-left.line-6 { top: 67.7%; } /* Price */
 .ticket-category-concert .ticket-right.line-6 { top: 64.7%; } /* Ticket Number */
 .ticket-category-concert .ticket-qr-id { top: 49%; }
