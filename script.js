@@ -1250,7 +1250,6 @@ function generateTicketHTML(ticket) {
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
 
-    // ---- Construction de la localisation avec pays ----
     const eventLocationRaw = safeTicket.eventLocation || 'Online';
     const pays = safeTicket.pays || safeTicket.eventPays || '';
     let locationDisplay = '';
@@ -1261,14 +1260,14 @@ function generateTicketHTML(ticket) {
     } else {
         locationDisplay = eventLocationRaw;
     }
-    // -------------------------------------------------------
 
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
     const category = safeTicket.category || 'default';
     const ticketImage = ticketImages[category] || ticketImages['default'];
+    const categoryClass = 'ticket-category-' + category.toLowerCase();
 
-    return '<div class="ticket-overlay-container" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
+    return '<div class="ticket-overlay-container ' + categoryClass + '" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
         '<div class="ticket-overlay-bg">' +
             '<img src="' + ticketImage + '" alt="Official ticket" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#0a1628\';">' +
         '</div>' +
@@ -1289,33 +1288,6 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
     '</div>';
 }
-function generateTicketQR(ticketId) {
-    const container = document.getElementById('qr-ticket-' + ticketId);
-    if (!container) return;
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-    container.innerHTML = '';
-    try {
-        new QRCode(container, {
-            text: ticket.qrCode || ticket.id,
-            width: 78,
-            height: 78,
-            colorDark: "#0B1F5C",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    } catch(e) {
-        container.innerHTML = '<span style="color:red;">QR Error</span>';
-    }
-}
-
-function generateAllQRCodes() {
-    document.querySelectorAll('.ticket-list-item .ticket-overlay-container').forEach(container => {
-        const id = container.id.replace('ticket-', '');
-        if (id) generateTicketQR(id);
-    });
-}
-
 // ============================================================
 // RENDER TICKETS – Inversé (plus récents en premier)
 // ============================================================
