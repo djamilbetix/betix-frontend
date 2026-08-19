@@ -1344,11 +1344,11 @@ body {
 .ticket-category-sport .ticket-left.line-4,
 .ticket-category-sport .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-sport .ticket-left.line-5,
-.ticket-category-sport .ticket-right.line-5 { top: 54.8%; }
-.ticket-category-sport .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-sport .ticket-right.line-5 { top: 54.5%; }
+.ticket-category-sport .ticket-left.line-6 { top: 66.5%; } /* Price */
 .ticket-category-sport .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
 .ticket-category-sport .ticket-qr-id { top: 49%; }
-.ticket-category-sport .ticket-qr-date { top: 59.2%; }
+.ticket-category-sport .ticket-qr-date { top: 59.6%; }
 
 /* --- CONFERENCE --- */
 .ticket-category-conference .ticket-left.line-1,
