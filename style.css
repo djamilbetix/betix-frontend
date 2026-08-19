@@ -1315,10 +1315,10 @@ body {
 }
 
 /* ============================================================
-   SECTIONS PAR CATÉGORIE – MODIFIEZ ICI INDIVIDUELLEMENT
+   SECTIONS PAR CATÉGORIE – TOUTES ALIGNÉES SUR LE MODÈLE CONCERT
    ============================================================ */
 
-/* --- CONCERT (vos valeurs personnalisées) --- */
+/* --- CONCERT (MODÈLE DE RÉFÉRENCE) --- */
 .ticket-category-concert .ticket-left.line-1,
 .ticket-category-concert .ticket-right.line-1 { top: 29%; }
 .ticket-category-concert .ticket-left.line-2,
@@ -1329,190 +1329,186 @@ body {
 .ticket-category-concert .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-concert .ticket-left.line-5,
 .ticket-category-concert .ticket-right.line-5 { top: 53.5%; }
-
-/* --- LIGNE 6 : Price (gauche) et Ticket Number (droite) séparés --- */
 .ticket-category-concert .ticket-left.line-6 { top: 66.2%; } /* Price */
 .ticket-category-concert .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
-
-/* --- ÉLÉMENTS JAUNES pour CONCERT --- */
 .ticket-category-concert .ticket-qr-id { top: 49%; }
 .ticket-category-concert .ticket-qr-date { top: 59.2%; }
 
 /* --- SPORT --- */
 .ticket-category-sport .ticket-left.line-1,
-.ticket-category-sport .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-sport .ticket-right.line-1 { top: 29%; }
 .ticket-category-sport .ticket-left.line-2,
-.ticket-category-sport .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-sport .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-sport .ticket-left.line-3,
-.ticket-category-sport .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-sport .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-sport .ticket-left.line-4,
-.ticket-category-sport .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-sport .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-sport .ticket-left.line-5,
-.ticket-category-sport .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-sport .ticket-left.line-6 { top: 69.2%; } /* Price */
-.ticket-category-sport .ticket-right.line-6 { top: 69.2%; } /* Ticket Number */
-.ticket-category-sport .ticket-qr-id { top: 51%; }
-.ticket-category-sport .ticket-qr-date { top: 62%; }
+.ticket-category-sport .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-sport .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-sport .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-sport .ticket-qr-id { top: 49%; }
+.ticket-category-sport .ticket-qr-date { top: 59.2%; }
 
 /* --- CONFERENCE --- */
 .ticket-category-conference .ticket-left.line-1,
-.ticket-category-conference .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-conference .ticket-right.line-1 { top: 29%; }
 .ticket-category-conference .ticket-left.line-2,
-.ticket-category-conference .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-conference .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-conference .ticket-left.line-3,
-.ticket-category-conference .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-conference .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-conference .ticket-left.line-4,
-.ticket-category-conference .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-conference .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-conference .ticket-left.line-5,
-.ticket-category-conference .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-conference .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-conference .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-conference .ticket-qr-id { top: 51%; }
-.ticket-category-conference .ticket-qr-date { top: 62%; }
+.ticket-category-conference .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-conference .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-conference .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-conference .ticket-qr-id { top: 49%; }
+.ticket-category-conference .ticket-qr-date { top: 59.2%; }
 
 /* --- TRAINING --- */
 .ticket-category-training .ticket-left.line-1,
-.ticket-category-training .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-training .ticket-right.line-1 { top: 29%; }
 .ticket-category-training .ticket-left.line-2,
-.ticket-category-training .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-training .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-training .ticket-left.line-3,
-.ticket-category-training .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-training .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-training .ticket-left.line-4,
-.ticket-category-training .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-training .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-training .ticket-left.line-5,
-.ticket-category-training .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-training .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-training .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-training .ticket-qr-id { top: 51%; }
-.ticket-category-training .ticket-qr-date { top: 62%; }
+.ticket-category-training .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-training .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-training .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-training .ticket-qr-id { top: 49%; }
+.ticket-category-training .ticket-qr-date { top: 59.2%; }
 
 /* --- CINEMA --- */
 .ticket-category-cinema .ticket-left.line-1,
-.ticket-category-cinema .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-cinema .ticket-right.line-1 { top: 29%; }
 .ticket-category-cinema .ticket-left.line-2,
-.ticket-category-cinema .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-cinema .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-cinema .ticket-left.line-3,
-.ticket-category-cinema .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-cinema .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-cinema .ticket-left.line-4,
-.ticket-category-cinema .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-cinema .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-cinema .ticket-left.line-5,
-.ticket-category-cinema .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-cinema .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-cinema .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-cinema .ticket-qr-id { top: 51%; }
-.ticket-category-cinema .ticket-qr-date { top: 62%; }
+.ticket-category-cinema .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-cinema .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-cinema .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-cinema .ticket-qr-id { top: 49%; }
+.ticket-category-cinema .ticket-qr-date { top: 59.2%; }
 
-/* --- FESTIVAL (vos valeurs personnalisées) --- */
+/* --- FESTIVAL --- */
 .ticket-category-festival .ticket-left.line-1,
-.ticket-category-festival .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-festival .ticket-right.line-1 { top: 29%; }
 .ticket-category-festival .ticket-left.line-2,
-.ticket-category-festival .ticket-right.line-2 { top: 36.4%; }
+.ticket-category-festival .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-festival .ticket-left.line-3,
-.ticket-category-festival .ticket-right.line-3 { top: 44%; }
+.ticket-category-festival .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-festival .ticket-left.line-4,
-.ticket-category-festival .ticket-right.line-4 { top: 51.4%; }
+.ticket-category-festival .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-festival .ticket-left.line-5,
-.ticket-category-festival .ticket-right.line-5 { top: 55.7%; }
+.ticket-category-festival .ticket-right.line-5 { top: 53.5%; }
 .ticket-category-festival .ticket-left.line-6 { top: 66.2%; } /* Price */
-.ticket-category-festival .ticket-right.line-6 { top: 66.2%; } /* Ticket Number */
-.ticket-category-festival .ticket-qr-id { top: 51%; }
-.ticket-category-festival .ticket-qr-date { top: 62%; }
+.ticket-category-festival .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-festival .ticket-qr-id { top: 49%; }
+.ticket-category-festival .ticket-qr-date { top: 59.2%; }
 
 /* --- THEATRE --- */
 .ticket-category-theatre .ticket-left.line-1,
-.ticket-category-theatre .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-theatre .ticket-right.line-1 { top: 29%; }
 .ticket-category-theatre .ticket-left.line-2,
-.ticket-category-theatre .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-theatre .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-theatre .ticket-left.line-3,
-.ticket-category-theatre .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-theatre .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-theatre .ticket-left.line-4,
-.ticket-category-theatre .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-theatre .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-theatre .ticket-left.line-5,
-.ticket-category-theatre .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-theatre .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-theatre .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-theatre .ticket-qr-id { top: 51%; }
-.ticket-category-theatre .ticket-qr-date { top: 62%; }
+.ticket-category-theatre .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-theatre .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-theatre .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-theatre .ticket-qr-id { top: 49%; }
+.ticket-category-theatre .ticket-qr-date { top: 59.2%; }
 
 /* --- DANCE --- */
 .ticket-category-dance .ticket-left.line-1,
-.ticket-category-dance .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-dance .ticket-right.line-1 { top: 29%; }
 .ticket-category-dance .ticket-left.line-2,
-.ticket-category-dance .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-dance .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-dance .ticket-left.line-3,
-.ticket-category-dance .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-dance .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-dance .ticket-left.line-4,
-.ticket-category-dance .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-dance .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-dance .ticket-left.line-5,
-.ticket-category-dance .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-dance .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-dance .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-dance .ticket-qr-id { top: 51%; }
-.ticket-category-dance .ticket-qr-date { top: 62%; }
+.ticket-category-dance .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-dance .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-dance .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-dance .ticket-qr-id { top: 49%; }
+.ticket-category-dance .ticket-qr-date { top: 59.2%; }
 
 /* --- EXHIBITION --- */
 .ticket-category-exhibition .ticket-left.line-1,
-.ticket-category-exhibition .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-exhibition .ticket-right.line-1 { top: 29%; }
 .ticket-category-exhibition .ticket-left.line-2,
-.ticket-category-exhibition .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-exhibition .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-exhibition .ticket-left.line-3,
-.ticket-category-exhibition .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-exhibition .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-exhibition .ticket-left.line-4,
-.ticket-category-exhibition .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-exhibition .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-exhibition .ticket-left.line-5,
-.ticket-category-exhibition .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-exhibition .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-exhibition .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-exhibition .ticket-qr-id { top: 51%; }
-.ticket-category-exhibition .ticket-qr-date { top: 62%; }
+.ticket-category-exhibition .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-exhibition .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-exhibition .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-exhibition .ticket-qr-id { top: 49%; }
+.ticket-category-exhibition .ticket-qr-date { top: 59.2%; }
 
 /* --- GALA --- */
 .ticket-category-gala .ticket-left.line-1,
-.ticket-category-gala .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-gala .ticket-right.line-1 { top: 29%; }
 .ticket-category-gala .ticket-left.line-2,
-.ticket-category-gala .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-gala .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-gala .ticket-left.line-3,
-.ticket-category-gala .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-gala .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-gala .ticket-left.line-4,
-.ticket-category-gala .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-gala .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-gala .ticket-left.line-5,
-.ticket-category-gala .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-gala .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-gala .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-gala .ticket-qr-id { top: 51%; }
-.ticket-category-gala .ticket-qr-date { top: 62%; }
+.ticket-category-gala .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-gala .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-gala .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-gala .ticket-qr-id { top: 49%; }
+.ticket-category-gala .ticket-qr-date { top: 59.2%; }
 
 /* --- SEMINAR --- */
 .ticket-category-seminar .ticket-left.line-1,
-.ticket-category-seminar .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-seminar .ticket-right.line-1 { top: 29%; }
 .ticket-category-seminar .ticket-left.line-2,
-.ticket-category-seminar .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-seminar .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-seminar .ticket-left.line-3,
-.ticket-category-seminar .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-seminar .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-seminar .ticket-left.line-4,
-.ticket-category-seminar .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-seminar .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-seminar .ticket-left.line-5,
-.ticket-category-seminar .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-seminar .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-seminar .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-seminar .ticket-qr-id { top: 51%; }
-.ticket-category-seminar .ticket-qr-date { top: 62%; }
+.ticket-category-seminar .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-seminar .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-seminar .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-seminar .ticket-qr-id { top: 49%; }
+.ticket-category-seminar .ticket-qr-date { top: 59.2%; }
 
 /* --- FORMATION --- */
 .ticket-category-formation .ticket-left.line-1,
-.ticket-category-formation .ticket-right.line-1 { top: 29.5%; }
+.ticket-category-formation .ticket-right.line-1 { top: 29%; }
 .ticket-category-formation .ticket-left.line-2,
-.ticket-category-formation .ticket-right.line-2 { top: 37.4%; }
+.ticket-category-formation .ticket-right.line-2 { top: 35.5%; }
 .ticket-category-formation .ticket-left.line-3,
-.ticket-category-formation .ticket-right.line-3 { top: 44.5%; }
+.ticket-category-formation .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-formation .ticket-left.line-4,
-.ticket-category-formation .ticket-right.line-4 { top: 52.0%; }
+.ticket-category-formation .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-formation .ticket-left.line-5,
-.ticket-category-formation .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-formation .ticket-left.line-6 { top: 69.2%; }
-.ticket-category-formation .ticket-right.line-6 { top: 69.2%; }
-.ticket-category-formation .ticket-qr-id { top: 51%; }
-.ticket-category-formation .ticket-qr-date { top: 62%; }
+.ticket-category-formation .ticket-right.line-5 { top: 53.5%; }
+.ticket-category-formation .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-formation .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-formation .ticket-qr-id { top: 49%; }
+.ticket-category-formation .ticket-qr-date { top: 59.2%; }
 
 /* ============================================================
    FIN DES SECTIONS PAR CATÉGORIE
