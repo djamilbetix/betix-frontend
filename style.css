@@ -1322,17 +1322,17 @@ body {
 .ticket-category-concert .ticket-left.line-1,
 .ticket-category-concert .ticket-right.line-1 { top: 29%; }
 .ticket-category-concert .ticket-left.line-2,
-.ticket-category-concert .ticket-right.line-2 { top: 35.2%; }
+.ticket-category-concert .ticket-right.line-2 { top: 35%; }
 .ticket-category-concert .ticket-left.line-3,
 .ticket-category-concert .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-concert .ticket-left.line-4,
 .ticket-category-concert .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-concert .ticket-left.line-5,
-.ticket-category-concert .ticket-right.line-5 { top: 53%; }
+.ticket-category-concert .ticket-right.line-5 { top: 53.5%; }
 
 /* --- LIGNE 6 : Price (gauche) et Ticket Number (droite) séparés --- */
-.ticket-category-concert .ticket-left.line-6 { top: 64.2%; } /* Price */
-.ticket-category-concert .ticket-right.line-6 { top: 63.2%; } /* Ticket Number */
+.ticket-category-concert .ticket-left.line-6 { top: 65.2%; } /* Price */
+.ticket-category-concert .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
 
 /* --- ÉLÉMENTS JAUNES pour CONCERT --- */
 .ticket-category-concert .ticket-qr-id { top: 51%; }
