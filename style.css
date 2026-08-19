@@ -1232,8 +1232,9 @@ body {
 /* --- Ligne 5 (LOCATION) – indépendante --- */
 .ticket-left.line-5, .ticket-right.line-5 { top: 56.4%; }
 
-/* --- Ligne 6 (PRICE) – INDÉPENDANTE --- */
-.ticket-left.line-6, .ticket-right.line-6 { top: 69.2%; }
+/* --- Ligne 6 (PRICE et TICKET NUMBER) – valeurs par défaut (séparées) --- */
+.ticket-left.line-6 { top: 69.2%; }  /* Price (colonne gauche) */
+.ticket-right.line-6 { top: 69.2%; } /* Ticket Number (colonne droite) */
 
 /* --- Style commun des textes (taille normale) --- */
 .ticket-value {
@@ -1328,16 +1329,14 @@ body {
 .ticket-category-concert .ticket-right.line-4 { top: 50.0%; }
 .ticket-category-concert .ticket-left.line-5,
 .ticket-category-concert .ticket-right.line-5 { top: 53.4%; }
-.ticket-category-concert .ticket-left.line-6,
-.ticket-category-concert .ticket-right.line-6 { top: 65.2%; }
+
+/* --- LIGNE 6 : Price (gauche) et Ticket Number (droite) séparés --- */
+.ticket-category-concert .ticket-left.line-6 { top: 65.2%; } /* Price */
+.ticket-category-concert .ticket-right.line-6 { top: 65.2%; } /* Ticket Number */
 
 /* --- ÉLÉMENTS JAUNES pour CONCERT --- */
-.ticket-category-concert .ticket-qr-id {
-    top: 51%;    /* ← Ajustez ici pour le Ticket ID de Concert */
-}
-.ticket-category-concert .ticket-qr-date {
-    top: 62%;    /* ← Ajustez ici pour la Date d'achat de Concert */
-}
+.ticket-category-concert .ticket-qr-id { top: 51%; }
+.ticket-category-concert .ticket-qr-date { top: 62%; }
 
 /* --- SPORT --- */
 .ticket-category-sport .ticket-left.line-1,
@@ -1350,9 +1349,8 @@ body {
 .ticket-category-sport .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-sport .ticket-left.line-5,
 .ticket-category-sport .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-sport .ticket-left.line-6,
-.ticket-category-sport .ticket-right.line-6 { top: 69.2%; }
-
+.ticket-category-sport .ticket-left.line-6 { top: 69.2%; } /* Price */
+.ticket-category-sport .ticket-right.line-6 { top: 69.2%; } /* Ticket Number */
 .ticket-category-sport .ticket-qr-id { top: 51%; }
 .ticket-category-sport .ticket-qr-date { top: 62%; }
 
@@ -1367,9 +1365,8 @@ body {
 .ticket-category-conference .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-conference .ticket-left.line-5,
 .ticket-category-conference .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-conference .ticket-left.line-6,
+.ticket-category-conference .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-conference .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-conference .ticket-qr-id { top: 51%; }
 .ticket-category-conference .ticket-qr-date { top: 62%; }
 
@@ -1384,9 +1381,8 @@ body {
 .ticket-category-training .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-training .ticket-left.line-5,
 .ticket-category-training .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-training .ticket-left.line-6,
+.ticket-category-training .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-training .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-training .ticket-qr-id { top: 51%; }
 .ticket-category-training .ticket-qr-date { top: 62%; }
 
@@ -1401,9 +1397,8 @@ body {
 .ticket-category-cinema .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-cinema .ticket-left.line-5,
 .ticket-category-cinema .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-cinema .ticket-left.line-6,
+.ticket-category-cinema .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-cinema .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-cinema .ticket-qr-id { top: 51%; }
 .ticket-category-cinema .ticket-qr-date { top: 62%; }
 
@@ -1418,9 +1413,8 @@ body {
 .ticket-category-festival .ticket-right.line-4 { top: 51.4%; }
 .ticket-category-festival .ticket-left.line-5,
 .ticket-category-festival .ticket-right.line-5 { top: 55.7%; }
-.ticket-category-festival .ticket-left.line-6,
-.ticket-category-festival .ticket-right.line-6 { top: 66.2%; }
-
+.ticket-category-festival .ticket-left.line-6 { top: 66.2%; } /* Price */
+.ticket-category-festival .ticket-right.line-6 { top: 66.2%; } /* Ticket Number */
 .ticket-category-festival .ticket-qr-id { top: 51%; }
 .ticket-category-festival .ticket-qr-date { top: 62%; }
 
@@ -1435,9 +1429,8 @@ body {
 .ticket-category-theatre .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-theatre .ticket-left.line-5,
 .ticket-category-theatre .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-theatre .ticket-left.line-6,
+.ticket-category-theatre .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-theatre .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-theatre .ticket-qr-id { top: 51%; }
 .ticket-category-theatre .ticket-qr-date { top: 62%; }
 
@@ -1452,9 +1445,8 @@ body {
 .ticket-category-dance .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-dance .ticket-left.line-5,
 .ticket-category-dance .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-dance .ticket-left.line-6,
+.ticket-category-dance .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-dance .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-dance .ticket-qr-id { top: 51%; }
 .ticket-category-dance .ticket-qr-date { top: 62%; }
 
@@ -1469,9 +1461,8 @@ body {
 .ticket-category-exhibition .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-exhibition .ticket-left.line-5,
 .ticket-category-exhibition .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-exhibition .ticket-left.line-6,
+.ticket-category-exhibition .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-exhibition .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-exhibition .ticket-qr-id { top: 51%; }
 .ticket-category-exhibition .ticket-qr-date { top: 62%; }
 
@@ -1486,9 +1477,8 @@ body {
 .ticket-category-gala .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-gala .ticket-left.line-5,
 .ticket-category-gala .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-gala .ticket-left.line-6,
+.ticket-category-gala .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-gala .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-gala .ticket-qr-id { top: 51%; }
 .ticket-category-gala .ticket-qr-date { top: 62%; }
 
@@ -1503,9 +1493,8 @@ body {
 .ticket-category-seminar .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-seminar .ticket-left.line-5,
 .ticket-category-seminar .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-seminar .ticket-left.line-6,
+.ticket-category-seminar .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-seminar .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-seminar .ticket-qr-id { top: 51%; }
 .ticket-category-seminar .ticket-qr-date { top: 62%; }
 
@@ -1520,9 +1509,8 @@ body {
 .ticket-category-formation .ticket-right.line-4 { top: 52.0%; }
 .ticket-category-formation .ticket-left.line-5,
 .ticket-category-formation .ticket-right.line-5 { top: 56.4%; }
-.ticket-category-formation .ticket-left.line-6,
+.ticket-category-formation .ticket-left.line-6 { top: 69.2%; }
 .ticket-category-formation .ticket-right.line-6 { top: 69.2%; }
-
 .ticket-category-formation .ticket-qr-id { top: 51%; }
 .ticket-category-formation .ticket-qr-date { top: 62%; }
 
