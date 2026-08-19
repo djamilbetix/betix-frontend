@@ -1322,7 +1322,7 @@ body {
 .ticket-category-concert .ticket-left.line-1,
 .ticket-category-concert .ticket-right.line-1 { top: 29%; }
 .ticket-category-concert .ticket-left.line-2,
-.ticket-category-concert .ticket-right.line-2 { top: 35%; }
+.ticket-category-concert .ticket-right.line-2 { top: 35.3%; }
 .ticket-category-concert .ticket-left.line-3,
 .ticket-category-concert .ticket-right.line-3 { top: 42.5%; }
 .ticket-category-concert .ticket-left.line-4,
@@ -1336,7 +1336,7 @@ body {
 
 /* --- ÉLÉMENTS JAUNES pour CONCERT --- */
 .ticket-category-concert .ticket-qr-id { top: 49%; }
-.ticket-category-concert .ticket-qr-date { top: 60%; }
+.ticket-category-concert .ticket-qr-date { top: 60.2%; }
 
 /* --- SPORT --- */
 .ticket-category-sport .ticket-left.line-1,
