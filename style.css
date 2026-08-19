@@ -1232,11 +1232,10 @@ body {
 /* --- Ligne 5 (LOCATION) – indépendante --- */
 .ticket-left.line-5, .ticket-right.line-5 { top: 56.4%; }
 
-/* --- Ligne 6 (PRICE) – INDÉPENDANTE (vous pouvez la décaler vers le bas) --- */
+/* --- Ligne 6 (PRICE) – INDÉPENDANTE --- */
 .ticket-left.line-6, .ticket-right.line-6 { top: 69.2%; }
-/* ↑ Ajustez cette valeur pour remonter/descendre le prix sans toucher aux autres lignes */
 
-/* --- Style commun des textes --- */
+/* --- Style commun des textes (taille normale) --- */
 .ticket-value {
     font-size: clamp(6px, 1.02vw, 11px);
     font-weight: 700;
@@ -1260,7 +1259,7 @@ body {
     overflow-wrap: break-word;
     line-height: 1.3;
     transform: none;
-    font-size: clamp(5px, 0.9vw, 10px); /* légèrement plus petit pour limiter les lignes */
+    /* La taille de police est héritée de .ticket-value (taille normale) */
 }
 
 /* --- QR Code (position fixe) --- */
@@ -1296,7 +1295,7 @@ body {
     font-weight: 700;
     font-size: clamp(6px, 1vw, 10px);
     color: #1a202c;
-    top: 51%;                   /* Ajustez pour déplacer le Ticket ID */
+    top: 51%;
 }
 
 .ticket-qr-date {
@@ -1308,7 +1307,7 @@ body {
     font-weight: 600;
     font-size: clamp(5px, 0.9vw, 9px);
     color: #1a202c;
-    top: 62%;                   /* Ajustez pour déplacer la Date d'achat */
+    top: 62%;
 }
 
 /* ============================================================
@@ -1397,7 +1396,7 @@ body {
 .ticket-category-festival .ticket-left.line-5,
 .ticket-category-festival .ticket-right.line-5 { top: 55.7%; }
 .ticket-category-festival .ticket-left.line-6,
-.ticket-category-festival .ticket-right.line-6 { top: 66.2%; }   /* ← Vous pouvez ajuster cette valeur */
+.ticket-category-festival .ticket-right.line-6 { top: 66.2%; }
 
 /* --- THEATRE --- */
 .ticket-category-theatre .ticket-left.line-1,
