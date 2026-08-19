@@ -1190,6 +1190,7 @@ body {
     width: 18px;
     border-radius: 4px;
 }
+
 /* ============================================================
    TICKET – POSITIONNEMENT EXACT ET ALIGNÉ (HARMONISÉ)
    ============================================================ */
@@ -1230,7 +1231,7 @@ body {
     width: 17%;
 }
 
-/* --- Positionnement vertical harmonisé (valeurs de la colonne gauche) --- */
+/* --- Positionnement vertical harmonisé (mêmes valeurs pour les deux colonnes) --- */
 .ticket-left.line-1,
 .ticket-right.line-1 {
     top: 29.5%;
@@ -1256,7 +1257,6 @@ body {
     top: 69.2%;
 }
 
-/* --- Valeurs affichées --- */
 .ticket-value {
     font-size: clamp(6px, 1.02vw, 11px);
     font-weight: 700;
