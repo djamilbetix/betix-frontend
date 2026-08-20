@@ -2,7 +2,6 @@
 // CONFIGURATION SUPABASE - AVEC MÉCANISME D'ATTENTE
 // ============================================================
 
-// Fonction pour attendre que Supabase soit disponible
 function waitForSupabase(maxAttempts = 30, delay = 200) {
     return new Promise((resolve) => {
         let attempts = 0;
@@ -24,7 +23,6 @@ function waitForSupabase(maxAttempts = 30, delay = 200) {
     });
 }
 
-// Création du client Supabase
 let supabaseClient = null;
 
 async function initSupabase() {
@@ -63,7 +61,6 @@ async function initSupabase() {
     }
 }
 
-// Fonction pour attendre Pi SDK
 function waitForPiSDK(maxAttempts = 30, delay = 200) {
     return new Promise((resolve) => {
         let attempts = 0;
@@ -85,7 +82,6 @@ function waitForPiSDK(maxAttempts = 30, delay = 200) {
     });
 }
 
-// LANCEMENT DE L'APPLICATION
 (async function initializeApp() {
     console.log('🚀 Initializing application...');
     await initSupabase();
@@ -461,10 +457,8 @@ const ticketImages = {
 // FONCTIONS MANQUANTES AJOUTÉES
 // ============================================================
 
-// URL du backend pour les appels Pi
 const BACKEND_URL = window.BETIX_CONFIG?.backendURL || "https://betix-backend.onrender.com";
 
-// Vérification de connexion
 function requireLogin() {
     if (!currentUser.wallet) {
         alert(t('pleaseConnect'));
@@ -474,7 +468,6 @@ function requireLogin() {
     return true;
 }
 
-// Vérification de profil complet
 function requireProfileComplete() {
     if (!currentUser.wallet) {
         alert(t('pleaseConnect'));
@@ -490,7 +483,6 @@ function requireProfileComplete() {
     return true;
 }
 
-// Sauvegarde d'une transaction dans Supabase
 async function saveTransactionToSupabase(txData) {
     try {
         const { error } = await supabaseClient.from('transactions').upsert({
@@ -514,7 +506,6 @@ async function saveTransactionToSupabase(txData) {
     }
 }
 
-// Mise à jour d'un événement dans Supabase
 async function updateEventInSupabase(eventId, updates) {
     try {
         const { error } = await supabaseClient.from('events').update(updates).eq('id', eventId);
@@ -526,7 +517,6 @@ async function updateEventInSupabase(eventId, updates) {
     }
 }
 
-// Suppression d'un événement dans Supabase
 async function deleteEventFromSupabase(eventId) {
     try {
         const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
@@ -2433,7 +2423,7 @@ function openConfirmPurchasePopup(title, subtotal, serviceFee, total) { return P
 function closeConfirmPurchasePopup() {}
 
 // ============================================================
-// GESTION DES PAIEMENTS EN ATTENTE (améliorée)
+// GESTION DES PAIEMENTS EN ATTENTE (AMÉLIORÉE)
 // ============================================================
 function onIncompletePaymentFound(payment) {
     if (pendingPaymentHandled) return;
@@ -2444,17 +2434,17 @@ function onIncompletePaymentFound(payment) {
     if (payment && payment.identifier) {
         const existing = tickets.some(t => t.transactionId === payment.identifier);
         if (existing) {
-            alert('This payment has already been processed. Your tickets are available.');
+            alert('✅ This payment has already been processed. Your tickets are available in "My Tickets".');
             pendingPaymentHandled = false;
             return;
         }
     }
     
     const userChoice = confirm(
-        'A pending payment was found.\n\n' +
-        'If you have already completed this payment, check "My Tickets".\n' +
-        'If you want to cancel and retry, click OK.\n' +
-        'If you want to ignore and wait, click Cancel.'
+        '⚠️ A pending payment was detected.\n\n' +
+        '• Click "OK" to cancel this payment and retry.\n' +
+        '• Click "Cancel" to ignore this payment and continue.\n\n' +
+        'If you have already paid, check your tickets in "My Tickets".'
     );
     
     if (userChoice) {
@@ -2465,18 +2455,17 @@ function onIncompletePaymentFound(payment) {
         return true;
     } else {
         pendingPaymentHandled = false;
-        return false;
+        return true; // Important : retourner true pour ne pas bloquer
     }
 }
 
 // ============================================================
-// NOTIFICATIONS (avec nettoyage des emojis et suppression des doublons)
+// NOTIFICATIONS (avec persistance, nettoyage des emojis et doublons)
 // ============================================================
 function addNotification(message, type) {
     // Nettoyer les emojis (garder uniquement drapeaux et 👤)
     const cleaned = message.replace(/[^\p{L}\p{N}\p{P}\p{Z}\u{1F1E6}-\u{1F1FF}\u{1F464}]/gu, '').trim();
     
-    // Vérifier les doublons récents (même message dans les 5 dernières)
     const recent = notifications.slice(0, 5);
     if (recent.some(n => n.message === cleaned)) {
         console.log('Duplicate notification ignored:', cleaned);
@@ -2490,8 +2479,19 @@ function addNotification(message, type) {
     updateNotifBadgeHeader();
 }
 
+function saveNotifications() {
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+}
+
+function loadNotifications() {
+    try {
+        const saved = localStorage.getItem('betix_notifications');
+        if (saved) notifications = JSON.parse(saved);
+    } catch (e) { notifications = []; }
+}
+
 // ============================================================
-// CONFIRMATION D'ACHAT (avec empêchement des appels simultanés)
+// CONFIRMATION D'ACHAT (avec flag isPaymentInProgress)
 // ============================================================
 async function confirmPurchase(eventId, quantity) {
     if (isPaymentInProgress) {
@@ -3386,7 +3386,7 @@ function syncSettingsLanguageSelector() {
 }
 
 // ============================================================
-// NOTIFICATIONS
+// NOTIFICATIONS (suite)
 // ============================================================
 function deleteNotification(id) {
     notifications = notifications.filter(n => n.id !== id);
@@ -3482,7 +3482,7 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT
+// DISCONNECT (ne supprime pas les notifications)
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
@@ -4207,6 +4207,9 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // ============================================================
 async function initApp() {
     try {
+        // Charger les notifications persistées
+        loadNotifications();
+        
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
         
@@ -4386,4 +4389,5 @@ window.clearAllNotifications = clearAllNotifications;
 // ============================================================
 // LANCEMENT DE L'APPLICATION
 // ============================================================
+// L'application est déjà lancée par la IIFE en haut du fichier.
 console.log('✅ Betix script loaded successfully.');
