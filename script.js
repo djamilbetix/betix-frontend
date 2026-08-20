@@ -88,10 +88,8 @@ function waitForPiSDK(maxAttempts = 30, delay = 200) {
 // LANCEMENT DE L'APPLICATION
 (async function initializeApp() {
     console.log('🚀 Initializing application...');
-    
     await initSupabase();
     await waitForPiSDK();
-    
     console.log('✅ All SDKs ready, starting application...');
     initApp();
 })();
@@ -540,19 +538,6 @@ async function deleteEventFromSupabase(eventId) {
     }
 }
 
-// Gestion des paiements incomplets (Pi SDK)
-function onIncompletePaymentFound(payment) {
-    console.warn('Incomplete payment found:', payment);
-    alert(t('pendingPaymentFound') + '\n' + t('pendingPaymentMessage'));
-    if (confirm(t('cancelAndRetry'))) {
-        if (typeof Pi !== 'undefined' && Pi.cancelPayment) {
-            Pi.cancelPayment(payment.identifier).catch(() => {});
-        }
-        return true;
-    }
-    return false;
-}
-
 // ============================================================
 // VARIABLES GLOBALES
 // ============================================================
@@ -597,6 +582,10 @@ let heroSlides = [];
 const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
 let allUsersCache = [];
+
+// NOUVEAUX FLAGS POUR LA GESTION DES PAIEMENTS
+let pendingPaymentHandled = false;
+let isPaymentInProgress = false;
 
 // ============================================================
 // PARAMÈTRES DE L'APPLICATION
@@ -2443,18 +2432,91 @@ let confirmPurchaseResolve = null;
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) { return Promise.resolve(false); }
 function closeConfirmPurchasePopup() {}
 
+// ============================================================
+// GESTION DES PAIEMENTS EN ATTENTE (améliorée)
+// ============================================================
+function onIncompletePaymentFound(payment) {
+    if (pendingPaymentHandled) return;
+    pendingPaymentHandled = true;
+    
+    console.warn('Incomplete payment found:', payment);
+    
+    if (payment && payment.identifier) {
+        const existing = tickets.some(t => t.transactionId === payment.identifier);
+        if (existing) {
+            alert('This payment has already been processed. Your tickets are available.');
+            pendingPaymentHandled = false;
+            return;
+        }
+    }
+    
+    const userChoice = confirm(
+        'A pending payment was found.\n\n' +
+        'If you have already completed this payment, check "My Tickets".\n' +
+        'If you want to cancel and retry, click OK.\n' +
+        'If you want to ignore and wait, click Cancel.'
+    );
+    
+    if (userChoice) {
+        if (typeof Pi !== 'undefined' && Pi.cancelPayment) {
+            Pi.cancelPayment(payment.identifier).catch(() => {});
+        }
+        setTimeout(() => { pendingPaymentHandled = false; }, 2000);
+        return true;
+    } else {
+        pendingPaymentHandled = false;
+        return false;
+    }
+}
+
+// ============================================================
+// NOTIFICATIONS (avec nettoyage des emojis et suppression des doublons)
+// ============================================================
+function addNotification(message, type) {
+    // Nettoyer les emojis (garder uniquement drapeaux et 👤)
+    const cleaned = message.replace(/[^\p{L}\p{N}\p{P}\p{Z}\u{1F1E6}-\u{1F1FF}\u{1F464}]/gu, '').trim();
+    
+    // Vérifier les doublons récents (même message dans les 5 dernières)
+    const recent = notifications.slice(0, 5);
+    if (recent.some(n => n.message === cleaned)) {
+        console.log('Duplicate notification ignored:', cleaned);
+        return;
+    }
+    
+    const notif = { id: Date.now().toString(), message: cleaned, type: type || 'info', read: false, date: new Date().toISOString() };
+    notifications.unshift(notif);
+    if (notifications.length > 100) notifications = notifications.slice(0, 100);
+    saveNotifications();
+    updateNotifBadgeHeader();
+}
+
+// ============================================================
+// CONFIRMATION D'ACHAT (avec empêchement des appels simultanés)
+// ============================================================
 async function confirmPurchase(eventId, quantity) {
+    if (isPaymentInProgress) {
+        alert('A payment is already in progress. Please wait.');
+        return;
+    }
+    isPaymentInProgress = true;
+    
     const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
+    if (!event) {
+        alert(t('eventNotFound'));
+        isPaymentInProgress = false;
+        return;
+    }
     const eventDate = new Date(event.date);
     if (eventDate < new Date()) {
         openPastEventPopup();
+        isPaymentInProgress = false;
         return;
     }
     const price = event.price || 0;
     const availableSeats = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
     if (quantity > availableSeats) {
         alert('No seats available. Remaining: ' + availableSeats);
+        isPaymentInProgress = false;
         return;
     }
     const subtotal = quantity * price;
@@ -2471,12 +2533,14 @@ async function confirmPurchase(eventId, quantity) {
         if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
             if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+            isPaymentInProgress = false;
             return;
         }
         if (!piUser || !piUser.username) {
             alert('Please connect your Pi account first with payments scope.');
             if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             connectToPi();
+            isPaymentInProgress = false;
             return;
         }
 
@@ -2504,6 +2568,7 @@ async function confirmPurchase(eventId, quantity) {
                         showPage('tickets');
                         processingTransactions.delete(txid);
                         if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                        isPaymentInProgress = false;
                         return;
                     }
                     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -2519,6 +2584,7 @@ async function confirmPurchase(eventId, quantity) {
                             showPage('tickets');
                             processingTransactions.delete(txid);
                             if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                            isPaymentInProgress = false;
                             return;
                         }
                     }
@@ -2603,7 +2669,7 @@ async function confirmPurchase(eventId, quantity) {
                         serviceFee: serviceFee,
                         commission: commission
                     });
-                    addNotification('New sale! ' + quantity + ' ticket(s) purchased for "' + event.title + '"', 'purchase');
+                    // Une seule notification
                     addNotification('Purchase successful! ' + quantity + ' ticket(s) for "' + event.title + '"', 'purchase');
                     renderEventsByCategory();
                     renderTickets();
@@ -2624,21 +2690,25 @@ async function confirmPurchase(eventId, quantity) {
                         confirmBtn.textContent = t('confirmPurchase');
                         confirmBtn.disabled = false;
                     }
+                    isPaymentInProgress = false;
                 }
             },
             onCancel: function() {
                 alert(t('paymentCancelled'));
                 if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                isPaymentInProgress = false;
             },
             onError: function(error) {
                 alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
                 if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                isPaymentInProgress = false;
             },
             onIncompletePaymentFound
         });
     } catch (error) {
         alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
         if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+        isPaymentInProgress = false;
     }
 }
 
@@ -3390,14 +3460,6 @@ function updateSidebarNotifBadge() {
     if (!badge) return;
     const unread = notifications.filter(n => !n.read).length;
     if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-}
-
-function addNotification(message, type) {
-    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    saveNotifications();
-    updateNotifBadgeHeader();
 }
 
 // ============================================================
@@ -4324,8 +4386,4 @@ window.clearAllNotifications = clearAllNotifications;
 // ============================================================
 // LANCEMENT DE L'APPLICATION
 // ============================================================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-   
-}
+console.log('✅ Betix script loaded successfully.');
