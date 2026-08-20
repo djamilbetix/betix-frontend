@@ -1429,9 +1429,9 @@ body {
 .ticket-category-theatre .ticket-right.line-4 { top: 50.3%; }
 .ticket-category-theatre .ticket-left.line-5,
 .ticket-category-theatre .ticket-right.line-5 { top: 54.5%; }
-.ticket-category-theatre .ticket-left.line-6 { top: 66.7%; } /* Price */
-.ticket-category-theatre .ticket-right.line-6 { top: 64.7%; } /* Ticket Number */
-.ticket-category-theatre .ticket-qr-id { top: 48.7%; }
+.ticket-category-theatre .ticket-left.line-6 { top: 66.9%; } /* Price */
+.ticket-category-theatre .ticket-right.line-6 { top: 64.9%; } /* Ticket Number */
+.ticket-category-theatre .ticket-qr-id { top: 48.6%; }
 .ticket-category-theatre .ticket-qr-date { top: 59.2%; }
 
 /* --- DANCE --- */
