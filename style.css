@@ -1381,8 +1381,8 @@ body {
 .ticket-category-training .ticket-right.line-4 { top: 51%; }
 .ticket-category-training .ticket-left.line-5,
 .ticket-category-training .ticket-right.line-5 { top: 55.3%; }
-.ticket-category-training .ticket-left.line-6 { top: 68%; } /* Price */
-.ticket-category-training .ticket-right.line-6 { top: 65.8%; } /* Ticket Number */
+.ticket-category-training .ticket-left.line-6 { top: 68.5%; } /* Price */
+.ticket-category-training .ticket-right.line-6 { top: 66.3%; } /* Ticket Number */
 .ticket-category-training .ticket-qr-id { top: 49%; }
 .ticket-category-training .ticket-qr-date { top: 59.8%; }
 
