@@ -1400,7 +1400,7 @@ body {
 .ticket-category-cinema .ticket-left.line-6 { top: 68%; } /* Price */
 .ticket-category-cinema .ticket-right.line-6 { top: 65.9%; } /* Ticket Number */
 .ticket-category-cinema .ticket-qr-id { top: 49.2%; }
-.ticket-category-cinema .ticket-qr-date { top: 60%; }
+.ticket-category-cinema .ticket-qr-date { top: 60.2%; }
 
 /* --- FESTIVAL --- */
 .ticket-category-festival .ticket-left.line-1,
