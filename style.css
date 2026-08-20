@@ -1510,7 +1510,7 @@ body {
 .ticket-category-formation .ticket-left.line-5,
 .ticket-category-formation .ticket-right.line-5 { top: 54.7%; }
 .ticket-category-formation .ticket-left.line-6 { top: 67.2%; } /* Price */
-.ticket-category-formation .ticket-right.line-6 { top: 65.2%; } /* Ticket Number */
+.ticket-category-formation .ticket-right.line-6 { top: 65.4%; } /* Ticket Number */
 .ticket-category-formation .ticket-qr-id { top: 48.6%; }
 .ticket-category-formation .ticket-qr-date { top: 59.2%; }
 
