@@ -1470,16 +1470,16 @@ body {
 .ticket-category-gala .ticket-left.line-1,
 .ticket-category-gala .ticket-right.line-1 { top: 29.3%; }
 .ticket-category-gala .ticket-left.line-2,
-.ticket-category-gala .ticket-right.line-2 { top: 35.8%; }
+.ticket-category-gala .ticket-right.line-2 { top: 36%; }
 .ticket-category-gala .ticket-left.line-3,
-.ticket-category-gala .ticket-right.line-3 { top: 42.8%; }
+.ticket-category-gala .ticket-right.line-3 { top: 43%; }
 .ticket-category-gala .ticket-left.line-4,
-.ticket-category-gala .ticket-right.line-4 { top: 50.2%; }
+.ticket-category-gala .ticket-right.line-4 { top: 50.4%; }
 .ticket-category-gala .ticket-left.line-5,
 .ticket-category-gala .ticket-right.line-5 { top: 54.5%; }
 .ticket-category-gala .ticket-left.line-6 { top: 67.2%; } /* Price */
-.ticket-category-gala .ticket-right.line-6 { top: 65.2%; } /* Ticket Number */
-.ticket-category-gala .ticket-qr-id { top: 48.7%; }
+.ticket-category-gala .ticket-right.line-6 { top: 65.4%; } /* Ticket Number */
+.ticket-category-gala .ticket-qr-id { top: 48.5%; }
 .ticket-category-gala .ticket-qr-date { top: 59.2%; }
 
 /* --- SEMINAR --- */
