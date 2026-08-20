@@ -1406,17 +1406,17 @@ body {
 .ticket-category-festival .ticket-left.line-1,
 .ticket-category-festival .ticket-right.line-1 { top: 29%; }
 .ticket-category-festival .ticket-left.line-2,
-.ticket-category-festival .ticket-right.line-2 { top: 35.5%; }
+.ticket-category-festival .ticket-right.line-2 { top: 35.8%; }
 .ticket-category-festival .ticket-left.line-3,
-.ticket-category-festival .ticket-right.line-3 { top: 42.5%; }
+.ticket-category-festival .ticket-right.line-3 { top: 42.8%; }
 .ticket-category-festival .ticket-left.line-4,
-.ticket-category-festival .ticket-right.line-4 { top: 50.2%; }
+.ticket-category-festival .ticket-right.line-4 { top: 50.4%; }
 .ticket-category-festival .ticket-left.line-5,
-.ticket-category-festival .ticket-right.line-5 { top: 53.5%; }
-.ticket-category-festival .ticket-left.line-6 { top: 66.2%; } /* Price */
-.ticket-category-festival .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
+.ticket-category-festival .ticket-right.line-5 { top: 55.5%; }
+.ticket-category-festival .ticket-left.line-6 { top: 67.7%; } /* Price */
+.ticket-category-festival .ticket-right.line-6 { top: 65.7%; } /* Ticket Number */
 .ticket-category-festival .ticket-qr-id { top: 49%; }
-.ticket-category-festival .ticket-qr-date { top: 59.2%; }
+.ticket-category-festival .ticket-qr-date { top: 60.2%; }
 
 /* --- THEATRE --- */
 .ticket-category-theatre .ticket-left.line-1,
