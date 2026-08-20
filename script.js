@@ -624,7 +624,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// SAVE EVENT ET TICKET
+// SAVE EVENT ET TICKET (avec expiration_date)
 // ============================================================
 async function saveEventToSupabase(eventData) {
     try {
@@ -682,7 +682,7 @@ async function saveTicketToSupabase(ticketData) {
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
+            expiration_date: ticketData.expirationDate || null, // <-- NOUVEAU
             event_title: ticketData.eventTitle || 'Event',
             event_location: ticketData.eventLocation || 'Online',
             pays: ticketData.pays || ticketData.eventPays || 'France',
@@ -709,7 +709,7 @@ async function saveTicketToSupabase(ticketData) {
 }
 
 // ============================================================
-// CHARGEMENT DES TICKETS DEPUIS SUPABASE
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE (avec expiration_date)
 // ============================================================
 async function loadTicketsFromSupabase(piUid) {
     try {
@@ -723,7 +723,7 @@ async function loadTicketsFromSupabase(piUid) {
             id: t.id,
             eventId: t.event_id,
             eventTitle: t.event_title || 'Event',
-            eventDate: t.expiration_date || t.purchase_date,
+            eventDate: t.expiration_date || t.purchase_date, // fallback sur expiration_date
             eventLocation: t.event_location || 'Online',
             category: t.category || '',
             price: t.price || 0,
@@ -739,7 +739,8 @@ async function loadTicketsFromSupabase(piUid) {
             organizerName: t.organizer_name || '',
             organizerPiUid: t.organizer_pi_uid || '',
             pays: t.pays || 'France',
-            ticketNumber: t.ticket_number
+            ticketNumber: t.ticket_number,
+            expirationDate: t.expiration_date || null // <-- NOUVEAU
         }));
     } catch (error) { console.error('loadTicketsFromSupabase exception:', error); return []; }
 }
@@ -1129,6 +1130,29 @@ function hideLoader() {
 }
 
 // ============================================================
+// FONCTION D'EXPIRATION (utilise expirationDate si disponible)
+// ============================================================
+function isTicketExpired(ticket) {
+    if (!ticket) return false;
+    // Si on a une expirationDate stockée, on l'utilise
+    if (ticket.expirationDate) {
+        const expDate = new Date(ticket.expirationDate);
+        if (!isNaN(expDate.getTime())) {
+            return expDate < new Date();
+        }
+    }
+    // Sinon on calcule à partir de l'eventDate (fallback)
+    if (ticket.eventDate) {
+        const eventDate = new Date(ticket.eventDate);
+        if (!isNaN(eventDate.getTime())) {
+            const expirationDate = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000);
+            return expirationDate < new Date();
+        }
+    }
+    return false;
+}
+
+// ============================================================
 // GÉNÉRATION DU TICKET HTML (AVEC DATE D'EXPIRATION)
 // ============================================================
 function generateTicketHTML(ticket) {
@@ -1168,13 +1192,18 @@ function generateTicketHTML(ticket) {
     const ticketImage = ticketImages[category] || ticketImages['default'];
     const categoryClass = 'ticket-category-' + category.toLowerCase();
 
-    // Calcul de la date d'expiration (24h après l'événement)
+    // Calcul de la date d'expiration : on utilise la valeur stockée ou on calcule
     let expirationDisplay = 'N/A';
-    if (safeTicket.eventDate) {
+    if (safeTicket.expirationDate) {
+        const expDate = new Date(safeTicket.expirationDate);
+        if (!isNaN(expDate.getTime())) {
+            expirationDisplay = expDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    } else if (safeTicket.eventDate) {
         const eventDateObj = new Date(safeTicket.eventDate);
         if (!isNaN(eventDateObj.getTime())) {
-            const expirationDate = new Date(eventDateObj.getTime() + 24 * 60 * 60 * 1000);
-            expirationDisplay = expirationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const expDate = new Date(eventDateObj.getTime() + 24 * 60 * 60 * 1000);
+            expirationDisplay = expDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
     }
 
@@ -1226,17 +1255,6 @@ function generateAllQRCodes() {
         const id = container.id.replace('ticket-', '');
         if (id) generateTicketQR(id);
     });
-}
-
-// ============================================================
-// FONCTION D'EXPIRATION
-// ============================================================
-function isTicketExpired(ticket) {
-    if (!ticket || !ticket.eventDate) return false;
-    const eventDate = new Date(ticket.eventDate);
-    if (isNaN(eventDate.getTime())) return false;
-    const expirationDate = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000);
-    return expirationDate < new Date();
 }
 
 // ============================================================
@@ -1661,7 +1679,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (avec badges améliorés et police réduite)
+// _openEventDetails (inchangé)
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1858,7 +1876,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL
+// ADMIN CAROUSEL (inchangé)
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -1961,7 +1979,6 @@ function populateProfileForm() {
     if (email) email.value = currentUser.email || '';
     if (phone) phone.value = currentUser.phone_number || '';
     
-    // Mettre à jour les statuts de vérification
     if (currentUser.email && currentUser.email.trim()) {
         document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
         document.getElementById('verifyEmailBtn').classList.add('verified');
@@ -1977,7 +1994,6 @@ function populateProfileForm() {
         document.getElementById('verifyPhoneBtn').classList.remove('verified');
     }
 
-    // Mettre à jour le mode édition
     const complete = checkProfileComplete().complete;
     enableEditMode(!complete);
 }
@@ -2295,7 +2311,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT
+// CONFIRMATION D'ACHAT (avec calcul de la date d'expiration)
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2397,6 +2413,10 @@ async function confirmPurchase(eventId, quantity) {
                     const buyerEmail = currentUser.email || 'Not provided';
                     const buyerPhone = currentUser.phone_number || 'Not provided';
                     
+                    // Calcul de la date d'expiration pour chaque ticket
+                    const eventDateObj = new Date(event.date);
+                    const expirationDate = !isNaN(eventDateObj.getTime()) ? new Date(eventDateObj.getTime() + 24 * 60 * 60 * 1000).toISOString() : null;
+                    
                     const ticketsAdded = [];
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
@@ -2428,7 +2448,8 @@ async function confirmPurchase(eventId, quantity) {
                             organizerName: organizerName,
                             organizerPiUid: organizerPiUid,
                             eventPays: event.pays || event.country || 'France',
-                            ticketNumber: nextNumber + i
+                            ticketNumber: nextNumber + i,
+                            expirationDate: expirationDate // <-- NOUVEAU
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -2541,7 +2562,7 @@ function closeToast(toast) {
 }
 
 // ============================================================
-// SUCCESS POPUP – sans émoji
+// SUCCESS POPUP
 // ============================================================
 function showSuccessPopup(event, ticketsList, quantity) {
     const popup = document.getElementById('successPopup');
@@ -2626,7 +2647,7 @@ function closeSuccessPopup() {
 }
 
 // ============================================================
-// CONNEXION PI (CORRIGÉE – chargement du profil avant sync)
+// CONNEXION PI
 // ============================================================
 async function connectToPi() {
     showConnectSpinner();
@@ -3272,7 +3293,7 @@ function updateActivity() { lastActivity = Date.now(); localStorage.setItem('bet
 function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
 
 // ============================================================
-// DISCONNECT (avec sauvegarde du profil avant déconnexion)
+// DISCONNECT
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
