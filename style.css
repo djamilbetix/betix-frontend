@@ -1484,18 +1484,18 @@ body {
 
 /* --- SEMINAR --- */
 .ticket-category-seminar .ticket-left.line-1,
-.ticket-category-seminar .ticket-right.line-1 { top: 29%; }
+.ticket-category-seminar .ticket-right.line-1 { top: 29.2%; }
 .ticket-category-seminar .ticket-left.line-2,
-.ticket-category-seminar .ticket-right.line-2 { top: 35.5%; }
+.ticket-category-seminar .ticket-right.line-2 { top: 36%; }
 .ticket-category-seminar .ticket-left.line-3,
-.ticket-category-seminar .ticket-right.line-3 { top: 42.5%; }
+.ticket-category-seminar .ticket-right.line-3 { top: 43%; }
 .ticket-category-seminar .ticket-left.line-4,
-.ticket-category-seminar .ticket-right.line-4 { top: 50.2%; }
+.ticket-category-seminar .ticket-right.line-4 { top: 50.7%; }
 .ticket-category-seminar .ticket-left.line-5,
-.ticket-category-seminar .ticket-right.line-5 { top: 53.5%; }
-.ticket-category-seminar .ticket-left.line-6 { top: 66.2%; } /* Price */
-.ticket-category-seminar .ticket-right.line-6 { top: 64.2%; } /* Ticket Number */
-.ticket-category-seminar .ticket-qr-id { top: 49%; }
+.ticket-category-seminar .ticket-right.line-5 { top: 54.5%; }
+.ticket-category-seminar .ticket-left.line-6 { top: 67.2%; } /* Price */
+.ticket-category-seminar .ticket-right.line-6 { top: 65.2%; } /* Ticket Number */
+.ticket-category-seminar .ticket-qr-id { top: 48.5%; }
 .ticket-category-seminar .ticket-qr-date { top: 59.2%; }
 
 /* --- FORMATION --- */
