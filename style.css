@@ -1440,12 +1440,12 @@ body {
 .ticket-category-dance .ticket-left.line-2,
 .ticket-category-dance .ticket-right.line-2 { top: 36.5%; }
 .ticket-category-dance .ticket-left.line-3,
-.ticket-category-dance .ticket-right.line-3 { top: 43.5%; }
+.ticket-category-dance .ticket-right.line-3 { top: 43.8%; }
 .ticket-category-dance .ticket-left.line-4,
 .ticket-category-dance .ticket-right.line-4 { top: 51.2%; }
 .ticket-category-dance .ticket-left.line-5,
 .ticket-category-dance .ticket-right.line-5 { top: 55.5%; }
-.ticket-category-dance .ticket-left.line-6 { top: 67.7%; } /* Price */
+.ticket-category-dance .ticket-left.line-6 { top: 68%; } /* Price */
 .ticket-category-dance .ticket-right.line-6 { top: 66.2%; } /* Ticket Number */
 .ticket-category-dance .ticket-qr-id { top: 49.5%; }
 .ticket-category-dance .ticket-qr-date { top: 60.7%; }
