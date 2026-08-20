@@ -15,6 +15,122 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 });
 
 // ============================================================
+// FONCTIONS MANQUANTES AJOUTÉES
+// ============================================================
+
+// URL du backend pour les appels Pi
+const BACKEND_URL = window.BETIX_CONFIG?.backendURL || "https://betix-backend.onrender.com";
+
+// Vérification de connexion
+function requireLogin() {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return false;
+    }
+    return true;
+}
+
+// Vérification de profil complet
+function requireProfileComplete() {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return false;
+    }
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        alert(t('pleaseCompleteProfile') + ' (Missing: ' + check.missing.join(', ') + ')');
+        showPage('profile');
+        return false;
+    }
+    return true;
+}
+
+// Sauvegarde d'une transaction dans Supabase
+async function saveTransactionToSupabase(txData) {
+    try {
+        const { error } = await supabaseClient.from('transactions').upsert({
+            id: txData.id,
+            buyer_wallet: txData.buyerWallet,
+            buyer_pi_uid: txData.buyerPiUid,
+            event_id: txData.eventId,
+            amount: txData.amount,
+            txid: txData.txid,
+            status: txData.status || 'completed',
+            date: txData.date || new Date().toISOString(),
+            subtotal: txData.subtotal,
+            service_fee: txData.serviceFee,
+            commission: txData.commission
+        }, { onConflict: 'id' });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error saving transaction:', error);
+        return false;
+    }
+}
+
+// Mise à jour d'un événement dans Supabase
+async function updateEventInSupabase(eventId, updates) {
+    try {
+        const { error } = await supabaseClient.from('events').update(updates).eq('id', eventId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error updating event:', error);
+        return false;
+    }
+}
+
+// Suppression d'un événement dans Supabase
+async function deleteEventFromSupabase(eventId) {
+    try {
+        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        return false;
+    }
+}
+
+// Gestion des paiements incomplets (Pi SDK)
+function onIncompletePaymentFound(payment) {
+    console.warn('Incomplete payment found:', payment);
+    alert(t('pendingPaymentFound') + '\n' + t('pendingPaymentMessage'));
+    if (confirm(t('cancelAndRetry'))) {
+        if (typeof Pi !== 'undefined' && Pi.cancelPayment) {
+            Pi.cancelPayment(payment.identifier).catch(() => {});
+        }
+        return true;
+    }
+    return false;
+}
+
+// Attente du SDK Pi
+function ensurePiSDKReady() {
+    return new Promise((resolve) => {
+        if (typeof Pi !== 'undefined' && window.piSDKReady) {
+            resolve(true);
+        } else {
+            let attempts = 0;
+            const maxAttempts = 20;
+            const interval = setInterval(() => {
+                attempts++;
+                if (typeof Pi !== 'undefined' && window.piSDKReady) {
+                    clearInterval(interval);
+                    resolve(true);
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    resolve(false);
+                }
+            }, 500);
+        }
+    });
+}
+
+// ============================================================
 // LISTES ET TRADUCTIONS (complètes)
 // ============================================================
 const countriesList = [
@@ -682,7 +798,7 @@ async function saveTicketToSupabase(ticketData) {
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            expiration_date: ticketData.expirationDate || null, // <-- NOUVEAU
+            expiration_date: ticketData.expirationDate || null,
             event_title: ticketData.eventTitle || 'Event',
             event_location: ticketData.eventLocation || 'Online',
             pays: ticketData.pays || ticketData.eventPays || 'France',
@@ -723,7 +839,7 @@ async function loadTicketsFromSupabase(piUid) {
             id: t.id,
             eventId: t.event_id,
             eventTitle: t.event_title || 'Event',
-            eventDate: t.expiration_date || t.purchase_date, // fallback sur expiration_date
+            eventDate: t.expiration_date || t.purchase_date,
             eventLocation: t.event_location || 'Online',
             category: t.category || '',
             price: t.price || 0,
@@ -740,7 +856,7 @@ async function loadTicketsFromSupabase(piUid) {
             organizerPiUid: t.organizer_pi_uid || '',
             pays: t.pays || 'France',
             ticketNumber: t.ticket_number,
-            expirationDate: t.expiration_date || null // <-- NOUVEAU
+            expirationDate: t.expiration_date || null
         }));
     } catch (error) { console.error('loadTicketsFromSupabase exception:', error); return []; }
 }
@@ -911,17 +1027,6 @@ function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
-    const profileData = {
-        first_name: currentUser.first_name || '',
-        last_name: currentUser.last_name || '',
-        country: currentUser.country || '',
-        address: currentUser.address || '',
-        email: currentUser.email || '',
-        phone_number: currentUser.phone_number || '',
-        profile_completed: currentUser.profile_completed || false,
-        profile_reminder_shown: currentUser.profile_reminder_shown || false
-    };
-    saveLocalProfile(profileData);
 }
 
 function saveNotifications() { localStorage.setItem('betix_notifications', JSON.stringify(notifications)); }
@@ -1134,14 +1239,12 @@ function hideLoader() {
 // ============================================================
 function isTicketExpired(ticket) {
     if (!ticket) return false;
-    // Si on a une expirationDate stockée, on l'utilise
     if (ticket.expirationDate) {
         const expDate = new Date(ticket.expirationDate);
         if (!isNaN(expDate.getTime())) {
             return expDate < new Date();
         }
     }
-    // Sinon on calcule à partir de l'eventDate (fallback)
     if (ticket.eventDate) {
         const eventDate = new Date(ticket.eventDate);
         if (!isNaN(eventDate.getTime())) {
@@ -1192,7 +1295,6 @@ function generateTicketHTML(ticket) {
     const ticketImage = ticketImages[category] || ticketImages['default'];
     const categoryClass = 'ticket-category-' + category.toLowerCase();
 
-    // Calcul de la date d'expiration : on utilise la valeur stockée ou on calcule
     let expirationDisplay = 'N/A';
     if (safeTicket.expirationDate) {
         const expDate = new Date(safeTicket.expirationDate);
@@ -1271,7 +1373,6 @@ function renderTickets() {
         return !isUsed && !isExpired && !isStatusUsed;
     });
     
-    // Trier par date d'achat décroissante
     validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     
     const uniqueTickets = [];
@@ -1316,7 +1417,6 @@ function renderHistory() {
         return isUsed || isExpired || isStatusUsed;
     });
     
-    // Trier par date d'achat décroissante
     historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     
     const uniqueHistory = [];
@@ -2014,21 +2114,6 @@ async function loadProfileData() {
         if (error) {
             if (error.code === 'PGRST116') {
                 console.log('No profile found. It will be created on first save.');
-                const backup = localStorage.getItem('betix_profile_backup');
-                if (backup) {
-                    try {
-                        const backupData = JSON.parse(backup);
-                        console.log('Restoring profile from backup:', backupData);
-                        Object.assign(currentUser, backupData);
-                        saveUser();
-                        populateProfileForm();
-                        updateUserInfo();
-                        updateProfilePage();
-                        localStorage.removeItem('betix_profile_backup');
-                        enableEditMode(true);
-                        return;
-                    } catch(e) {}
-                }
                 enableEditMode(true);
                 return;
             }
@@ -2037,13 +2122,11 @@ async function loadProfileData() {
         if (data) {
             console.log('Profile loaded from Supabase:', data);
             const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number'];
-            let hasNewData = false;
             fields.forEach(f => {
                 if (data[f] !== undefined && data[f] !== null && data[f].trim) {
                     const val = data[f].trim();
                     if (val) {
                         currentUser[f] = val;
-                        hasNewData = true;
                     }
                 }
             });
@@ -2055,8 +2138,6 @@ async function loadProfileData() {
             updateUserInfo();
             updateProfilePage();
             
-            localStorage.removeItem('betix_profile_backup');
-            
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
             return;
@@ -2065,21 +2146,6 @@ async function loadProfileData() {
         }
     } catch (error) {
         console.error('Error loading profile:', error);
-        const backup = localStorage.getItem('betix_profile_backup');
-        if (backup) {
-            try {
-                const backupData = JSON.parse(backup);
-                console.log('Restoring from backup due to error:', backupData);
-                Object.assign(currentUser, backupData);
-                saveUser();
-                populateProfileForm();
-                updateUserInfo();
-                updateProfilePage();
-                localStorage.removeItem('betix_profile_backup');
-                enableEditMode(true);
-                return;
-            } catch(e) {}
-        }
         enableEditMode(true);
     }
 }
@@ -2413,7 +2479,6 @@ async function confirmPurchase(eventId, quantity) {
                     const buyerEmail = currentUser.email || 'Not provided';
                     const buyerPhone = currentUser.phone_number || 'Not provided';
                     
-                    // Calcul de la date d'expiration pour chaque ticket
                     const eventDateObj = new Date(event.date);
                     const expirationDate = !isNaN(eventDateObj.getTime()) ? new Date(eventDateObj.getTime() + 24 * 60 * 60 * 1000).toISOString() : null;
                     
@@ -2449,7 +2514,7 @@ async function confirmPurchase(eventId, quantity) {
                             organizerPiUid: organizerPiUid,
                             eventPays: event.pays || event.country || 'France',
                             ticketNumber: nextNumber + i,
-                            expirationDate: expirationDate // <-- NOUVEAU
+                            expirationDate: expirationDate
                         };
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
@@ -3305,18 +3370,6 @@ async function disconnectPi() {
         console.error('Error saving profile before disconnection:', error);
     }
 
-    const profileBackup = {
-        first_name: currentUser.first_name || '',
-        last_name: currentUser.last_name || '',
-        country: currentUser.country || '',
-        address: currentUser.address || '',
-        email: currentUser.email || '',
-        phone_number: currentUser.phone_number || '',
-        profile_completed: currentUser.profile_completed || false,
-        profile_reminder_shown: currentUser.profile_reminder_shown || false
-    };
-    localStorage.setItem('betix_profile_backup', JSON.stringify(profileBackup));
-
     currentUser = {
         name: 'Guest',
         wallet: null,
@@ -4032,14 +4085,6 @@ async function initApp() {
     try {
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
-        
-        const localProfile = loadLocalProfile();
-        Object.keys(localProfile).forEach(key => {
-            if (localProfile[key] !== undefined) {
-                currentUser[key] = localProfile[key];
-            }
-        });
-        if (localProfile.profile_completed) currentUser.profile_completed = true;
         
         const loader = document.getElementById('loader');
         const main = document.getElementById('main-content');
