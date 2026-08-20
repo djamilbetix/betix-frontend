@@ -1461,8 +1461,8 @@ body {
 .ticket-category-exhibition .ticket-right.line-4 { top: 50.2%; }
 .ticket-category-exhibition .ticket-left.line-5,
 .ticket-category-exhibition .ticket-right.line-5 { top: 54.7%; }
-.ticket-category-exhibition .ticket-left.line-6 { top: 66.7%; } /* Price */
-.ticket-category-exhibition .ticket-right.line-6 { top: 65%; } /* Ticket Number */
+.ticket-category-exhibition .ticket-left.line-6 { top: 66.8%; } /* Price */
+.ticket-category-exhibition .ticket-right.line-6 { top: 64.7%; } /* Ticket Number */
 .ticket-category-exhibition .ticket-qr-id { top: 48.7%; }
 .ticket-category-exhibition .ticket-qr-date { top: 59.2%; }
 
