@@ -1422,16 +1422,16 @@ body {
 .ticket-category-theatre .ticket-left.line-1,
 .ticket-category-theatre .ticket-right.line-1 { top: 29%; }
 .ticket-category-theatre .ticket-left.line-2,
-.ticket-category-theatre .ticket-right.line-2 { top: 35.8%; }
+.ticket-category-theatre .ticket-right.line-2 { top: 36.1%; }
 .ticket-category-theatre .ticket-left.line-3,
-.ticket-category-theatre .ticket-right.line-3 { top: 42.8%; }
+.ticket-category-theatre .ticket-right.line-3 { top: 43%; }
 .ticket-category-theatre .ticket-left.line-4,
 .ticket-category-theatre .ticket-right.line-4 { top: 50.3%; }
 .ticket-category-theatre .ticket-left.line-5,
-.ticket-category-theatre .ticket-right.line-5 { top: 53.9%; }
-.ticket-category-theatre .ticket-left.line-6 { top: 66.6%; } /* Price */
-.ticket-category-theatre .ticket-right.line-6 { top: 64.4%; } /* Ticket Number */
-.ticket-category-theatre .ticket-qr-id { top: 48.8%; }
+.ticket-category-theatre .ticket-right.line-5 { top: 54.5%; }
+.ticket-category-theatre .ticket-left.line-6 { top: 66.7%; } /* Price */
+.ticket-category-theatre .ticket-right.line-6 { top: 64.7%; } /* Ticket Number */
+.ticket-category-theatre .ticket-qr-id { top: 48.7%; }
 .ticket-category-theatre .ticket-qr-date { top: 59.2%; }
 
 /* --- DANCE --- */
