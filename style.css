@@ -1396,9 +1396,9 @@ body {
 .ticket-category-cinema .ticket-left.line-4,
 .ticket-category-cinema .ticket-right.line-4 { top: 50.6%; }
 .ticket-category-cinema .ticket-left.line-5,
-.ticket-category-cinema .ticket-right.line-5 { top: 54.7%; }
+.ticket-category-cinema .ticket-right.line-5 { top: 54.9%; }
 .ticket-category-cinema .ticket-left.line-6 { top: 68%; } /* Price */
-.ticket-category-cinema .ticket-right.line-6 { top: 65.4%; } /* Ticket Number */
+.ticket-category-cinema .ticket-right.line-6 { top: 65.7%; } /* Ticket Number */
 .ticket-category-cinema .ticket-qr-id { top: 49.2%; }
 .ticket-category-cinema .ticket-qr-date { top: 60%; }
 
