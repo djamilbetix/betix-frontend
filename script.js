@@ -1,137 +1,103 @@
 // ============================================================
-// CONFIGURATION SUPABASE
-// ============================================================
-const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
-
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    db: { schema: 'public' },
-    fetch: (url, options) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-        return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
-    }
-});
-
-// ============================================================
-// FONCTIONS MANQUANTES AJOUTÉES
+// CONFIGURATION SUPABASE - AVEC MÉCANISME D'ATTENTE
 // ============================================================
 
-// URL du backend pour les appels Pi
-const BACKEND_URL = window.BETIX_CONFIG?.backendURL || "https://betix-backend.onrender.com";
-
-// Vérification de connexion
-function requireLogin() {
-    if (!currentUser.wallet) {
-        alert(t('pleaseConnect'));
-        connectToPi();
-        return false;
-    }
-    return true;
-}
-
-// Vérification de profil complet
-function requireProfileComplete() {
-    if (!currentUser.wallet) {
-        alert(t('pleaseConnect'));
-        connectToPi();
-        return false;
-    }
-    const check = checkProfileComplete();
-    if (!check.complete) {
-        alert(t('pleaseCompleteProfile') + ' (Missing: ' + check.missing.join(', ') + ')');
-        showPage('profile');
-        return false;
-    }
-    return true;
-}
-
-// Sauvegarde d'une transaction dans Supabase
-async function saveTransactionToSupabase(txData) {
-    try {
-        const { error } = await supabaseClient.from('transactions').upsert({
-            id: txData.id,
-            buyer_wallet: txData.buyerWallet,
-            buyer_pi_uid: txData.buyerPiUid,
-            event_id: txData.eventId,
-            amount: txData.amount,
-            txid: txData.txid,
-            status: txData.status || 'completed',
-            date: txData.date || new Date().toISOString(),
-            subtotal: txData.subtotal,
-            service_fee: txData.serviceFee,
-            commission: txData.commission
-        }, { onConflict: 'id' });
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Error saving transaction:', error);
-        return false;
-    }
-}
-
-// Mise à jour d'un événement dans Supabase
-async function updateEventInSupabase(eventId, updates) {
-    try {
-        const { error } = await supabaseClient.from('events').update(updates).eq('id', eventId);
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Error updating event:', error);
-        return false;
-    }
-}
-
-// Suppression d'un événement dans Supabase
-async function deleteEventFromSupabase(eventId) {
-    try {
-        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Error deleting event:', error);
-        return false;
-    }
-}
-
-// Gestion des paiements incomplets (Pi SDK)
-function onIncompletePaymentFound(payment) {
-    console.warn('Incomplete payment found:', payment);
-    alert(t('pendingPaymentFound') + '\n' + t('pendingPaymentMessage'));
-    if (confirm(t('cancelAndRetry'))) {
-        if (typeof Pi !== 'undefined' && Pi.cancelPayment) {
-            Pi.cancelPayment(payment.identifier).catch(() => {});
-        }
-        return true;
-    }
-    return false;
-}
-
-// Attente du SDK Pi
-function ensurePiSDKReady() {
+// Fonction pour attendre que Supabase soit disponible
+function waitForSupabase(maxAttempts = 30, delay = 200) {
     return new Promise((resolve) => {
-        if (typeof Pi !== 'undefined' && window.piSDKReady) {
-            resolve(true);
-        } else {
-            let attempts = 0;
-            const maxAttempts = 20;
-            const interval = setInterval(() => {
-                attempts++;
-                if (typeof Pi !== 'undefined' && window.piSDKReady) {
-                    clearInterval(interval);
-                    resolve(true);
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(interval);
-                    resolve(false);
-                }
-            }, 500);
-        }
+        let attempts = 0;
+        const check = () => {
+            attempts++;
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                console.log('✅ Supabase SDK detected after', attempts, 'attempts');
+                resolve(true);
+                return;
+            }
+            if (attempts >= maxAttempts) {
+                console.error('❌ Supabase SDK not loaded after', maxAttempts, 'attempts');
+                resolve(false);
+                return;
+            }
+            setTimeout(check, delay);
+        };
+        check();
     });
 }
 
+// Création du client Supabase
+let supabaseClient = null;
+
+async function initSupabase() {
+    const ready = await waitForSupabase();
+    if (!ready) {
+        console.error('❌ Supabase SDK not available - running in degraded mode');
+        supabaseClient = {
+            from: () => ({ select: () => ({ data: [], error: null }), insert: () => ({ data: null, error: null }), update: () => ({ data: null, error: null }), delete: () => ({ data: null, error: null }) }),
+            storage: { from: () => ({ upload: () => ({ data: null, error: null }), getPublicUrl: () => ({ publicUrl: '' }) }) }
+        };
+        return false;
+    }
+    
+    const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5Y2Vid3pnc3VqaWF6Z29wa3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODg2NTMsImV4cCI6MjA5Nzk2NDY1M30.7x1rouTbMJE2WcY008vRnqGuAWq3yM_eZCS4Q8_3TrQ";
+
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+            db: { schema: 'public' },
+            fetch: (url, options) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+            }
+        });
+        console.log('✅ Supabase client initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Error creating Supabase client:', error);
+        supabaseClient = {
+            from: () => ({ select: () => ({ data: [], error: null }), insert: () => ({ data: null, error: null }), update: () => ({ data: null, error: null }), delete: () => ({ data: null, error: null }) }),
+            storage: { from: () => ({ upload: () => ({ data: null, error: null }), getPublicUrl: () => ({ publicUrl: '' }) }) }
+        };
+        return false;
+    }
+}
+
+// Fonction pour attendre Pi SDK
+function waitForPiSDK(maxAttempts = 30, delay = 200) {
+    return new Promise((resolve) => {
+        let attempts = 0;
+        const check = () => {
+            attempts++;
+            if (typeof Pi !== 'undefined' && window.piSDKReady) {
+                console.log('✅ Pi SDK detected after', attempts, 'attempts');
+                resolve(true);
+                return;
+            }
+            if (attempts >= maxAttempts) {
+                console.warn('⚠️ Pi SDK not loaded after', maxAttempts, 'attempts');
+                resolve(false);
+                return;
+            }
+            setTimeout(check, delay);
+        };
+        check();
+    });
+}
+
+// LANCEMENT DE L'APPLICATION
+(async function initializeApp() {
+    console.log('🚀 Initializing application...');
+    
+    await initSupabase();
+    await waitForPiSDK();
+    
+    console.log('✅ All SDKs ready, starting application...');
+    initApp();
+})();
+
 // ============================================================
-// LISTES ET TRADUCTIONS (complètes)
+// LISTES ET TRADUCTIONS
 // ============================================================
 const countriesList = [
     'All', 'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda',
@@ -230,7 +196,7 @@ const countryFlags = {
 };
 
 // ============================================================
-// TRADUCTIONS (raccourci pour la lisibilité)
+// TRADUCTIONS
 // ============================================================
 const translations = {
     en: {
@@ -306,7 +272,6 @@ const translations = {
         footerDesc: 'Secure platform to buy and sell event tickets with Pi payment.',
         eventDate: 'Event Date', eventTime: 'Event Time', locationLabel: 'Location', countryLabel: 'Country',
         ticketsSold: 'Tickets Sold', required: 'required', reviews: 'reviews', close: 'Close',
-        connecting: 'Connecting...', pleaseWait: 'Please wait...', 
         demoMode: 'Pi Browser not detected. Use demo mode?',
         demoConnected: 'Pi account connected (demo mode)! Welcome Demo User',
         piConnected: 'Pi account connected! Welcome ',
@@ -475,7 +440,7 @@ function t(key) {
 }
 
 // ============================================================
-// IMAGES DE TICKET PAR CATÉGORIE (AJOUT)
+// IMAGES DE TICKET PAR CATÉGORIE
 // ============================================================
 const ticketImages = {
     'Concert': 'ticket-concert.png',
@@ -493,6 +458,100 @@ const ticketImages = {
     'Formation': 'ticket-formation.png',
     'default': 'ticket-default.png'
 };
+
+// ============================================================
+// FONCTIONS MANQUANTES AJOUTÉES
+// ============================================================
+
+// URL du backend pour les appels Pi
+const BACKEND_URL = window.BETIX_CONFIG?.backendURL || "https://betix-backend.onrender.com";
+
+// Vérification de connexion
+function requireLogin() {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return false;
+    }
+    return true;
+}
+
+// Vérification de profil complet
+function requireProfileComplete() {
+    if (!currentUser.wallet) {
+        alert(t('pleaseConnect'));
+        connectToPi();
+        return false;
+    }
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        alert(t('pleaseCompleteProfile') + ' (Missing: ' + check.missing.join(', ') + ')');
+        showPage('profile');
+        return false;
+    }
+    return true;
+}
+
+// Sauvegarde d'une transaction dans Supabase
+async function saveTransactionToSupabase(txData) {
+    try {
+        const { error } = await supabaseClient.from('transactions').upsert({
+            id: txData.id,
+            buyer_wallet: txData.buyerWallet,
+            buyer_pi_uid: txData.buyerPiUid,
+            event_id: txData.eventId,
+            amount: txData.amount,
+            txid: txData.txid,
+            status: txData.status || 'completed',
+            date: txData.date || new Date().toISOString(),
+            subtotal: txData.subtotal,
+            service_fee: txData.serviceFee,
+            commission: txData.commission
+        }, { onConflict: 'id' });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error saving transaction:', error);
+        return false;
+    }
+}
+
+// Mise à jour d'un événement dans Supabase
+async function updateEventInSupabase(eventId, updates) {
+    try {
+        const { error } = await supabaseClient.from('events').update(updates).eq('id', eventId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error updating event:', error);
+        return false;
+    }
+}
+
+// Suppression d'un événement dans Supabase
+async function deleteEventFromSupabase(eventId) {
+    try {
+        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        return false;
+    }
+}
+
+// Gestion des paiements incomplets (Pi SDK)
+function onIncompletePaymentFound(payment) {
+    console.warn('Incomplete payment found:', payment);
+    alert(t('pendingPaymentFound') + '\n' + t('pendingPaymentMessage'));
+    if (confirm(t('cancelAndRetry'))) {
+        if (typeof Pi !== 'undefined' && Pi.cancelPayment) {
+            Pi.cancelPayment(payment.identifier).catch(() => {});
+        }
+        return true;
+    }
+    return false;
+}
 
 // ============================================================
 // VARIABLES GLOBALES
@@ -606,7 +665,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (inchangées)
+// FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -740,7 +799,7 @@ async function saveUserToSupabase(piUid, username, wallet, points) {
 }
 
 // ============================================================
-// SAVE EVENT ET TICKET (avec expiration_date)
+// SAVE EVENT ET TICKET
 // ============================================================
 async function saveEventToSupabase(eventData) {
     try {
@@ -825,7 +884,7 @@ async function saveTicketToSupabase(ticketData) {
 }
 
 // ============================================================
-// CHARGEMENT DES TICKETS DEPUIS SUPABASE (avec expiration_date)
+// CHARGEMENT DES TICKETS DEPUIS SUPABASE
 // ============================================================
 async function loadTicketsFromSupabase(piUid) {
     try {
@@ -890,7 +949,6 @@ async function loadEventsFromSupabase() {
                 const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
                 imagesArray.push(fallback);
             }
-            console.log('Event "' + e.title + '" has ' + imagesArray.length + ' images');
             
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
@@ -1235,7 +1293,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// FONCTION D'EXPIRATION (utilise expirationDate si disponible)
+// FONCTION D'EXPIRATION
 // ============================================================
 function isTicketExpired(ticket) {
     if (!ticket) return false;
@@ -1256,7 +1314,7 @@ function isTicketExpired(ticket) {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML (AVEC DATE D'EXPIRATION)
+// GÉNÉRATION DU TICKET HTML
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1360,7 +1418,7 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// RENDER TICKETS – uniquement les tickets valides (non expirés, non utilisés)
+// RENDER TICKETS
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
@@ -1404,7 +1462,7 @@ function renderTickets() {
 }
 
 // ============================================================
-// RENDER HISTORY – inclut les tickets expirés et utilisés avec badges
+// RENDER HISTORY
 // ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
@@ -1559,7 +1617,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (inchangé)
+// RENDER EVENT CARD
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -1779,7 +1837,7 @@ function openEventDetails(eventId) {
 }
 
 // ============================================================
-// _openEventDetails (inchangé)
+// _openEventDetails
 // ============================================================
 function _openEventDetails(event) {
     const modal = document.getElementById('eventDetailModal');
@@ -1976,7 +2034,7 @@ function initHeroSlider() {
 function filterByCountry(country) { currentCountryFilter = country; renderEventsByCategory(); }
 
 // ============================================================
-// ADMIN CAROUSEL (inchangé)
+// ADMIN CAROUSEL
 // ============================================================
 function renderAdminSlides() {
     const container = document.getElementById('adminSlidesList');
@@ -2045,7 +2103,7 @@ function adminCancelSlideForm() {
 }
 
 // ============================================================
-// PROFIL – FORMULAIRE AVEC REVUE ET PERSISTANCE (CORRIGÉ)
+// PROFIL
 // ============================================================
 let profileDataForReview = {};
 let isEditingProfile = false;
@@ -2377,7 +2435,7 @@ function confirmPurchaseFromPopup() {
 }
 
 // ============================================================
-// CONFIRMATION D'ACHAT (avec calcul de la date d'expiration)
+// CONFIRMATION D'ACHAT
 // ============================================================
 const processingTransactions = new Set();
 let confirmPurchaseResolve = null;
@@ -2723,8 +2781,12 @@ async function connectToPi() {
         await Promise.race([
             (async () => {
                 if (!piSDKReady) {
-                    const ready = await ensurePiSDKReady();
-                    if (!ready) throw new Error('Pi SDK not available after waiting.');
+                    await new Promise(resolve => {
+                        const check = () => {
+                            if (window.piSDKReady) { resolve(); } else { setTimeout(check, 200); }
+                        };
+                        check();
+                    });
                 }
                 if (typeof Pi === 'undefined') {
                     if (confirm(t('demoMode'))) {
@@ -3751,7 +3813,7 @@ async function adminSaveSettings() {
 }
 
 // ============================================================
-// ADMIN USERS – Tableau enrichi (avec toutes les colonnes)
+// ADMIN USERS
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
@@ -4265,5 +4327,5 @@ window.clearAllNotifications = clearAllNotifications;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    initApp();
+   
 }
