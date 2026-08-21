@@ -1314,19 +1314,6 @@ body {
     top: 62%;
 }
 
-/* --- NOUVEAU : Date d'expiration (sous la date d'achat) --- */
-.ticket-expiration {
-    position: absolute;
-    right: 1%;
-    width: 17%;
-    text-align: center;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: clamp(5px, 0.9vw, 9px);
-    color: #dc2626; /* rouge pour attirer l'attention */
-    top: 72%;
-}
-
 /* ============================================================
    SECTIONS PAR CATÉGORIE – TOUTES ALIGNÉES SUR LE MODÈLE CONCERT
    ============================================================ */
@@ -1530,33 +1517,6 @@ body {
 /* ============================================================
    FIN DES SECTIONS PAR CATÉGORIE
    ============================================================ */
-
-/* ============================================================
-   BADGES POUR L'HISTORIQUE (expiré / utilisé)
-   ============================================================ */
-.ticket-status-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.6rem;
-    font-weight: 600;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.15);
-}
-.ticket-status-badge.expired {
-    background: rgba(239,68,68,0.9);
-}
-.ticket-status-badge.used {
-    background: rgba(16,185,129,0.9);
-}
 
 /* ============================================================
    FOOTER – textes réduits, logos centrés
@@ -5239,69 +5199,4 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
     background: #4b5563;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(107,114,128,0.3);
-}
-
-/* ============================================================
-   AMÉLIORATION DE L'AFFICHAGE SUR PC (grands écrans)
-   ============================================================ */
-@media (min-width: 1200px) {
-    .events-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0.4rem 2rem 2rem;
-    }
-    .events-grid-centered {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-    .my-events-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-    }
-    .event-card-classic .poster-wrapper-classic {
-        min-height: 280px;
-        max-height: 380px;
-    }
-    .event-card-classic .card-content-classic {
-        padding: 16px 20px 20px;
-    }
-    .event-title-large {
-        font-size: 1.3rem !important;
-    }
-    .event-description-full {
-        font-size: 0.9rem;
-        -webkit-line-clamp: 3;
-    }
-    .hero-slider-container {
-        height: 220px;
-    }
-    .hero-text h1 {
-        font-size: 1.6rem;
-    }
-    .filter-chip {
-        padding: 0.6rem 1.5rem !important;
-        font-size: 0.9rem !important;
-    }
-    .search-bar input {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
-    }
-    .page-content {
-        max-width: 900px;
-        padding: 2rem;
-    }
-    .admin-content {
-        max-width: 1200px !important;
-    }
-}
-
-@media (min-width: 1600px) {
-    .events-grid-centered {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-    }
-    .my-events-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-    }
 }
