@@ -433,6 +433,105 @@ let appSettings = {
 };
 
 // ============================================================
+// GESTION DU PROFIL LOCAL
+// ============================================================
+function loadLocalProfile() {
+    try {
+        return JSON.parse(localStorage.getItem('betix_profile') || '{}');
+    } catch { return {}; }
+}
+
+function saveLocalProfile(profileData) {
+    localStorage.setItem('betix_profile', JSON.stringify(profileData));
+}
+
+function mergeProfileWithCurrentUser() {
+    const local = loadLocalProfile();
+    const fields = ['first_name', 'last_name', 'country', 'address', 'email', 'phone_number', 'profile_completed', 'profile_reminder_shown'];
+    fields.forEach(f => {
+        if (local[f] !== undefined) currentUser[f] = local[f];
+    });
+    if (local.profile_completed) currentUser.profile_completed = true;
+    saveUser();
+}
+
+// ============================================================
+// VÉRIFICATIONS DE CONNEXION ET PROFIL
+// ============================================================
+function requireLogin() {
+    if (!currentUser.wallet && !currentUser.piUid) {
+        addNotification('Please connect your Pi account before performing this action.', 'warning');
+        alert(t('pleaseConnect'));
+        return false;
+    }
+    return true;
+}
+
+function requireProfileComplete() {
+    const check = checkProfileComplete();
+    if (!check.complete) {
+        const missing = check.missing.join(', ');
+        const msg = 'Please complete your profile before performing this action. Missing: ' + missing;
+        addNotification(msg, 'warning');
+        redirectToProfileWithMessage(msg);
+        return false;
+    }
+    return true;
+}
+
+// ============================================================
+// PI SDK
+// ============================================================
+let piSDKReady = false;
+function initPiSDK() {
+    if (typeof Pi !== 'undefined') {
+        try { Pi.init({ version: "2.0", sandbox: true }); piSDKReady = true; return true; } catch(e) {}
+    }
+    return false;
+}
+initPiSDK();
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 500);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 1000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 2000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 3000);
+setTimeout(() => { if (!piSDKReady) initPiSDK(); }, 5000);
+
+async function ensurePiSDKReady() {
+    let attempts = 0;
+    const maxAttempts = 15;
+    const timeout = 5000;
+    const startTime = Date.now();
+    while (!piSDKReady && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
+        initPiSDK();
+        await new Promise(r => setTimeout(r, 500));
+        attempts++;
+    }
+    return piSDKReady;
+}
+
+const BACKEND_URL = "https://betix-backend.onrender.com";
+let isResolving = false;
+let resolveAttempts = 0;
+async function onIncompletePaymentFound(payment) {
+    if (isResolving || resolveAttempts > 3) return null;
+    isResolving = true;
+    resolveAttempts++;
+    try {
+        const response = await fetch(BACKEND_URL + '/api/pi/resolve', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: payment.identifier })
+        });
+        const result = await response.json();
+        if (result.status === 'completed' || result.status === 'cancelled') {
+            setTimeout(() => window.location.reload(), 2000);
+            return result;
+        }
+    } catch(e) {}
+    finally { isResolving = false; setTimeout(() => { resolveAttempts = 0; }, 10000); }
+    return null;
+}
+
+// ============================================================
 // FONCTIONS UTILITAIRES
 // ============================================================
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -490,7 +589,7 @@ function initCharCounters() {
 }
 
 // ============================================================
-// FONCTIONS SUPABASE (inchangées)
+// FONCTIONS SUPABASE
 // ============================================================
 async function uploadEventImage(eventId, base64Data, index) {
     try {
@@ -1129,7 +1228,7 @@ function hideLoader() {
 }
 
 // ============================================================
-// GÉNÉRATION DU TICKET HTML (AVEC DATE D'EXPIRATION)
+// GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC CLASSE DE CATÉGORIE)
 // ============================================================
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
@@ -1151,6 +1250,7 @@ function generateTicketHTML(ticket) {
     const price = Number(safeTicket.price || 0).toFixed(6) + ' Pi';
     const eventTitle = (safeTicket.eventTitle || 'Event').toUpperCase();
 
+    // Localisation avec pays
     const eventLocationRaw = safeTicket.eventLocation || 'Online';
     const pays = safeTicket.pays || safeTicket.eventPays || '';
     let locationDisplay = '';
@@ -1166,17 +1266,8 @@ function generateTicketHTML(ticket) {
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
     const category = safeTicket.category || 'default';
     const ticketImage = ticketImages[category] || ticketImages['default'];
+    // Classe de catégorie en minuscules pour correspondre aux sélecteurs CSS
     const categoryClass = 'ticket-category-' + category.toLowerCase();
-
-    // Calcul de la date d'expiration (24h après l'événement)
-    let expirationDisplay = 'N/A';
-    if (safeTicket.eventDate) {
-        const eventDateObj = new Date(safeTicket.eventDate);
-        if (!isNaN(eventDateObj.getTime())) {
-            const expirationDate = new Date(eventDateObj.getTime() + 24 * 60 * 60 * 1000);
-            expirationDisplay = expirationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-    }
 
     return '<div class="ticket-overlay-container ' + categoryClass + '" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
         '<div class="ticket-overlay-bg">' +
@@ -1197,7 +1288,6 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
-        '<div class="ticket-expiration">Exp: ' + escapeHtml(expirationDisplay) + '</div>' +
     '</div>';
 }
 
@@ -1229,44 +1319,28 @@ function generateAllQRCodes() {
 }
 
 // ============================================================
-// FONCTION D'EXPIRATION
-// ============================================================
-function isTicketExpired(ticket) {
-    if (!ticket || !ticket.eventDate) return false;
-    const eventDate = new Date(ticket.eventDate);
-    if (isNaN(eventDate.getTime())) return false;
-    const expirationDate = new Date(eventDate.getTime() + 24 * 60 * 60 * 1000);
-    return expirationDate < new Date();
-}
-
-// ============================================================
-// RENDER TICKETS – uniquement les tickets valides (non expirés, non utilisés)
+// RENDER TICKETS – Inversé (plus récents en premier)
 // ============================================================
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
-    
     const validTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
-        const isExpired = isTicketExpired(t);
+        const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return !isUsed && !isExpired && !isStatusUsed;
     });
-    
-    // Trier par date d'achat décroissante
+    // Trier par date d'achat décroissante (les plus récents en premier)
     validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
-    
     const uniqueTickets = [];
     const seenIds = new Set();
     for (const t of validTickets) {
         if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueTickets.push(t); }
     }
-    
     if (uniqueTickets.length === 0) {
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noActiveTickets') + '</p>';
         return;
     }
-    
     let html = '';
     uniqueTickets.forEach(ticket => {
         html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
@@ -1285,46 +1359,31 @@ function renderTickets() {
 }
 
 // ============================================================
-// RENDER HISTORY – inclut les tickets expirés et utilisés avec badges
+// RENDER HISTORY – Inversé (plus récents en premier)
 // ============================================================
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
-    
     const historyTickets = tickets.filter(t => {
         const isUsed = usedTickets.indexOf(t.id) !== -1;
-        const isExpired = isTicketExpired(t);
+        const isExpired = new Date(t.eventDate) <= new Date();
         const isStatusUsed = t.status === 'Used';
         return isUsed || isExpired || isStatusUsed;
     });
-    
     // Trier par date d'achat décroissante
     historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
-    
     const uniqueHistory = [];
     const seenIds = new Set();
     for (const t of historyTickets) {
         if (!seenIds.has(t.id)) { seenIds.add(t.id); uniqueHistory.push(t); }
     }
-    
     if (uniqueHistory.length === 0) {
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noTicketHistory') + '</p>';
         return;
     }
-    
     let html = '';
     uniqueHistory.forEach(ticket => {
-        const isUsed = usedTickets.indexOf(ticket.id) !== -1 || ticket.status === 'Used';
-        const isExpired = isTicketExpired(ticket);
-        let badgeHtml = '';
-        if (isUsed) {
-            badgeHtml = '<div class="ticket-status-badge used"><i class="fas fa-check-circle"></i> Utilisé</div>';
-        } else if (isExpired) {
-            badgeHtml = '<div class="ticket-status-badge expired"><i class="fas fa-clock"></i> Expiré</div>';
-        }
-        html += '<div class="ticket-list-item" style="position:relative;">' +
-            badgeHtml +
-            generateTicketHTML(ticket) +
+        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
             '<div class="ticket-actions-wrapper">' +
                 '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
                 '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
@@ -1441,7 +1500,7 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
-// RENDER EVENT CARD (inchangé)
+// RENDER EVENT CARD
 // ============================================================
 function renderEventCard(event) {
     const avgRating = ratings.filter(r => r.eventId === event.id).reduce((a,r) => a + r.rating, 0) / (ratings.filter(r => r.eventId === event.id).length || 1);
@@ -2680,7 +2739,11 @@ async function connectToPi() {
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
+                    // NE PAS réinitialiser les champs de profil ici
+                    // Charger d'abord les données existantes depuis Supabase
                     await loadProfileData();
+
+                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
                     await syncUserToSupabase();
 
                     updateActivity();
@@ -3516,7 +3579,7 @@ function updateProfilePage() {
     const userRatings = ratings.filter(r => r.userWallet === userId || r.userWallet === currentUser.name);
     document.getElementById('myEventsCount') && (document.getElementById('myEventsCount').textContent = myEvents.length);
     document.getElementById('ticketCount') && (document.getElementById('ticketCount').textContent = userTickets.length);
-    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || isTicketExpired(t) || t.status === 'Used') && (t.userWallet === userId || t.buyerWallet === userId)).length);
+    document.getElementById('historyCount') && (document.getElementById('historyCount').textContent = tickets.filter(t => (usedTickets.indexOf(t.id) !== -1 || new Date(t.eventDate) <= new Date()) && (t.userWallet === userId || t.buyerWallet === userId)).length);
     document.getElementById('ratedCount') && (document.getElementById('ratedCount').textContent = userRatings.length);
     document.getElementById('profileRatingDisplay') && (document.getElementById('profileRatingDisplay').textContent = userRatings.length);
     document.getElementById('profileLoyaltyDisplay') && (document.getElementById('profileLoyaltyDisplay').textContent = currentUser.loyaltyPoints || 0);
@@ -3848,6 +3911,7 @@ function initAdminTabs() {
 let transactionProcessedTimer = null;
 let transactionProcessedSeconds = 0;
 
+// NOUVELLE FONCTION openTransactionProcessedPopup avec deux boutons
 function openTransactionProcessedPopup(seconds) {
     transactionProcessedSeconds = seconds || 5;
     document.getElementById('timerSeconds').textContent = transactionProcessedSeconds;
@@ -3864,6 +3928,7 @@ function openTransactionProcessedPopup(seconds) {
         }
     }, 1000);
 
+    // Attacher les événements aux boutons (clonage pour éviter les doublons)
     const homeBtn = document.getElementById('transactionProcessedHomeBtn');
     const viewBtn = document.getElementById('transactionProcessedViewTicketsBtn');
     if (homeBtn) {
@@ -4087,6 +4152,8 @@ async function initApp() {
         updateConnectButtons();
         document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
         document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
+        // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
         
         const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
         const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
@@ -4141,6 +4208,7 @@ async function initApp() {
                 confirmPurchaseResolve = null;
             }
         });
+        // Le listener sur transactionProcessedOkBtn a été supprimé, la nouvelle fonction gère les boutons
         document.getElementById('viewUpcomingEventsBtn')?.addEventListener('click', function() {
             closePastEventPopup();
             showPage('home');
