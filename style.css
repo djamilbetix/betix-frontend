@@ -1198,6 +1198,7 @@ body {
     position: relative;
     max-width: 780px;
     margin: 0 auto;
+    aspect-ratio: 2 / 1;
     background: #0a1628;
     border-radius: 16px;
     overflow: hidden;
@@ -1205,10 +1206,16 @@ body {
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 
+.ticket-overlay-bg {
+    position: absolute;
+    inset: 0;
+}
+
 .ticket-overlay-bg img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
+    object-fit: cover;
 }
 
 /* --- Colonnes --- */
