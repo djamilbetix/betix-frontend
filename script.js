@@ -2242,12 +2242,13 @@ function fillProfileReview() {
 
     const content = document.getElementById('profileReviewContent');
     if (!content) return;
-    content.innerHTML = '<div class="review-item"><span class="review-label">First Name</span><span class="review-value">' + escapeHtml(firstName) || '—' + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Last Name</span><span class="review-value">' + escapeHtml(lastName) || '—' + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Country</span><span class="review-value">' + escapeHtml(country) || '—' + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Address</span><span class="review-value">' + escapeHtml(address) || '—' + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Email</span><span class="review-value">' + escapeHtml(email) || '—' + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Phone</span><span class="review-value">' + escapeHtml(phone) || '—' + '</span></div>';
+    const reviewValue = value => escapeHtml(value || '—');
+    content.innerHTML = '<div class="review-item"><span class="review-label">First Name</span><span class="review-value">' + reviewValue(firstName) + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Last Name</span><span class="review-value">' + reviewValue(lastName) + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Country</span><span class="review-value">' + reviewValue(country) + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Address</span><span class="review-value">' + reviewValue(address) + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Email</span><span class="review-value">' + reviewValue(email) + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Phone</span><span class="review-value">' + reviewValue(phone) + '</span></div>';
 }
 
 function openProfileReview() {
