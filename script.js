@@ -781,7 +781,9 @@ async function saveTicketToSupabase(ticketData) {
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
+            // event_date preserves the real event date; expiration is event date + 24 hours.
+            event_date: ticketData.eventDate || null,
+            expiration_date: ticketData.expiration_date || calculateTicketExpiration(ticketData.eventDate),
             event_title: ticketData.eventTitle || 'Event',
             event_location: ticketData.eventLocation || 'Online',
             pays: ticketData.pays || ticketData.eventPays || 'France',
@@ -822,7 +824,9 @@ async function loadTicketsFromSupabase(piUid) {
             id: t.id,
             eventId: t.event_id,
             eventTitle: t.event_title || 'Event',
-            eventDate: t.expiration_date || t.purchase_date,
+            // Older rows may not have event_date. Their expiration date remains usable.
+            eventDate: t.event_date || deriveEventDateFromExpiration(t.expiration_date) || t.purchase_date,
+            expiration_date: t.expiration_date || calculateTicketExpiration(t.event_date || t.purchase_date),
             eventLocation: t.event_location || 'Online',
             category: t.category || '',
             price: t.price || 0,
@@ -970,9 +974,15 @@ async function loadAllFromSupabase() {
         tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     }
     
-    const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-    notifications = localNotifs;
-    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    if (userIdentifier) {
+        notifications = await loadNotificationsFromSupabase();
+    } else {
+        notifications = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+    }
+    saveNotifications();
+    updateNotifBadgeHeader();
+
+    await updateExpiredTickets();
     
     updateSyncStatus('success');
     console.log("Load completed. Events:", events.length, "Tickets:", tickets.length);
@@ -1006,6 +1016,96 @@ function saveTickets() {
 
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
+
+// ============================================================
+// TICKETS: DATES D'EXPIRATION ET STATUTS
+// ============================================================
+function calculateTicketExpiration(eventDate) {
+    const eventTime = new Date(eventDate || Date.now());
+    if (isNaN(eventTime.getTime())) return new Date(Date.now() + 86400000).toISOString();
+    return new Date(eventTime.getTime() + 24 * 60 * 60 * 1000).toISOString();
+}
+
+function deriveEventDateFromExpiration(expirationDate) {
+    const expiration = new Date(expirationDate);
+    return isNaN(expiration.getTime()) ? null : new Date(expiration.getTime() - 24 * 60 * 60 * 1000).toISOString();
+}
+
+async function updateExpiredTickets() {
+    const now = new Date();
+    let updated = 0;
+    for (const ticket of tickets) {
+        if (ticket.status === 'Used' || ticket.status === 'Expired' || usedTickets.indexOf(ticket.id) !== -1) continue;
+        const expirationDate = new Date(ticket.expiration_date || calculateTicketExpiration(ticket.eventDate));
+        if (!isNaN(expirationDate.getTime()) && now > expirationDate) {
+            ticket.expiration_date = expirationDate.toISOString();
+            ticket.status = 'Expired';
+            await saveTicketToSupabase(ticket);
+            updated++;
+        }
+    }
+    if (updated > 0) {
+        saveTickets();
+        renderTickets();
+        renderHistory();
+        updateProfilePage();
+    }
+    return updated;
+}
+
+// ============================================================
+// NOTIFICATIONS PERSISTANTES DANS SUPABASE
+// ============================================================
+async function saveNotificationToSupabase(notification) {
+    try {
+        const userId = currentUser.piUid || currentUser.wallet;
+        if (!userId || !notification) return null;
+        const { data, error } = await supabaseClient.from('notifications').insert({
+            user_id: userId,
+            message: notification.message,
+            type: notification.type || 'info',
+            read: Boolean(notification.read),
+            created_at: notification.date || new Date().toISOString()
+        }).select().single();
+        if (error) throw error;
+        return data;
+    } catch (e) {
+        console.error('saveNotificationToSupabase error:', e);
+        return null;
+    }
+}
+
+async function loadNotificationsFromSupabase() {
+    const userId = currentUser.piUid || currentUser.wallet;
+    if (!userId) return [];
+    try {
+        const { data, error } = await supabaseClient.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+        if (error) throw error;
+        return (data || []).map(n => ({ id: String(n.id), message: n.message, type: n.type || 'info', read: Boolean(n.read), date: n.created_at }));
+    } catch (e) {
+        console.error('loadNotificationsFromSupabase error:', e);
+        return [];
+    }
+}
+
+async function deleteNotificationFromSupabase(id) {
+    try {
+        const { error } = await supabaseClient.from('notifications').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (e) {
+        console.error('deleteNotificationFromSupabase error:', e);
+        return false;
+    }
+}
+
+async function markNotificationsAsReadInSupabase(ids) {
+    if (!ids || ids.length === 0) return;
+    try {
+        const { error } = await supabaseClient.from('notifications').update({ read: true }).in('id', ids);
+        if (error) throw error;
+    } catch (e) { console.error('markNotificationsAsReadInSupabase error:', e); }
+}
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
@@ -1230,7 +1330,7 @@ function hideLoader() {
 // ============================================================
 // GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC CLASSE DE CATÉGORIE)
 // ============================================================
-function generateTicketHTML(ticket) {
+function generateTicketHTML(ticket, badgeHtml = '') {
     const safeTicket = ticket || {};
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
     const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'To be defined';
@@ -1264,6 +1364,8 @@ function generateTicketHTML(ticket) {
 
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
+    const expiration = new Date(safeTicket.expiration_date || calculateTicketExpiration(safeTicket.eventDate));
+    const expirationDate = !isNaN(expiration.getTime()) ? expiration.toLocaleDateString('en-US') : 'N/A';
     const category = safeTicket.category || 'default';
     const ticketImage = ticketImages[category] || ticketImages['default'];
     // Classe de catégorie en minuscules pour correspondre aux sélecteurs CSS
@@ -1288,6 +1390,8 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
+        '<div class="ticket-qr-expiration">Expires: ' + escapeHtml(expirationDate) + '</div>' +
+        (badgeHtml ? '<div class="ticket-badge">' + badgeHtml + '</div>' : '') +
     '</div>';
 }
 
@@ -1324,12 +1428,7 @@ function generateAllQRCodes() {
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
-    const validTickets = tickets.filter(t => {
-        const isUsed = usedTickets.indexOf(t.id) !== -1;
-        const isExpired = new Date(t.eventDate) <= new Date();
-        const isStatusUsed = t.status === 'Used';
-        return !isUsed && !isExpired && !isStatusUsed;
-    });
+    const validTickets = tickets.filter(t => t.status === 'Valid' && usedTickets.indexOf(t.id) === -1);
     // Trier par date d'achat décroissante (les plus récents en premier)
     validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueTickets = [];
@@ -1364,12 +1463,7 @@ function renderTickets() {
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
-    const historyTickets = tickets.filter(t => {
-        const isUsed = usedTickets.indexOf(t.id) !== -1;
-        const isExpired = new Date(t.eventDate) <= new Date();
-        const isStatusUsed = t.status === 'Used';
-        return isUsed || isExpired || isStatusUsed;
-    });
+    const historyTickets = tickets.filter(t => t.status === 'Used' || t.status === 'Expired' || usedTickets.indexOf(t.id) !== -1);
     // Trier par date d'achat décroissante
     historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueHistory = [];
@@ -1383,7 +1477,11 @@ function renderHistory() {
     }
     let html = '';
     uniqueHistory.forEach(ticket => {
-        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
+        const status = usedTickets.indexOf(ticket.id) !== -1 ? 'Used' : ticket.status;
+        const badgeHtml = status === 'Used'
+            ? '<span class="badge-status badge-used">🟢 UTILISÉ</span>'
+            : '<span class="badge-status badge-expired">🔴 EXPIRÉ</span>';
+        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket, badgeHtml) +
             '<div class="ticket-actions-wrapper">' +
                 '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
                 '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
@@ -2457,6 +2555,7 @@ async function confirmPurchase(eventId, quantity) {
                     const buyerPhone = currentUser.phone_number || 'Not provided';
                     
                     const ticketsAdded = [];
+                    const expirationDate = calculateTicketExpiration(event.date);
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = ticketId;
@@ -2467,6 +2566,7 @@ async function confirmPurchase(eventId, quantity) {
                             eventId: event.id,
                             eventTitle: event.title || 'Event',
                             eventDate: event.date || new Date().toISOString(),
+                            expiration_date: expirationDate,
                             eventLocation: event.location || 'Online',
                             category: event.category || '',
                             price: price,
@@ -3233,9 +3333,10 @@ function syncSettingsLanguageSelector() {
 // ============================================================
 // NOTIFICATIONS
 // ============================================================
-function deleteNotification(id) {
+async function deleteNotification(id) {
     notifications = notifications.filter(n => n.id !== id);
     saveNotifications();
+    await deleteNotificationFromSupabase(id);
     renderNotificationsPage();
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
@@ -3286,8 +3387,10 @@ function renderNotificationsPage() {
         '</div>';
     });
     container.innerHTML = html;
+    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     notifications.forEach(n => n.read = true);
     saveNotifications();
+    markNotificationsAsReadInSupabase(unreadIds);
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
 }
@@ -3312,6 +3415,15 @@ function addNotification(message, type) {
     notifications.unshift(notif);
     if (notifications.length > 100) notifications = notifications.slice(0, 100);
     saveNotifications();
+    saveNotificationToSupabase(notif).then(saved => {
+        if (!saved) return;
+        const local = notifications.find(n => n.id === notif.id);
+        if (local) {
+            local.id = String(saved.id);
+            local.date = saved.created_at || local.date;
+            saveNotifications();
+        }
+    });
     updateNotifBadgeHeader();
 }
 
@@ -4129,6 +4241,7 @@ async function initApp() {
         } else {
             await loadAllFromSupabase();
         }
+        setInterval(() => { updateExpiredTickets(); }, 300000);
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
