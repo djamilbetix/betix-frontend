@@ -781,8 +781,6 @@ async function saveTicketToSupabase(ticketData) {
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            // event_date preserves the real event date; expiration is event date + 24 hours.
-            event_date: ticketData.eventDate || null,
             expiration_date: ticketData.expiration_date || calculateTicketExpiration(ticketData.eventDate),
             event_title: ticketData.eventTitle || 'Event',
             event_location: ticketData.eventLocation || 'Online',
@@ -824,9 +822,8 @@ async function loadTicketsFromSupabase(piUid) {
             id: t.id,
             eventId: t.event_id,
             eventTitle: t.event_title || 'Event',
-            // Older rows may not have event_date. Their expiration date remains usable.
-            eventDate: t.event_date || deriveEventDateFromExpiration(t.expiration_date) || t.purchase_date,
-            expiration_date: t.expiration_date || calculateTicketExpiration(t.event_date || t.purchase_date),
+            eventDate: deriveEventDateFromExpiration(t.expiration_date) || t.purchase_date,
+            expiration_date: t.expiration_date || calculateTicketExpiration(t.purchase_date),
             eventLocation: t.event_location || 'Online',
             category: t.category || '',
             price: t.price || 0,
@@ -974,11 +971,6 @@ async function loadAllFromSupabase() {
         tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     }
     
-    if (userIdentifier) {
-        notifications = await loadNotificationsFromSupabase();
-    } else {
-        notifications = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-    }
     notifications = userIdentifier
         ? await loadNotificationsFromSupabase()
         : JSON.parse(localStorage.getItem('betix_notifications') || '[]');
@@ -1020,9 +1012,6 @@ function saveTickets() {
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
 
-// ============================================================
-// TICKETS: DATES D'EXPIRATION ET STATUTS
-// ============================================================
 // Tickets stay valid until 24 hours after their event date.
 function calculateTicketExpiration(eventDate) {
     const eventTime = new Date(eventDate || Date.now());
@@ -1040,9 +1029,6 @@ async function updateExpiredTickets() {
     let updated = 0;
     for (const ticket of tickets) {
         if (ticket.status === 'Used' || ticket.status === 'Expired' || usedTickets.indexOf(ticket.id) !== -1) continue;
-        const expirationDate = new Date(ticket.expiration_date || calculateTicketExpiration(ticket.eventDate));
-        if (!isNaN(expirationDate.getTime()) && now > expirationDate) {
-            ticket.expiration_date = expirationDate.toISOString();
         const expiration = new Date(ticket.expiration_date || calculateTicketExpiration(ticket.eventDate));
         if (!isNaN(expiration.getTime()) && now > expiration) {
             ticket.expiration_date = expiration.toISOString();
@@ -1060,9 +1046,6 @@ async function updateExpiredTickets() {
     return updated;
 }
 
-// ============================================================
-// NOTIFICATIONS PERSISTANTES DANS SUPABASE
-// ============================================================
 async function saveNotificationToSupabase(notification) {
     try {
         const userId = currentUser.piUid || currentUser.wallet;
@@ -1076,10 +1059,6 @@ async function saveNotificationToSupabase(notification) {
         }).select().single();
         if (error) throw error;
         return data;
-    } catch (e) {
-        console.error('saveNotificationToSupabase error:', e);
-        return null;
-    }
     } catch (e) { console.error('saveNotificationToSupabase error:', e); return null; }
 }
 
@@ -1090,10 +1069,6 @@ async function loadNotificationsFromSupabase() {
         const { data, error } = await supabaseClient.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false });
         if (error) throw error;
         return (data || []).map(n => ({ id: String(n.id), message: n.message, type: n.type || 'info', read: Boolean(n.read), date: n.created_at }));
-    } catch (e) {
-        console.error('loadNotificationsFromSupabase error:', e);
-        return [];
-    }
     } catch (e) { console.error('loadNotificationsFromSupabase error:', e); return []; }
 }
 
@@ -1102,10 +1077,6 @@ async function deleteNotificationFromSupabase(id) {
         const { error } = await supabaseClient.from('notifications').delete().eq('id', id);
         if (error) throw error;
         return true;
-    } catch (e) {
-        console.error('deleteNotificationFromSupabase error:', e);
-        return false;
-    }
     } catch (e) { console.error('deleteNotificationFromSupabase error:', e); return false; }
 }
 
@@ -1340,7 +1311,6 @@ function hideLoader() {
 // ============================================================
 // GÉNÉRATION DU TICKET HTML (MODIFIÉ AVEC CLASSE DE CATÉGORIE)
 // ============================================================
-function generateTicketHTML(ticket, badgeHtml = '') {
 function generateTicketHTML(ticket) {
     const safeTicket = ticket || {};
     const dateEvent = new Date(safeTicket.eventDate || Date.now());
@@ -1374,8 +1344,6 @@ function generateTicketHTML(ticket) {
     }
 
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
-    const ticketNumber = safeTicket.ticketNumber || 'N/A';
-    const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
     const expiration = new Date(safeTicket.expiration_date || calculateTicketExpiration(safeTicket.eventDate));
     const expirationDate = !isNaN(expiration.getTime()) ? expiration.toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
@@ -1400,12 +1368,6 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-right line-4"><span class="ticket-value">#' + escapeHtml(ticketIdShort) + '</span></div>' +
         '<div class="ticket-right line-5"><span class="ticket-value">' + escapeHtml(purchaseDate) + '</span></div>' +
         '<div class="ticket-right line-6"><span class="ticket-value">#' + escapeHtml(String(ticketNumber)) + '</span></div>' +
-        '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
-        '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
-        '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
-        '<div class="ticket-qr-expiration">Expires: ' + escapeHtml(expirationDate) + '</div>' +
-        (badgeHtml ? '<div class="ticket-badge">' + badgeHtml + '</div>' : '') +
-    '</div>';
         '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
         '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '<br>Expires: ' + escapeHtml(expirationDate) + '</div>' +
@@ -1493,16 +1455,11 @@ function renderHistory() {
         return;
     }
     let html = '';
-    let html = '';
     uniqueHistory.forEach(ticket => {
-        const status = usedTickets.indexOf(ticket.id) !== -1 ? 'Used' : ticket.status;
-        const badgeHtml = status === 'Used'
         const isUsed = ticket.status === 'Used' || usedTickets.indexOf(ticket.id) !== -1;
         const badgeHtml = isUsed
             ? '<span class="badge-status badge-used">🟢 UTILISÉ</span>'
             : '<span class="badge-status badge-expired">🔴 EXPIRÉ</span>';
-        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket, badgeHtml) +
-            '<div class="ticket-actions-wrapper">' +
         html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
             '<div class="ticket-actions-wrapper">' +
                 badgeHtml +
@@ -3361,7 +3318,6 @@ async function deleteNotification(id) {
     saveNotifications();
     await deleteNotificationFromSupabase(id);
     renderNotificationsPage();
-    renderNotificationsPage();
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
 }
@@ -3438,8 +3394,6 @@ function addNotification(message, type) {
     const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
     notifications.unshift(notif);
     if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
     saveNotifications();
     saveNotificationToSupabase(notif).then(saved => {
         if (!saved) return;
@@ -3451,7 +3405,6 @@ function addNotification(message, type) {
         }
     });
     updateNotifBadgeHeader();
-}
 }
 
 // ============================================================
@@ -4261,11 +4214,6 @@ async function initApp() {
             if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
         }
         populateProfileCountrySelect();
-        if (currentUser.wallet) {
-            await loadProfileData();
-            checkAndNotifyProfileCompletion();
-            await loadAllFromSupabase();
-        } else {
         if (currentUser.wallet) {
             await loadProfileData();
             checkAndNotifyProfileCompletion();
