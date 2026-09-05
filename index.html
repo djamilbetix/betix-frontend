@@ -704,7 +704,7 @@
         <div class="quantity-popup-header">
             <span class="quantity-popup-icon"><i class="fas fa-ticket-alt"></i></span>
             <h3>Choose quantity</h3>
-            <button class="quantity-popup-close" onclick="closeQuantityPopup()"><i class="fas fa-times"></i></button>
+            <button type="button" class="quantity-popup-close" onclick="closeQuantityPopup()" aria-label="Close"><i class="fas fa-times"></i></button>
         </div>
         <div class="quantity-popup-body">
             <p class="quantity-event-title" id="quantityEventTitle">Event name</p>
@@ -719,10 +719,11 @@
                 <div class="receipt-row total"><span>Total</span><span id="totalPriceDisplay">0 Pi</span></div>
             </div>
             <p class="quantity-max-info" id="maxQuantityInfo">Maximum : 10 ticket(s) available</p>
+            <p class="purchase-feedback" id="purchaseFeedback" role="status" aria-live="polite"></p>
         </div>
         <div class="quantity-popup-footer">
-            <button class="btn-secondary-modal" onclick="closeQuantityPopup()">Cancel</button>
-            <button class="btn-primary" id="confirmBuyBtn">Confirm purchase</button>
+            <button type="button" class="btn-secondary-modal" onclick="closeQuantityPopup()">Cancel</button>
+            <button type="button" class="btn-primary" id="confirmBuyBtn"><i class="fas fa-lock"></i> Confirm purchase</button>
         </div>
     </div>
 </div>
