@@ -1632,6 +1632,13 @@ function renderEventCard(event) {
 
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? '<span class="stars">' + ratingStars + '</span> ' + avgRating.toFixed(1) + ' (' + ratings.filter(r => r.eventId === event.id).length + ')' : '';
+    const remainingTickets = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
+    const eventEnded = isPastEvent(event);
+    const buyButtonHtml = eventEnded
+        ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-calendar-times"></i> Event ended</button>'
+        : remainingTickets <= 0
+            ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-ticket-alt"></i> Sold out</button>'
+            : '<button class="buy-btn-classic" type="button" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>';
 
     const ticketsLabelHtml = '<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>';
     const priceRightHtml = '<div class="event-price-right">' +
@@ -1669,7 +1676,7 @@ function renderEventCard(event) {
             infoBoxHtml +
             '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
-            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
+            buyButtonHtml +
             '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
         '</div>' +
@@ -2369,11 +2376,34 @@ function verifyPhone() {
 // ============================================================
 // QUANTITY POPUP ET ACHAT
 // ============================================================
+let isPurchaseRequestInProgress = false;
+
+function isPastEvent(event) {
+    const date = new Date(event && event.date);
+    return !isNaN(date.getTime()) && date.getTime() < Date.now();
+}
+
+function setPurchaseFeedback(message, type) {
+    const feedback = document.getElementById('purchaseFeedback');
+    if (!feedback) return;
+    feedback.textContent = message || '';
+    feedback.className = 'purchase-feedback' + (type ? ' is-' + type : '');
+}
+
+function resetPurchaseButton() {
+    const button = document.getElementById('confirmBuyBtn');
+    if (!button) return;
+    button.disabled = false;
+    button.innerHTML = '<i class="fas fa-lock"></i> Confirm purchase';
+    isPurchaseRequestInProgress = false;
+}
+
 function openQuantityPopup(eventId) {
     if (!requireLogin()) return;
     if (!requireProfileComplete()) return;
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
+    if (isPastEvent(event)) { openPastEventPopup(); return; }
     if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
     const standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
     if (standardLeft <= 0) { alert('All tickets are sold out for this event'); return; }
@@ -2385,6 +2415,8 @@ function openQuantityPopup(eventId) {
     if (titleEl) titleEl.textContent = event.title;
     if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; quantityInput.max = Math.min(standardLeft, 10); }
     if (maxInfo) maxInfo.textContent = 'Maximum: ' + Math.min(standardLeft, 10) + ' ticket(s) available';
+    resetPurchaseButton();
+    setPurchaseFeedback('Secure payment with Pi Wallet', 'info');
     updateTicketTotal();
     popup.classList.add('show');
 }
@@ -2392,6 +2424,7 @@ function openQuantityPopup(eventId) {
 function closeQuantityPopup() {
     document.getElementById('quantityPopup').classList.remove('show');
     selectedEventForPurchase = null;
+    setPurchaseFeedback('', '');
 }
 
 function updateQuantity(delta) {
@@ -2410,7 +2443,9 @@ function updateTicketTotal() {
     const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
     const totalDisplay = document.getElementById('totalPriceDisplay');
     if (!input || !totalDisplay || !selectedEventForPurchase) return;
-    const qty = parseInt(input.value) || 1;
+    const maxQuantity = parseInt(input.max) || 10;
+    const qty = Math.min(Math.max(parseInt(input.value) || 1, 1), maxQuantity);
+    input.value = qty;
     const price = selectedEventForPurchase.price || 0;
     const subtotal = qty * price;
     const serviceFeePercent = appSettings.serviceFeePercent || 2;
@@ -2421,7 +2456,8 @@ function updateTicketTotal() {
     if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-function confirmPurchaseFromPopup() {
+async function confirmPurchaseFromPopup() {
+    if (isPurchaseRequestInProgress) return;
     if (!selectedEventForPurchase) { alert('No event selected'); return; }
     const quantityInput = document.getElementById('ticketQuantity');
     const quantity = parseInt(quantityInput.value) || 1;
@@ -2429,7 +2465,11 @@ function confirmPurchaseFromPopup() {
     const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
     if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
     if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
-    confirmPurchase(selectedEventForPurchase.id, quantity);
+    isPurchaseRequestInProgress = true;
+    const button = document.getElementById('confirmBuyBtn');
+    if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Pi Wallet…'; }
+    setPurchaseFeedback('Connecting securely to Pi Wallet…', 'info');
+    await confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
 // ============================================================
@@ -2446,7 +2486,9 @@ async function confirmPurchase(eventId, quantity) {
     if (!event) { alert(t('eventNotFound')); return; }
     const eventDate = new Date(event.date);
     if (eventDate < new Date()) {
+        closeQuantityPopup();
         openPastEventPopup();
+        resetPurchaseButton();
         return;
     }
     const price = event.price || 0;
@@ -2460,34 +2502,40 @@ async function confirmPurchase(eventId, quantity) {
     const serviceFee = subtotal * (serviceFeePercent / 100);
     const totalPrice = subtotal + serviceFee;
 
-    closeQuantityPopup();
-
     const confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) { confirmBtn.textContent = t('connecting'); confirmBtn.disabled = true; }
+    if (confirmBtn) { confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting…'; confirmBtn.disabled = true; }
 
     try {
-        if (typeof Pi === 'undefined') {
+        if (!await ensurePiSDKReady() || typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
-            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+            resetPurchaseButton();
             return;
         }
         if (!piUser || !piUser.username) {
             alert('Please connect your Pi account first with payments scope.');
-            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+            resetPurchaseButton();
             connectToPi();
             return;
         }
+
+        closeQuantityPopup();
 
         const payment = await Pi.createPayment({
             amount: totalPrice,
             memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
             metadata: { eventId: event.id, eventTitle: event.title, quantity, subtotal, serviceFee }
         }, {
-            onReadyForServerApproval: function(paymentId) {
-                fetch(BACKEND_URL + '/api/pi/approve', {
+            onReadyForServerApproval: async function(paymentId) {
+                const response = await fetch(BACKEND_URL + '/api/pi/approve', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
-                }).catch(() => {});
+                });
+                if (!response.ok) {
+                    const error = new Error('Payment approval failed');
+                    console.error('Payment approval error:', error);
+                    resetPurchaseButton();
+                    throw error;
+                }
             },
             onReadyForServerCompletion: async function(paymentId, txid) {
                 if (processingTransactions.has(txid)) {
@@ -2496,12 +2544,18 @@ async function confirmPurchase(eventId, quantity) {
                 }
                 processingTransactions.add(txid);
                 try {
+                    const completionResponse = await fetch(BACKEND_URL + '/api/pi/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId, txid })
+                    });
+                    if (!completionResponse.ok) throw new Error('Payment completion failed');
                     const existingTickets = tickets.filter(t => t.transactionId === txid);
                     if (existingTickets.length > 0) {
                         openTransactionProcessedPopup(5);
                         showPage('tickets');
                         processingTransactions.delete(txid);
-                        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                        resetPurchaseButton();
                         return;
                     }
                     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -2516,7 +2570,7 @@ async function confirmPurchase(eventId, quantity) {
                             renderHistory();
                             showPage('tickets');
                             processingTransactions.delete(txid);
-                            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                            resetPurchaseButton();
                             return;
                         }
                     }
@@ -2611,30 +2665,28 @@ async function confirmPurchase(eventId, quantity) {
                     await syncUserToSupabase();
                     showSuccessPopup(event, ticketsAdded, quantity);
                     processingTransactions.delete(txid);
+                    resetPurchaseButton();
                 } catch (error) {
                     console.error('Error finalizing payment:', error);
-                    alert('Payment was successful but an error occurred while saving tickets. Please contact support.');
+                    alert('The payment could not be finalized. Please try again or contact support.');
                     processingTransactions.delete(txid);
                 } finally {
-                    if (confirmBtn) {
-                        confirmBtn.textContent = t('confirmPurchase');
-                        confirmBtn.disabled = false;
-                    }
+                    resetPurchaseButton();
                 }
             },
             onCancel: function() {
                 alert(t('paymentCancelled'));
-                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                resetPurchaseButton();
             },
             onError: function(error) {
                 alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+                resetPurchaseButton();
             },
             onIncompletePaymentFound
         });
     } catch (error) {
         alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
-        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
+        resetPurchaseButton();
     }
 }
 
@@ -4246,6 +4298,11 @@ async function initApp() {
         updateConnectButtons();
         document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
         document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        const ticketQuantityInput = document.getElementById('ticketQuantity');
+        if (ticketQuantityInput) {
+            ticketQuantityInput.addEventListener('input', updateTicketTotal);
+            ticketQuantityInput.addEventListener('change', updateTicketTotal);
+        }
         // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
         // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
         
