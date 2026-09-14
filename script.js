@@ -2660,7 +2660,8 @@ async function confirmPurchase(eventId, quantity) {
                         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
                     }, 300);
                     await syncUserToSupabase();
-                    showSuccessPopup(event, ticketsAdded, quantity);
+                    showPurchaseConfirmation(event, quantity, ticketsAdded);
+                    // L'ancien popup reste disponible mais n'est plus déclenché automatiquement.
                     processingTransactions.delete(txid);
                     resetPurchaseButton();
                 } catch (error) {
@@ -4450,3 +4451,58 @@ if (document.readyState === 'loading') {
 } else {
     initApp();
 }
+
+
+// ============================================================
+// PURCHASE CONFIRMATION TOAST
+// ============================================================
+let pcAutoCloseTimer = null;
+
+function showPurchaseConfirmation(event, quantity, ticketsList) {
+    const toast = document.getElementById('purchaseConfirmation');
+    if (!toast) return;
+    const titleEl = document.getElementById('pcTitle');
+    const messageEl = document.getElementById('pcMessage');
+    const qty = quantity || (ticketsList ? ticketsList.length : 1);
+    const eventName = event ? event.title : "l'événement";
+    const eventDate = event && event.date
+        ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '';
+    if (titleEl) titleEl.textContent = qty > 1 ? `🎉 ${qty} tickets achetés !` : '🎉 Ticket acheté !';
+    if (messageEl) {
+        messageEl.innerHTML = `Ticket${qty > 1 ? 's' : ''} confirmé${qty > 1 ? 's' : ''} pour l'événement <strong>"${escapeHtml(eventName)}"</strong>${eventDate ? ` · ${eventDate}` : ''}. Retrouvez-le${qty > 1 ? 's' : ''} dans "Mes Tickets".`;
+    }
+    toast.classList.remove('hiding');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    const progress = document.getElementById('pcProgress');
+    if (progress) { progress.style.animation = 'none'; void progress.offsetWidth; progress.style.animation = ''; }
+    if (pcAutoCloseTimer) clearTimeout(pcAutoCloseTimer);
+    pcAutoCloseTimer = setTimeout(closePurchaseConfirmation, 6000);
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+}
+
+function closePurchaseConfirmation() {
+    const toast = document.getElementById('purchaseConfirmation');
+    if (!toast) return;
+    toast.classList.add('hiding');
+    setTimeout(() => toast.classList.remove('show', 'hiding'), 500);
+    if (pcAutoCloseTimer) { clearTimeout(pcAutoCloseTimer); pcAutoCloseTimer = null; }
+}
+
+function pcGoToTickets() {
+    closePurchaseConfirmation();
+    showPage('tickets');
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+}
+
+function pcGoToHome() {
+    closePurchaseConfirmation();
+    showPage('home');
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+}
+
+window.showPurchaseConfirmation = showPurchaseConfirmation;
+window.closePurchaseConfirmation = closePurchaseConfirmation;
+window.pcGoToTickets = pcGoToTickets;
+window.pcGoToHome = pcGoToHome;
