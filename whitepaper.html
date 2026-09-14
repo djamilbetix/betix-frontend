@@ -179,24 +179,6 @@
             font-size: 16px;
         }
 
-        .header-actions .btn-icon .tooltip {
-            display: none;
-            position: absolute;
-            top: 40px;
-            right: 0;
-            background: #1a1a2e;
-            color: #ffffff;
-            font-size: 9px;
-            padding: 4px 10px;
-            border-radius: 4px;
-            white-space: nowrap;
-            font-weight: 400;
-        }
-
-        .header-actions .btn-icon:hover .tooltip {
-            display: block;
-        }
-
         .header-actions .btn-icon-wrapper {
             position: relative;
             display: inline-block;
@@ -228,7 +210,7 @@
             margin-top: 8px;
         }
 
-        /* ===== LIEN PI NETWORK (discret, intégré au texte) ===== */
+        /* ===== LIEN PI NETWORK ===== */
         .pi-link {
             color: #08143F;
             text-decoration: underline;
@@ -241,7 +223,7 @@
             text-decoration: none;
         }
 
-        /* ===== FONDATEURS DE BETIX (avec photos) ===== */
+        /* ===== FONDATEURS DE BETIX ===== */
         .founders-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -274,15 +256,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            font-weight: 700;
+            font-size120: 22px;
+            font-weight: 700%;
             color: #08143F;
+);
             overflow: hidden;
-            flex-shrink: 0;
+            flex-shr           ink: 0;
         }
 
-        .founder-card .founder-photo img {
-            width: 100%;
+        .founder-card . opacityfounder-photo img {
+            width: :100%;
             height: 100%;
             object-fit: cover;
         }
@@ -312,7 +295,7 @@
             color: #000000 !important;
         }
 
-        /* ===== FONDATEURS DE PI NETWORK (sans photos) ===== */
+        /* ===== FONDATEURS DE PI NETWORK ===== */
         .pi-founders-list {
             list-style: none;
             padding: 0;
@@ -365,7 +348,7 @@
             font-weight: 700;
         }
 
-        /* ===== RÉSEAUX SOCIAUX (BLEU) ===== */
+        /* ===== RÉSEAUX SOCIAUX ===== */
         .social-section {
             margin-top: 16px;
             padding-top: 12px;
@@ -579,8 +562,7 @@
             pointer-events: auto;
         }
         .wp-toast.hiding {
-            transform: translate(-50%, -120%);
-            opacity: 0;
+            transform: translate(-50%, - 0;
         }
         .wp-toast-icon {
             width: 30px;
@@ -629,7 +611,6 @@
             color: #ffffff;
         }
 
-        /* Barre de progression */
         .wp-toast-progress {
             position: absolute;
             bottom: 0;
@@ -681,11 +662,10 @@
 <div class="whitepaper-container" id="whitepaperContent">
 
     <!-- ============================================================
-         EN-TÊTE AVEC LOGO + BOUTONS HAUT DROITE
+         EN-TÊTE
          ============================================================ -->
     <div class="header-whitepaper">
 
-        <!-- BOUTONS EN HAUT À DROITE -->
         <div class="header-actions">
             <div class="btn-icon-wrapper">
                 <button class="btn-icon" id="btnFr" onclick="switchLanguage('fr')" title="Français">FR</button>
@@ -698,18 +678,15 @@
             </div>
         </div>
 
-        <!-- LOGO -->
         <div class="logo-container">
             <img src="Logo.jpg.jpeg" alt="Betix Logo" onerror="this.style.display='none'; this.parentElement.querySelector('.logo-placeholder').style.display='flex';">
             <div class="logo-placeholder" id="logoPlaceholder" style="display:none;">B</div>
         </div>
 
-        <!-- VERSION ANGLAISE (active par défaut) -->
         <div class="lang-en active">
             <h1 class="title-blue">BETIX WHITEPAPER</h1>
         </div>
 
-        <!-- VERSION FRANÇAISE -->
         <div class="lang-fr">
             <h1 class="title-blue">LIVRE BLANC BETIX</h1>
         </div>
@@ -724,28 +701,50 @@
         <h2>1. INTRODUCTION</h2>
 
         <p>
-            Betix is an innovative ticket purchasing platform for events, fully decentralized
-            and built on the Pi Network ecosystem. Our mission is to democratize access to
-            cultural, sporting, educational and festive events using Pi cryptocurrency as
-            the main payment method. Betix positions itself as a modern, transparent and
-            cost-effective alternative to traditional ticketing platforms.
+            <strong>Betix</strong> is an innovative ticket purchasing platform for
+            events, fully decentralized and built on the <strong>Pi Network</strong>
+            ecosystem. Born from a deep conviction — that technology should serve
+            humanity, not the other way around — Betix redefines the rules of event
+            ticketing by offering a modern, transparent, and universally accessible
+            alternative.
         </p>
         <p>
-            Our solution allows organizers to create and promote their events with no
-            hidden fees, and participants to buy tickets securely with their Pi Network
-            wallet. In a world where blockchain technology is transforming industries,
-            Betix aims to be a key player in the decentralization of the event ticketing sector.
+            Our mission is clear: <strong>democratize access to cultural, sporting,
+            educational, and festive events</strong> by using the Pi cryptocurrency
+            as the primary payment method. Where traditional platforms impose
+            financial barriers, excessive commissions, and endless payment delays,
+            Betix offers a seamless, instant, and intermediary-free solution.
         </p>
         <p>
-            We firmly believe that the future of ticketing lies in eliminating intermediaries,
-            total transparency and accessibility for all, regardless of country, social
-            status or income level. Betix was born from this conviction and the desire
-            to make culture and entertainment accessible to everyone through digital tickets.
+            Betix addresses three complementary audiences. <strong>Organizers</strong>,
+            by allowing them to create, promote, and manage their events with no
+            hidden fees, instant payment, and maximum visibility. <strong>Participants</strong>,
+            by offering them a simple, secure, and affordable purchase, accessible
+            from a simple Pi wallet. <strong>Local and regional communities</strong>,
+            by giving them access to quality events that were previously inaccessible
+            due to the lack of suitable payment methods.
         </p>
         <p>
-            With Betix, we offer a smooth user experience, enhanced blockchain security
-            and reduced costs that benefit all stakeholders. We are convinced that
-            technology serving humanity can sustainably transform the events industry.
+            In a world where blockchain technology is transforming industries at
+            their core, Betix aims to become a key player in the
+            <strong>decentralization of the ticketing sector</strong>. We firmly
+            believe that the future of ticketing lies in eliminating intermediaries,
+            total transparency, and universal accessibility, regardless of country,
+            social status, or income level.
+        </p>
+        <p>
+            With Betix, every ticket is a <strong>unique and unforgeable QR code</strong>,
+            every transaction is recorded on the blockchain, and every user enjoys
+            enhanced security without compromising on simplicity. Our goal is not
+            just to sell tickets: it is to build an ecosystem where organizers and
+            participants are directly connected, in a climate of mutual trust made
+            possible by technology.
+        </p>
+        <p>
+            We believe that culture, sports, and education are common goods that
+            must be accessible to all. It is this conviction that drives us to
+            innovate every day, to listen to our community, and to build step by
+            step the most inclusive and transparent ticketing platform in the world.
         </p>
 
         <h3>1.1 The Betix Founders</h3>
@@ -760,16 +759,20 @@
                     <h4>Djami Yakonga</h4>
                     <p class="founder-title">Founder and Chief Executive Officer</p>
                     <p>
-                        Of Congolese nationality, Djami Yakonga is the initiator of the
-                        Betix project. Passionate about new technologies and financial
-                        inclusion, he imagined Betix to respond to a real need: facilitating
-                        event organization while using a cryptocurrency accessible to all,
-                        including unbanked populations.
+                        A visionary entrepreneur passionate about new technologies and
+                        financial inclusion, Djami Yakonga is the founder and initiator
+                        of the Betix project. He envisioned this platform to address a
+                        fundamental need: facilitating event organization while offering
+                        a payment method accessible to everyone, including unbanked
+                        populations.
                     </p>
                     <p>
-                        With experience in project management and finance, he has brought
-                        together a talented team around this vision. His goal is to make
-                        Betix a tool for culture, sports and education in Africa and worldwide.
+                        Drawing on solid experience in project management, finance, and
+                        business development, he has brought together a talented and
+                        complementary team around this ambitious vision. His mission:
+                        to establish Betix as a key player serving culture, sports, and
+                        education on a global scale, placing people and accessibility
+                        at the heart of every decision.
                     </p>
                 </div>
             </div>
@@ -802,22 +805,26 @@
         <h3>1.2 Our Vision</h3>
 
         <p>
-            We believe in a world where everyone can organize or participate in events
-            without financial barriers, excessive commissions and with total transparency.
-            Betix aims to become the reference for decentralized event ticketing platforms
-            in Africa and worldwide.
+            We believe in a world where everyone can organize or participate in
+            events without financial barriers, excessive commissions, and with total
+            transparency. Betix aims to become the reference for decentralized event
+            ticketing platforms in Africa and worldwide, by offering a flawless user
+            experience and empowering both organizers and participants.
         </p>
         <p>
-            Our long-term vision is to create an ecosystem where blockchain technology
-            serves humanity. We want Betix to become the catalyst for a new era of events,
-            where organizers and participants are connected directly, without unnecessary
-            intermediaries.
+            Our long-term vision is to create a complete ecosystem where blockchain
+            technology serves humanity, not the other way around. We want Betix to
+            become the catalyst for a new era of events, where organizers and
+            participants are directly connected, without unnecessary intermediaries,
+            without abusive commissions, and without any geographic or financial
+            barrier.
         </p>
         <p>
-            We believe that the future of culture and entertainment lies in decentralization.
-            By empowering organizers and participants, Betix helps build a fairer and more
-            equitable world, where access to culture is no longer a privilege but a right
-            for all.
+            We believe that the future of culture and entertainment lies in
+            decentralization. By empowering organizers and participants, Betix helps
+            build a fairer and more equitable world, where access to culture is no
+            longer a privilege reserved for a few, but a fundamental right accessible
+            to all.
         </p>
     </div>
 
@@ -826,34 +833,53 @@
         <h2>1. INTRODUCTION</h2>
 
         <p>
-            Betix est une plateforme innovante d'achat de tickets pour les événements,
-            entièrement décentralisée et construite sur l'écosystème Pi Network.
-            Notre mission est de démocratiser l'accès aux événements culturels, sportifs,
-            éducatifs et festifs en utilisant la cryptomonnaie Pi comme moyen de paiement
-            principal. Betix se positionne comme une alternative moderne, transparente
-            et économique aux plateformes de billetterie traditionnelles.
+            <strong>Betix</strong> est une plateforme innovante d'achat de billets pour
+            les événements, entièrement décentralisée et construite sur l'écosystème
+            <strong>Pi Network</strong>. Née d'une conviction profonde — celle que la
+            technologie doit servir l'humain et non l'inverse — Betix redéfinit les
+            règles de la billetterie événementielle en offrant une alternative moderne,
+            transparente et accessible à tous.
         </p>
         <p>
-            Notre solution permet aux organisateurs de créer et promouvoir leurs
-            événements sans frais cachés, et aux participants d'acheter des billets
-            en toute sécurité avec leur portefeuille Pi Network. Dans un monde où la
-            technologie blockchain transforme les industries, Betix veut être un
-            acteur clé de la décentralisation du secteur de l'achat de tickets pour
-            les événements.
+            Notre mission est claire : <strong>démocratiser l'accès aux événements
+            culturels, sportifs, éducatifs et festifs</strong> en utilisant la
+            cryptomonnaie Pi comme moyen de paiement principal. Là où les plateformes
+            traditionnelles imposent des barrières financières, des commissions
+            excessives et des délais de paiement interminables, Betix propose une
+            solution fluide, instantanée et sans intermédiaire inutile.
         </p>
         <p>
-            Nous croyons fermement que l'avenir de la billetterie passe par
-            l'élimination des intermédiaires, la transparence totale et l'accessibilité
-            pour tous, sans distinction de pays, de statut social ou de niveau de
-            revenu. Betix est né de cette conviction et de la volonté de rendre la
-            culture et le divertissement accessibles à chacun grâce à l'achat de
-            tickets dématérialisés.
+            Betix s'adresse à trois publics complémentaires. <strong>Aux organisateurs</strong>,
+            en leur permettant de créer, promouvoir et gérer leurs événements sans frais
+            cachés, avec un paiement instantané et une visibilité maximale. <strong>Aux
+            participants</strong>, en leur offrant un achat simple, sécurisé et
+            abordable, accessible à partir d'un simple portefeuille Pi. <strong>Aux
+            communautés locales et régionales</strong>, en leur donnant accès à des
+            événements de qualité qui étaient jusqu'ici inaccessibles faute de moyens
+            de paiement adaptés.
         </p>
         <p>
-            Avec Betix, nous offrons une expérience utilisateur fluide, une sécurité
-            renforcée par la blockchain et des coûts réduits qui profitent à toutes
-            les parties prenantes. Nous sommes convaincus que la technologie au
-            service de l'humain peut transformer durablement l'industrie événementielle.
+            Dans un monde où la technologie blockchain transforme en profondeur les
+            industries, Betix ambitionne de devenir un acteur clé de la
+            <strong>décentralisation du secteur de la billetterie</strong>. Nous
+            croyons fermement que l'avenir de la billetterie passe par l'élimination
+            des intermédiaires, la transparence totale et l'accessibilité universelle,
+            sans distinction de pays, de statut social ou de niveau de revenu.
+        </p>
+        <p>
+            Avec Betix, chaque billet est un <strong>QR code unique et infalsifiable</strong>,
+            chaque transaction est enregistrée sur la blockchain, et chaque utilisateur
+            bénéficie d'une sécurité renforcée sans compromis sur la simplicité. Notre
+            objectif n'est pas seulement de vendre des billets : c'est de bâtir un
+            écosystème où organisateurs et participants sont connectés directement,
+            dans un climat de confiance mutuelle rendu possible par la technologie.
+        </p>
+        <p>
+            Nous croyons que la culture, le sport et l'éducation sont des biens communs
+            qui doivent être accessibles à tous. C'est cette conviction qui nous pousse
+            à innover chaque jour, à écouter notre communauté et à construire pas à pas
+            la plateforme de billetterie la plus inclusive et la plus transparente
+            au monde.
         </p>
 
         <h3>1.1 Les fondateurs de Betix</h3>
@@ -868,18 +894,20 @@
                     <h4>Djami Yakonga</h4>
                     <p class="founder-title">Fondateur et Président Directeur Général</p>
                     <p>
-                        De nationalité congolaise, Djami Yakonga est l'initiateur du
-                        projet Betix. Passionné par les nouvelles technologies et
-                        l'inclusion financière, il a imaginé Betix pour répondre à
-                        un besoin réel : celui de faciliter l'organisation d'événements
-                        tout en utilisant une cryptomonnaie accessible à tous, y compris
-                        aux populations non bancarisées.
+                        Visionnaire et entrepreneur passionné par les nouvelles technologies
+                        et l'inclusion financière, Djami Yakonga est l'initiateur et le
+                        fondateur du projet Betix. Il a imaginé cette plateforme pour
+                        répondre à un besoin fondamental : faciliter l'organisation
+                        d'événements tout en offrant un moyen de paiement accessible à
+                        tous, y compris aux populations non bancarisées.
                     </p>
                     <p>
-                        Fort d'une expérience dans la gestion de projets et la finance,
-                        il a su fédérer une équipe talentueuse autour de cette vision.
-                        Son objectif est de faire de Betix un outil au service de la
-                        culture, du sport et de l'éducation en Afrique et dans le monde.
+                        Fort d'une solide expérience en gestion de projets, en finance
+                        et en développement commercial, il a su fédérer une équipe
+                        talentueuse et complémentaire autour de cette vision ambitieuse.
+                        Sa mission : faire de Betix un acteur incontournable au service
+                        de la culture, du sport et de l'éducation à l'échelle mondiale,
+                        en plaçant l'humain et l'accessibilité au cœur de chaque décision.
                     </p>
                 </div>
             </div>
@@ -917,21 +945,24 @@
             Nous croyons en un monde où chacun peut organiser ou participer à des
             événements sans barrières financières, sans commissions excessives et
             avec une transparence totale. Betix ambitionne de devenir la référence
-            des plateformes d'achat de tickets pour les événements décentralisées
-            en Afrique et dans le monde.
+            des plateformes décentralisées d'achat de billets en Afrique et dans
+            le monde, en offrant une expérience utilisateur irréprochable et en
+            redonnant le pouvoir aux organisateurs comme aux participants.
         </p>
         <p>
-            Notre vision à long terme est de créer un écosystème où la technologie
-            blockchain sert l'humain. Nous voulons que Betix devienne le catalyseur
-            d'une nouvelle ère de l'événementiel, où les organisateurs et les
-            participants sont connectés directement, sans intermédiaires inutiles.
+            Notre vision à long terme est de créer un écosystème complet où la
+            technologie blockchain sert l'humain et non l'inverse. Nous voulons
+            que Betix devienne le catalyseur d'une nouvelle ère de l'événementiel,
+            où les organisateurs et les participants sont connectés directement,
+            sans intermédiaires inutiles, sans commissions abusives et sans aucune
+            forme de barrière géographique ou financière.
         </p>
         <p>
             Nous croyons que l'avenir de la culture et du divertissement passe par
             la décentralisation. En donnant le pouvoir aux organisateurs et aux
             participants, Betix contribue à construire un monde plus juste et plus
-            équitable, où l'accès à la culture n'est plus un privilège mais un droit
-            pour tous.
+            équitable, où l'accès à la culture n'est plus un privilège réservé à
+            quelques-uns, mais un droit fondamental accessible à tous.
         </p>
     </div>
 
@@ -1047,7 +1078,6 @@
             purchasing tickets for real-world events.
         </p>
 
-        <!-- Lien PI Network discret intégré au texte -->
         <p style="font-size: 11px; color: #6b7280; margin-top: 4px; text-align: center;">
             <span class="lang-en active">If you don't have the Pi app yet, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">download it here</a> and use code <strong>19510</strong>.</span>
             <span class="lang-fr">Si vous n'avez pas encore l'application Pi, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">téléchargez-la ici</a> et utilisez le code <strong>19510</strong>.</span>
@@ -1176,7 +1206,6 @@
             événements du monde réel.
         </p>
 
-        <!-- Lien PI Network discret intégré au texte -->
         <p style="font-size: 11px; color: #6b7280; margin-top: 4px; text-align: center;">
             <span class="lang-en active">If you don't have the Pi app yet, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">download it here</a> and use code <strong>19510</strong>.</span>
             <span class="lang-fr">Si vous n'avez pas encore l'application Pi, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">téléchargez-la ici</a> et utilisez le code <strong>19510</strong>.</span>
@@ -1399,7 +1428,7 @@
         <p>
             For each ticket sold, Betix automatically takes a <strong>5% commission</strong>
             on the total sale amount. The remaining amount is instantly transferred
-            to the organizer in Pi. This commission is configurable by the administrator.
+            to the organizer in Pi.
         </p>
 
         <h3>4.4 Service fees</h3>
@@ -1462,7 +1491,6 @@
             Pour chaque billet vendu, Betix prélève automatiquement une
             <strong>commission de 5 %</strong> sur le montant total de la vente.
             Le montant restant est reversé instantanément à l'organisateur en Pi.
-            Cette commission est configurable par l'administrateur.
         </p>
 
         <h3>4.4 Frais de service</h3>
@@ -1624,8 +1652,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Commission</td><td class="highlight">5% (configurable)</td><td>10% to 20%</td></tr>
-                <tr><td>Service fee</td><td class="highlight">2% (configurable)</td><td>Up to 5%</td></tr>
+                <tr><td>Commission</td><td class="highlight">5%</td><td>10% to 20%</td></tr>
+                <tr><td>Service fee</td><td class="highlight">2%</td><td>Up to 5%</td></tr>
                 <tr><td>Payment delay</td><td class="highlight">Instant</td><td>3 to 7 days</td></tr>
                 <tr><td>Access</td><td class="highlight">Free Pi Wallet</td><td>Bank account required</td></tr>
                 <tr><td>Technology</td><td class="highlight">Decentralized blockchain</td><td>Centralized platform</td></tr>
@@ -1687,8 +1715,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Commission</td><td class="highlight">5 % (configurable)</td><td>10 % à 20 %</td></tr>
-                <tr><td>Frais de service</td><td class="highlight">2 % (configurable)</td><td>Jusqu'à 5 %</td></tr>
+                <tr><td>Commission</td><td class="highlight">5 %</td><td>10 % à 20 %</td></tr>
+                <tr><td>Frais de service</td><td class="highlight">2 %</td><td>Jusqu'à 5 %</td></tr>
                 <tr><td>Délai de paiement</td><td class="highlight">Instantané</td><td>3 à 7 jours</td></tr>
                 <tr><td>Accès</td><td class="highlight">Wallet Pi gratuit</td><td>Compte bancaire requis</td></tr>
                 <tr><td>Technologie</td><td class="highlight">Blockchain décentralisée</td><td>Plateforme centralisée</td></tr>
@@ -1751,7 +1779,7 @@
     </div>
 
     <!-- ============================================================
-         BOUTON RETOUR (JAUNE)
+         BOUTON RETOUR
          ============================================================ -->
     <div class="actions-wrapper">
         <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
@@ -1798,12 +1826,10 @@
         const toast = document.getElementById('wpToast');
         if (!toast) return;
 
-        // Reset
         toast.classList.remove('hiding');
         void toast.offsetWidth;
         toast.classList.add('show');
 
-        // Reset la barre de progression
         const progress = toast.querySelector('.wp-toast-progress');
         if (progress) {
             progress.style.animation = 'none';
@@ -1811,7 +1837,6 @@
             progress.style.animation = '';
         }
 
-        // Auto-fermeture après 4 secondes
         if (wpToastTimer) clearTimeout(wpToastTimer);
         wpToastTimer = setTimeout(() => {
             hideNotAvailableToast();
