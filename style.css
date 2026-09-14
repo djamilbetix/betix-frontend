@@ -5459,3 +5459,84 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
 .bottom-nav .nav-item:hover span {
     color: #0B1F5C !important;
 }
+
+
+/* ============================================================
+   SIDEBAR — Réseaux sociaux aux couleurs officielles
+   ============================================================ */
+.sidebar-social-icons .social-link {
+    background: #ffffff !important;
+    border: 1px solid #e6e6e6 !important;
+    transition: all 0.3s ease !important;
+}
+.sidebar-social-icons .social-link[href*="twitter"],
+.sidebar-social-icons .social-link[href*="x.com"] { color: #1DA1F2 !important; }
+.sidebar-social-icons .social-link[href*="twitter"]:hover,
+.sidebar-social-icons .social-link[href*="x.com"]:hover {
+    background: #1DA1F2 !important; color: #ffffff !important; border-color: #1DA1F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 161, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="t.me"] { color: #0088cc !important; }
+.sidebar-social-icons .social-link[href*="t.me"]:hover {
+    background: #0088cc !important; color: #ffffff !important; border-color: #0088cc !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 136, 204, 0.35);
+}
+.sidebar-social-icons .social-link[href*="discord"] { color: #5865F2 !important; }
+.sidebar-social-icons .social-link[href*="discord"]:hover {
+    background: #5865F2 !important; color: #ffffff !important; border-color: #5865F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="instagram"] { color: #E4405F !important; }
+.sidebar-social-icons .social-link[href*="instagram"]:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    color: #ffffff !important; border-color: transparent !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(228, 64, 95, 0.35);
+}
+.sidebar-social-icons .social-link[href*="facebook"] { color: #1877F2 !important; }
+.sidebar-social-icons .social-link[href*="facebook"]:hover {
+    background: #1877F2 !important; color: #ffffff !important; border-color: #1877F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="whatsapp"] { color: #25D366 !important; }
+.sidebar-social-icons .social-link[href*="whatsapp"]:hover {
+    background: #25D366 !important; color: #ffffff !important; border-color: #25D366 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+/* ============================================================
+   PURCHASE CONFIRMATION TOAST
+   ============================================================ */
+.purchase-confirmation { position: fixed; top: 80px; left: 50%; transform: translate(-50%, -120%); width: calc(100% - 32px); max-width: 460px; background: #ffffff; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.15), 0 8px 20px rgba(11,31,92,.12); z-index: 10000; overflow: hidden; transition: transform .5s cubic-bezier(.175,.885,.32,1.275), opacity .3s ease; opacity: 0; pointer-events: none; }
+.purchase-confirmation.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+.purchase-confirmation.hiding { transform: translate(-50%, -120%); opacity: 0; }
+.pc-content { display:flex; gap:14px; padding:18px 18px 16px; align-items:flex-start; position:relative; }
+.pc-icon { width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#10b981,#059669); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 15px rgba(16,185,129,.35); animation:pcIconPop .5s cubic-bezier(.175,.885,.32,1.275); }
+.pc-icon i { color:#fff; font-size:1.3rem; }
+@keyframes pcIconPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+.pc-body { flex:1; min-width:0; }
+.pc-title { font-size:1rem; font-weight:700; color:#1a1a2e; margin:0 0 4px; line-height:1.2; }
+.pc-message { font-size:.82rem; color:#6b7280; line-height:1.4; margin:0 0 12px; }
+.pc-message strong { color:#0B1F5C; font-weight:700; }
+.pc-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.pc-btn { flex:1; min-width:130px; padding:10px 14px; border:none; border-radius:10px; font-size:.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all .25s ease; white-space:nowrap; }
+.pc-btn i { font-size:.85rem; }
+.pc-btn-primary { background:linear-gradient(135deg,#0B1F5C,#1a2a4a); color:#fff; box-shadow:0 4px 12px rgba(11,31,92,.25); }
+.pc-btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(11,31,92,.35); }
+.pc-btn-primary:active { transform:scale(.97); }
+.pc-btn-secondary { background:#f3f4f6; color:#1a1a2e; border:1px solid #e5e7eb; }
+.pc-btn-secondary:hover { background:#e5e7eb; transform:translateY(-2px); }
+.pc-btn-secondary:active { transform:scale(.97); }
+.pc-close { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:transparent; border:none; color:#9ca3af; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.pc-close:hover { background:#f3f4f6; color:#1a1a2e; }
+.pc-progress { height:3px; background:linear-gradient(90deg,#F5B400,#0B1F5C); width:100%; transform-origin:left; transform:scaleX(1); }
+.purchase-confirmation.show .pc-progress { animation:pcProgressBar 6s linear forwards; }
+@keyframes pcProgressBar { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+body.dark-mode .purchase-confirmation { background:#1f2937; box-shadow:0 20px 60px rgba(0,0,0,.5),0 8px 20px rgba(0,0,0,.3); }
+body.dark-mode .pc-title { color:#f3f4f6; }
+body.dark-mode .pc-message { color:#9ca3af; }
+body.dark-mode .pc-message strong { color:#F5B400; }
+body.dark-mode .pc-btn-secondary { background:#374151; color:#f3f4f6; border-color:#4b5563; }
+body.dark-mode .pc-btn-secondary:hover { background:#4b5563; }
+body.dark-mode .pc-close { color:#9ca3af; }
+body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
+@media (max-width:480px) { .purchase-confirmation{top:72px;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
