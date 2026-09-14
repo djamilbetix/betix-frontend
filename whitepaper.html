@@ -545,9 +545,138 @@
         .mb-2 { margin-bottom: 2px; }
         .mb-4 { margin-bottom: 4px; }
         .fw-600 { font-weight: 600; }
+
+        /* ============================================================
+           TOAST — Message "Button not available"
+           ============================================================ */
+        .wp-toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translate(-50%, -120%);
+            background: #08143F;
+            color: #ffffff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            box-shadow: 0 12px 40px rgba(8, 20, 63, 0.25),
+                        0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 99999;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            max-width: calc(100% - 32px);
+        }
+        .wp-toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .wp-toast.hiding {
+            transform: translate(-50%, -120%);
+            opacity: 0;
+        }
+        .wp-toast-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #F5A623;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+            animation: wpToastPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes wpToastPop {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .wp-toast-text {
+            line-height: 1.4;
+        }
+        .wp-toast-text strong {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 2px;
+            font-size: 13px;
+        }
+        .wp-toast-text span {
+            font-size: 11.5px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+        .wp-toast-close {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            margin-left: 4px;
+            transition: color 0.2s;
+        }
+        .wp-toast-close:hover {
+            color: #ffffff;
+        }
+
+        /* Barre de progression */
+        .wp-toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: #F5A623;
+            width: 100%;
+            transform-origin: left;
+            transform: scaleX(1);
+            border-radius: 0 0 10px 10px;
+        }
+        .wp-toast.show .wp-toast-progress {
+            animation: wpToastProgress 4s linear forwards;
+        }
+        @keyframes wpToastProgress {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        @media (max-width: 480px) {
+            .wp-toast {
+                font-size: 12px;
+                padding: 12px 16px;
+                gap: 10px;
+            }
+            .wp-toast-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 12px;
+            }
+            .wp-toast-text strong { font-size: 12px; }
+            .wp-toast-text span { font-size: 10.5px; }
+        }
     </style>
 </head>
 <body>
+
+<!-- TOAST : Button not available -->
+<div id="wpToast" class="wp-toast">
+    <div class="wp-toast-icon">!</div>
+    <div class="wp-toast-text">
+        <strong>Button not available</strong>
+        <span>This feature is coming soon.</span>
+    </div>
+    <button class="wp-toast-close" onclick="hideNotAvailableToast()" aria-label="Close">×</button>
+    <div class="wp-toast-progress"></div>
+</div>
 
 <div class="whitepaper-container" id="whitepaperContent">
 
@@ -565,7 +694,7 @@
                 <button class="btn-icon active" id="btnEn" onclick="switchLanguage('en')" title="English">EN</button>
             </div>
             <div class="btn-icon-wrapper">
-                <button class="btn-icon pdf-icon" onclick="downloadPDF()" title="Télécharger PDF">📄</button>
+                <button class="btn-icon pdf-icon" onclick="showNotAvailable()" title="Download PDF">📄</button>
             </div>
         </div>
 
@@ -1661,185 +1790,45 @@
     }
 
     // ============================================================
-    // TÉLÉCHARGEMENT PDF
+    // MESSAGE "BUTTON NOT AVAILABLE"
     // ============================================================
-    function downloadPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210;
-        const pageHeight = 297;
-        let y = 15;
-        const margin = 15;
-        const lineHeight = 5.5;
+    let wpToastTimer = null;
 
-        function addText(text, size, style, align, color) {
-            if (!text) return;
-            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
-            doc.setFontSize(size || 10);
-            doc.setFont('helvetica', style || 'normal');
-            doc.setTextColor(color || '#000000');
-            lines.forEach(line => {
-                if (y > pageHeight - 15) { doc.addPage(); y = 15; }
-                doc.text(line, margin, y, { align: align || 'left' });
-                y += lineHeight;
-            });
-            y += 1;
+    function showNotAvailable() {
+        const toast = document.getElementById('wpToast');
+        if (!toast) return;
+
+        // Reset
+        toast.classList.remove('hiding');
+        void toast.offsetWidth;
+        toast.classList.add('show');
+
+        // Reset la barre de progression
+        const progress = toast.querySelector('.wp-toast-progress');
+        if (progress) {
+            progress.style.animation = 'none';
+            void progress.offsetWidth;
+            progress.style.animation = '';
         }
 
-        function addTitle(text, size) {
-            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-            doc.setFontSize(size || 16);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor('#08143F');
-            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
-            lines.forEach(line => {
-                doc.text(line, pageWidth / 2, y, { align: 'center' });
-                y += lineHeight + 2;
-            });
-            y += 2;
+        // Auto-fermeture après 4 secondes
+        if (wpToastTimer) clearTimeout(wpToastTimer);
+        wpToastTimer = setTimeout(() => {
+            hideNotAvailableToast();
+        }, 4000);
+    }
+
+    function hideNotAvailableToast() {
+        const toast = document.getElementById('wpToast');
+        if (!toast) return;
+        toast.classList.add('hiding');
+        setTimeout(() => {
+            toast.classList.remove('show', 'hiding');
+        }, 500);
+        if (wpToastTimer) {
+            clearTimeout(wpToastTimer);
+            wpToastTimer = null;
         }
-
-        function addSubtitle(text) {
-            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor('#000000');
-            doc.text(text, pageWidth / 2, y, { align: 'center' });
-            y += lineHeight + 2;
-        }
-
-        function addSection(text) {
-            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor('#000000');
-            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
-            lines.forEach(line => {
-                doc.text(line, margin, y);
-                y += lineHeight + 1;
-            });
-            y += 2;
-        }
-
-        function addParagraph(text) {
-            if (!text) return;
-            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-            doc.setFontSize(9.5);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor('#000000');
-            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
-            lines.forEach(line => {
-                if (y > pageHeight - 15) { doc.addPage(); y = 15; }
-                doc.text(line, margin, y);
-                y += lineHeight - 0.5;
-            });
-            y += 2;
-        }
-
-        function addLine() {
-            if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-            doc.setDrawColor('#000000');
-            doc.setLineWidth(0.5);
-            doc.line(margin, y, pageWidth - margin, y);
-            y += 4;
-        }
-
-        const isFr = currentLang === 'fr';
-
-        // En-tête
-        if (isFr) {
-            addTitle('LIVRE BLANC BETIX', 20);
-        } else {
-            addTitle('BETIX WHITEPAPER', 20);
-        }
-        addLine();
-
-        // Contenu (version simplifiée pour le PDF)
-        if (isFr) {
-            addSection('1. INTRODUCTION');
-            addParagraph('Betix est une plateforme innovante d\'achat de tickets pour les événements, entièrement décentralisée et construite sur l\'écosystème Pi Network.');
-            addParagraph('Notre solution permet aux organisateurs de créer et promouvoir leurs événements sans frais cachés, et aux participants d\'acheter des billets en toute sécurité.');
-            addParagraph('Nous croyons fermement que l\'avenir de la billetterie passe par l\'élimination des intermédiaires, la transparence totale et l\'accessibilité pour tous.');
-
-            addSection('1.1 Les fondateurs de Betix');
-            addParagraph('Djami Yakonga - Fondateur et Président Directeur Général');
-            addParagraph('Symphorien Molembia - Développeur Principal et Directeur Technique');
-
-            addSection('1.2 Notre vision');
-            addParagraph('Nous croyons en un monde où chacun peut organiser ou participer à des événements sans barrières financières.');
-
-            addSection('2. PI NETWORK');
-            addParagraph('Pi Network est une plateforme de cryptomonnaie mobile créée en 2019 par des docteurs de Stanford. Avec plus de 60 millions d\'utilisateurs, elle permet de miner des Pi depuis son smartphone.');
-            addParagraph('Les fondateurs de Pi Network sont le Dr. Nicolas Kokkalis (CTO) et le Dr. Chengdiao Fan (CSO).');
-            addParagraph('Pi Network utilise le Stellar Consensus Protocol (SCP), une technologie blockchain économe en énergie.');
-            addParagraph('Le KYC de Pi Network garantit l\'authenticité des utilisateurs et sécurise les transactions.');
-
-            addSection('3. PROBLÉMATIQUE ET SOLUTION');
-            addParagraph('Le marché de la billetterie souffre de commissions excessives, de délais de paiement longs, d\'exclusion financière, de fraude et de spéculation.');
-            addParagraph('Betix répond à ces problèmes avec une blockchain transparente, des frais réduits, des paiements instantanés et des QR codes infalsifiables.');
-
-            addSection('4. MODÈLE ÉCONOMIQUE');
-            addParagraph('Betix propose un compte gratuit avec 3 événements par mois et un compte Premium (payant en Pi) offrant des publications illimitées, un badge Betix Verified, une mise en avant, des statistiques avancées et un support prioritaire.');
-            addParagraph('La commission Betix est de 5% sur chaque vente, et des frais de service de 2% sont appliqués aux acheteurs.');
-
-            addSection('5. AVANTAGES ET FONCTIONNALITÉS');
-            addParagraph('Pour les organisateurs : 0% commission, paiement instantané, gestion simplifiée, communication directe, visibilité maximale.');
-            addParagraph('Pour les participants : achat simple, billets sécurisés, historique centralisé, prix abordables.');
-            addParagraph('Évolutions futures : vidéos, nouveaux types de billets (VIP, early bird, etc.).');
-
-            addSection('6. SÉCURITÉ ET CONCLUSION');
-            addParagraph('La sécurité est prioritaire : blockchain Pi, chiffrement, QR codes uniques.');
-            addParagraph('Rejoignez Betix et Pi Network pour participer à la révolution de la billetterie décentralisée.');
-        } else {
-            addSection('1. INTRODUCTION');
-            addParagraph('Betix is an innovative ticket purchasing platform for events, fully decentralized and built on the Pi Network ecosystem.');
-            addParagraph('Our solution allows organizers to create and promote their events with no hidden fees, and participants to buy tickets securely.');
-            addParagraph('We firmly believe that the future of ticketing lies in eliminating intermediaries, total transparency and accessibility for all.');
-
-            addSection('1.1 The Betix Founders');
-            addParagraph('Djami Yakonga - Founder and CEO');
-            addParagraph('Symphorien Molembia - Lead Developer and CTO');
-
-            addSection('1.2 Our Vision');
-            addParagraph('We believe in a world where everyone can organize or participate in events without financial barriers.');
-
-            addSection('2. PI NETWORK');
-            addParagraph('Pi Network is a mobile cryptocurrency platform created in 2019 by Stanford doctors. With over 60 million users, it allows mining Pi from a smartphone.');
-            addParagraph('The Pi Network founders are Dr. Nicolas Kokkalis (CTO) and Dr. Chengdiao Fan (CSO).');
-            addParagraph('Pi Network uses the Stellar Consensus Protocol (SCP), an energy-efficient blockchain technology.');
-            addParagraph('Pi Network\'s KYC guarantees user authenticity and secures transactions.');
-
-            addSection('3. PROBLEMATIC AND SOLUTION');
-            addParagraph('The ticketing market suffers from excessive commissions, long payment delays, financial exclusion, fraud and speculation.');
-            addParagraph('Betix addresses these problems with a transparent blockchain, reduced fees, instant payments and unforgeable QR codes.');
-
-            addSection('4. ECONOMIC MODEL');
-            addParagraph('Betix offers a free account with 3 events per month and a Premium account (paid in Pi) offering unlimited publishing, a Betix Verified badge, promotion, advanced statistics and priority support.');
-            addParagraph('The Betix commission is 5% on each sale, and a 2% service fee is applied to buyers.');
-
-            addSection('5. ADVANTAGES AND FEATURES');
-            addParagraph('For organizers: 0% commission, instant payment, simplified management, direct communication, maximum visibility.');
-            addParagraph('For participants: simple purchase, secure tickets, centralized history, affordable prices.');
-            addParagraph('Future developments: videos, new ticket types (VIP, early bird, etc.).');
-
-            addSection('6. SECURITY AND CONCLUSION');
-            addParagraph('Security is a priority: Pi blockchain, encryption, unique QR codes.');
-            addParagraph('Join Betix and Pi Network to participate in the revolution of decentralized ticketing.');
-        }
-
-        // Signature
-        if (y > pageHeight - 20) { doc.addPage(); y = 15; }
-        addLine();
-        y += 2;
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor('#000000');
-        const signature = isFr 
-            ? 'Betix | Achat de tickets pour les événements sur Pi Network | Document confidentiel | Version 2.0 | 2026'
-            : 'Betix | Ticket purchasing for events on Pi Network | Confidential document | Version 2.0 | 2026';
-        doc.text(signature, pageWidth / 2, y, { align: 'center' });
-
-        doc.save('Betix_Whitepaper_' + (isFr ? 'FR' : 'EN') + '.pdf');
     }
 </script>
 
