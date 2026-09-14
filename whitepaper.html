@@ -6,14 +6,7 @@
     <title>Livre Blanc - Betix</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* ============================================================
-           STYLES LIVRE BLANC
-           ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: #ffffff;
@@ -33,69 +26,22 @@
             position: relative;
         }
 
-        /* ===== COULEUR UNIQUEMENT POUR LE TITRE ===== */
-        .title-blue {
-            color: #08143F !important;
-        }
+        .title-blue { color: #08143F !important; }
 
-        /* ===== TYPOGRAPHIE – TOUT EN NOIR SAUF LE TITRE ===== */
         h1, h2, h3, h4, .founder-title, .social-title, .footer-signature,
         .highlight, p, li, .plan-name, .plan-price {
             color: #000000 !important;
         }
 
-        h1.title-blue {
-            color: #08143F !important;
-        }
+        h1.title-blue { color: #08143F !important; }
+        h1 { font-size: 30px; margin-bottom: 4px; }
+        h2 { font-size: 20px; margin-top: 24px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #000000; }
+        h3 { font-size: 16px; margin-top: 16px; margin-bottom: 4px; color: #000000; }
+        h4 { font-size: 14px; margin-top: 10px; margin-bottom: 3px; color: #000000; }
+        p { font-size: 12px; line-height: 1.7; margin-bottom: 6px; color: #000000 !important; text-align: justify; }
+        ul, ol { padding-left: 22px; margin-bottom: 6px; }
+        ul li, ol li { font-size: 12px; line-height: 1.7; margin-bottom: 2px; color: #000000 !important; }
 
-        h1 {
-            font-size: 30px;
-            margin-bottom: 4px;
-        }
-
-        h2 {
-            font-size: 20px;
-            margin-top: 24px;
-            margin-bottom: 8px;
-            padding-bottom: 4px;
-            border-bottom: 2px solid #000000;
-        }
-
-        h3 {
-            font-size: 16px;
-            margin-top: 16px;
-            margin-bottom: 4px;
-            color: #000000;
-        }
-
-        h4 {
-            font-size: 14px;
-            margin-top: 10px;
-            margin-bottom: 3px;
-            color: #000000;
-        }
-
-        p {
-            font-size: 12px;
-            line-height: 1.7;
-            margin-bottom: 6px;
-            color: #000000 !important;
-            text-align: justify;
-        }
-
-        ul, ol {
-            padding-left: 22px;
-            margin-bottom: 6px;
-        }
-
-        ul li, ol li {
-            font-size: 12px;
-            line-height: 1.7;
-            margin-bottom: 2px;
-            color: #000000 !important;
-        }
-
-        /* ===== EN-TÊTE ===== */
         .header-whitepaper {
             text-align: center;
             padding-bottom: 14px;
@@ -132,12 +78,8 @@
             font-size: 32px;
         }
 
-        .header-whitepaper h1 {
-            font-size: 30px;
-            margin: 4px 0 2px 0;
-        }
+        .header-whitepaper h1 { font-size: 30px; margin: 4px 0 2px 0; }
 
-        /* ===== BOUTONS HAUT DROITE ===== */
         .header-actions {
             position: absolute;
             top: 0;
@@ -175,16 +117,9 @@
             color: #ffffff;
         }
 
-        .header-actions .btn-icon.pdf-icon {
-            font-size: 16px;
-        }
+        .header-actions .btn-icon.pdf-icon { font-size: 16px; }
+        .header-actions .btn-icon-wrapper { position: relative; display: inline-block; }
 
-        .header-actions .btn-icon-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        /* ===== BOUTON RETOUR (JAUNE) ===== */
         .btn-back-home {
             display: inline-block;
             margin-top: 12px;
@@ -205,25 +140,11 @@
             transform: scale(1.02);
         }
 
-        .actions-wrapper {
-            text-align: center;
-            margin-top: 8px;
-        }
+        .actions-wrapper { text-align: center; margin-top: 8px; }
 
-        /* ===== LIEN PI NETWORK ===== */
-        .pi-link {
-            color: #08143F;
-            text-decoration: underline;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .pi-link { color: #08143F; text-decoration: underline; font-weight: 600; cursor: pointer; }
+        .pi-link:hover { color: #000000; text-decoration: none; }
 
-        .pi-link:hover {
-            color: #000000;
-            text-decoration: none;
-        }
-
-        /* ===== FONDATEURS DE BETIX ===== */
         .founders-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -256,29 +177,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size120: 22px;
-            font-weight: 700%;
+            font-size: 22px;
+            font-weight: 700;
             color: #08143F;
-);
             overflow: hidden;
-            flex-shr           ink: 0;
+            flex-shrink: 0;
         }
 
-        .founder-card . opacityfounder-photo img {
-            width: :100%;
+        .founder-card .founder-photo img {
+            width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .founder-card .founder-info {
-            flex: 1;
-        }
-
-        .founder-card h4 {
-            font-size: 14px;
-            margin: 0;
-            color: #000000 !important;
-        }
+        .founder-card .founder-info { flex: 1; }
+        .founder-card h4 { font-size: 14px; margin: 0; color: #000000 !important; }
 
         .founder-card .founder-title {
             font-size: 11px;
@@ -295,12 +208,7 @@
             color: #000000 !important;
         }
 
-        /* ===== FONDATEURS DE PI NETWORK ===== */
-        .pi-founders-list {
-            list-style: none;
-            padding: 0;
-            margin: 6px 0 4px;
-        }
+        .pi-founders-list { list-style: none; padding: 0; margin: 6px 0 4px; }
 
         .pi-founders-list li {
             font-size: 12px;
@@ -309,15 +217,9 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .pi-founders-list li:last-child {
-            border-bottom: none;
-        }
+        .pi-founders-list li:last-child { border-bottom: none; }
+        .pi-founders-list li strong { color: #000000 !important; }
 
-        .pi-founders-list li strong {
-            color: #000000 !important;
-        }
-
-        /* ===== TABLEAU ===== */
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
@@ -339,16 +241,9 @@
             color: #000000;
         }
 
-        .comparison-table tr:nth-child(even) td {
-            background: #f8fafc;
-        }
+        .comparison-table tr:nth-child(even) td { background: #f8fafc; }
+        .comparison-table .highlight { color: #000000 !important; font-weight: 700; }
 
-        .comparison-table .highlight {
-            color: #000000 !important;
-            font-weight: 700;
-        }
-
-        /* ===== RÉSEAUX SOCIAUX ===== */
         .social-section {
             margin-top: 16px;
             padding-top: 12px;
@@ -365,12 +260,7 @@
             text-align: center;
         }
 
-        .social-icons {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
+        .social-icons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
 
         .social-icons a {
             display: inline-flex;
@@ -394,7 +284,6 @@
             transform: scale(1.05);
         }
 
-        /* ===== SIGNATURE ===== */
         .footer-signature {
             margin-top: 16px;
             padding-top: 8px;
@@ -405,119 +294,43 @@
             font-weight: 500;
         }
 
-        .footer-signature span {
-            font-size: 7.5px !important;
-            color: #000000 !important;
-        }
+        .footer-signature span { font-size: 7.5px !important; color: #000000 !important; }
 
-        /* ===== TRADUCTION ===== */
-        .lang-en, .lang-fr {
-            display: none;
-        }
+        .lang-en, .lang-fr { display: none; }
+        .lang-en.active, .lang-fr.active { display: block; }
 
-        .lang-en.active, .lang-fr.active {
-            display: block;
-        }
-
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .whitepaper-container {
-                padding: 12px 10px 20px;
-                max-width: 100%;
-            }
-
+            .whitepaper-container { padding: 12px 10px 20px; max-width: 100%; }
             h1 { font-size: 22px; }
             h2 { font-size: 17px; margin-top: 16px; }
             h3 { font-size: 14px; margin-top: 12px; }
             h4 { font-size: 12px; }
             p, ul li, ol li { font-size: 10.5px; }
-
-            .founders-container {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .founder-card .founder-photo {
-                width: 52px;
-                height: 52px;
-                font-size: 18px;
-            }
-
-            .comparison-table {
-                font-size: 8.5px;
-            }
-            .comparison-table th,
-            .comparison-table td {
-                padding: 3px 5px;
-            }
-
-            .header-whitepaper .logo-container img {
-                height: 56px;
-            }
-            .header-whitepaper .logo-placeholder {
-                width: 56px;
-                height: 56px;
-                font-size: 22px;
-            }
-            .header-whitepaper h1 {
-                font-size: 20px;
-            }
-
-            .header-actions .btn-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 11px;
-            }
-
-            .social-icons a {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
-            }
-
-            .footer-signature {
-                font-size: 6.5px !important;
-            }
-            .footer-signature span {
-                font-size: 6.5px !important;
-            }
-
-            .btn-back-home {
-                font-size: 9px;
-                padding: 6px 18px;
-            }
+            .founders-container { grid-template-columns: 1fr; gap: 12px; }
+            .founder-card .founder-photo { width: 52px; height: 52px; font-size: 18px; }
+            .comparison-table { font-size: 8.5px; }
+            .comparison-table th, .comparison-table td { padding: 3px 5px; }
+            .header-whitepaper .logo-container img { height: 56px; }
+            .header-whitepaper .logo-placeholder { width: 56px; height: 56px; font-size: 22px; }
+            .header-whitepaper h1 { font-size: 20px; }
+            .header-actions .btn-icon { width: 28px; height: 28px; font-size: 11px; }
+            .social-icons a { width: 28px; height: 28px; font-size: 12px; }
+            .footer-signature { font-size: 6.5px !important; }
+            .footer-signature span { font-size: 6.5px !important; }
+            .btn-back-home { font-size: 9px; padding: 6px 18px; }
         }
 
         @media (max-width: 480px) {
-            .header-actions .btn-icon {
-                width: 24px;
-                height: 24px;
-                font-size: 10px;
-                border-width: 1px;
-            }
-            .header-actions {
-                gap: 3px;
-            }
+            .header-actions .btn-icon { width: 24px; height: 24px; font-size: 10px; border-width: 1px; }
+            .header-actions { gap: 3px; }
         }
 
         @media print {
             body { padding: 0; background: #ffffff; }
-            .whitepaper-container {
-                box-shadow: none;
-                border: none;
-                padding: 15px 20px 20px;
-                max-width: 100%;
-            }
-            .social-icons a:hover {
-                background: #08143F;
-                color: #ffffff;
-            }
-            .btn-back-home, .header-actions .btn-icon {
-                display: none;
-            }
-            .header-actions {
-                display: none !important;
-            }
+            .whitepaper-container { box-shadow: none; border: none; padding: 15px 20px 20px; max-width: 100%; }
+            .social-icons a:hover { background: #08143F; color: #ffffff; }
+            .btn-back-home, .header-actions .btn-icon { display: none; }
+            .header-actions { display: none !important; }
         }
 
         .text-center { text-align: center; }
@@ -529,9 +342,6 @@
         .mb-4 { margin-bottom: 4px; }
         .fw-600 { font-weight: 600; }
 
-        /* ============================================================
-           TOAST — Message "Button not available"
-           ============================================================ */
         .wp-toast {
             position: fixed;
             top: 24px;
@@ -541,8 +351,7 @@
             color: #ffffff;
             padding: 14px 22px;
             border-radius: 10px;
-            box-shadow: 0 12px 40px rgba(8, 20, 63, 0.25),
-                        0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 12px 40px rgba(8, 20, 63, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 99999;
             font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             font-size: 13px;
@@ -550,20 +359,13 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                        opacity 0.3s ease;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
             opacity: 0;
             pointer-events: none;
             max-width: calc(100% - 32px);
         }
-        .wp-toast.show {
-            transform: translate(-50%, 0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .wp-toast.hiding {
-            transform: translate(-50%, - 0;
-        }
+        .wp-toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+        .wp-toast.hiding { transform: translate(-50%, -120%); opacity: 0; }
         .wp-toast-icon {
             width: 30px;
             height: 30px;
@@ -583,20 +385,9 @@
             60% { transform: scale(1.15); }
             100% { transform: scale(1); }
         }
-        .wp-toast-text {
-            line-height: 1.4;
-        }
-        .wp-toast-text strong {
-            display: block;
-            font-weight: 700;
-            margin-bottom: 2px;
-            font-size: 13px;
-        }
-        .wp-toast-text span {
-            font-size: 11.5px;
-            opacity: 0.85;
-            font-weight: 400;
-        }
+        .wp-toast-text { line-height: 1.4; }
+        .wp-toast-text strong { display: block; font-weight: 700; margin-bottom: 2px; font-size: 13px; }
+        .wp-toast-text span { font-size: 11.5px; opacity: 0.85; font-weight: 400; }
         .wp-toast-close {
             background: transparent;
             border: none;
@@ -607,10 +398,7 @@
             margin-left: 4px;
             transition: color 0.2s;
         }
-        .wp-toast-close:hover {
-            color: #ffffff;
-        }
-
+        .wp-toast-close:hover { color: #ffffff; }
         .wp-toast-progress {
             position: absolute;
             bottom: 0;
@@ -622,25 +410,14 @@
             transform: scaleX(1);
             border-radius: 0 0 10px 10px;
         }
-        .wp-toast.show .wp-toast-progress {
-            animation: wpToastProgress 4s linear forwards;
-        }
+        .wp-toast.show .wp-toast-progress { animation: wpToastProgress 4s linear forwards; }
         @keyframes wpToastProgress {
             from { transform: scaleX(1); }
             to { transform: scaleX(0); }
         }
-
         @media (max-width: 480px) {
-            .wp-toast {
-                font-size: 12px;
-                padding: 12px 16px;
-                gap: 10px;
-            }
-            .wp-toast-icon {
-                width: 26px;
-                height: 26px;
-                font-size: 12px;
-            }
+            .wp-toast { font-size: 12px; padding: 12px 16px; gap: 10px; }
+            .wp-toast-icon { width: 26px; height: 26px; font-size: 12px; }
             .wp-toast-text strong { font-size: 12px; }
             .wp-toast-text span { font-size: 10.5px; }
         }
@@ -648,7 +425,6 @@
 </head>
 <body>
 
-<!-- TOAST : Button not available -->
 <div id="wpToast" class="wp-toast">
     <div class="wp-toast-icon">!</div>
     <div class="wp-toast-text">
@@ -661,9 +437,6 @@
 
 <div class="whitepaper-container" id="whitepaperContent">
 
-    <!-- ============================================================
-         EN-TÊTE
-         ============================================================ -->
     <div class="header-whitepaper">
 
         <div class="header-actions">
@@ -696,7 +469,6 @@
          SECTION 1 : INTRODUCTION
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>1. INTRODUCTION</h2>
 
@@ -759,20 +531,20 @@
                     <h4>Djami Yakonga</h4>
                     <p class="founder-title">Founder and Chief Executive Officer</p>
                     <p>
-                        A visionary entrepreneur passionate about new technologies and
-                        financial inclusion, Djami Yakonga is the founder and initiator
-                        of the Betix project. He envisioned this platform to address a
-                        fundamental need: facilitating event organization while offering
-                        a payment method accessible to everyone, including unbanked
-                        populations.
+                        A visionary entrepreneur passionate about new technologies
+                        and financial inclusion, he is the founder and initiator of
+                        the Betix project. He envisioned this platform to address a
+                        fundamental need: facilitating event organization while
+                        offering a payment method accessible to everyone, including
+                        unbanked populations.
                     </p>
                     <p>
-                        Drawing on solid experience in project management, finance, and
-                        business development, he has brought together a talented and
-                        complementary team around this ambitious vision. His mission:
-                        to establish Betix as a key player serving culture, sports, and
-                        education on a global scale, placing people and accessibility
-                        at the heart of every decision.
+                        Drawing on solid experience in project management, finance,
+                        and business development, he has brought together a talented
+                        and complementary team around this ambitious vision. His
+                        mission: to establish Betix as a key player serving culture,
+                        sports, and education on a global scale, placing people and
+                        accessibility at the heart of every decision.
                     </p>
                 </div>
             </div>
@@ -790,7 +562,8 @@
                         and ease of use for online ticket purchasing. With several years
                         of experience in decentralized technologies, he brings essential
                         rigor and expertise to the platform.
-                    </p>
+                    </pide expérience en gestion de projets, en finance
+                        et en développement commercial, il>
                     <p>
                         He led the development of the backend infrastructure, Pi Network
                         integration, QR code system and user interface. His technical vision
@@ -828,7 +601,6 @@
         </p>
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>1. INTRODUCTION</h2>
 
@@ -894,16 +666,15 @@
                     <h4>Djami Yakonga</h4>
                     <p class="founder-title">Fondateur et Président Directeur Général</p>
                     <p>
-                        Visionnaire et entrepreneur passionné par les nouvelles technologies
-                        et l'inclusion financière, Djami Yakonga est l'initiateur et le
-                        fondateur du projet Betix. Il a imaginé cette plateforme pour
-                        répondre à un besoin fondamental : faciliter l'organisation
+                        Visionnaire et entrepreneur passionné par les nouvelles
+                        technologies et l'inclusion financière, il est l'initiateur
+                        et le fondateur du projet Betix. Il a imaginé cette plateforme
+                        pour répondre à un besoin fondamental : faciliter l'organisation
                         d'événements tout en offrant un moyen de paiement accessible à
                         tous, y compris aux populations non bancarisées.
                     </p>
                     <p>
-                        Fort d'une solide expérience en gestion de projets, en finance
-                        et en développement commercial, il a su fédérer une équipe
+                        Fort d'une sol a su fédérer une équipe
                         talentueuse et complémentaire autour de cette vision ambitieuse.
                         Sa mission : faire de Betix un acteur incontournable au service
                         de la culture, du sport et de l'éducation à l'échelle mondiale,
@@ -970,7 +741,6 @@
          SECTION 2 : PI NETWORK
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>2. PI NETWORK: THE ECOSYSTEM POWERING BETIX</h2>
 
@@ -1082,10 +852,8 @@
             <span class="lang-en active">If you don't have the Pi app yet, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">download it here</a> and use code <strong>19510</strong>.</span>
             <span class="lang-fr">Si vous n'avez pas encore l'application Pi, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">téléchargez-la ici</a> et utilisez le code <strong>19510</strong>.</span>
         </p>
-
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>2. PI NETWORK : L'ÉCOSYSTÈME QUI PORTE BETIX</h2>
 
@@ -1210,14 +978,12 @@
             <span class="lang-en active">If you don't have the Pi app yet, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">download it here</a> and use code <strong>19510</strong>.</span>
             <span class="lang-fr">Si vous n'avez pas encore l'application Pi, <a href="#" onclick="window.open('https://minepi.com/19510','_blank'); return false;" class="pi-link">téléchargez-la ici</a> et utilisez le code <strong>19510</strong>.</span>
         </p>
-
     </div>
 
     <!-- ============================================================
          SECTION 3 : PROBLÉMATIQUE ET SOLUTION
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>3. PROBLEMATIC AND SOLUTION</h2>
 
@@ -1296,7 +1062,6 @@
         </p>
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>3. PROBLÉMATIQUE ET SOLUTION</h2>
 
@@ -1387,7 +1152,6 @@
          SECTION 4 : MODÈLE ÉCONOMIQUE
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>4. BETIX ECONOMIC MODEL</h2>
 
@@ -1449,7 +1213,6 @@
         </p>
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>4. MODÈLE ÉCONOMIQUE DE BETIX</h2>
 
@@ -1516,7 +1279,6 @@
          SECTION 5 : AVANTAGES ET FONCTIONNALITÉS
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>5. ADVANTAGES AND FEATURES</h2>
 
@@ -1568,7 +1330,6 @@
         </p>
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>5. AVANTAGES ET FONCTIONNALITÉS</h2>
 
@@ -1625,7 +1386,6 @@
          SECTION 6 : SÉCURITÉ ET CONCLUSION
          ============================================================ -->
 
-    <!-- ANGLAIS -->
     <div class="section lang-en active">
         <h2>6. SECURITY AND CONCLUSION</h2>
 
@@ -1674,19 +1434,8 @@
             Download the Pi Network app today using our referral link, and start
             mining Pi to fund your events and tickets.
         </p>
-
-        <h3>6.4 Official contacts</h3>
-
-        <p>
-            <strong>Email</strong>: betixservices@gmail.com<br>
-            <strong>Website</strong>: betixapp.vercel.app<br>
-            <strong>Twitter</strong>: @betix_app<br>
-            <strong>Telegram</strong>: t.me/betix<br>
-            <strong>Discord</strong>: discord.gg/MqhdmPCH
-        </p>
     </div>
 
-    <!-- FRANÇAIS -->
     <div class="section lang-fr">
         <h2>6. SÉCURITÉ ET CONCLUSION</h2>
 
@@ -1738,16 +1487,6 @@
             lien de parrainage, et commencez à miner des Pi pour financer vos
             événements et vos billets.
         </p>
-
-        <h3>6.4 Contacts officiels</h3>
-
-        <p>
-            <strong>Email</strong> : betixservices@gmail.com<br>
-            <strong>Site web</strong> : betixapp.vercel.app<br>
-            <strong>Twitter</strong> : @betix_app<br>
-            <strong>Telegram</strong> : t.me/betix<br>
-            <strong>Discord</strong> : discord.gg/MqhdmPCH
-        </p>
     </div>
 
     <!-- ============================================================
@@ -1778,16 +1517,10 @@
         </div>
     </div>
 
-    <!-- ============================================================
-         BOUTON RETOUR
-         ============================================================ -->
     <div class="actions-wrapper">
         <a href="index.html" class="btn-back-home">← Retour à l'accueil</a>
     </div>
 
-    <!-- ============================================================
-         SIGNATURE
-         ============================================================ -->
     <div class="footer-signature">
         <span class="lang-en active">Betix | Ticket purchasing for events on Pi Network | Confidential document | Version 2.0 | 2026</span>
         <span class="lang-fr">Betix | Achat de tickets pour les événements sur Pi Network | Document confidentiel | Version 2.0 | 2026</span>
@@ -1796,9 +1529,6 @@
 </div>
 
 <script>
-    // ============================================================
-    // TRADUCTION
-    // ============================================================
     let currentLang = 'en';
 
     function switchLanguage(lang) {
@@ -1817,9 +1547,6 @@
         document.getElementById('btnEn').classList.toggle('active', lang === 'en');
     }
 
-    // ============================================================
-    // MESSAGE "BUTTON NOT AVAILABLE"
-    // ============================================================
     let wpToastTimer = null;
 
     function showNotAvailable() {
