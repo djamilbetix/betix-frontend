@@ -848,6 +848,31 @@
     <div class="modal-content" style="max-width:520px;"><span class="modal-close" onclick="closeCancelEventModal()"><i class="fas fa-times"></i></span><div style="text-align:center;margin-bottom:12px;"><div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:1.6rem;"><i class="fas fa-exclamation-triangle"></i></div><h2 style="color:#1a1a2e;font-size:1.2rem;margin:0;">Annuler l'événement</h2><p style="color:#6b7280;font-size:.85rem;margin-top:4px;">Cette action est <strong>irréversible</strong>. Les acheteurs seront notifiés et les remboursements seront enregistrés.</p></div><div class="form-group"><label>Raison de l'annulation <span style="color:red;">*</span></label><textarea id="cancelEventReason" rows="3" placeholder="Ex: Problème technique, report de l'événement..." maxlength="200" style="width:100%;padding:10px;border:2px solid #e6e6e6;border-radius:10px;font-family:inherit;"></textarea><span id="cancelReasonCounter" class="char-counter">200 caractères restants</span></div><div style="background:#fef3c7;border-radius:10px;padding:12px;margin-bottom:14px;font-size:.8rem;color:#92400e;"><i class="fas fa-info-circle"></i> <strong id="cancelEventTicketCount">0</strong> ticket(s) seront remboursés, pour un total de <strong id="cancelEventRefundAmount">0 Pi</strong>.</div><div class="modal-actions" style="display:flex;gap:10px;"><button class="btn-secondary-modal" style="flex:1;padding:12px;border-radius:40px;border:2px solid #e6e6e6;background:transparent;font-weight:600;cursor:pointer;" onclick="closeCancelEventModal()">Annuler</button><button id="confirmCancelEventBtn" style="flex:2;padding:12px;border-radius:40px;border:none;background:#dc2626;color:white;font-weight:700;cursor:pointer;" onclick="confirmCancelEvent()"><i class="fas fa-ban"></i> Confirmer l'annulation</button></div></div>
 </div>
 
+<!-- PURCHASE CONFIRMATION TOAST -->
+<div id="purchaseConfirmation" class="purchase-confirmation">
+    <div class="pc-content">
+        <div class="pc-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="pc-body">
+            <h3 class="pc-title" id="pcTitle">Ticket acheté !</h3>
+            <p class="pc-message" id="pcMessage">Votre ticket pour l'événement est confirmé.</p>
+            <div class="pc-buttons">
+                <button class="pc-btn pc-btn-primary" onclick="pcGoToTickets()">
+                    <i class="fas fa-ticket-alt"></i> Voir mon ticket
+                </button>
+                <button class="pc-btn pc-btn-secondary" onclick="pcGoToHome()">
+                    <i class="fas fa-home"></i> Accueil
+                </button>
+            </div>
+        </div>
+        <button class="pc-close" onclick="closePurchaseConfirmation()" aria-label="Fermer">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="pc-progress" id="pcProgress"></div>
+</div>
+
 <div id="paymentPendingModal" style="display: none;"></div>
 
 </div>
