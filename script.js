@@ -2926,6 +2926,8 @@ async function connectToPi() {
                         updateActivity();
                         updateUserInfo();
                         updateProfilePage();
+                        // Connexion démo établie : bienvenue immédiatement, avant la synchronisation.
+                        showToast('Betix', t('demoConnected'), 'success');
                         trackUserConnection();
                         renderEventsByCategory();
                         updateConnectButtons();
@@ -2935,7 +2937,6 @@ async function connectToPi() {
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
-                        showToast('Betix', t('demoConnected'), 'success');
                         closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
@@ -2952,6 +2953,10 @@ async function connectToPi() {
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+
+                    // La connexion Pi est maintenant établie : afficher immédiatement
+                    // le message de bienvenue, avant les chargements réseau plus longs.
+                    showToast('Betix', t('piConnected') + piUser.username, 'success');
 
                     // NE PAS réinitialiser les champs de profil ici
                     // Charger d'abord les données existantes depuis Supabase
@@ -2972,7 +2977,6 @@ async function connectToPi() {
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
-                    showToast('Betix', t('piConnected') + piUser.username, 'success');
                     closeSidebar();
 
                     checkAndNotifyProfileCompletion();
@@ -4842,6 +4846,10 @@ function renderSharePost(post) {
                 <div class="share-post-username">${escapeHtml(post.user_name || 'Utilisateur')}</div>
                 <div class="share-post-time"><i class="far fa-clock"></i> ${escapeHtml(timeAgo)}</div>
             </div>
+            <button class="share-post-main-btn" type="button" title="Partager cette publication" aria-label="Partager cette publication"
+                onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
+                <i class="fas fa-share-alt"></i>
+            </button>
         </div>
         ${post.message ? `<div class="share-post-message">${escapeHtml(post.message)}</div>` : ''}
         <div class="share-post-event-wrapper">${eventCardHtml}</div>
@@ -4935,6 +4943,43 @@ async function publishSharePost() {
     }
 }
 
+async function sharePublication(postId, eventId) {
+    const event = events.find(e => String(e.id) === String(eventId));
+    if (!event) {
+        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
+        return;
+    }
+    if (isEventPast(event) || ['cancelled', 'ended', 'inactive', 'disabled'].includes(event.status)) {
+        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
+        return;
+    }
+
+    const card = document.querySelector('.share-post-card[data-post-id="' + CSS.escape(String(postId)) + '"]');
+    const postUser = card?.querySelector('.share-post-username')?.textContent || 'Betix';
+    const message = card?.querySelector('.share-post-message')?.textContent?.trim() || '';
+    const shareUrl = window.location.origin + '/?event=' + encodeURIComponent(event.id);
+    const shareText = message || ('Découvrez « ' + (event.title || 'cet événement') + ' » sur Betix !');
+
+    // Partage natif : sur iOS/Android, ouvre directement le menu de partage du téléphone.
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: event.title || 'Betix',
+                text: shareText,
+                url: shareUrl
+            });
+            return;
+        } catch (err) {
+            // Annulation par l'utilisateur : ne rien afficher.
+            if (err && err.name === 'AbortError') return;
+            console.warn('Native share unavailable:', err);
+        }
+    }
+
+    // Fallback desktop : ouvrir le partage WhatsApp par défaut.
+    sharePostExternal('whatsapp', String(event.id), encodeURIComponent(shareText), encodeURIComponent(shareUrl));
+}
+
 function sharePostExternal(network, eventId, text, url) {
     let shareLink = '';
     switch (network) {
@@ -4959,6 +5004,7 @@ window.renderSharePost = renderSharePost;
 window.openSharePostModal = openSharePostModal;
 window.closeSharePostModal = closeSharePostModal;
 window.publishSharePost = publishSharePost;
+window.sharePublication = sharePublication;
 window.sharePostExternal = sharePostExternal;
 window.copyShareLink = copyShareLink;
 
