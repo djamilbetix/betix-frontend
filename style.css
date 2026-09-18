@@ -5540,3 +5540,192 @@ body.dark-mode .pc-btn-secondary:hover { background:#4b5563; }
 body.dark-mode .pc-close { color:#9ca3af; }
 body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 @media (max-width:480px) { .purchase-confirmation{top:72px;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
+
+/* ============================================================
+   FEED DE PARTAGE — Publications d'événements
+   ============================================================ */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+.btn-share-quick {
+    background: #F5B400;
+    color: #1a1a2e;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(245,180,0,0.3);
+}
+.btn-share-quick:hover {
+    transform: scale(1.1) rotate(-10deg);
+    box-shadow: 0 6px 20px rgba(245,180,0,0.5);
+}
+
+.share-feed-container {
+    padding: 0.8rem 5% 0.4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.share-feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.share-feed-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.share-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.share-post-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+.share-post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px 10px;
+}
+.share-post-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.share-post-user-info { flex: 1; }
+.share-post-username {
+    font-weight: 700;
+    color: #1a1a2e;
+    font-size: 0.9rem;
+}
+.share-post-time {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+.share-post-message {
+    padding: 0 18px 12px;
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+.share-post-event-wrapper {
+    padding: 0 12px 12px;
+}
+.share-post-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 18px 14px;
+    border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+}
+.share-action-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #1a1a2e;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.share-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.share-action-btn.wa { background: #25D366; color: #fff; }
+.share-action-btn.wa:hover { background: #128C7E; }
+.share-action-btn.tg { background: #0088cc; color: #fff; }
+.share-action-btn.tg:hover { background: #006699; }
+.share-action-btn.tw { background: #1DA1F2; color: #fff; }
+.share-action-btn.tw:hover { background: #0d8ddb; }
+.share-action-btn.fb { background: #1877F2; color: #fff; }
+.share-action-btn.fb:hover { background: #0d5bbf; }
+.share-action-btn.copy { background: #0B1F5C; color: #fff; }
+.share-action-btn.copy:hover { background: #1a2a4a; }
+
+body.dark-mode .share-post-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+body.dark-mode .share-post-username { color: #f3f4f6; }
+body.dark-mode .share-post-message { color: #d1d5db; }
+body.dark-mode .share-post-actions { border-top-color: #374151; }
+body.dark-mode .share-action-btn { background: #374151; color: #f3f4f6; }
+body.dark-mode .share-action-btn:hover { background: #4b5563; }
+body.dark-mode .share-feed-header h2 { color: #f3f4f6; }
+body.dark-mode #sharePostPreview { background: #374151 !important; }
+
+/* ============================================================
+   BARRE D'ACTIONS ADMIN SUR LES CARTES D'ÉVÉNEMENTS
+   ============================================================ */
+.event-card-classic { position: relative; }
+.event-admin-bar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.event-card-classic:hover .event-admin-bar { opacity: 1; }
+@media (max-width: 768px) { .event-admin-bar { opacity: 1; } }
+.event-admin-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+}
+.event-admin-btn.toggle { background: rgba(245, 180, 0, 0.95); color: #1a1a2e; }
+.event-admin-btn.toggle:hover { background: #F5B400; transform: scale(1.1); }
+.event-admin-btn.delete { background: rgba(239, 68, 68, 0.95); color: #fff; }
+.event-admin-btn.delete:hover { background: #dc2626; transform: scale(1.1); }
+.btn-toggle-event { transition: all 0.2s ease; }
+.btn-toggle-event:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
