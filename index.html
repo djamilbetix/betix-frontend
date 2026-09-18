@@ -7,7 +7,7 @@
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260918" />
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
@@ -155,18 +155,6 @@
 
 <!-- HOME PAGE -->
 <div id="homePage">
-
-    <!-- 📢 FEED DE PARTAGE -->
-    <div id="shareFeed" class="share-feed-container">
-        <div class="share-feed-header">
-            <div>
-                <h2><i class="fas fa-share-alt" style="color:#F5B400;"></i> Publications</h2>
-                <p class="events-sub">Partagez vos événements avec vos fans</p>
-            </div>
-        </div>
-        <div id="shareFeedList" class="share-feed-list"></div>
-    </div>
-
     <section class="hero">
         <div class="hero-slider-container">
             <div class="hero-slider">
@@ -887,37 +875,6 @@
 
 <div id="paymentPendingModal" style="display: none;"></div>
 
-<!-- 📢 MODAL DE PARTAGE DE PUBLICATION -->
-<div id="sharePostModal" class="modal">
-    <div class="modal-content" style="max-width:560px;">
-        <span class="modal-close" onclick="closeSharePostModal()"><i class="fas fa-times"></i></span>
-        <h2 style="margin-bottom:8px;">Partager une publication</h2>
-        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">Partagez un événement avec vos fans et permettez-leur d'acheter directement.</p>
-
-        <div class="form-group">
-            <label>Choisir un événement</label>
-            <select id="sharePostEventSelect">
-                <option value="">-- Sélectionner un événement --</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Message personnalisé (optionnel)</label>
-            <textarea id="sharePostMessage" rows="3" maxlength="200" placeholder="Ex: Venez nombreux à mon concert, places limitées !"></textarea>
-            <span id="sharePostCharCounter" class="char-counter">200 caractères restants</span>
-        </div>
-
-        <div id="sharePostPreview" style="display:none; margin-top:12px; padding:12px; background:#f8fafc; border-radius:12px;"></div>
-
-        <div class="modal-actions" style="display:flex; gap:10px; margin-top:16px;">
-            <button class="btn-secondary-modal" onclick="closeSharePostModal()" style="flex:1; padding:12px; border-radius:40px; border:2px solid #e6e6e6; background:transparent; font-weight:600; cursor:pointer;">Annuler</button>
-            <button class="btn-primary" id="publishShareBtn" onclick="publishSharePost()" style="flex:2;">
-                <i class="fas fa-share-alt"></i> Publier
-            </button>
-        </div>
-    </div>
-</div>
-
 </div>
 
 <script>
@@ -975,6 +932,6 @@
         }, 500);
     }
 </script>
-<script src="script.js?v=20260918"></script>
+<script src="script.js"></script>
 </body>
 </html>
