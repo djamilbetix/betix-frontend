@@ -2926,18 +2926,21 @@ async function connectToPi() {
                         updateActivity();
                         updateUserInfo();
                         updateProfilePage();
-                        // Connexion démo établie : bienvenue immédiatement, avant la synchronisation.
-                        showToast('Betix', t('demoConnected'), 'success');
                         trackUserConnection();
                         renderEventsByCategory();
                         updateConnectButtons();
+                        closeSidebar();
+                        // Bienvenue immédiatement après l'établissement de la connexion,
+                        // sans attendre les synchronisations réseau secondaires.
+                        requestAnimationFrame(() => {
+                            setTimeout(() => showToast('Betix', t('demoConnected'), 'success'), 120);
+                        });
                         await loadAllFromSupabase();
                         await syncAllToSupabase();
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
-                        closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
                         return;
@@ -2954,9 +2957,8 @@ async function connectToPi() {
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
-                    // La connexion Pi est maintenant établie : afficher immédiatement
-                    // le message de bienvenue, avant les chargements réseau plus longs.
-                    showToast('Betix', t('piConnected') + piUser.username, 'success');
+                    // La connexion Pi est établie. On termine d'abord la mise à jour
+                    // de l'interface, puis on affiche le bienvenue immédiatement après.
 
                     // NE PAS réinitialiser les champs de profil ici
                     // Charger d'abord les données existantes depuis Supabase
@@ -2971,13 +2973,17 @@ async function connectToPi() {
                     trackUserConnection();
                     renderEventsByCategory();
                     updateConnectButtons();
+                    closeSidebar();
+                    // Message de bienvenue uniquement après que l'état connecté soit visible.
+                    requestAnimationFrame(() => {
+                        setTimeout(() => showToast('Betix', t('piConnected') + piUser.username, 'success'), 120);
+                    });
                     await loadAllFromSupabase();
                     await syncAllToSupabase();
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
-                    closeSidebar();
 
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
@@ -3017,7 +3023,7 @@ function checkAndNotifyProfileCompletion() {
             showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
             currentUser.profile_reminder_shown = true;
             saveUser();
-        }, 5000);
+        }, 8000);
     }
 }
 
@@ -4365,6 +4371,7 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // ============================================================
 async function initApp() {
     try {
+        removeLegacyHeaderShareButton();
         showEventSkeletons(6);
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
@@ -4796,6 +4803,13 @@ function showNotificationSkeletons(count=4){const c=document.getElementById('not
 window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
 
 // ============================================================
+// NETTOYAGE DU PARTAGE LEGACY DANS LE HEADER
+// ============================================================
+function removeLegacyHeaderShareButton() {
+    document.querySelectorAll('.header .btn-share-quick, .header .share-post-main-btn, .header [data-action="share-publication"]').forEach(el => el.remove());
+}
+
+// ============================================================
 // FEED DE PARTAGE — Publications d'événements
 // ============================================================
 async function loadShareFeed() {
@@ -4846,19 +4860,23 @@ function renderSharePost(post) {
                 <div class="share-post-username">${escapeHtml(post.user_name || 'Utilisateur')}</div>
                 <div class="share-post-time"><i class="far fa-clock"></i> ${escapeHtml(timeAgo)}</div>
             </div>
-            <button class="share-post-main-btn" type="button" title="Partager cette publication" aria-label="Partager cette publication"
-                onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
-                <i class="fas fa-share-alt"></i>
-            </button>
         </div>
         ${post.message ? `<div class="share-post-message">${escapeHtml(post.message)}</div>` : ''}
-        <div class="share-post-event-wrapper">${eventCardHtml}</div>
-        <div class="share-post-actions">
-            <button class="share-action-btn wa" onclick="sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-            <button class="share-action-btn tg" onclick="sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-telegram-plane"></i> Telegram</button>
-            <button class="share-action-btn tw" onclick="sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-twitter"></i> X</button>
-            <button class="share-action-btn fb" onclick="sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-facebook-f"></i> Facebook</button>
-            <button class="share-action-btn copy" onclick="copyShareLink('${escapeHtml(shareUrl)}')"><i class="fas fa-link"></i> Copier</button>
+        <div class="share-post-event-wrapper">
+            ${eventCardHtml}
+            <div class="event-card-share-bar" role="group" aria-label="Partager cet événement">
+                <button class="event-card-share-main" type="button" title="Partager cette publication" aria-label="Partager cette publication"
+                    onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
+                    <i class="fas fa-share-alt"></i><span>Partager</span>
+                </button>
+                <div class="event-card-share-networks">
+                    <button class="share-action-btn wa" title="Partager sur WhatsApp" onclick="event.stopPropagation(); sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-whatsapp"></i></button>
+                    <button class="share-action-btn tg" title="Partager sur Telegram" onclick="event.stopPropagation(); sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-telegram-plane"></i></button>
+                    <button class="share-action-btn tw" title="Partager sur X" onclick="event.stopPropagation(); sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-twitter"></i></button>
+                    <button class="share-action-btn fb" title="Partager sur Facebook" onclick="event.stopPropagation(); sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-facebook-f"></i></button>
+                    <button class="share-action-btn copy" title="Copier le lien" onclick="event.stopPropagation(); copyShareLink('${escapeHtml(shareUrl)}')"><i class="fas fa-link"></i></button>
+                </div>
+            </div>
         </div>
     </div>`;
 }
@@ -4999,6 +5017,7 @@ function copyShareLink(url) {
     } else prompt('Copiez ce lien :', url);
 }
 
+window.removeLegacyHeaderShareButton = removeLegacyHeaderShareButton;
 window.loadShareFeed = loadShareFeed;
 window.renderSharePost = renderSharePost;
 window.openSharePostModal = openSharePostModal;
