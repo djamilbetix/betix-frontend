@@ -2921,20 +2921,21 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
-                        await loadProfileData();
-                        await syncUserToSupabase();
+                        // La connexion est établie : mettre à jour immédiatement l'interface
+                        // et afficher le bienvenue avant les synchronisations réseau secondaires.
                         updateActivity();
                         updateUserInfo();
+                        updateConnectButtons();
+                        closeSidebar();
+                        hideConnectSpinner();
+                        requestAnimationFrame(() => {
+                            showToast('Betix', t('demoConnected'), 'success');
+                        });
+                        await loadProfileData();
+                        await syncUserToSupabase();
                         updateProfilePage();
                         trackUserConnection();
                         renderEventsByCategory();
-                        updateConnectButtons();
-                        closeSidebar();
-                        // Bienvenue immédiatement après l'établissement de la connexion,
-                        // sans attendre les synchronisations réseau secondaires.
-                        requestAnimationFrame(() => {
-                            setTimeout(() => showToast('Betix', t('demoConnected'), 'success'), 120);
-                        });
                         await loadAllFromSupabase();
                         await syncAllToSupabase();
                         currentFilter = 'All';
@@ -2957,27 +2958,24 @@ async function connectToPi() {
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
-                    // La connexion Pi est établie. On termine d'abord la mise à jour
-                    // de l'interface, puis on affiche le bienvenue immédiatement après.
-
-                    // NE PAS réinitialiser les champs de profil ici
-                    // Charger d'abord les données existantes depuis Supabase
-                    await loadProfileData();
-
-                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
-                    await syncUserToSupabase();
-
+                    // La connexion Pi est établie. Mettre à jour immédiatement l'état connecté
+                    // et afficher le message de bienvenue sans attendre les appels réseau.
                     updateActivity();
                     updateUserInfo();
+                    updateConnectButtons();
+                    closeSidebar();
+                    hideConnectSpinner();
+                    requestAnimationFrame(() => {
+                        showToast('Betix', t('piConnected') + piUser.username, 'success');
+                    });
+
+                    // NE PAS réinitialiser les champs de profil ici.
+                    // Les données existantes sont chargées et synchronisées en arrière-plan.
+                    await loadProfileData();
+                    await syncUserToSupabase();
                     updateProfilePage();
                     trackUserConnection();
                     renderEventsByCategory();
-                    updateConnectButtons();
-                    closeSidebar();
-                    // Message de bienvenue uniquement après que l'état connecté soit visible.
-                    requestAnimationFrame(() => {
-                        setTimeout(() => showToast('Betix', t('piConnected') + piUser.username, 'success'), 120);
-                    });
                     await loadAllFromSupabase();
                     await syncAllToSupabase();
                     currentFilter = 'All';
@@ -3483,42 +3481,108 @@ function clearAllNotifications() {
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
+
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = '<div class="notification-empty">' +
-            '<i class="fas fa-bell-slash"></i>' +
-            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
-        '</div>';
+        container.innerHTML = `
+            <div class="notif-empty">
+                <i class="fas fa-bell-slash"></i>
+                <p>${t('noNotifications')}</p>
+            </div>`;
         return;
     }
-    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
-        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
-        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
-            '<i class="fas fa-trash"></i> Clear all' +
-        '</button>' +
-    '</div>';
-    notifications.forEach((notif) => {
-        const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const unreadClass = notif.read ? '' : 'unread';
-        const type = notif.type || 'info';
-        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
-        const icon = iconMap[type] || 'fa-info-circle';
-        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
-            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-content">' +
-                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
-                '<div class="notif-time">' + timeStr + '</div>' +
-            '</div>' +
-            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
-        '</div>';
+
+    // Regroupement par date
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const groups = { today: [], yesterday: [], older: [] };
+    notifications.forEach(n => {
+        const d = new Date(n.date);
+        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        if (day.getTime() === today.getTime()) groups.today.push(n);
+        else if (day.getTime() === yesterday.getTime()) groups.yesterday.push(n);
+        else groups.older.push(n);
     });
+
+    let html = `
+        <div class="notif-toolbar">
+            <span class="notif-count">${notifications.length} notification(s)</span>
+            <button class="notif-clear-btn" onclick="clearAllNotifications()">
+                <i class="fas fa-trash"></i> Tout effacer
+            </button>
+        </div>`;
+
+    if (groups.today.length > 0) {
+        html += `<div class="notif-section">
+            <div class="notif-section-title">Aujourd'hui</div>
+            ${groups.today.map(renderNotificationCard).join('')}
+        </div>`;
+    }
+    if (groups.yesterday.length > 0) {
+        html += `<div class="notif-section">
+            <div class="notif-section-title">Hier</div>
+            ${groups.yesterday.map(renderNotificationCard).join('')}
+        </div>`;
+    }
+    if (groups.older.length > 0) {
+        html += `<div class="notif-section">
+            <div class="notif-section-title">Plus ancien</div>
+            ${groups.older.map(renderNotificationCard).join('')}
+        </div>`;
+    }
+
     container.innerHTML = html;
+
+    // Marquer comme lues
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     notifications.forEach(n => n.read = true);
     saveNotifications();
     markNotificationsAsReadInSupabase(unreadIds);
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
+}
+
+function renderNotificationCard(notif) {
+    const time = new Date(notif.date);
+    const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const unreadClass = notif.read ? '' : ' unread';
+    const type = notif.type || 'info';
+
+    const iconMap = {
+        purchase: 'fa-shopping-bag',
+        event: 'fa-calendar-plus',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle',
+        success: 'fa-check-circle'
+    };
+    const titleMap = {
+        purchase: 'Achat',
+        event: 'Événement',
+        info: 'Information',
+        warning: 'Attention',
+        success: 'Succès'
+    };
+    const icon = iconMap[type] || 'fa-info-circle';
+    const title = titleMap[type] || 'Notification';
+
+    return `
+    <div class="notif-card type-${type}${unreadClass}">
+        <div class="notif-card-icon">
+            <i class="fas ${icon}"></i>
+        </div>
+        <div class="notif-card-body">
+            <div class="notif-card-header">
+                <span class="notif-card-title">${title}</span>
+                <span class="notif-card-time">${timeStr}</span>
+            </div>
+            <p class="notif-card-message">${escapeHtml(notif.message)}</p>
+        </div>
+        <button class="notif-card-delete" onclick="deleteNotification('${escapeHtml(String(notif.id))}')" title="Supprimer">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>`;
 }
 
 function updateNotifBadgeHeader() {
@@ -4864,18 +4928,34 @@ function renderSharePost(post) {
         ${post.message ? `<div class="share-post-message">${escapeHtml(post.message)}</div>` : ''}
         <div class="share-post-event-wrapper">
             ${eventCardHtml}
-            <div class="event-card-share-bar" role="group" aria-label="Partager cet événement">
-                <button class="event-card-share-main" type="button" title="Partager cette publication" aria-label="Partager cette publication"
-                    onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
-                    <i class="fas fa-share-alt"></i><span>Partager</span>
+        </div>
+        <div class="share-post-footer">
+            <button class="share-post-action-main" type="button"
+                onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
+                <i class="fas fa-share-alt"></i>
+                <span>Partager</span>
+            </button>
+            <div class="share-post-actions-group">
+                <button class="share-post-icon-btn wa" title="WhatsApp"
+                    onclick="event.stopPropagation(); sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
+                    <i class="fab fa-whatsapp"></i>
                 </button>
-                <div class="event-card-share-networks">
-                    <button class="share-action-btn wa" title="Partager sur WhatsApp" onclick="event.stopPropagation(); sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-whatsapp"></i></button>
-                    <button class="share-action-btn tg" title="Partager sur Telegram" onclick="event.stopPropagation(); sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-telegram-plane"></i></button>
-                    <button class="share-action-btn tw" title="Partager sur X" onclick="event.stopPropagation(); sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-twitter"></i></button>
-                    <button class="share-action-btn fb" title="Partager sur Facebook" onclick="event.stopPropagation(); sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')"><i class="fab fa-facebook-f"></i></button>
-                    <button class="share-action-btn copy" title="Copier le lien" onclick="event.stopPropagation(); copyShareLink('${escapeHtml(shareUrl)}')"><i class="fas fa-link"></i></button>
-                </div>
+                <button class="share-post-icon-btn tg" title="Telegram"
+                    onclick="event.stopPropagation(); sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
+                    <i class="fab fa-telegram-plane"></i>
+                </button>
+                <button class="share-post-icon-btn tw" title="X / Twitter"
+                    onclick="event.stopPropagation(); sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
+                    <i class="fab fa-twitter"></i>
+                </button>
+                <button class="share-post-icon-btn fb" title="Facebook"
+                    onclick="event.stopPropagation(); sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
+                    <i class="fab fa-facebook-f"></i>
+                </button>
+                <button class="share-post-icon-btn copy" title="Copier le lien"
+                    onclick="event.stopPropagation(); copyShareLink('${escapeHtml(shareUrl)}')">
+                    <i class="fas fa-link"></i>
+                </button>
             </div>
         </div>
     </div>`;
@@ -5020,6 +5100,7 @@ function copyShareLink(url) {
 window.removeLegacyHeaderShareButton = removeLegacyHeaderShareButton;
 window.loadShareFeed = loadShareFeed;
 window.renderSharePost = renderSharePost;
+window.renderNotificationCard = renderNotificationCard;
 window.openSharePostModal = openSharePostModal;
 window.closeSharePostModal = closeSharePostModal;
 window.publishSharePost = publishSharePost;
