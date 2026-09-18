@@ -4906,8 +4906,10 @@ body.dark-mode .event-detail-meta {
    ============================================================ */
 .toast-notification {
     position: fixed;
-    bottom: 100px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
     max-width: 380px;
     background: #ffffff;
     border-radius: 16px;
@@ -4917,13 +4919,13 @@ body.dark-mode .event-detail-meta {
     align-items: center;
     gap: 14px;
     z-index: 99999;
-    transform: translateY(120px);
+    transform: translate(-50%, calc(-50% + 28px)) scale(.96);
     opacity: 0;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-left: 6px solid #10b981;
 }
 .toast-notification.show {
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
 }
 .toast-notification .toast-icon {
@@ -5506,9 +5508,9 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
 /* ============================================================
    PURCHASE CONFIRMATION TOAST
    ============================================================ */
-.purchase-confirmation { position: fixed; top: 80px; left: 50%; transform: translate(-50%, -120%); width: calc(100% - 32px); max-width: 460px; background: #ffffff; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.15), 0 8px 20px rgba(11,31,92,.12); z-index: 10000; overflow: hidden; transition: transform .5s cubic-bezier(.175,.885,.32,1.275), opacity .3s ease; opacity: 0; pointer-events: none; }
-.purchase-confirmation.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
-.purchase-confirmation.hiding { transform: translate(-50%, -120%); opacity: 0; }
+.purchase-confirmation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, calc(-50% - 40px)) scale(.96); width: calc(100% - 32px); max-width: 460px; background: #ffffff; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.15), 0 8px 20px rgba(11,31,92,.12); z-index: 10000; overflow: hidden; transition: transform .5s cubic-bezier(.175,.885,.32,1.275), opacity .3s ease; opacity: 0; pointer-events: none; }
+.purchase-confirmation.show { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
+.purchase-confirmation.hiding { transform: translate(-50%, calc(-50% - 40px)) scale(.96); opacity: 0; }
 .pc-content { display:flex; gap:14px; padding:18px 18px 16px; align-items:flex-start; position:relative; }
 .pc-icon { width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#10b981,#059669); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 15px rgba(16,185,129,.35); animation:pcIconPop .5s cubic-bezier(.175,.885,.32,1.275); }
 .pc-icon i { color:#fff; font-size:1.3rem; }
@@ -5539,7 +5541,7 @@ body.dark-mode .pc-btn-secondary { background:#374151; color:#f3f4f6; border-col
 body.dark-mode .pc-btn-secondary:hover { background:#4b5563; }
 body.dark-mode .pc-close { color:#9ca3af; }
 body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
-@media (max-width:480px) { .purchase-confirmation{top:72px;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
+@media (max-width:480px) { .purchase-confirmation{top:50%;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
 
 /* ============================================================
    FEED DE PARTAGE — Publications d'événements
@@ -5729,3 +5731,118 @@ body.dark-mode #sharePostPreview { background: #374151 !important; }
 .btn-toggle-event { transition: all 0.2s ease; }
 .btn-toggle-event:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
+
+
+/* ============================================================
+   PARTAGE DIRECT — bouton sur chaque publication
+   ============================================================ */
+.share-post-main-btn {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    background: #f8fafc;
+    color: #0B1F5C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.share-post-main-btn:hover {
+    transform: scale(1.08);
+    background: #F5B400;
+    color: #1a1a2e;
+    border-color: #F5B400;
+    box-shadow: 0 5px 14px rgba(245,180,0,0.28);
+}
+.share-post-main-btn:active {
+    transform: scale(0.96);
+}
+body.dark-mode .share-post-main-btn {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+body.dark-mode .share-post-main-btn:hover {
+    background: #F5B400;
+    color: #1a1a2e;
+    border-color: #F5B400;
+}
+@media (max-width: 480px) {
+    .share-post-main-btn { width: 36px; height: 36px; flex-basis: 36px; }
+}
+
+
+/* ============================================================
+   PARTAGE — bouton intégré à la carte de publication
+   ============================================================ */
+.header .btn-share-quick,
+.header .share-post-main-btn,
+.header [data-action="share-publication"] {
+    display: none !important;
+}
+
+.event-card-share-bar {
+    margin: -1px 0 0;
+    padding: 10px 12px 12px;
+    background: #fff;
+    border: 1px solid #edf0f4;
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.04);
+}
+.event-card-share-main {
+    min-height: 38px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 22px;
+    background: #0B1F5C;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(11,31,92,.18);
+    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    white-space: nowrap;
+}
+.event-card-share-main:hover {
+    transform: translateY(-1px);
+    background: #142d73;
+    box-shadow: 0 6px 16px rgba(11,31,92,.24);
+}
+.event-card-share-networks {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+.event-card-share-networks .share-action-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    font-size: .85rem;
+}
+@media (max-width: 480px) {
+    .event-card-share-bar { padding: 9px 10px 11px; gap: 7px; }
+    .event-card-share-main { padding: 8px 13px; }
+    .event-card-share-networks { gap: 4px; }
+    .event-card-share-networks .share-action-btn { width: 32px; height: 32px; }
+}
+body.dark-mode .event-card-share-bar {
+    background: #1f2937;
+    border-color: #374151;
+}
+body.dark-mode .event-card-share-main { background: #F5B400; color: #1a1a2e; }
