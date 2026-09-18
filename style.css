@@ -5777,72 +5777,159 @@ body.dark-mode .share-post-main-btn:hover {
 }
 
 
-/* ============================================================
-   PARTAGE — bouton intégré à la carte de publication
-   ============================================================ */
-.header .btn-share-quick,
-.header .share-post-main-btn,
-.header [data-action="share-publication"] {
-    display: none !important;
-}
 
-.event-card-share-bar {
-    margin: -1px 0 0;
-    padding: 10px 12px 12px;
-    background: #fff;
-    border: 1px solid #edf0f4;
-    border-top: 0;
-    border-radius: 0 0 16px 16px;
+/* ============================================================
+   PUBLICATION — Footer d'actions (style Facebook / X)
+   ============================================================ */
+.share-post-footer {
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 4px 14px rgba(0,0,0,.04);
+    padding: 10px 16px 14px;
+    border-top: 1px solid #f0f0f0;
+    background: #fff;
+    border-radius: 0 0 16px 16px;
 }
-.event-card-share-main {
-    min-height: 38px;
-    padding: 8px 16px;
-    border: 0;
-    border-radius: 22px;
-    background: #0B1F5C;
-    color: #fff;
+.share-post-action-main {
+    flex: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    font-size: .78rem;
+    gap: 8px;
+    padding: 11px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
+    color: #fff;
     font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(11,31,92,.18);
-    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(11, 31, 92, 0.2);
     white-space: nowrap;
 }
-.event-card-share-main:hover {
+.share-post-action-main i { font-size: 0.95rem; }
+.share-post-action-main:hover {
     transform: translateY(-1px);
-    background: #142d73;
-    box-shadow: 0 6px 16px rgba(11,31,92,.24);
+    box-shadow: 0 6px 18px rgba(11, 31, 92, 0.3);
 }
-.event-card-share-networks {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: auto;
-}
-.event-card-share-networks .share-action-btn {
-    width: 34px;
-    height: 34px;
-    padding: 0;
+.share-post-action-main:active { transform: scale(0.98); }
+.share-post-actions-group { display: flex; gap: 6px; flex-shrink: 0; }
+.share-post-icon-btn {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+    border: none;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    font-size: .85rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: #f3f4f6;
+    color: #4b5563;
 }
-@media (max-width: 480px) {
-    .event-card-share-bar { padding: 9px 10px 11px; gap: 7px; }
-    .event-card-share-main { padding: 8px 13px; }
-    .event-card-share-networks { gap: 4px; }
-    .event-card-share-networks .share-action-btn { width: 32px; height: 32px; }
+.share-post-icon-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.14); }
+.share-post-icon-btn:active { transform: scale(.95); }
+.share-post-icon-btn.wa { background:#25D366; color:#fff; }
+.share-post-icon-btn.tg { background:#0088cc; color:#fff; }
+.share-post-icon-btn.tw { background:#1DA1F2; color:#fff; }
+.share-post-icon-btn.fb { background:#1877F2; color:#fff; }
+.share-post-icon-btn.copy { background:#0B1F5C; color:#fff; }
+@media (max-width:480px) {
+    .share-post-footer { flex-wrap:wrap; padding:10px 12px 14px; }
+    .share-post-action-main { flex:1 1 100%; order:2; }
+    .share-post-actions-group { flex:1 1 100%; justify-content:center; order:1; margin-bottom:6px; }
+    .share-post-icon-btn { width:38px; height:38px; font-size:.95rem; }
 }
-body.dark-mode .event-card-share-bar {
-    background: #1f2937;
-    border-color: #374151;
+body.dark-mode .share-post-footer { background:#1f2937; border-top-color:#374151; }
+body.dark-mode .share-post-action-main { background:linear-gradient(135deg,#F5B400,#D89C00); color:#1a1a2e; }
+body.dark-mode .share-post-icon-btn { background:#374151; color:#e5e7eb; }
+.header .btn-share-quick,
+.header .share-post-main-btn,
+.header [data-action="share-publication"] { display:none !important; }
+
+/* ============================================================
+   NOTIFICATIONS — Design professionnel et épuré
+   ============================================================ */
+#notificationsList { display:flex; flex-direction:column; gap:20px; }
+.notif-toolbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; background:#f8fafc; border-radius:12px;
+    border:1px solid #e6e6e6; margin-bottom:4px;
 }
-body.dark-mode .event-card-share-main { background: #F5B400; color: #1a1a2e; }
+.notif-count { font-size:.8rem; color:#6b7280; font-weight:600; }
+.notif-clear-btn {
+    background:#ef4444; color:#fff; border:none; padding:6px 14px;
+    border-radius:20px; font-size:.72rem; font-weight:600; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:all .2s ease;
+}
+.notif-clear-btn:hover { background:#dc2626; transform:translateY(-1px); }
+.notif-section { display:flex; flex-direction:column; gap:10px; }
+.notif-section-title {
+    font-size:.68rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:#9ca3af; padding:0 4px; margin-bottom:2px;
+}
+.notif-card {
+    display:flex; align-items:flex-start; gap:14px; padding:14px 16px;
+    background:#fff; border-radius:16px; border:1px solid #f0f0f0;
+    box-shadow:0 2px 12px rgba(0,0,0,.04); transition:all .25s ease;
+    position:relative; overflow:hidden;
+}
+.notif-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    border-radius:4px 0 0 4px;
+}
+.notif-card.type-purchase::before { background:#3b82f6; }
+.notif-card.type-event::before { background:#f59e0b; }
+.notif-card.type-info::before { background:#10b981; }
+.notif-card.type-warning::before { background:#ef4444; }
+.notif-card.type-success::before { background:#10b981; }
+.notif-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); border-color:#e5e7eb; }
+.notif-card.unread { background:#f8faff; border-color:#e0e7ff; }
+.notif-card-icon {
+    flex-shrink:0; width:42px; height:42px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:1.05rem; color:#fff;
+}
+.notif-card.type-purchase .notif-card-icon { background:linear-gradient(135deg,#3b82f6,#2563eb); }
+.notif-card.type-event .notif-card-icon { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.notif-card.type-info .notif-card-icon { background:linear-gradient(135deg,#10b981,#059669); }
+.notif-card.type-warning .notif-card-icon { background:linear-gradient(135deg,#ef4444,#dc2626); }
+.notif-card.type-success .notif-card-icon { background:linear-gradient(135deg,#10b981,#059669); }
+.notif-card-body { flex:1; min-width:0; }
+.notif-card-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px; }
+.notif-card-title { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#6b7280; }
+.notif-card-time { font-size:.7rem; color:#9ca3af; font-weight:500; white-space:nowrap; }
+.notif-card-message { font-size:.88rem; color:#1f2937; line-height:1.5; font-weight:500; margin:0; word-break:break-word; }
+.notif-card-delete {
+    flex-shrink:0; width:28px; height:28px; border-radius:50%; background:transparent;
+    border:none; color:#d1d5db; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; font-size:.75rem; transition:all .2s ease; opacity:0;
+}
+.notif-card:hover .notif-card-delete { opacity:1; }
+.notif-card-delete:hover { background:#fee2e2; color:#ef4444; }
+.notif-empty { text-align:center; padding:60px 20px; color:#9ca3af; }
+.notif-empty i { font-size:3rem; opacity:.25; margin-bottom:16px; display:block; }
+body.dark-mode .notif-card { background:#1f2937; border-color:#374151; }
+body.dark-mode .notif-card.unread { background:#1e293b; border-color:#334155; }
+body.dark-mode .notif-card-message { color:#e5e7eb; }
+body.dark-mode .notif-card-title { color:#9ca3af; }
+body.dark-mode .notif-card-time { color:#6b7280; }
+body.dark-mode .notif-card-delete { color:#6b7280; }
+body.dark-mode .notif-card-delete:hover { background:#7f1d1d; color:#fca5a5; }
+body.dark-mode .notif-section-title { color:#6b7280; }
+body.dark-mode .notif-toolbar { background:#1f2937; border-color:#374151; }
+body.dark-mode .notif-count { color:#9ca3af; }
+
+/* ============================================================
+   TOASTS — toujours centrés à l'écran
+   ============================================================ */
+.toast-notification {
+    top:50% !important; left:50% !important; right:auto !important; bottom:auto !important;
+    transform:translate(-50%,calc(-50% + 28px)) scale(.96) !important;
+}
+.toast-notification.show { transform:translate(-50%,-50%) scale(1) !important; }
+.toast-notification.hiding { transform:translate(-50%,calc(-50% + 28px)) scale(.96) !important; }
+@media (max-width:480px) {
+    .toast-notification { width:calc(100% - 24px); max-width:420px; }
+}
