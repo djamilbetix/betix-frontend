@@ -982,85 +982,29 @@ function restoreBackupData() {
 // LOAD ALL FROM SUPABASE
 // ============================================================
 async function loadAllFromSupabase() {
-    console.log('=== LOAD ALL FROM SUPABASE ===');
-    loadUsedTickets();
-    updateSyncStatus('loading');
+    console.log('=== LOAD ALL FROM SUPABASE ==='); loadUsedTickets(); updateSyncStatus('loading');
     const userIdentifier = currentUser.piUid || currentUser.wallet;
     const eventsCached = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
     const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : [];
     if (!eventsCached) showEventSkeletons(6);
-
     if (eventsCached && (!userIdentifier || ticketsCached)) {
-        console.log('Using full cache for events and tickets');
-        events = eventsCached;
-        if (userIdentifier) tickets = ticketsCached;
-        else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-
-        const beforeCount = events.length;
-        events = events.filter(e => !isEventPast(e));
-        if (events.length !== beforeCount) {
-            console.log('Purge: ' + (beforeCount - events.length) + ' événement(s) passé(s) retiré(s) du cache local.');
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            clearCache('betix_cached_events');
-        }
-
-        saveBackupData(events, tickets);
-        updateSyncStatus('success');
-        renderEventsByCategory();
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-        try { await loadShareFeed(); } catch (e) { console.warn('Feed load failed:', e); }
-        return;
+        console.log('✅ Using full cache for events and tickets'); events = eventsCached; if (userIdentifier) tickets = ticketsCached; else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+        saveBackupData(events,tickets); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage(); return;
     }
-
     try {
         const supabaseEvents = await loadEventsFromSupabase();
         const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-        events = mergeArraysById(localEvents, supabaseEvents);
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        saveBackupData(events, tickets);
-    } catch (error) {
-        console.error('Error loading events from Supabase:', error);
-        events = JSON.parse(localStorage.getItem('betix_events') || '[]');
-    }
-
+        events = mergeArraysById(localEvents, supabaseEvents); localStorage.setItem('betix_events', JSON.stringify(events)); saveBackupData(events,tickets);
+    } catch(error) { console.error('Error loading events from Supabase:',error); events=JSON.parse(localStorage.getItem('betix_events')||'[]'); }
     if (userIdentifier) {
         try {
-            const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
-            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-            tickets = mergeArraysById(localTickets, supabaseTickets);
-            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-            saveBackupData(events, tickets);
-        } catch (error) {
-            console.error('Error loading tickets from Supabase:', error);
-            tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-        }
-    } else {
-        tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-    }
-
-    notifications = userIdentifier ? await loadNotificationsFromSupabase() : JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-    saveNotifications();
-    updateNotifBadgeHeader();
-
-    const beforeCount = events.length;
-    events = events.filter(e => !isEventPast(e));
-    if (events.length !== beforeCount) {
-        console.log('Purge: ' + (beforeCount - events.length) + ' événement(s) passé(s) retiré(s) du cache local.');
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        clearCache('betix_cached_events');
-    }
-
-    try { await loadShareFeed(); } catch (e) { console.warn('Feed load failed:', e); }
-    await updateExpiredTickets();
-    updateSyncStatus('success');
-    renderEventsByCategory();
-    renderTickets();
-    renderHistory();
-    updateProfilePage();
-    setTimeout(() => { if (typeof generateAllQRCodes === 'function') generateAllQRCodes(); }, 300);
-    await retryPendingTickets();
+            const supabaseTickets=await loadTicketsFromSupabase(userIdentifier); const localTickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]');
+            tickets=mergeArraysById(localTickets,supabaseTickets); localStorage.setItem('betix_tickets',JSON.stringify(tickets)); saveBackupData(events,tickets);
+        } catch(error) { console.error('Error loading tickets from Supabase:',error); tickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]'); }
+    } else tickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]');
+    notifications=userIdentifier ? await loadNotificationsFromSupabase() : JSON.parse(localStorage.getItem('betix_notifications')||'[]'); saveNotifications(); updateNotifBadgeHeader();
+    await updateExpiredTickets(); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
+    setTimeout(()=>{if(typeof generateAllQRCodes==='function')generateAllQRCodes();},300); await retryPendingTickets();
 }
 
 // ============================================================
@@ -1703,15 +1647,12 @@ function renderEventCard(event) {
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? '<span class="stars">' + ratingStars + '</span> ' + avgRating.toFixed(1) + ' (' + ratings.filter(r => r.eventId === event.id).length + ')' : '';
     const remainingTickets = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
-    const eventEnded = isEventPast(event);
-    const isInactive = event.status === 'inactive' || event.status === 'disabled';
-    const buyButtonHtml = isInactive
-        ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-eye-slash"></i> Désactivé</button>'
-        : eventEnded
-            ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-calendar-times"></i> Event ended</button>'
-            : remainingTickets <= 0
-                ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-ticket-alt"></i> Sold out</button>'
-                : '<button class="buy-btn-classic" type="button" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>';
+    const eventEnded = isPastEvent(event);
+    const buyButtonHtml = eventEnded
+        ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-calendar-times"></i> Event ended</button>'
+        : remainingTickets <= 0
+            ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-ticket-alt"></i> Sold out</button>'
+            : '<button class="buy-btn-classic" type="button" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>';
 
     const ticketsLabelHtml = '<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>';
     const priceRightHtml = '<div class="event-price-right">' +
@@ -1737,19 +1678,7 @@ function renderEventCard(event) {
         '<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ' + dateFormatted + ' · <i class="fas fa-clock" style="color:#F5B400;"></i> ' + timeFormatted + (durationDisplay ? ' · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ' + durationDisplay : '') + '</div>' +
     '</div>';
 
-    const adminBarHtml = isAdminUser() ? (
-        '<div class="event-admin-bar" onclick="event.stopPropagation();">' +
-            '<button class="event-admin-btn toggle" title="' + (isInactive ? 'Réactiver' : 'Désactiver') + '" onclick="event.stopPropagation(); adminToggleEventVisibility(\'' + event.id + '\')">' +
-                '<i class="fas ' + (isInactive ? 'fa-eye' : 'fa-eye-slash') + '"></i>' +
-            '</button>' +
-            '<button class="event-admin-btn delete" title="Supprimer" onclick="event.stopPropagation(); adminDeleteEventPermanent(\'' + event.id + '\')">' +
-                '<i class="fas fa-trash"></i>' +
-            '</button>' +
-        '</div>'
-    ) : '';
-
     return '<div class="event-card-classic" data-id="' + event.id + '">' +
-        adminBarHtml +
         '<div class="poster-wrapper-classic">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
             carouselHtml +
@@ -1822,25 +1751,7 @@ function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
     if (!container) return;
     const filtered = events.filter(e => {
-        // Bloque tout événement passé, annulé, terminé ou désactivé.
-        if (isEventPast(e)) return false;
-        if (e.status === 'cancelled' || e.status === 'ended' || e.status === 'inactive' || e.status === 'disabled') return false;
-        // Sécurité supplémentaire : si la date de début est passée, vérifier la durée.
-        const now = Date.now();
-        const startTime = new Date(e.date).getTime();
-        if (!isNaN(startTime) && startTime < now) {
-            const val = parseFloat(e.durationValue) || 0;
-            let endTime = startTime;
-            switch (e.durationUnit) {
-                case 'hours': endTime += val * 3600000; break;
-                case 'days': endTime += val * 86400000; break;
-                case 'weeks': endTime += val * 604800000; break;
-                case 'months': endTime += val * 2592000000; break;
-                case 'years': endTime += val * 31536000000; break;
-                default: endTime += 3 * 3600000;
-            }
-            if (now > endTime) return false;
-        }
+        if (isEventPast(e) || e.status === 'cancelled') return false;
         const title = String(e.title || '').toLowerCase();
         const location = String(e.location || '').toLowerCase();
         const matchCategory = currentFilter === 'All' || e.category === currentFilter;
@@ -2464,6 +2375,11 @@ function verifyPhone() {
 // ============================================================
 let isPurchaseRequestInProgress = false;
 
+function isPastEvent(event) {
+    const date = new Date(event && event.date);
+    return !isNaN(date.getTime()) && date.getTime() < Date.now();
+}
+
 function setPurchaseFeedback(message, type) {
     const feedback = document.getElementById('purchaseFeedback');
     if (!feedback) return;
@@ -2484,7 +2400,7 @@ function openQuantityPopup(eventId) {
     if (!requireProfileComplete()) return;
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
-    if (isEventPast(event)) { openPastEventPopup(); return; }
+    if (isPastEvent(event)) { openPastEventPopup(); return; }
     if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
     const standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
     if (standardLeft <= 0) { alert('All tickets are sold out for this event'); return; }
@@ -2565,7 +2481,8 @@ function closeConfirmPurchasePopup() {}
 async function confirmPurchase(eventId, quantity) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
-    if (isEventPast(event)) {
+    const eventDate = new Date(event.date);
+    if (eventDate < new Date()) {
         closeQuantityPopup();
         openPastEventPopup();
         resetPurchaseButton();
@@ -2921,27 +2838,22 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
-                        // La connexion est établie : mettre à jour immédiatement l'interface
-                        // et afficher le bienvenue avant les synchronisations réseau secondaires.
-                        updateActivity();
-                        updateUserInfo();
-                        updateConnectButtons();
-                        closeSidebar();
-                        hideConnectSpinner();
-                        requestAnimationFrame(() => {
-                            showToast('Betix', t('demoConnected'), 'success');
-                        });
                         await loadProfileData();
                         await syncUserToSupabase();
+                        updateActivity();
+                        updateUserInfo();
                         updateProfilePage();
                         trackUserConnection();
                         renderEventsByCategory();
+                        updateConnectButtons();
                         await loadAllFromSupabase();
                         await syncAllToSupabase();
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
+                        showToast('Betix', t('demoConnected'), 'success');
+                        closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
                         return;
@@ -2958,30 +2870,27 @@ async function connectToPi() {
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
-                    // La connexion Pi est établie. Mettre à jour immédiatement l'état connecté
-                    // et afficher le message de bienvenue sans attendre les appels réseau.
+                    // NE PAS réinitialiser les champs de profil ici
+                    // Charger d'abord les données existantes depuis Supabase
+                    await loadProfileData();
+
+                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
+                    await syncUserToSupabase();
+
                     updateActivity();
                     updateUserInfo();
-                    updateConnectButtons();
-                    closeSidebar();
-                    hideConnectSpinner();
-                    requestAnimationFrame(() => {
-                        showToast('Betix', t('piConnected') + piUser.username, 'success');
-                    });
-
-                    // NE PAS réinitialiser les champs de profil ici.
-                    // Les données existantes sont chargées et synchronisées en arrière-plan.
-                    await loadProfileData();
-                    await syncUserToSupabase();
                     updateProfilePage();
                     trackUserConnection();
                     renderEventsByCategory();
+                    updateConnectButtons();
                     await loadAllFromSupabase();
                     await syncAllToSupabase();
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
+                    showToast('Betix', t('piConnected') + piUser.username, 'success');
+                    closeSidebar();
 
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
@@ -3021,7 +2930,7 @@ function checkAndNotifyProfileCompletion() {
             showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
             currentUser.profile_reminder_shown = true;
             saveUser();
-        }, 8000);
+        }, 5000);
     }
 }
 
@@ -3481,108 +3390,42 @@ function clearAllNotifications() {
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
-
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = `
-            <div class="notif-empty">
-                <i class="fas fa-bell-slash"></i>
-                <p>${t('noNotifications')}</p>
-            </div>`;
+        container.innerHTML = '<div class="notification-empty">' +
+            '<i class="fas fa-bell-slash"></i>' +
+            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
+        '</div>';
         return;
     }
-
-    // Regroupement par date
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const groups = { today: [], yesterday: [], older: [] };
-    notifications.forEach(n => {
-        const d = new Date(n.date);
-        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        if (day.getTime() === today.getTime()) groups.today.push(n);
-        else if (day.getTime() === yesterday.getTime()) groups.yesterday.push(n);
-        else groups.older.push(n);
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
+        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
+            '<i class="fas fa-trash"></i> Clear all' +
+        '</button>' +
+    '</div>';
+    notifications.forEach((notif) => {
+        const time = new Date(notif.date);
+        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const unreadClass = notif.read ? '' : 'unread';
+        const type = notif.type || 'info';
+        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
+        const icon = iconMap[type] || 'fa-info-circle';
+        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
+                '<div class="notif-time">' + timeStr + '</div>' +
+            '</div>' +
+            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
+        '</div>';
     });
-
-    let html = `
-        <div class="notif-toolbar">
-            <span class="notif-count">${notifications.length} notification(s)</span>
-            <button class="notif-clear-btn" onclick="clearAllNotifications()">
-                <i class="fas fa-trash"></i> Tout effacer
-            </button>
-        </div>`;
-
-    if (groups.today.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Aujourd'hui</div>
-            ${groups.today.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-    if (groups.yesterday.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Hier</div>
-            ${groups.yesterday.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-    if (groups.older.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Plus ancien</div>
-            ${groups.older.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-
     container.innerHTML = html;
-
-    // Marquer comme lues
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     notifications.forEach(n => n.read = true);
     saveNotifications();
     markNotificationsAsReadInSupabase(unreadIds);
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
-}
-
-function renderNotificationCard(notif) {
-    const time = new Date(notif.date);
-    const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const unreadClass = notif.read ? '' : ' unread';
-    const type = notif.type || 'info';
-
-    const iconMap = {
-        purchase: 'fa-shopping-bag',
-        event: 'fa-calendar-plus',
-        info: 'fa-info-circle',
-        warning: 'fa-exclamation-triangle',
-        success: 'fa-check-circle'
-    };
-    const titleMap = {
-        purchase: 'Achat',
-        event: 'Événement',
-        info: 'Information',
-        warning: 'Attention',
-        success: 'Succès'
-    };
-    const icon = iconMap[type] || 'fa-info-circle';
-    const title = titleMap[type] || 'Notification';
-
-    return `
-    <div class="notif-card type-${type}${unreadClass}">
-        <div class="notif-card-icon">
-            <i class="fas ${icon}"></i>
-        </div>
-        <div class="notif-card-body">
-            <div class="notif-card-header">
-                <span class="notif-card-title">${title}</span>
-                <span class="notif-card-time">${timeStr}</span>
-            </div>
-            <p class="notif-card-message">${escapeHtml(notif.message)}</p>
-        </div>
-        <button class="notif-card-delete" onclick="deleteNotification('${escapeHtml(String(notif.id))}')" title="Supprimer">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>`;
 }
 
 function updateNotifBadgeHeader() {
@@ -3703,12 +3546,7 @@ function showPage(pageName) {
     const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
     pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
     let displayPage = pageName;
-    if (pageName === 'home') {
-        document.getElementById('homePage').style.display = 'block';
-        renderEventsByCategory();
-        loadShareFeed();
-        displayPage = 'home';
-    }
+    if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
     else { const target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } displayPage = pageName; }
     if (pageHistory[pageHistory.length - 1] !== displayPage) pageHistory.push(displayPage);
     const backBtn = document.getElementById('backBtn');
@@ -4043,36 +3881,16 @@ async function adminSaveSettings() {
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
-        const { data: users, error: usersError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (usersError) {
-            console.error('Supabase users error:', usersError);
-            throw usersError;
-        }
-
-        let eventCounts = {};
-        try {
-            const { data: eventsData, error: eventsError } = await supabaseClient
-                .from('events')
-                .select('organizer_pi_uid');
-            if (!eventsError && eventsData) {
-                eventsData.forEach(ev => {
-                    const uid = ev.organizer_pi_uid;
-                    if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
-                });
-            }
-        } catch (e) {
-            console.warn('Could not load event counts:', e);
-        }
-
-        const mapped = (users || []).map(user => ({
-            ...user,
-            events_created: eventCounts[user.pi_uid] || eventCounts[user.wallet] || 0
-        }));
-        console.log('Loaded ' + mapped.length + ' users from Supabase');
-        return mapped;
+        const { data: users, error: usersError } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
+        if (usersError) throw usersError;
+        const { data: eventsData, error: eventsError } = await supabaseClient.from('events').select('organizer_pi_uid');
+        if (eventsError) throw eventsError;
+        const eventCounts = {};
+        eventsData.forEach(ev => {
+            const uid = ev.organizer_pi_uid;
+            if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
+        });
+        return users.map(user => ({ ...user, events_created: eventCounts[user.pi_uid] || 0 }));
     } catch (error) {
         console.error('Error loading users from Supabase:', error);
         return [];
@@ -4082,26 +3900,18 @@ async function loadAllUsersFromSupabase() {
 async function renderAdminUsers() {
     const container = document.getElementById('adminUsersList');
     if (!container) return;
-
-    container.innerHTML = '<p style="text-align:center;padding:20px;color:#6b7280;"><i class="fas fa-spinner fa-spin"></i> Chargement des utilisateurs...</p>';
-
     const users = await loadAllUsersFromSupabase();
     allUsersCache = users;
-
-    const countEl = document.getElementById('adminUserCount');
-    if (countEl) countEl.innerText = users.length;
-
+    document.getElementById('adminUserCount').innerText = users.length;
     if (!users || users.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">Aucun utilisateur trouvé.</p>';
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noUsers') + '</p>';
         return;
     }
-
     let html = '<div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">' +
         '<button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">' +
             '<i class="fas fa-sync"></i> Refresh' +
         '</button>' +
     '</div>' +
-    '<div style="overflow-x:auto;">' +
     '<table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">' +
         '<thead>' +
             '<tr style="background: #f3f4f6; color: #1f2937;">' +
@@ -4116,13 +3926,13 @@ async function renderAdminUsers() {
         '</thead>' +
         '<tbody>';
     users.forEach(user => {
-        const fullName = ((user.first_name ? user.first_name + ' ' : '') + (user.last_name || '')).trim() || 'User';
+        const fullName = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
         const email = user.email || '—';
         const phone = user.phone_number || '—';
         const address = user.address || '—';
         const country = user.country || '—';
         const wallet = user.wallet || user.pi_uid || '—';
-        const evCount = user.events_created || 0;
+        const events = user.events_created || 0;
 
         html += '<tr style="border-bottom: 1px solid #e5e7eb;">' +
             '<td style="padding: 8px 6px;">' + escapeHtml(fullName) + '</td>' +
@@ -4131,10 +3941,10 @@ async function renderAdminUsers() {
             '<td style="padding: 8px 6px;">' + escapeHtml(address) + '</td>' +
             '<td style="padding: 8px 6px;">' + escapeHtml(country) + '</td>' +
             '<td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">' + escapeHtml(wallet) + '</td>' +
-            '<td style="padding: 8px 6px; text-align: center;">' + evCount + '</td>' +
+            '<td style="padding: 8px 6px; text-align: center;">' + events + '</td>' +
         '</tr>';
     });
-    html += '</tbody></table></div>';
+    html += '</tbody></table>';
     container.innerHTML = html;
 }
 
@@ -4144,81 +3954,24 @@ async function refreshUsersList() {
 }
 
 async function loadAdminPage() {
-    const storedPassword = localStorage.getItem('betix_admin_password');
-    if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
-        showToast('Accès refusé', t('adminDenied'), 'error');
-        showPage('home');
-        return;
-    }
-    if (storedPassword && storedPassword !== adminPassword) adminPassword = storedPassword;
-
-    document.getElementById('adminUserCount').innerText = allUsersCache.length || '…';
-    document.getElementById('adminTicketCount').innerText = adminTicketsCache.length || tickets.length || '…';
-    document.getElementById('adminEventCount').innerText = events.length || '0';
-    document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
-    document.getElementById('adminLoginCount').textContent = localStorage.getItem('betix_admin_login_count') || 0;
-    document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
-    document.getElementById('adminCommission').value = appSettings.commissionPercent;
-    document.getElementById('adminServiceFee').value = appSettings.serviceFeePercent;
-    document.getElementById('adminPiRate').value = appSettings.piRate;
-
-    updateSyncStatus('ready');
-
-    try { await loadAdminTickets(); } catch (e) {
-        console.error('loadAdminTickets failed:', e);
-        adminTicketsCache = tickets || [];
-    }
-    try { renderAdminSlides(); } catch (e) { console.error('renderAdminSlides failed:', e); }
-    try {
-        await renderAdminUsers();
-        const userCountEl = document.getElementById('adminUserCount');
-        if (userCountEl) userCountEl.innerText = allUsersCache.length || 0;
-    } catch (e) {
-        console.error('renderAdminUsers failed:', e);
-        const container = document.getElementById('adminUsersList');
-        if (container) container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Erreur de chargement des utilisateurs.</p>';
-    }
-    try { renderAdminLogsFiltered(); } catch (e) { console.error(e); }
-    try { renderAdminRefunds(); } catch (e) { console.error(e); }
-    try { refreshAdminDashboard(); } catch (e) { console.error('refreshAdminDashboard failed:', e); }
-
-    initAdminTabs();
-    if (!adminTimerInterval) startAdminSession();
-
-    const eventSearch = document.getElementById('adminEventSearch');
-    const eventSort = document.getElementById('adminEventSort');
-    if (eventSearch && !eventSearch._bound) {
-        eventSearch.addEventListener('input', () => { adminEventsCurrentPage = 1; renderAdminEventsFiltered(); });
-        eventSearch._bound = true;
-    }
-    if (eventSort && !eventSort._bound) {
-        eventSort.addEventListener('change', () => { adminEventsCurrentPage = 1; renderAdminEventsFiltered(); });
-        eventSort._bound = true;
-    }
-    const logSearch = document.getElementById('adminLogSearch');
-    const logType = document.getElementById('adminLogType');
-    const logDate = document.getElementById('adminLogDate');
-    [logSearch, logType, logDate].forEach(el => {
-        if (el && !el._bound) {
-            el.addEventListener('input', renderAdminLogsFiltered);
-            el.addEventListener('change', renderAdminLogsFiltered);
-            el._bound = true;
-        }
-    });
-    const userSearch = document.getElementById('adminUserSearch');
-    if (userSearch && !userSearch._bound) {
-        userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
-        userSearch._bound = true;
-    }
-    const rs = document.getElementById('adminRefundSearch');
-    const rf = document.getElementById('adminRefundFilter');
-    [rs, rf].forEach(el => {
-        if (el && !el._bound) {
-            el.addEventListener('input', renderAdminRefunds);
-            el.addEventListener('change', renderAdminRefunds);
-            el._bound = true;
-        }
-    });
+    const storedPassword=localStorage.getItem('betix_admin_password');
+    if(storedPassword!==adminPassword && storedPassword!=='Betix@2026#'){showToast('Accès refusé',t('adminDenied'),'error');showPage('home');return;}
+    if(storedPassword && storedPassword!==adminPassword)adminPassword=storedPassword;
+    document.getElementById('adminUserCount').innerText=allUsersCache.length||0;
+    document.getElementById('adminTicketCount').innerText=adminTicketsCache.length||tickets.length;
+    document.getElementById('adminEventCount').innerText=events.length;
+    document.getElementById('adminLastLogin').textContent=localStorage.getItem('betix_admin_last_login')||'Never';
+    document.getElementById('adminLoginCount').textContent=localStorage.getItem('betix_admin_login_count')||0;
+    document.getElementById('adminCurrentPasswordDisplay').textContent='••••••••';
+    document.getElementById('adminCommission').value=appSettings.commissionPercent; document.getElementById('adminServiceFee').value=appSettings.serviceFeePercent; document.getElementById('adminPiRate').value=appSettings.piRate;
+    await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
+    const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
+    if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
+    if(eventSort&&!eventSort._bound){eventSort.addEventListener('change',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSort._bound=true;}
+    const logSearch=document.getElementById('adminLogSearch'), logType=document.getElementById('adminLogType'), logDate=document.getElementById('adminLogDate');
+    [logSearch,logType,logDate].forEach(el=>{if(el&&!el._bound){el.addEventListener('input',renderAdminLogsFiltered);el.addEventListener('change',renderAdminLogsFiltered);el._bound=true;}});
+    const userSearch=document.getElementById('adminUserSearch'); if(userSearch&&!userSearch._bound){userSearch.addEventListener('input',function(){filterAdminUsers(this.value);});userSearch._bound=true;}
+    const rs=document.getElementById('adminRefundSearch'), rf=document.getElementById('adminRefundFilter'); [rs,rf].forEach(el=>{if(el&&!el._bound){el.addEventListener('input',renderAdminRefunds);el.addEventListener('change',renderAdminRefunds);el._bound=true;}});
 }
 
 function filterAdminUsers(query) {
@@ -4246,7 +3999,15 @@ function renderAdminEvents() {
 }
 
 function adminDeleteEvent(id) {
-    return adminDeleteEventPermanent(id);
+    if (confirm('Delete this event?')) {
+        events = events.filter(e => e.id !== id);
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents(); renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = events.length;
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert(t('eventDeleted'));
+    }
 }
 
 function adminDeleteAllEvents() {
@@ -4435,7 +4196,6 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // ============================================================
 async function initApp() {
     try {
-        removeLegacyHeaderShareButton();
         showEventSkeletons(6);
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
@@ -4465,7 +4225,6 @@ async function initApp() {
         calculateLoyaltyPoints();
         initFilters();
         renderEventsByCategory();
-        loadShareFeed();
         updateUserInfo();
         updateProfilePage();
         updateNotifBadgeHeader();
@@ -4479,16 +4238,6 @@ async function initApp() {
         renderAdminLogs();
         setupTicketTypesUI();
         initCharCounters();
-        const shareMessage = document.getElementById('sharePostMessage');
-        const shareCounter = document.getElementById('sharePostCharCounter');
-        if (shareMessage && shareCounter && !shareMessage._bound) {
-            shareMessage.addEventListener('input', () => {
-                const rem = 200 - shareMessage.value.length;
-                shareCounter.textContent = rem + ' caractères restants';
-                shareCounter.style.color = rem < 20 ? '#ef4444' : '#6b7280';
-            });
-            shareMessage._bound = true;
-        }
         const storedPassword = localStorage.getItem('betix_admin_password');
         if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
             const adminBtn = document.getElementById('adminMenuItem');
@@ -4649,199 +4398,27 @@ window.clearAllNotifications = clearAllNotifications;
 // ÉTAPE 3/4 – ADMIN DASHBOARD, REFUNDS, REALTIME, SKELETONS
 // ============================================================
 async function loadAdminTickets() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .order('purchase_date', { ascending: false });
-        if (error) {
-            console.error('Admin tickets Supabase error:', error);
-            throw error;
-        }
-        adminTicketsCache = (data || []).map(t => ({
-            id: t.id,
-            eventId: t.event_id,
-            eventTitle: t.event_title || 'Event',
-            buyerName: t.buyer_name || 'Anonymous',
-            buyerEmail: t.buyer_email || '',
-            buyerPhone: t.buyer_phone || '',
-            buyerWallet: t.buyer_pi_uid || '',
-            price: parseFloat(t.price) || 0,
-            status: t.status || 'Valid',
-            purchaseDate: t.purchase_date,
-            transactionId: t.transaction_id,
-            category: t.category || ''
-        }));
-        setCachedData('betix_admin_cached_tickets', adminTicketsCache);
-        console.log('Loaded ' + adminTicketsCache.length + ' tickets for admin');
-        return adminTicketsCache;
-    } catch (e) {
-        console.error('Admin tickets error, falling back to cache:', e);
-        const cached = getCachedData('betix_admin_cached_tickets', CACHE_DURATION_TICKETS);
-        adminTicketsCache = cached || tickets || [];
-        return adminTicketsCache;
-    }
+    const cached=getCachedData('betix_admin_cached_tickets',CACHE_DURATION_TICKETS);
+    if(cached){adminTicketsCache=cached;return cached;}
+    try{
+        const {data,error}=await supabaseClient.from('tickets').select('*').order('purchase_date',{ascending:false});
+        if(error)throw error;
+        adminTicketsCache=(data||[]).map(t=>({id:t.id,eventId:t.event_id,eventTitle:t.event_title||'Event',buyerName:t.buyer_name||'Anonymous',buyerEmail:t.buyer_email||'',buyerPhone:t.buyer_phone||'',buyerWallet:t.buyer_pi_uid||'',price:t.price||0,status:t.status||'Valid',purchaseDate:t.purchase_date,transactionId:t.transaction_id,category:t.category||''}));
+        setCachedData('betix_admin_cached_tickets',adminTicketsCache); return adminTicketsCache;
+    }catch(e){console.error('Admin tickets error:',e);adminTicketsCache=tickets||[];return adminTicketsCache;}
 }
-
-function computeAdminStats() {
-    const source = (adminTicketsCache && adminTicketsCache.length) ? adminTicketsCache : (tickets || []);
-    const totalRevenue = source
-        .filter(t => t.status !== 'Refunded' && t.status !== 'refunded')
-        .reduce((s, t) => s + (parseFloat(t.price) || 0), 0);
-    const buyers = new Set(
-        source.map(t => t.buyerWallet || t.buyerEmail || t.buyer_pi_uid).filter(Boolean)
-    );
-    const activeEvents = events.filter(e => !isEventPast(e) && e.status !== 'cancelled' && e.status !== 'ended' && e.status !== 'inactive' && e.status !== 'disabled').length;
-
-    const revEl = document.getElementById('kpiRevenue');
-    if (revEl) revEl.textContent = totalRevenue.toFixed(4) + ' Pi';
-    const tickEl = document.getElementById('kpiTicketsSold');
-    if (tickEl) tickEl.textContent = source.length;
-    const buyEl = document.getElementById('kpiUniqueBuyers');
-    if (buyEl) buyEl.textContent = buyers.size;
-    const evEl = document.getElementById('kpiActiveEvents');
-    if (evEl) evEl.textContent = activeEvents;
-
-    return { totalRevenue, ticketsSold: source.length, uniqueBuyers: buyers.size, activeEvents };
-}
-
+function computeAdminStats(){const source=adminTicketsCache.length?adminTicketsCache:tickets;const totalRevenue=source.filter(t=>t.status!=='Refunded').reduce((s,t)=>s+(parseFloat(t.price)||0),0);const buyers=new Set(source.map(t=>t.buyerWallet||t.buyerEmail).filter(Boolean));const activeEvents=events.filter(e=>!isEventPast(e)&&e.status!=='cancelled').length;document.getElementById('kpiRevenue')&&(document.getElementById('kpiRevenue').textContent=totalRevenue.toFixed(4)+' Pi');document.getElementById('kpiTicketsSold')&&(document.getElementById('kpiTicketsSold').textContent=source.length);document.getElementById('kpiUniqueBuyers')&&(document.getElementById('kpiUniqueBuyers').textContent=buyers.size);document.getElementById('kpiActiveEvents')&&(document.getElementById('kpiActiveEvents').textContent=activeEvents);return{totalRevenue,ticketsSold:source.length,uniqueBuyers:buyers.size,activeEvents};}
 function renderRevenueChart(){const c=document.getElementById('revenueChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets;const labels=[],values=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);const n=new Date(d);n.setDate(n.getDate()+1);labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));values.push(source.filter(t=>{const pd=new Date(t.purchaseDate||0);return t.status!=='Refunded'&&pd>=d&&pd<n;}).reduce((s,t)=>s+(parseFloat(t.price)||0),0));}if(revenueChartInstance)revenueChartInstance.destroy();revenueChartInstance=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Revenue (Pi)',data:values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});}
 function renderCategoryChart(){const c=document.getElementById('categoryChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets,counts={};source.forEach(t=>{const e=events.find(x=>String(x.id)===String(t.eventId));const cat=(e&&e.category)||t.category||'Other';counts[cat]=(counts[cat]||0)+1;});const labels=Object.keys(counts),values=Object.values(counts);if(categoryChartInstance)categoryChartInstance.destroy();categoryChartInstance=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:['#0B1F5C','#F5B400','#10b981','#3b82f6','#8b5cf6','#ef4444','#f59e0b','#06b6d4'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});}
 function getFilteredAdminEvents(){const search=(document.getElementById('adminEventSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('adminEventSort')?.value||'date_desc';let filtered=events.filter(e=>!search||(String(e.title||'').toLowerCase().includes(search)||String(e.category||'').toLowerCase().includes(search)||String(e.organizerName||'').toLowerCase().includes(search)));const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);filtered.sort((a,b)=>sort==='date_asc'?new Date(a.date)-new Date(b.date):sort==='sales_desc'?(sales[b.id]||0)-(sales[a.id]||0):sort==='revenue_desc'?((sales[b.id]||0)*(parseFloat(b.price)||0))-((sales[a.id]||0)*(parseFloat(a.price)||0)):new Date(b.date)-new Date(a.date));return{filtered,salesByEvent:sales};}
-function renderAdminEventsFiltered() {
-    const container = document.getElementById('adminEventsList');
-    if (!container) return;
-    const { filtered, salesByEvent } = getFilteredAdminEvents();
-    if (!filtered.length) {
-        container.innerHTML = '<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';
-        const p = document.getElementById('adminEventsPagination');
-        if (p) p.innerHTML = '';
-        return;
-    }
-    const totalPages = Math.ceil(filtered.length / ADMIN_EVENTS_PER_PAGE);
-    if (adminEventsCurrentPage > totalPages) adminEventsCurrentPage = totalPages;
-    const page = filtered.slice((adminEventsCurrentPage - 1) * ADMIN_EVENTS_PER_PAGE, adminEventsCurrentPage * ADMIN_EVENTS_PER_PAGE);
-    container.innerHTML = page.map(e => {
-        const sold = salesByEvent[e.id] || 0;
-        const revenue = (sold * (parseFloat(e.price) || 0)).toFixed(4);
-        const past = isEventPast(e);
-        const cancelled = e.status === 'cancelled';
-        const isInactive = e.status === 'inactive' || e.status === 'disabled';
-        const badge = cancelled
-            ? '<span class="badge-status cancelled">Annulé</span>'
-            : past
-                ? '<span class="badge-status badge-expired">Terminé</span>'
-                : isInactive
-                    ? '<span class="badge-status" style="background:#fef3c7;color:#92400e;"><i class="fas fa-eye-slash"></i> Désactivé</span>'
-                    : '<span class="badge-status badge-used">Actif</span>';
-        const toggleButton = (!past && !cancelled)
-            ? '<button class="btn-toggle-event" onclick="event.stopPropagation(); adminToggleEventVisibility(\'' + e.id + '\')" style="background:' + (isInactive ? '#dcfce7' : '#fef3c7') + ';color:' + (isInactive ? '#166534' : '#92400e') + ';border:none;padding:6px 12px;border-radius:30px;font-size:0.7rem;font-weight:600;cursor:pointer;margin-right:6px;">' +
-                '<i class="fas ' + (isInactive ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (isInactive ? 'Réactiver' : 'Désactiver') +
-              '</button>'
-            : '';
-        const cancelButton = (!past && !cancelled)
-            ? '<button class="btn-cancel-event" onclick="event.stopPropagation(); openCancelEventModal(\'' + e.id + '\')"><i class="fas fa-ban"></i> Annuler</button>'
-            : '';
-        return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>' + escapeHtml(e.title) + '</strong>' + badge + '</div><small>' + escapeHtml(e.category) + ' · ' + escapeHtml(e.pays || e.country || 'France') + ' · ' + new Date(e.date).toLocaleDateString('en-US') + '</small><small>Standard: ' + (parseFloat(e.price) || 0).toFixed(6) + ' Pi</small><small>Organisateur: ' + escapeHtml(e.organizerName || e.organizer || '—') + '</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> ' + sold + ' vendu(s) · ' + revenue + ' Pi</small></div><div class="event-actions">' + toggleButton + cancelButton + '<button class="admin-delete-btn" onclick="adminDeleteEventPermanent(\'' + e.id + '\')"><i class="fas fa-trash"></i> Supprimer</button></div></div>';
-    }).join('');
-    const p = document.getElementById('adminEventsPagination');
-    if (p) {
-        let h = totalPages > 1 ? '<button ' + (adminEventsCurrentPage === 1 ? 'disabled' : '') + ' onclick="goToAdminEventsPage(' + (adminEventsCurrentPage - 1) + ')">‹ Précédent</button>' : '';
-        for (let i = 1; i <= totalPages; i++) h += '<button class="' + (i === adminEventsCurrentPage ? 'active' : '') + '" onclick="goToAdminEventsPage(' + i + ')">' + i + '</button>';
-        if (totalPages > 1) h += '<button ' + (adminEventsCurrentPage === totalPages ? 'disabled' : '') + ' onclick="goToAdminEventsPage(' + (adminEventsCurrentPage + 1) + ')">Suivant ›</button>';
-        p.innerHTML = h;
-    }
-}
-
-// ============================================================
-// ADMIN — ACTIONS DIRECTES SUR LES ÉVÉNEMENTS
-// ============================================================
-function isAdminUser() {
-    const storedPassword = localStorage.getItem('betix_admin_password');
-    return storedPassword === adminPassword || storedPassword === 'Betix@2026#';
-}
-
-async function adminToggleEventVisibility(eventId) {
-    if (!isAdminUser()) { showToast('Accès refusé', 'Vous devez être administrateur.', 'error'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { showToast('Erreur', 'Événement introuvable.', 'error'); return; }
-
-    const isCurrentlyActive = event.status !== 'inactive' && event.status !== 'disabled';
-    const newStatus = isCurrentlyActive ? 'inactive' : 'active';
-    const label = isCurrentlyActive ? 'désactiver' : 'réactiver';
-    if (!confirm(`Voulez-vous ${label} l'événement "${event.title}" ?\n\n${isCurrentlyActive ? "Il ne sera plus visible sur la page d'accueil." : "Il sera de nouveau visible."}`)) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('events')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq('id', eventId);
-        if (error) throw error;
-
-        event.status = newStatus;
-        clearCache('betix_cached_events');
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        renderEventsByCategory();
-        renderAdminEventsFiltered();
-        if (document.getElementById('adminEventCount')) {
-            document.getElementById('adminEventCount').innerText = events.length;
-        }
-        addAdminLog('Event ' + (isCurrentlyActive ? 'désactivé' : 'réactivé'), '"' + event.title + '"');
-        showToast('Succès', "L'événement a été " + (isCurrentlyActive ? 'désactivé' : 'réactivé') + '.', 'success');
-    } catch (err) {
-        console.error('adminToggleEventVisibility error:', err);
-        showToast('Erreur', 'Impossible de mettre à jour le statut.', 'error');
-    }
-}
-
-async function adminDeleteEventPermanent(eventId) {
-    if (!isAdminUser()) { showToast('Accès refusé', 'Vous devez être administrateur.', 'error'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { showToast('Erreur', 'Événement introuvable.', 'error'); return; }
-
-    const confirmMsg = '⚠️ SUPPRESSION DÉFINITIVE ⚠️\n\n' +
-        'Événement : "' + event.title + '"\n\n' +
-        'Cette action est IRRÉVERSIBLE.\n' +
-        "Les billets associés resteront dans l'historique mais l'événement sera retiré de la base.\n\n" +
-        'Confirmer la suppression ?';
-    if (!confirm(confirmMsg)) return;
-
-    try {
-        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
-        if (error) throw error;
-
-        events = events.filter(e => String(e.id) !== String(eventId));
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        clearCache('betix_cached_events');
-
-        renderEventsByCategory();
-        renderAdminEventsFiltered();
-        renderMyEvents();
-
-        addAdminLog('Event supprimé', '"' + event.title + '" (ID: ' + eventId + ')');
-        showToast('Supprimé', "L'événement a été supprimé définitivement.", 'success');
-    } catch (err) {
-        console.error('adminDeleteEventPermanent error:', err);
-        showToast('Erreur', "Impossible de supprimer l'événement.", 'error');
-    }
-}
-
-window.isAdminUser = isAdminUser;
-window.adminToggleEventVisibility = adminToggleEventVisibility;
-window.adminDeleteEventPermanent = adminDeleteEventPermanent;
-
+function renderAdminEventsFiltered(){const container=document.getElementById('adminEventsList');if(!container)return;const {filtered,salesByEvent}=getFilteredAdminEvents();if(!filtered.length){container.innerHTML='<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';const p=document.getElementById('adminEventsPagination');if(p)p.innerHTML='';return;}const totalPages=Math.ceil(filtered.length/ADMIN_EVENTS_PER_PAGE);if(adminEventsCurrentPage>totalPages)adminEventsCurrentPage=totalPages;const page=filtered.slice((adminEventsCurrentPage-1)*ADMIN_EVENTS_PER_PAGE,adminEventsCurrentPage*ADMIN_EVENTS_PER_PAGE);container.innerHTML=page.map(e=>{const sold=salesByEvent[e.id]||0,revenue=(sold*(parseFloat(e.price)||0)).toFixed(4),past=isEventPast(e),cancelled=e.status==='cancelled';const badge=cancelled?'<span class="badge-status cancelled">Annulé</span>':past?'<span class="badge-status badge-expired">Terminé</span>':'<span class="badge-status badge-used">Actif</span>';return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>'+escapeHtml(e.title)+'</strong>'+badge+'</div><small>'+escapeHtml(e.category)+' · '+escapeHtml(e.pays||e.country||'France')+' · '+new Date(e.date).toLocaleDateString('en-US')+'</small><small>Standard: '+(parseFloat(e.price)||0).toFixed(6)+' Pi</small><small>Organisateur: '+escapeHtml(e.organizerName||e.organizer||'—')+'</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> '+sold+' vendu(s) · '+revenue+' Pi</small></div><div class="event-actions">'+((!past&&!cancelled)?'<button class="btn-cancel-event" onclick="event.stopPropagation();openCancelEventModal(\''+e.id+'\')"><i class="fas fa-ban"></i> Annuler</button>':'')+'<button class="admin-delete-btn" onclick="adminDeleteEvent(\''+e.id+'\')">Supprimer</button></div></div>';}).join('');const p=document.getElementById('adminEventsPagination');if(p){let h=totalPages>1?'<button '+(adminEventsCurrentPage===1?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage-1)+')">‹ Précédent</button>':'';for(let i=1;i<=totalPages;i++)h+='<button class="'+(i===adminEventsCurrentPage?'active':'')+'" onclick="goToAdminEventsPage('+i+')">'+i+'</button>';if(totalPages>1)h+='<button '+(adminEventsCurrentPage===totalPages?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage+1)+')">Suivant ›</button>';p.innerHTML=h;}}
 function goToAdminEventsPage(page){adminEventsCurrentPage=page;renderAdminEventsFiltered();document.getElementById('adminEventsList')?.scrollIntoView({behavior:'smooth',block:'start'});}
 function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),0);}
 function exportEventsCSV(){if(!events.length){showToast('Export','Aucun événement à exporter.','info');return;}const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);const rows=[['ID','Titre','Catégorie','Pays','Date','Lieu','Prix (Pi)','Places totales','Places vendues','Revenu (Pi)','Statut','Organisateur']];events.forEach(e=>{const sold=sales[e.id]||0;rows.push([e.id,e.title,e.category,e.pays||e.country,new Date(e.date).toISOString(),e.location,(parseFloat(e.price)||0).toFixed(6),e.seatsTotal||0,sold,(sold*(parseFloat(e.price)||0)).toFixed(6),e.status||'active',e.organizerName||e.organizer||'']);});downloadCSV('betix_events_'+Date.now()+'.csv',rows);showToast('Export réussi',events.length+' événements exportés.','success');}
 function exportTicketsCSV(){const source=adminTicketsCache.length?adminTicketsCache:tickets;if(!source.length){showToast('Export','Aucun ticket à exporter.','info');return;}const rows=[['ID','Événement','Acheteur','Email','Téléphone','Prix (Pi)','Statut','Date achat','Transaction ID']];source.forEach(t=>rows.push([t.id,t.eventTitle,t.buyerName,t.buyerEmail,t.buyerPhone,(parseFloat(t.price)||0).toFixed(6),t.status||'Valid',t.purchaseDate?new Date(t.purchaseDate).toISOString():'',t.transactionId||'']));downloadCSV('betix_tickets_'+Date.now()+'.csv',rows);showToast('Export réussi',source.length+' tickets exportés.','success');}
 function exportUsersCSV(){const users=allUsersCache||[];if(!users.length){showToast('Export','Aucun utilisateur à exporter.','info');return;}const rows=[['Nom','Email','Téléphone','Adresse','Pays','Wallet','Événements créés']];users.forEach(u=>rows.push([((u.first_name||'')+' '+(u.last_name||'')).trim()||'User',u.email||'',u.phone_number||'',u.address||'',u.country||'',u.wallet||u.pi_uid||'',u.events_created||0]));downloadCSV('betix_users_'+Date.now()+'.csv',rows);showToast('Export réussi',users.length+' utilisateurs exportés.','success');}
 function renderAdminLogsFiltered(){const c=document.getElementById('adminLogsList');if(!c)return;const s=(document.getElementById('adminLogSearch')?.value||'').toLowerCase().trim(),type=(document.getElementById('adminLogType')?.value||'all'),date=(document.getElementById('adminLogDate')?.value||'');const filtered=adminLogs.filter(l=>(!s||[l.user,l.action,l.details].join(' ').toLowerCase().includes(s))&&(type==='all'||String(l.action||'').toLowerCase().includes(type.toLowerCase()))&&(!date||String(l.timestamp||'').slice(0,10)===date));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:var(--gray);">Aucun log trouvé.</p>';return;}c.innerHTML=filtered.map(l=>'<div class="admin-log-item"><div><span class="log-user">'+escapeHtml(l.user||'')+'</span> <span class="log-action">'+escapeHtml(l.action||'')+'</span>'+(l.details?' <span style="color:var(--gray);font-size:.8rem;">'+escapeHtml(l.details)+'</span>':'')+'</div><span class="log-time">'+escapeHtml(l.date||'')+'</span></div>').join('');}
-function refreshAdminDashboard() {
-    try { computeAdminStats(); } catch (e) { console.error('computeAdminStats:', e); }
-    try { renderRevenueChart(); } catch (e) { console.error('renderRevenueChart:', e); }
-    try { renderCategoryChart(); } catch (e) { console.error('renderCategoryChart:', e); }
-    try { renderAdminEventsFiltered(); } catch (e) { console.error('renderAdminEventsFiltered:', e); }
-}
+function refreshAdminDashboard(){computeAdminStats();renderRevenueChart();renderCategoryChart();renderAdminEventsFiltered();}
 
 // ---------- REFUNDS ----------
 function openCancelEventModal(eventId){const event=events.find(e=>String(e.id)===String(eventId));if(!event){showToast('Erreur','Événement introuvable.','error');return;}const userId=currentUser.piUid||currentUser.wallet;if(event.organizer!==userId&&event.organizerPiUid!==userId&&!public_isAdmin()){showToast('Accès refusé','Vous n’êtes pas l’organisateur.','error');return;}const eventTickets=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(eventId)&&t.status!=='Refunded');const total=eventTickets.reduce((s,t)=>s+(parseFloat(t.price)||0),0);cancelEventId=eventId;document.getElementById('cancelEventReason').value='';document.getElementById('cancelEventTicketCount').textContent=eventTickets.length;document.getElementById('cancelEventRefundAmount').textContent=total.toFixed(6)+' Pi';const ta=document.getElementById('cancelEventReason');const counter=document.getElementById('cancelReasonCounter');if(ta){ta.oninput=()=>{const r=200-ta.value.length;counter.textContent=r+' caractères restants';counter.style.color=r<20?'#dc2626':'#6b7280';};}document.getElementById('cancelEventModal').classList.add('show');}
@@ -4865,248 +4442,6 @@ function showHistorySkeletons(count=2){const c=document.getElementById('historyL
 function showNotificationSkeletons(count=4){const c=document.getElementById('notificationsList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="notif-skeleton"><div class="sk-avatar skeleton"></div><div class="sk-content"><div class="sk-line skeleton"></div><div class="sk-line short skeleton"></div></div></div>';c.innerHTML=h;}
 
 window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
-
-// ============================================================
-// NETTOYAGE DU PARTAGE LEGACY DANS LE HEADER
-// ============================================================
-function removeLegacyHeaderShareButton() {
-    document.querySelectorAll('.header .btn-share-quick, .header .share-post-main-btn, .header [data-action="share-publication"]').forEach(el => el.remove());
-}
-
-// ============================================================
-// FEED DE PARTAGE — Publications d'événements
-// ============================================================
-async function loadShareFeed() {
-    const container = document.getElementById('shareFeedList');
-    if (!container) return;
-    try {
-        const { data, error } = await supabaseClient
-            .from('posts')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(20);
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-share-alt"></i> Aucune publication pour le moment. Soyez le premier à partager !</p>';
-            return;
-        }
-        const postsHtml = data.map(post => renderSharePost(post)).filter(html => html !== '').join('');
-        if (!postsHtml) {
-            container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-share-alt"></i> Aucune publication active pour le moment.</p>';
-            return;
-        }
-        container.innerHTML = postsHtml;
-    } catch (err) {
-        console.error('loadShareFeed error:', err);
-        container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;">Impossible de charger les publications.</p>';
-    }
-}
-
-function renderSharePost(post) {
-    const event = events.find(e => String(e.id) === String(post.event_id));
-    if (!event) return '';
-    if (isEventPast(event)) return '';
-    if (event.status === 'cancelled' || event.status === 'ended' || event.status === 'inactive' || event.status === 'disabled') return '';
-
-    const date = new Date(post.created_at);
-    const timeAgo = getTimeAgo(date);
-    const initial = (post.user_name || 'U')[0].toUpperCase();
-    const eventCardHtml = renderEventCard(event);
-    const shareUrl = window.location.origin + '/?event=' + encodeURIComponent(event.id);
-    const shareText = encodeURIComponent(post.message || 'Découvrez cet événement sur Betix !');
-    const shareUrlEnc = encodeURIComponent(shareUrl);
-
-    return `
-    <div class="share-post-card" data-post-id="${escapeHtml(String(post.id))}">
-        <div class="share-post-header">
-            <div class="share-post-avatar">${escapeHtml(initial)}</div>
-            <div class="share-post-user-info">
-                <div class="share-post-username">${escapeHtml(post.user_name || 'Utilisateur')}</div>
-                <div class="share-post-time"><i class="far fa-clock"></i> ${escapeHtml(timeAgo)}</div>
-            </div>
-        </div>
-        ${post.message ? `<div class="share-post-message">${escapeHtml(post.message)}</div>` : ''}
-        <div class="share-post-event-wrapper">
-            ${eventCardHtml}
-        </div>
-        <div class="share-post-footer">
-            <button class="share-post-action-main" type="button"
-                onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
-                <i class="fas fa-share-alt"></i>
-                <span>Partager</span>
-            </button>
-            <div class="share-post-actions-group">
-                <button class="share-post-icon-btn wa" title="WhatsApp"
-                    onclick="event.stopPropagation(); sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
-                <button class="share-post-icon-btn tg" title="Telegram"
-                    onclick="event.stopPropagation(); sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-telegram-plane"></i>
-                </button>
-                <button class="share-post-icon-btn tw" title="X / Twitter"
-                    onclick="event.stopPropagation(); sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-twitter"></i>
-                </button>
-                <button class="share-post-icon-btn fb" title="Facebook"
-                    onclick="event.stopPropagation(); sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-facebook-f"></i>
-                </button>
-                <button class="share-post-icon-btn copy" title="Copier le lien"
-                    onclick="event.stopPropagation(); copyShareLink('${escapeHtml(shareUrl)}')">
-                    <i class="fas fa-link"></i>
-                </button>
-            </div>
-        </div>
-    </div>`;
-}
-
-function getTimeAgo(date) {
-    const diff = Date.now() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "à l'instant";
-    if (mins < 60) return mins + ' min';
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + ' h';
-    const days = Math.floor(hrs / 24);
-    if (days < 7) return days + ' j';
-    return date.toLocaleDateString('fr-FR');
-}
-
-function openSharePostModal() {
-    if (!requireLogin()) return;
-    if (!requireProfileComplete()) return;
-    const modal = document.getElementById('sharePostModal');
-    const select = document.getElementById('sharePostEventSelect');
-    if (!modal || !select) return;
-    const userId = currentUser.piUid || currentUser.wallet;
-    const myUpcoming = events.filter(e =>
-        !isEventPast(e) &&
-        e.status !== 'cancelled' &&
-        e.status !== 'ended' &&
-        e.status !== 'inactive' &&
-        e.status !== 'disabled' &&
-        (e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name)
-    );
-    if (myUpcoming.length === 0) {
-        alert("Vous devez d'abord créer un événement à venir pour le partager.");
-        return;
-    }
-    select.innerHTML = '<option value="">-- Sélectionner un événement --</option>' +
-        myUpcoming.map(e => `<option value="${escapeHtml(String(e.id))}">${escapeHtml(e.title)} — ${new Date(e.date).toLocaleDateString('fr-FR')}</option>`).join('');
-    document.getElementById('sharePostMessage').value = '';
-    document.getElementById('sharePostPreview').style.display = 'none';
-    const counter = document.getElementById('sharePostCharCounter');
-    if (counter) counter.textContent = '200 caractères restants';
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-}
-
-function closeSharePostModal() {
-    const modal = document.getElementById('sharePostModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-}
-
-async function publishSharePost() {
-    const eventId = document.getElementById('sharePostEventSelect')?.value;
-    const message = (document.getElementById('sharePostMessage')?.value || '').trim();
-    if (!eventId) { alert('Veuillez sélectionner un événement.'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { alert('Événement introuvable.'); return; }
-    if (isEventPast(event)) { alert('Cet événement est déjà passé.'); return; }
-    if (event.status === 'cancelled' || event.status === 'ended' || event.status === 'inactive' || event.status === 'disabled') { alert("Cet événement n'est plus disponible."); return; }
-
-    const btn = document.getElementById('publishShareBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication...'; }
-    try {
-        const userId = currentUser.piUid || currentUser.wallet;
-        const userName = (currentUser.first_name || currentUser.name || 'Utilisateur') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-        const { error } = await supabaseClient.from('posts').insert({
-            user_id: userId,
-            user_name: userName,
-            event_id: eventId,
-            message: message || null
-        });
-        if (error) throw error;
-        closeSharePostModal();
-        await loadShareFeed();
-        showToast('Publication partagée !', "Votre événement est maintenant visible sur la page d'accueil.", 'success');
-    } catch (err) {
-        console.error('publishSharePost error:', err);
-        showToast('Erreur', 'Impossible de publier. Réessayez.', 'error');
-    } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-share-alt"></i> Publier'; }
-    }
-}
-
-async function sharePublication(postId, eventId) {
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) {
-        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
-        return;
-    }
-    if (isEventPast(event) || ['cancelled', 'ended', 'inactive', 'disabled'].includes(event.status)) {
-        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
-        return;
-    }
-
-    const card = document.querySelector('.share-post-card[data-post-id="' + CSS.escape(String(postId)) + '"]');
-    const postUser = card?.querySelector('.share-post-username')?.textContent || 'Betix';
-    const message = card?.querySelector('.share-post-message')?.textContent?.trim() || '';
-    const shareUrl = window.location.origin + '/?event=' + encodeURIComponent(event.id);
-    const shareText = message || ('Découvrez « ' + (event.title || 'cet événement') + ' » sur Betix !');
-
-    // Partage natif : sur iOS/Android, ouvre directement le menu de partage du téléphone.
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: event.title || 'Betix',
-                text: shareText,
-                url: shareUrl
-            });
-            return;
-        } catch (err) {
-            // Annulation par l'utilisateur : ne rien afficher.
-            if (err && err.name === 'AbortError') return;
-            console.warn('Native share unavailable:', err);
-        }
-    }
-
-    // Fallback desktop : ouvrir le partage WhatsApp par défaut.
-    sharePostExternal('whatsapp', String(event.id), encodeURIComponent(shareText), encodeURIComponent(shareUrl));
-}
-
-function sharePostExternal(network, eventId, text, url) {
-    let shareLink = '';
-    switch (network) {
-        case 'whatsapp': shareLink = `https://wa.me/?text=${text}%20${url}`; break;
-        case 'telegram': shareLink = `https://t.me/share/url?url=${url}&text=${text}`; break;
-        case 'twitter': shareLink = `https://twitter.com/intent/tweet?text=${text}&url=${url}`; break;
-        case 'facebook': shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
-    }
-    if (shareLink) window.open(shareLink, '_blank', 'width=600,height=500');
-}
-
-function copyShareLink(url) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Lien copié !', "Le lien de l'événement a été copié.", 'success');
-        }).catch(() => prompt('Copiez ce lien :', url));
-    } else prompt('Copiez ce lien :', url);
-}
-
-window.removeLegacyHeaderShareButton = removeLegacyHeaderShareButton;
-window.loadShareFeed = loadShareFeed;
-window.renderSharePost = renderSharePost;
-window.renderNotificationCard = renderNotificationCard;
-window.openSharePostModal = openSharePostModal;
-window.closeSharePostModal = closeSharePostModal;
-window.publishSharePost = publishSharePost;
-window.sharePublication = sharePublication;
-window.sharePostExternal = sharePostExternal;
-window.copyShareLink = copyShareLink;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
