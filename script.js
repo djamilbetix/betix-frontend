@@ -1048,6 +1048,15 @@ async function loadAllFromSupabase() {
     const eventsCached = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
     const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : [];
     if (!eventsCached) showEventSkeletons(6);
+    // 🔧 Timeout de secours pour éviter des skeletons bloqués
+    setTimeout(() => {
+        const c = document.getElementById('eventsByCategory');
+        if (c && c.querySelector('.event-skeleton')) {
+            console.warn('⚠️ Timeout events — rendu forcé');
+            events = JSON.parse(localStorage.getItem('betix_events') || '[]');
+            try { renderEventsByCategory(); } catch(e) { console.error('Timeout renderEvents error:', e); }
+        }
+    }, 8000);
     if (eventsCached && (!userIdentifier || ticketsCached)) {
         console.log('✅ Using full cache for events and tickets'); events = eventsCached; if (userIdentifier) tickets = ticketsCached; else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         saveBackupData(events,tickets); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage(); return;
@@ -3793,6 +3802,83 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // ============================================================
 // INITIALISATION DE L'APPLICATION
 // ============================================================
+// ============================================================
+// FONCTIONS DE LANGUE / TRADUCTIONS — CORRECTIF ANTI-CRASH
+// ============================================================
+function detectLanguage() {
+    let savedLang = localStorage.getItem('betix_language') || 'en';
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
+    currentLang = savedLang;
+    const settingsSelect = document.getElementById('settingsLangSelect');
+    if (settingsSelect) settingsSelect.value = savedLang;
+    setTimeout(() => {
+        const googleSelect = document.querySelector('.goog-te-combo');
+        if (googleSelect && googleSelect.value !== savedLang) {
+            googleSelect.value = savedLang;
+            googleSelect.dispatchEvent(new Event('change'));
+        }
+    }, 1500);
+    setTimeout(() => {
+        try { updateUITranslations(); } catch(e) { console.warn('updateUITranslations skip:', e); }
+    }, 500);
+    return savedLang;
+}
+
+function updateUITranslations() {
+    try {
+        const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+        const pageMap = {
+            home: t('home'), myevents: t('myEvents'), profile: t('profile'),
+            settings: t('settings'), tickets: t('myTickets'),
+            history: t('ticketHistory'), faq: t('faq'),
+            admin: t('administration'), scan: 'Scan Ticket'
+        };
+        sidebarItems.forEach(item => {
+            const page = item.dataset.page;
+            if (pageMap[page]) {
+                const icon = item.querySelector('i');
+                item.innerHTML = '';
+                if (icon) item.appendChild(icon);
+                item.appendChild(document.createTextNode(' ' + pageMap[page]));
+            }
+        });
+        const sidebarName = document.getElementById('sidebarName');
+        if (sidebarName) sidebarName.textContent = currentUser.name || t('guest');
+        const sidebarWallet = document.getElementById('sidebarWallet');
+        if (sidebarWallet) sidebarWallet.textContent = currentUser.wallet ? 'Connected' : t('notConnected');
+        const sidebarBtn = document.getElementById('sidebarWalletBtn');
+        if (sidebarBtn && !sidebarBtn.classList.contains('loading')) {
+            sidebarBtn.textContent = currentUser.wallet ? t('disconnect') : t('connectPi');
+        }
+        const socialTitle = document.querySelector('.sidebar-social-title');
+        if (socialTitle) socialTitle.textContent = t('followUs');
+        const heroTitle = document.querySelector('.hero-text h1');
+        if (heroTitle) heroTitle.textContent = 'The first ticketing platform powered by Pi Network';
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.placeholder = t('searchEvent');
+        const countryLabel = document.querySelector('.filter-country-select label');
+        if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
+        const eventsTitle = document.querySelector('.events-title');
+        if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
+        const eventsSub = document.querySelector('.events-sub');
+        if (eventsSub) eventsSub.textContent = t('joinCommunity');
+        const navHome = document.querySelector('#navHome span');
+        if (navHome) navHome.textContent = t('home');
+        const navCreate = document.querySelector('#navCreate span');
+        if (navCreate) navCreate.textContent = 'Create';
+        const navMenu = document.querySelector('#navMenu span');
+        if (navMenu) navMenu.textContent = 'Menu';
+        const backLabel = document.querySelector('.back-btn .back-btn-label');
+        if (backLabel) backLabel.textContent = t('back');
+    } catch(e) {
+        console.warn('updateUITranslations error:', e);
+    }
+}
+window.detectLanguage = detectLanguage;
+window.updateUITranslations = updateUITranslations;
+
 async function initApp() {
     try {
         showEventSkeletons(6);
@@ -3829,6 +3915,19 @@ async function initApp() {
                 }
             }, 8000);
         }
+        // 🔧 FORCE le rendu des événements après 5 secondes si les skeletons restent bloqués
+        setTimeout(() => {
+            const eventsContainer = document.getElementById('eventsByCategory');
+            if (eventsContainer && eventsContainer.querySelector('.event-skeleton')) {
+                console.warn('⚠️ Skeletons bloqués — forçage du rendu');
+                try {
+                    renderEventsByCategory();
+                } catch(e) {
+                    console.error('Fallback renderEvents error:', e);
+                    eventsContainer.innerHTML = '<p style="text-align:center;padding:2rem;color:#6b7280;">Aucun événement disponible pour le moment.</p>';
+                }
+            }
+        }, 5000);
         await loadAppSettings();
         detectLanguage();
         syncSettingsLanguageSelector();
@@ -3862,9 +3961,12 @@ async function initApp() {
             await loadProfileData();
             checkAndNotifyProfileCompletion();
             await loadAllFromSupabase();
+            // 🔧 Nettoyer les skeletons une fois le chargement terminé
+            try { renderEventsByCategory(); } catch(e) { console.error('renderEvents error:', e); }
             if (currentUser.wallet || currentUser.piUid) initRealtimeNotifications();
         } else {
             await loadAllFromSupabase();
+            try { renderEventsByCategory(); } catch(e) { console.error('renderEvents error:', e); }
             if (currentUser.wallet || currentUser.piUid) initRealtimeNotifications();
         }
         setInterval(() => { updateExpiredTickets(); }, 300000);
@@ -3937,7 +4039,24 @@ async function initApp() {
                 });
             }
         });
-        document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
+        // Sidebar items
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            if (item._bound) return;
+            item.addEventListener('click', function() {
+                const page = this.dataset.page;
+                if (page && typeof showPage === 'function') showPage(page);
+                if (typeof closeSidebar === 'function') closeSidebar();
+            });
+            item._bound = true;
+        });
+
+        // Bottom nav — boutons Accueil, Create, Menu
+        const navHome = document.getElementById('navHome');
+        const navCreate = document.getElementById('navCreate');
+        const navMenu = document.getElementById('navMenu');
+        if (navHome && !navHome._bound) { navHome.addEventListener('click', () => showPage('home')); navHome._bound = true; }
+        if (navCreate && !navCreate._bound) { navCreate.addEventListener('click', () => showPage('create')); navCreate._bound = true; }
+        if (navMenu && !navMenu._bound) { navMenu.addEventListener('click', () => openSidebar()); navMenu._bound = true; }
         bindActivityListeners();
         setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
         setTimeout(() => syncAllToSupabase(), 2000);
