@@ -1751,7 +1751,7 @@ function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
     if (!container) return;
     const filtered = events.filter(e => {
-        if (isEventPast(e) || e.status === 'cancelled') return false;
+        if (isEventPast(e) || e.status === 'cancelled' || e.status === 'suspended') return false;
         const title = String(e.title || '').toLowerCase();
         const location = String(e.location || '').toLowerCase();
         const matchCategory = currentFilter === 'All' || e.category === currentFilter;
@@ -2706,6 +2706,43 @@ function applyStaggeredAnimation(containerSelector, delayIncrement) {
 // ============================================================
 // TOAST NOTIFICATION
 // ============================================================
+// ============================================================
+// NOTIFICATION CENTRÉE PREMIUM (Betix)
+// ============================================================
+function showCenterNotification(title, message, type = 'success', duration = 3500) {
+    const existing = document.getElementById('betixCenterNotification');
+    if (existing) existing.remove();
+
+    const colors = {
+        success: { bg: 'linear-gradient(135deg, #0B1F5C, #1a2a4a)', icon: 'fa-check-circle', accent: '#10b981' },
+        error:   { bg: 'linear-gradient(135deg, #7f1d1d, #991b1b)', icon: 'fa-exclamation-circle', accent: '#ef4444' },
+        warning: { bg: 'linear-gradient(135deg, #78350f, #92400e)', icon: 'fa-exclamation-triangle', accent: '#f59e0b' },
+        info:    { bg: 'linear-gradient(135deg, #1e3a8a, #1e40af)', icon: 'fa-info-circle', accent: '#3b82f6' }
+    };
+    const style = colors[type] || colors.success;
+
+    const notif = document.createElement('div');
+    notif.id = 'betixCenterNotification';
+    notif.innerHTML = `
+        <div class="bcn-content" style="background:${style.bg};">
+            <div class="bcn-icon" style="background:${style.accent}22;border-color:${style.accent};">
+                <i class="fas ${style.icon}" style="color:${style.accent};"></i>
+            </div>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(message)}</p>
+            <div class="bcn-timer" style="background:${style.accent};animation-duration:${duration}ms;"></div>
+        </div>`;
+    notif.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center;animation:bcnFade .25s ease;`;
+    document.body.appendChild(notif);
+
+    const close = () => {
+        if (!notif.isConnected) return;
+        notif.style.animation = 'bcnFade .3s ease reverse';
+        setTimeout(() => notif.remove(), 300);
+    };
+    setTimeout(close, duration);
+}
+
 function showToast(title, message, type) {
     type = type || 'success';
     const existing = document.querySelector('.toast-notification');
@@ -2838,24 +2875,32 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
-                        await loadProfileData();
-                        await syncUserToSupabase();
+
+                        showCenterNotification('Betix', t('demoConnected'), 'success');
+                        hideConnectSpinner();
+                        closeSidebar();
+                        updateConnectButtons();
+
+                        // Background synchronization: never delay the connection notification.
+                        loadProfileData().then(() => syncUserToSupabase()).catch(console.error);
+                        loadAllFromSupabase().then(() => {
+                            return syncAllToSupabase();
+                        }).then(() => {
+                            currentFilter = 'All';
+                            currentCountryFilter = 'All';
+                            initFilters();
+                            renderEventsByCategory();
+                            updateProfilePage();
+                            checkAndNotifyProfileCompletion();
+                            retryPendingTickets();
+                            initRealtimeNotifications();
+                        }).catch(console.error);
+
                         updateActivity();
                         updateUserInfo();
                         updateProfilePage();
                         trackUserConnection();
                         renderEventsByCategory();
-                        updateConnectButtons();
-                        await loadAllFromSupabase();
-                        await syncAllToSupabase();
-                        currentFilter = 'All';
-                        currentCountryFilter = 'All';
-                        initFilters();
-                        renderEventsByCategory();
-                        showToast('Betix', t('demoConnected'), 'success');
-                        closeSidebar();
-                        checkAndNotifyProfileCompletion();
-                        hideConnectSpinner();
                         return;
                     }
                     throw new Error('Pi Browser required.');
@@ -2869,47 +2914,45 @@ async function connectToPi() {
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+                    saveUser();
 
-                    // NE PAS réinitialiser les champs de profil ici
-                    // Charger d'abord les données existantes depuis Supabase
-                    await loadProfileData();
+                    // Immediate feedback: network-heavy profile/event synchronization happens below.
+                    showCenterNotification('Betix', t('piConnected') + piUser.username, 'success');
+                    hideConnectSpinner();
+                    closeSidebar();
+                    updateConnectButtons();
 
-                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
-                    await syncUserToSupabase();
+                    loadProfileData().then(() => syncUserToSupabase()).catch(console.error);
+                    loadAllFromSupabase().then(() => {
+                        return syncAllToSupabase();
+                    }).then(() => {
+                        currentFilter = 'All';
+                        currentCountryFilter = 'All';
+                        initFilters();
+                        renderEventsByCategory();
+                        updateProfilePage();
+                        checkAndNotifyProfileCompletion();
+                        retryPendingTickets();
+                        initRealtimeNotifications();
+                    }).catch(console.error);
 
                     updateActivity();
                     updateUserInfo();
-                    updateProfilePage();
                     trackUserConnection();
                     renderEventsByCategory();
-                    updateConnectButtons();
-                    await loadAllFromSupabase();
-                    await syncAllToSupabase();
-                    currentFilter = 'All';
-                    currentCountryFilter = 'All';
-                    initFilters();
-                    renderEventsByCategory();
-                    showToast('Betix', t('piConnected') + piUser.username, 'success');
-                    closeSidebar();
-
-                    checkAndNotifyProfileCompletion();
-                    await retryPendingTickets();
-                    initRealtimeNotifications();
-                    hideConnectSpinner();
                     return;
-                } else {
-                    throw new Error(t('authenticationFailed'));
                 }
+                throw new Error(t('authenticationFailed'));
             })(),
             timeoutPromise
         ]);
     } catch (error) {
         console.error('Connection error:', error);
-        let errorMsg = t('connectionError') + ': ' + (error.message || "Please try again");
-        if (error.message.includes('timeout')) {
+        let errorMsg = t('connectionError') + ': ' + (error.message || 'Please try again');
+        if (error.message && error.message.includes('timeout')) {
             errorMsg = 'Connection timeout. Please check your internet connection and try again.';
         }
-        showToast(t('connectionError'), errorMsg, 'error');
+        showCenterNotification(t('connectionError'), errorMsg, 'error');
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
@@ -2921,567 +2964,6 @@ async function connectToPi() {
     }
 }
 
-// ============================================================
-// NOTIFICATION DE COMPLÉTION DE PROFIL
-// ============================================================
-function checkAndNotifyProfileCompletion() {
-    if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
-        setTimeout(() => {
-            showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
-            currentUser.profile_reminder_shown = true;
-            saveUser();
-        }, 5000);
-    }
-}
-
-// ============================================================
-// CRÉATION D'ÉVÉNEMENT
-// ============================================================
-async function createEvent(e) {
-    e.preventDefault();
-    if (!requireLogin()) return;
-    if (!requireProfileComplete()) return;
-    const publishBtn = document.getElementById('publishEventBtn');
-    if (publishBtn.classList.contains('loading')) return;
-    if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
-    const title = document.getElementById('eventTitle').value.trim();
-    const category = document.getElementById('eventCategory').value;
-    const pays = document.getElementById('eventCountry').value;
-    const date = document.getElementById('eventDate').value;
-    const location = document.getElementById('eventLocation').value.trim();
-    const description = document.getElementById('eventDescription').value.trim();
-    const conditions = document.getElementById('eventConditions').value.trim();
-    const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
-    const durationValue = document.getElementById('eventDurationValue').value;
-    const durationUnit = document.getElementById('eventDurationUnit').value;
-    const durationValueNum = durationValue ? parseInt(durationValue) : null;
-    if (!title) { alert(t('title') + ' ' + t('required')); return; }
-    if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
-    if (!location) { alert(t('location') + ' ' + t('required')); return; }
-    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
-    if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
-    const images = getUploadedImages();
-    if (images.length < 1) { alert('At least 1 image is required (up to 3)'); return; }
-    publishBtn.classList.add('loading');
-    publishBtn.disabled = true;
-    try {
-        const newEvent = {
-            id: Date.now().toString(),
-            title, category, pays, country: pays, date, location,
-            description: description || '',
-            conditions,
-            price: 0.0003,
-            seatsTotal,
-            seatsLeft: seatsTotal,
-            standardSeats: seatsTotal,
-            standardSold: 0,
-            standardLeft: seatsTotal,
-            images,
-            coverImage: images[0],
-            organizer: currentUser.wallet,
-            organizerPiUid: currentUser.piUid || currentUser.wallet,
-            organizerName: currentUser.name,
-            createdAt: new Date().toISOString(),
-            boosts: 0,
-            durationValue: durationValueNum,
-            durationUnit,
-            ticketTypes: { standard: { enabled: true, price: 0.0003 } }
-        };
-        openPublishConfirm(newEvent);
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-}
-
-function openPublishConfirm(eventData) {
-    pendingEventData = eventData;
-    document.getElementById('confirmTitle').textContent = eventData.title || 'Untitled';
-    document.getElementById('confirmCategory').textContent = eventData.category || 'Uncategorized';
-    document.getElementById('confirmCountry').textContent = eventData.pays || eventData.country || 'Not specified';
-    document.getElementById('confirmDate').textContent = new Date(eventData.date).toLocaleDateString('en-US') + ' at ' + new Date(eventData.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
-    document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
-    document.getElementById('confirmSeats').textContent = eventData.seatsTotal || 0;
-    document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet || 'Unknown';
-    document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
-    document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
-    const confirmTicketTypes = document.getElementById('confirmTicketTypes');
-    if (confirmTicketTypes) confirmTicketTypes.textContent = 'Standard: ' + (eventData.price || 0).toFixed(6) + ' Pi';
-    const confirmDuration = document.getElementById('confirmDuration');
-    if (confirmDuration) {
-        if (eventData.durationValue && eventData.durationUnit) {
-            const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
-            confirmDuration.textContent = eventData.durationValue + ' ' + (unitLabels[eventData.durationUnit] || eventData.durationUnit);
-            confirmDuration.style.display = 'block';
-        } else { confirmDuration.style.display = 'none'; }
-    }
-    const confirmImages = document.getElementById('confirmImages');
-    if (confirmImages) {
-        confirmImages.innerHTML = '';
-        if (eventData.images && eventData.images.length > 0) {
-            eventData.images.forEach(img => {
-                const imgEl = document.createElement('img');
-                imgEl.src = img; imgEl.alt = 'Event image'; imgEl.style.objectFit = 'contain'; imgEl.style.width = '70px'; imgEl.style.height = '70px'; imgEl.style.background = '#1a1a2e';
-                confirmImages.appendChild(imgEl);
-            });
-        }
-    }
-    document.getElementById('publishConfirmPopup').classList.add('show');
-}
-
-function closePublishConfirmPopup() {
-    document.getElementById('publishConfirmPopup').classList.remove('show');
-    const publishBtn = document.getElementById('publishEventBtn');
-    if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-    pendingEventData = null;
-}
-
-async function confirmPublishEvent() {
-    if (!pendingEventData) { alert('Event not found'); return; }
-    const publishBtn = document.getElementById('publishEventBtn');
-    const confirmBtn = document.getElementById('confirmPublishBtn');
-    if (confirmBtn) { confirmBtn.classList.add('loading'); confirmBtn.disabled = true; confirmBtn.textContent = t('publishing'); }
-    try {
-        const newEvent = pendingEventData;
-        const uploadedUrls = [];
-        if (newEvent.images && newEvent.images.length > 0) {
-            for (let i = 0; i < newEvent.images.length; i++) {
-                const url = await uploadEventImage(newEvent.id, newEvent.images[i], i);
-                uploadedUrls.push(url || newEvent.images[i]);
-            }
-        }
-        newEvent.images = uploadedUrls;
-        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
-        newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
-        newEvent.organizerName = currentUser.name;
-        events.push(newEvent);
-        saveEvents();
-        await saveEventToSupabase(newEvent);
-        await syncUserToSupabase();
-        document.getElementById('eventForm').reset();
-        for (let i = 0; i < 3; i++) removeImageModern(i);
-        uploadedImages = {};
-        addNotification(t('eventPublished') + ' "' + newEvent.title + '"', 'event');
-        closePublishConfirmPopup();
-        document.getElementById('publishConfirmPopup').classList.remove('show');
-        renderEventsByCategory();
-        updateProfilePage();
-        if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-        if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); }
-        showToast('Betix', t('eventPublished'), 'success');
-        clearCache('betix_cached_events');
-        showPage('home');
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
-}
-
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) { reject(new Error('Not an image')); return; }
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const img = new Image();
-            img.onload = function() {
-                let width = img.width, height = img.height;
-                const maxWidth = 1200, maxHeight = 1200;
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.round(width * ratio); height = Math.round(height * ratio);
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, width, height);
-                let format = 'image/webp';
-                const testCanvas = document.createElement('canvas');
-                testCanvas.width = 1; testCanvas.height = 1;
-                if (!testCanvas.toDataURL('image/webp').includes('image/webp')) format = 'image/jpeg';
-                resolve(canvas.toDataURL(format, 0.7));
-            };
-            img.onerror = function() { reject(new Error('Failed to load image')); };
-            img.src = ev.target.result;
-        };
-        reader.onerror = function() { reject(new Error('Failed to read file')); };
-        reader.readAsDataURL(file);
-    });
-}
-
-async function handleImageUploadModern(file, index) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
-    if (file.size > 10 * 1024 * 1024) { alert('Image is too large (max 10MB)'); return; }
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const progress = document.getElementById('progress' + (index + 1));
-    const progressFill = document.getElementById('progressFill' + (index + 1));
-    const progressText = document.getElementById('progressText' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    progress.style.display = 'block';
-    progressFill.style.width = '0%';
-    progressText.textContent = '0%';
-    box.classList.add('compress');
-    try {
-        let interval = setInterval(() => {
-            let cur = parseInt(progressFill.style.width) || 0;
-            if (cur < 90) { let nw = cur + Math.random() * 15; if (nw > 90) nw = 90; progressFill.style.width = nw + '%'; progressText.textContent = Math.round(nw) + '%'; }
-        }, 200);
-        const compressedData = await compressImage(file);
-        clearInterval(interval);
-        progressFill.style.width = '100%';
-        progressText.textContent = '100%';
-        setTimeout(() => {
-            progress.style.display = 'none';
-            progressFill.style.width = '0%';
-            previewImage.src = compressedData;
-            previewContainer.style.display = 'block';
-            box.classList.add('has-image');
-            box.classList.remove('compress');
-            uploadedImages[index] = compressedData;
-        }, 300);
-    } catch (error) { alert('Error compressing image. Please try with a smaller image.'); progress.style.display = 'none'; box.classList.remove('compress'); }
-}
-
-function removeImageModern(index) {
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    const input = document.getElementById('imageInput' + index);
-    previewContainer.style.display = 'none';
-    previewImage.src = '#';
-    box.classList.remove('has-image');
-    box.classList.remove('compress');
-    input.value = '';
-    delete uploadedImages[index];
-}
-
-function getUploadedImages() {
-    const images = [];
-    for (let key in uploadedImages) if (uploadedImages.hasOwnProperty(key)) images.push(uploadedImages[key]);
-    return images;
-}
-
-function openEditEventModal(eventId) {
-    const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) { alert('You are not the organizer of this event'); return; }
-    editingEventId = eventId;
-    document.getElementById('editEventDescription').value = event.description || '';
-    document.getElementById('editEventLocation').value = event.location || '';
-    document.getElementById('editEventConditions').value = event.conditions || '';
-    document.getElementById('editEventDurationValue').value = event.durationValue || '';
-    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
-    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
-    document.getElementById('editEventModal').classList.add('show');
-}
-
-function closeEditEventModal() { document.getElementById('editEventModal').classList.remove('show'); editingEventId = null; }
-
-async function saveEventEdits() {
-    if (!editingEventId) return;
-    const event = events.find(e => e.id === editingEventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    const description = document.getElementById('editEventDescription').value.trim();
-    const location = document.getElementById('editEventLocation').value.trim();
-    const conditions = document.getElementById('editEventConditions').value.trim();
-    const durationValue = document.getElementById('editEventDurationValue').value;
-    const durationUnit = document.getElementById('editEventDurationUnit').value;
-    const seatsTotal = parseInt(document.getElementById('editEventSeats').value) || 0;
-    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
-    const ticketsSold = tickets.filter(t => t.eventId === editingEventId).length;
-    if (seatsTotal < ticketsSold) { alert('You cannot reduce the number of seats below the ' + ticketsSold + ' already sold'); return; }
-    const updates = {
-        description, location, conditions,
-        seatsTotal,
-        seatsLeft: seatsTotal - ticketsSold,
-        durationValue: durationValue ? parseInt(durationValue) : null,
-        durationUnit: durationUnit || null,
-        standardSeats: seatsTotal,
-        standardLeft: seatsTotal - ticketsSold,
-        standardSold: ticketsSold
-    };
-    Object.assign(event, updates);
-    saveEvents();
-    await updateEventInSupabase(editingEventId, {
-        description: updates.description, location: updates.location, conditions: updates.conditions,
-        max_tickets: updates.seatsTotal, duration_value: updates.durationValue, duration_unit: updates.durationUnit,
-        standard_seats: updates.standardSeats, standard_sold: updates.standardSold
-    });
-    addNotification(t('editEvent') + ' "' + event.title + '"', 'event');
-    closeEditEventModal();
-    renderEventsByCategory();
-    renderMyEvents();
-    alert(t('eventPublished'));
-}
-
-function renderMyRatings() {
-    const container = document.getElementById('myRatingsList');
-    if (!container) return;
-    const myRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
-    if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">' + t('noReviews') + '</p>'; return; }
-    container.innerHTML = myRatings.map(r => {
-        const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>' + t('rating') + ': ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>';
-    }).join('');
-    setTimeout(() => { applyStaggeredAnimation('#myRatingsList'); }, 50);
-}
-
-function setupTicketTypesUI() { /* no-op */ }
-
-function initCountrySelectors() {
-    const filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === currentCountryFilter) option.selected = true;
-            filterSelect.appendChild(option);
-        });
-    }
-    const eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            if (country === 'All') return;
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === 'France') option.selected = true;
-            eventSelect.appendChild(option);
-        });
-    }
-    setTimeout(() => {
-        const filterSelect = document.getElementById('countrySelect');
-        if (filterSelect) {
-            const options = filterSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
-            });
-        }
-        const eventSelect = document.getElementById('eventCountry');
-        if (eventSelect) {
-            const options = eventSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
-            });
-        }
-    }, 50);
-}
-
-// ============================================================
-// LANGUE, TRADUCTIONS ET UI
-// ============================================================
-function changeLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('betix_language', lang);
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = lang;
-    updateUITranslations();
-    const googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
-    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
-}
-
-function updateUITranslations() {
-    const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
-    const pageMap = { home: t('home'), myevents: t('myEvents'), profile: t('profile'), settings: t('settings'), tickets: t('myTickets'), history: t('ticketHistory'), faq: t('faq'), admin: t('administration'), scan: 'Scan Ticket' };
-    sidebarItems.forEach(item => {
-        const page = item.dataset.page;
-        if (pageMap[page]) {
-            const icon = item.querySelector('i');
-            item.innerHTML = '';
-            if (icon) item.appendChild(icon);
-            item.appendChild(document.createTextNode(' ' + pageMap[page]));
-        }
-    });
-    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
-    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
-    document.getElementById('sidebarWalletBtn') && (document.getElementById('sidebarWalletBtn').textContent = currentUser.wallet ? t('disconnect') : t('connectPi'));
-    const socialTitle = document.querySelector('.sidebar-social-title');
-    if (socialTitle) socialTitle.textContent = t('followUs');
-    const heroTitle = document.querySelector('.hero-text h1');
-    if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.placeholder = t('searchEvent');
-    const countryLabel = document.querySelector('.filter-country-select label');
-    if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
-    const eventsTitle = document.querySelector('.events-title');
-    if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
-    const eventsSub = document.querySelector('.events-sub');
-    if (eventsSub) eventsSub.textContent = t('joinCommunity');
-    document.querySelector('#navHome span') && (document.querySelector('#navHome span').textContent = t('home'));
-    document.querySelector('#navCreate span') && (document.querySelector('#navCreate span').textContent = 'Create');
-    document.querySelector('#navMenu span') && (document.querySelector('#navMenu span').textContent = 'Menu');
-    const backLabel = document.querySelector('.back-btn .back-btn-label');
-    if (backLabel) backLabel.textContent = t('back');
-    const footerTitles = document.querySelectorAll('.footer-col h4');
-    if (footerTitles.length >= 3) {
-        footerTitles[0].textContent = t('footerTitleInfo');
-        footerTitles[1].textContent = t('footerTitleBetix');
-        footerTitles[2].textContent = t('footerTitlePartners');
-    }
-    const footerLinks = document.querySelectorAll('.footer-col ul li a');
-    const footerLinkTexts = [
-        t('footerTermsSale'), t('footerTermsUse'), t('footerPrivacy'), t('footerAccessibility'),
-        t('footerPrivacyChoices'), t('footerFanGuide'), t('footerLegal'), t('footerCookies'),
-        t('footerAbout'), t('footerContact'), t('footerFeedback'), t('footerHelp'),
-        t('footerJoinCommunity'), t('footerPiNetwork'), t('footerSecure')
-    ];
-    footerLinks.forEach((link, index) => { if (index < footerLinkTexts.length) link.textContent = footerLinkTexts[index]; });
-    const footerSlogan = document.querySelector('.footer-slogan');
-    if (footerSlogan) footerSlogan.textContent = t('footerSlogan');
-    const footerDesc = document.querySelector('.footer-desc');
-    if (footerDesc) footerDesc.textContent = t('footerDesc');
-    const footerRights = document.querySelectorAll('.footer-bottom span');
-    if (footerRights.length >= 1) footerRights[0].textContent = '© 2026 Betix. ' + t('footerRights');
-    if (footerRights.length >= 2) footerRights[footerRights.length - 1].textContent = t('footerBuiltOn');
-}
-
-function detectLanguage() {
-    let savedLang = localStorage.getItem('betix_language') || 'en';
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlLang = urlParams.get('lang');
-    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
-    currentLang = savedLang;
-    const nativeSelect = document.getElementById('nativeLangSelect');
-    if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = savedLang;
-    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
-    setTimeout(() => updateUITranslations(), 500);
-    return savedLang;
-}
-
-function syncSettingsLanguageSelector() {
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) {
-        settingsSelect.value = currentLang;
-        settingsSelect.addEventListener('change', function() { changeLanguage(this.value); });
-    }
-}
-
-// ============================================================
-// NOTIFICATIONS
-// ============================================================
-async function deleteNotification(id) {
-    notifications = notifications.filter(n => n.id !== id);
-    saveNotifications();
-    await deleteNotificationFromSupabase(id);
-    renderNotificationsPage();
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-function clearAllNotifications() {
-    if (notifications.length === 0) return;
-    if (confirm('Delete all notifications?')) {
-        notifications = [];
-        saveNotifications();
-        renderNotificationsPage();
-        updateNotifBadgeHeader();
-        updateSidebarNotifBadge();
-        addNotification('All notifications have been cleared.', 'info');
-    }
-}
-
-function renderNotificationsPage() {
-    const container = document.getElementById('notificationsList');
-    if (!container) return;
-    if (!notifications || notifications.length === 0) {
-        container.innerHTML = '<div class="notification-empty">' +
-            '<i class="fas fa-bell-slash"></i>' +
-            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
-        '</div>';
-        return;
-    }
-    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
-        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
-        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
-            '<i class="fas fa-trash"></i> Clear all' +
-        '</button>' +
-    '</div>';
-    notifications.forEach((notif) => {
-        const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const unreadClass = notif.read ? '' : 'unread';
-        const type = notif.type || 'info';
-        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
-        const icon = iconMap[type] || 'fa-info-circle';
-        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
-            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-content">' +
-                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
-                '<div class="notif-time">' + timeStr + '</div>' +
-            '</div>' +
-            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
-        '</div>';
-    });
-    container.innerHTML = html;
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-    notifications.forEach(n => n.read = true);
-    saveNotifications();
-    markNotificationsAsReadInSupabase(unreadIds);
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-function updateNotifBadgeHeader() {
-    const badge = document.getElementById('notifBadgeHeader');
-    if (!badge) return;
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) { badge.textContent = unread; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
-    updateSidebarNotifBadge();
-}
-
-function updateSidebarNotifBadge() {
-    const badge = document.getElementById('sidebarNotifBadge');
-    if (!badge) return;
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-}
-
-function addNotification(message, type) {
-    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    saveNotifications();
-    saveNotificationToSupabase(notif).then(saved => {
-        if (!saved) return;
-        const local = notifications.find(n => n.id === notif.id);
-        if (local) {
-            local.id = String(saved.id);
-            local.date = saved.created_at || local.date;
-            saveNotifications();
-        }
-    });
-    updateNotifBadgeHeader();
-}
-
-// ============================================================
-// NAVIGATION ET PROFIL
-// ============================================================
-function goToMyEvents() { showPage('myevents'); }
-function goToTickets() { showPage('tickets'); }
-function goToHistory() { showPage('history'); }
-function goToRatings() { showPage('ratings'); }
-
-function calculateLoyaltyPoints() {
-    let points = 0;
-    for (let i = 0; i < ratings.length; i++) if (ratings[i].userWallet === (currentUser.wallet || currentUser.name)) points += ratings[i].rating;
-    currentUser.loyaltyPoints = points;
-    saveUser();
-    return points;
-}
-
-function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
-function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
-
-// ============================================================
-// DISCONNECT (avec sauvegarde du profil avant déconnexion)
-// ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
     if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
@@ -3524,6 +3006,7 @@ async function disconnectPi() {
     saveUser();
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
+    showCenterNotification('Betix', t('disconnected'), 'success');
     updateUserInfo();
     updateProfilePage();
     renderEventsByCategory();
@@ -3531,7 +3014,6 @@ async function disconnectPi() {
     renderHistory();
     updateConnectButtons();
     closeSidebar();
-    showToast('Betix', t('disconnected'), 'success');
 }
 
 function logout() { disconnectPi(); }
@@ -3968,6 +3450,7 @@ async function loadAdminPage() {
     const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
     if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
     if(eventSort&&!eventSort._bound){eventSort.addEventListener('change',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSort._bound=true;}
+    const eventStatus=document.getElementById('adminEventStatusFilter'); if(eventStatus&&!eventStatus._bound){eventStatus.addEventListener('change',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventStatus._bound=true;}
     const logSearch=document.getElementById('adminLogSearch'), logType=document.getElementById('adminLogType'), logDate=document.getElementById('adminLogDate');
     [logSearch,logType,logDate].forEach(el=>{if(el&&!el._bound){el.addEventListener('input',renderAdminLogsFiltered);el.addEventListener('change',renderAdminLogsFiltered);el._bound=true;}});
     const userSearch=document.getElementById('adminUserSearch'); if(userSearch&&!userSearch._bound){userSearch.addEventListener('input',function(){filterAdminUsers(this.value);});userSearch._bound=true;}
@@ -3996,6 +3479,55 @@ function renderAdminEvents() {
         const typesDisplay = 'Standard: ' + (e.ticketTypes?.standard?.price || 0).toFixed(6) + ' Pi';
         return '<div class="admin-event-item"><div class="event-info"><strong>' + escapeHtml(e.title) + '</strong><small>' + e.category + ' | ' + (e.pays || e.country || 'France') + ' | ' + e.seatsLeft + '/' + e.seatsTotal + ' tickets | ' + new Date(e.date).toLocaleDateString('en-US') + '</small><small>Ticket Types: ' + typesDisplay + '</small><small>Organizer: ' + escapeHtml(e.organizerName || e.organizer) + '</small></div><div class="event-actions"><button class="admin-delete-btn" onclick="adminDeleteEvent(\'' + e.id + '\')">Cancel</button></div></div>';
     }).join('');
+}
+
+// ============================================================
+// ADMIN - GESTION DES PUBLICATIONS (ACTIVER / SUSPENDRE)
+// ============================================================
+async function adminToggleEventStatus(eventId) {
+    const event = events.find(e => String(e.id) === String(eventId));
+    if (!event) { showToast('Erreur', 'Événement introuvable.', 'error'); return; }
+
+    const newStatus = event.status === 'suspended' ? 'active' : 'suspended';
+    const actionLabel = newStatus === 'suspended' ? 'suspendre' : 'réactiver';
+    if (!confirm(`Voulez-vous ${actionLabel} l'événement "${event.title}" ?`)) return;
+
+    const previousStatus = event.status || 'active';
+    const updatedAt = new Date().toISOString();
+    try {
+        event.status = newStatus;
+        event.updatedAt = updatedAt;
+
+        const { error } = await supabaseClient
+            .from('events')
+            .update({ status: newStatus, updated_at: updatedAt })
+            .eq('id', event.id);
+        if (error) throw error;
+
+        saveEvents();
+        clearCache('betix_cached_events');
+        renderEventsByCategory();
+        renderMyEvents();
+        refreshAdminDashboard();
+        addAdminLog(newStatus === 'suspended' ? 'Publication suspendue' : 'Publication réactivée', `"${event.title}" (ID: ${event.id})`);
+        showToast('Succès', `L'événement "${event.title}" a été ${newStatus === 'suspended' ? 'suspendu' : 'réactivé'}.`, 'success');
+    } catch (err) {
+        console.error('Toggle event status error:', err);
+        event.status = previousStatus;
+        showToast('Erreur', err.message || 'Impossible de modifier le statut.', 'error');
+    }
+}
+
+function getFilteredAdminEventsByStatus() {
+    const statusFilter = document.getElementById('adminEventStatusFilter')?.value || 'all';
+    return events.filter(e => {
+        if (statusFilter === 'all') return true;
+        if (statusFilter === 'active') return (e.status === 'active' || !e.status) && !isEventPast(e);
+        if (statusFilter === 'suspended') return e.status === 'suspended';
+        if (statusFilter === 'cancelled') return e.status === 'cancelled';
+        if (statusFilter === 'ended') return isEventPast(e);
+        return true;
+    });
 }
 
 function adminDeleteEvent(id) {
@@ -4410,8 +3942,60 @@ async function loadAdminTickets() {
 function computeAdminStats(){const source=adminTicketsCache.length?adminTicketsCache:tickets;const totalRevenue=source.filter(t=>t.status!=='Refunded').reduce((s,t)=>s+(parseFloat(t.price)||0),0);const buyers=new Set(source.map(t=>t.buyerWallet||t.buyerEmail).filter(Boolean));const activeEvents=events.filter(e=>!isEventPast(e)&&e.status!=='cancelled').length;document.getElementById('kpiRevenue')&&(document.getElementById('kpiRevenue').textContent=totalRevenue.toFixed(4)+' Pi');document.getElementById('kpiTicketsSold')&&(document.getElementById('kpiTicketsSold').textContent=source.length);document.getElementById('kpiUniqueBuyers')&&(document.getElementById('kpiUniqueBuyers').textContent=buyers.size);document.getElementById('kpiActiveEvents')&&(document.getElementById('kpiActiveEvents').textContent=activeEvents);return{totalRevenue,ticketsSold:source.length,uniqueBuyers:buyers.size,activeEvents};}
 function renderRevenueChart(){const c=document.getElementById('revenueChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets;const labels=[],values=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);const n=new Date(d);n.setDate(n.getDate()+1);labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));values.push(source.filter(t=>{const pd=new Date(t.purchaseDate||0);return t.status!=='Refunded'&&pd>=d&&pd<n;}).reduce((s,t)=>s+(parseFloat(t.price)||0),0));}if(revenueChartInstance)revenueChartInstance.destroy();revenueChartInstance=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Revenue (Pi)',data:values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});}
 function renderCategoryChart(){const c=document.getElementById('categoryChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets,counts={};source.forEach(t=>{const e=events.find(x=>String(x.id)===String(t.eventId));const cat=(e&&e.category)||t.category||'Other';counts[cat]=(counts[cat]||0)+1;});const labels=Object.keys(counts),values=Object.values(counts);if(categoryChartInstance)categoryChartInstance.destroy();categoryChartInstance=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:['#0B1F5C','#F5B400','#10b981','#3b82f6','#8b5cf6','#ef4444','#f59e0b','#06b6d4'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});}
-function getFilteredAdminEvents(){const search=(document.getElementById('adminEventSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('adminEventSort')?.value||'date_desc';let filtered=events.filter(e=>!search||(String(e.title||'').toLowerCase().includes(search)||String(e.category||'').toLowerCase().includes(search)||String(e.organizerName||'').toLowerCase().includes(search)));const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);filtered.sort((a,b)=>sort==='date_asc'?new Date(a.date)-new Date(b.date):sort==='sales_desc'?(sales[b.id]||0)-(sales[a.id]||0):sort==='revenue_desc'?((sales[b.id]||0)*(parseFloat(b.price)||0))-((sales[a.id]||0)*(parseFloat(a.price)||0)):new Date(b.date)-new Date(a.date));return{filtered,salesByEvent:sales};}
-function renderAdminEventsFiltered(){const container=document.getElementById('adminEventsList');if(!container)return;const {filtered,salesByEvent}=getFilteredAdminEvents();if(!filtered.length){container.innerHTML='<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';const p=document.getElementById('adminEventsPagination');if(p)p.innerHTML='';return;}const totalPages=Math.ceil(filtered.length/ADMIN_EVENTS_PER_PAGE);if(adminEventsCurrentPage>totalPages)adminEventsCurrentPage=totalPages;const page=filtered.slice((adminEventsCurrentPage-1)*ADMIN_EVENTS_PER_PAGE,adminEventsCurrentPage*ADMIN_EVENTS_PER_PAGE);container.innerHTML=page.map(e=>{const sold=salesByEvent[e.id]||0,revenue=(sold*(parseFloat(e.price)||0)).toFixed(4),past=isEventPast(e),cancelled=e.status==='cancelled';const badge=cancelled?'<span class="badge-status cancelled">Annulé</span>':past?'<span class="badge-status badge-expired">Terminé</span>':'<span class="badge-status badge-used">Actif</span>';return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>'+escapeHtml(e.title)+'</strong>'+badge+'</div><small>'+escapeHtml(e.category)+' · '+escapeHtml(e.pays||e.country||'France')+' · '+new Date(e.date).toLocaleDateString('en-US')+'</small><small>Standard: '+(parseFloat(e.price)||0).toFixed(6)+' Pi</small><small>Organisateur: '+escapeHtml(e.organizerName||e.organizer||'—')+'</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> '+sold+' vendu(s) · '+revenue+' Pi</small></div><div class="event-actions">'+((!past&&!cancelled)?'<button class="btn-cancel-event" onclick="event.stopPropagation();openCancelEventModal(\''+e.id+'\')"><i class="fas fa-ban"></i> Annuler</button>':'')+'<button class="admin-delete-btn" onclick="adminDeleteEvent(\''+e.id+'\')">Supprimer</button></div></div>';}).join('');const p=document.getElementById('adminEventsPagination');if(p){let h=totalPages>1?'<button '+(adminEventsCurrentPage===1?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage-1)+')">‹ Précédent</button>':'';for(let i=1;i<=totalPages;i++)h+='<button class="'+(i===adminEventsCurrentPage?'active':'')+'" onclick="goToAdminEventsPage('+i+')">'+i+'</button>';if(totalPages>1)h+='<button '+(adminEventsCurrentPage===totalPages?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage+1)+')">Suivant ›</button>';p.innerHTML=h;}}
+function getFilteredAdminEvents(){
+    const search=(document.getElementById('adminEventSearch')?.value||'').toLowerCase().trim();
+    const sort=document.getElementById('adminEventSort')?.value||'date_desc';
+    const statusFilter=document.getElementById('adminEventStatusFilter')?.value||'all';
+    let filtered=events.filter(e=>{
+        const matchSearch=!search || [e.title,e.category,e.organizerName].some(v=>String(v||'').toLowerCase().includes(search));
+        let matchStatus=true;
+        if(statusFilter==='active') matchStatus=(e.status==='active'||!e.status)&&!isEventPast(e);
+        else if(statusFilter==='suspended') matchStatus=e.status==='suspended';
+        else if(statusFilter==='cancelled') matchStatus=e.status==='cancelled';
+        else if(statusFilter==='ended') matchStatus=isEventPast(e);
+        return matchSearch&&matchStatus;
+    });
+    const sales={};
+    (adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);
+    filtered.sort((a,b)=>sort==='date_asc'?new Date(a.date)-new Date(b.date):sort==='sales_desc'?(sales[b.id]||0)-(sales[a.id]||0):sort==='revenue_desc'?((sales[b.id]||0)*(parseFloat(b.price)||0))-((sales[a.id]||0)*(parseFloat(a.price)||0)):new Date(b.date)-new Date(a.date));
+    return {filtered,salesByEvent:sales};
+}
+function renderAdminEventsFiltered(){
+    const container=document.getElementById('adminEventsList'); if(!container)return;
+    const {filtered,salesByEvent}=getFilteredAdminEvents();
+    if(!filtered.length){container.innerHTML='<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';const p=document.getElementById('adminEventsPagination');if(p)p.innerHTML='';return;}
+    const totalPages=Math.ceil(filtered.length/ADMIN_EVENTS_PER_PAGE);
+    if(adminEventsCurrentPage>totalPages)adminEventsCurrentPage=totalPages;
+    const page=filtered.slice((adminEventsCurrentPage-1)*ADMIN_EVENTS_PER_PAGE,adminEventsCurrentPage*ADMIN_EVENTS_PER_PAGE);
+    container.innerHTML=page.map(e=>{
+        const sold=salesByEvent[e.id]||0;
+        const revenue=(sold*(parseFloat(e.price)||0)).toFixed(4);
+        const past=isEventPast(e), cancelled=e.status==='cancelled', suspended=e.status==='suspended';
+        let badge;
+        if(cancelled) badge='<span class="badge-status cancelled">Annulé</span>';
+        else if(suspended) badge='<span class="badge-status" style="background:#fef3c7;color:#92400e;">Suspendu</span>';
+        else if(past) badge='<span class="badge-status badge-expired">Terminé</span>';
+        else badge='<span class="badge-status badge-used">Actif</span>';
+        const toggleStyle=suspended?'background:#10b981;color:white;border:none;padding:6px 12px;border-radius:8px;font-size:.7rem;font-weight:600;cursor:pointer;':'background:#f59e0b;color:white;border:none;padding:6px 12px;border-radius:8px;font-size:.7rem;font-weight:600;cursor:pointer;';
+        return `<div class="admin-event-item">
+            <div class="event-info">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>${escapeHtml(e.title)}</strong>${badge}</div>
+                <small>${escapeHtml(e.category)} · ${escapeHtml(e.pays||e.country||'France')} · ${new Date(e.date).toLocaleDateString('en-US')}</small>
+                <small>Standard: ${(parseFloat(e.price)||0).toFixed(6)} Pi</small>
+                <small>Organisateur: ${escapeHtml(e.organizerName||e.organizer||'—')}</small>
+                <small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> ${sold} vendu(s) · ${revenue} Pi</small>
+            </div>
+            <div class="event-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+                ${(!cancelled&&!past)?`<button class="btn-toggle-status" onclick="event.stopPropagation();adminToggleEventStatus('${e.id}')" style="${toggleStyle}"><i class="fas ${suspended?'fa-play':'fa-pause'}"></i> ${suspended?'Réactiver':'Suspendre'}</button>`:''}
+                ${(!past&&!cancelled&&!suspended)?`<button class="btn-cancel-event" onclick="event.stopPropagation();openCancelEventModal('${e.id}')"><i class="fas fa-ban"></i> Annuler</button>`:''}
+                <button class="admin-delete-btn" onclick="adminDeleteEvent('${e.id}')">Supprimer</button>
+            </div>
+        </div>`;
+    }).join('');
+    const p=document.getElementById('adminEventsPagination');
+    if(p){let h=totalPages>1?'<button '+(adminEventsCurrentPage===1?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage-1)+')">‹ Précédent</button>':'';for(let i=1;i<=totalPages;i++)h+='<button class="'+(i===adminEventsCurrentPage?'active':'')+'" onclick="goToAdminEventsPage('+i+')">'+i+'</button>';if(totalPages>1)h+='<button '+(adminEventsCurrentPage===totalPages?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage+1)+')">Suivant ›</button>';p.innerHTML=h;}
+}
+
 function goToAdminEventsPage(page){adminEventsCurrentPage=page;renderAdminEventsFiltered();document.getElementById('adminEventsList')?.scrollIntoView({behavior:'smooth',block:'start'});}
 function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),0);}
 function exportEventsCSV(){if(!events.length){showToast('Export','Aucun événement à exporter.','info');return;}const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);const rows=[['ID','Titre','Catégorie','Pays','Date','Lieu','Prix (Pi)','Places totales','Places vendues','Revenu (Pi)','Statut','Organisateur']];events.forEach(e=>{const sold=sales[e.id]||0;rows.push([e.id,e.title,e.category,e.pays||e.country,new Date(e.date).toISOString(),e.location,(parseFloat(e.price)||0).toFixed(6),e.seatsTotal||0,sold,(sold*(parseFloat(e.price)||0)).toFixed(6),e.status||'active',e.organizerName||e.organizer||'']);});downloadCSV('betix_events_'+Date.now()+'.csv',rows);showToast('Export réussi',events.length+' événements exportés.','success');}
@@ -4441,7 +4025,7 @@ function showTicketSkeletons(count=2){const c=document.getElementById('ticketsLi
 function showHistorySkeletons(count=2){const c=document.getElementById('historyList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="ticket-skeleton"></div>';c.innerHTML=h;}
 function showNotificationSkeletons(count=4){const c=document.getElementById('notificationsList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="notif-skeleton"><div class="sk-avatar skeleton"></div><div class="sk-content"><div class="sk-line skeleton"></div><div class="sk-line short skeleton"></div></div></div>';c.innerHTML=h;}
 
-window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
+window.adminToggleEventStatus=adminToggleEventStatus;window.getFilteredAdminEventsByStatus=getFilteredAdminEventsByStatus;window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
