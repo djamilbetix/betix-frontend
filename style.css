@@ -5540,3 +5540,27 @@ body.dark-mode .pc-btn-secondary:hover { background:#4b5563; }
 body.dark-mode .pc-close { color:#9ca3af; }
 body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 @media (max-width:480px) { .purchase-confirmation{top:72px;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
+
+
+/* ============================================================
+   NOTIFICATION CENTRÉE PREMIUM (Betix)
+   ============================================================ */
+@keyframes bcnPop {
+    0% { transform: scale(.85) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes bcnFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bcnTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.bcn-content {
+    border-radius: 20px; padding: 24px 28px; max-width: 420px; width: calc(100% - 40px);
+    text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,.35); position: relative;
+    animation: bcnPop .4s cubic-bezier(.175,.885,.32,1.275); border: 1px solid rgba(245,180,0,.25);
+}
+.bcn-icon {
+    width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    margin:0 auto 14px;border:2px solid;
+}
+.bcn-icon i { font-size:1.8rem; }
+.bcn-content h3 { color:#fff;font-size:1.15rem;font-weight:700;margin:0 0 6px; }
+.bcn-content p { color:rgba(255,255,255,.85);font-size:.9rem;margin:0;line-height:1.5; }
+.bcn-timer { position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 20px 20px;animation-name:bcnTimer;animation-timing-function:linear;animation-fill-mode:forwards;transform-origin:left; }
