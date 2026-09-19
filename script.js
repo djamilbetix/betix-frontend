@@ -1,4 +1,65 @@
 // ============================================================
+// SÉCURITÉ — Fonctions de secours (anti-crash)
+// ============================================================
+(function ensureSafetyNet() {
+    const safeFuncs = {
+        deleteNotification: function() {},
+        clearAllNotifications: function() {},
+        renderNotificationsPage: function() {},
+        updateNotifBadgeHeader: function() {},
+        updateSidebarNotifBadge: function() {},
+        addNotification: function() {},
+        saveNotifications: function() {},
+        loadNotificationsFromSupabase: function() { return Promise.resolve([]); },
+        deleteNotificationFromSupabase: function() { return Promise.resolve(false); },
+        markNotificationsAsReadInSupabase: function() { return Promise.resolve(); },
+        saveNotificationToSupabase: function() { return Promise.resolve(null); },
+        renderAdminUsers: function() {},
+        refreshUsersList: function() {},
+        loadAllUsersFromSupabase: function() { return Promise.resolve([]); },
+        renderAdminEventsFiltered: function() {},
+        renderAdminLogsFiltered: function() {},
+        renderAdminRefunds: function() {},
+        refreshAdminDashboard: function() {},
+        loadAdminTickets: function() { return Promise.resolve([]); },
+        adminToggleEventStatus: function() {},
+        initRealtimeNotifications: function() {},
+        loadAdminPage: function() {},
+        initAdminTabs: function() {},
+        adminLogout: function() {},
+        adminChangePassword: function() {},
+        adminSaveSettings: function() {},
+        adminDeleteEvent: function() {},
+        adminDeleteAllEvents: function() {},
+        adminClearLogs: function() {},
+        adminShowSlideForm: function() {},
+        adminSaveSlide: function() {},
+        adminDeleteSlide: function() {},
+        adminCancelSlideForm: function() {},
+        renderAdminSlides: function() {},
+        renderAdminEvents: function() {},
+        exportEventsCSV: function() {},
+        exportTicketsCSV: function() {},
+        exportUsersCSV: function() {},
+        exportRefundsCSV: function() {},
+        goToAdminEventsPage: function() {},
+        openCancelEventModal: function() {},
+        closeCancelEventModal: function() {},
+        confirmCancelEvent: function() {},
+        markRefundProcessed: function() {},
+        showEventSkeletons: function() {},
+        showMyEventsSkeletons: function() {},
+        showTicketSkeletons: function() {},
+        showHistorySkeletons: function() {},
+        showNotificationSkeletons: function() {}
+    };
+    Object.keys(safeFuncs).forEach(fn => {
+        if (typeof window[fn] === 'undefined') window[fn] = safeFuncs[fn];
+    });
+})();
+console.log('✅ Betix script.js chargé -', new Date().toISOString());
+
+// ============================================================
 // CONFIGURATION SUPABASE
 // ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
@@ -3446,7 +3507,12 @@ async function loadAdminPage() {
     document.getElementById('adminLastLogin').textContent=localStorage.getItem('betix_admin_last_login')||'Never';
     document.getElementById('adminLoginCount').textContent=localStorage.getItem('betix_admin_login_count')||0;
     document.getElementById('adminCurrentPasswordDisplay').textContent='••••••••';
-    document.getElementById('adminCommission').value=appSettings.commissionPercent; document.getElementById('adminServiceFee').value=appSettings.serviceFeePercent; document.getElementById('adminPiRate').value=appSettings.piRate;
+    const elCommission = document.getElementById('adminCommission');
+const elServiceFee = document.getElementById('adminServiceFee');
+const elPiRate = document.getElementById('adminPiRate');
+if (elCommission) elCommission.value = appSettings.commissionPercent;
+if (elServiceFee) elServiceFee.value = appSettings.serviceFeePercent;
+if (elPiRate) elPiRate.value = appSettings.piRate;
     await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
     const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
     if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
@@ -3746,8 +3812,22 @@ async function initApp() {
         if (loader && main) {
             setTimeout(() => {
                 loader.classList.add('hidden');
-                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); }, 600);
+                setTimeout(() => { 
+                    loader.style.display = 'none'; 
+                    main.style.display = 'block'; 
+                    try { updateUserInfo(); } catch(e) { console.warn('updateUserInfo error:', e); }
+                    try { updateProfilePage(); } catch(e) { console.warn('updateProfilePage error:', e); }
+                    try { updateConnectButtons(); } catch(e) { console.warn('updateConnectButtons error:', e); }
+                }, 600);
             }, 3000);
+            // Fallback : forcer l'affichage après 8 secondes si bloqué
+            setTimeout(() => {
+                if (loader.style.display !== 'none') {
+                    console.warn('⚠️ Fallback loader — affichage forcé');
+                    loader.style.display = 'none';
+                    main.style.display = 'block';
+                }
+            }, 8000);
         }
         await loadAppSettings();
         detectLanguage();
