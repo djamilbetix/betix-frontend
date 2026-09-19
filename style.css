@@ -104,6 +104,9 @@ body {
     border-radius: 8px;
     filter: brightness(0) invert(1);
 }
+.logo .logo-text {
+    font-size: 1.6rem;
+}
 @media (max-width: 480px) {
     .logo { font-size: 1.2rem; gap: 6px; }
     .logo .logo-img { height: 32px; }
