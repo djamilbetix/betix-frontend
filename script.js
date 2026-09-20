@@ -1436,10 +1436,12 @@ function generateTicketHTML(ticket) {
     const expiration = new Date(safeTicket.expiration_date || calculateTicketExpiration(safeTicket.eventDate));
     const expirationDate = !isNaN(expiration.getTime()) ? expiration.toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
-    const category = safeTicket.category || 'default';
-    const ticketImage = ticketImages[category] || ticketImages['default'];
-    // Classe de catégorie en minuscules pour correspondre aux sélecteurs CSS
-    const categoryClass = 'ticket-category-' + category.toLowerCase();
+    const rawCategory = String(safeTicket.category || 'default').trim();
+    const categoryKey = Object.keys(ticketImages).find(k => k.toLowerCase() === rawCategory.toLowerCase()) || 'default';
+    const ticketImage = ticketImages[categoryKey] || ticketImages['default'];
+    // Classe normalisée : évite qu'un espace ou une différence de casse
+    // empêche les réglages précis de positionnement par catégorie.
+    const categoryClass = 'ticket-category-' + categoryKey.toLowerCase().replace(/[^a-z0-9_-]/g, '');
 
     return '<div class="ticket-overlay-container ' + categoryClass + '" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
         '<div class="ticket-overlay-bg">' +
@@ -3290,15 +3292,45 @@ function updateProfilePage() {
 }
 
 function userHasPublishedEvents() {
-    if (!currentUser.wallet && !currentUser.piUid) return false;
-    const userId = currentUser.piUid || currentUser.wallet;
-    return events.some(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
+    const identifiers = [
+        currentUser.piUid,
+        currentUser.wallet,
+        currentUser.username,
+        currentUser.name,
+        currentUser.first_name && currentUser.last_name ? (currentUser.first_name + ' ' + currentUser.last_name) : null,
+        currentUser.first_name,
+        currentUser.last_name
+    ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
+    if (!identifiers.length) return false;
+
+    return events.some(e => {
+        const organizerValues = [
+            e.organizer,
+            e.organizerPiUid,
+            e.organizerName,
+            e.organizer_username,
+            e.organizerWallet,
+            e.organizer_wallet,
+            e.organizer_pi_uid
+        ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
+        return organizerValues.some(value => identifiers.includes(value));
+    });
 }
 
 function updateScanButtonVisibility() {
     const scanBtn = document.getElementById('scanMenuItem');
     if (!scanBtn) return;
-    scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
+
+    // Le bouton doit rester accessible dès qu'un utilisateur est connecté.
+    // La page scan.html doit effectuer sa propre vérification d'accès.
+    const connected = !!(currentUser.wallet || currentUser.piUid);
+    const hasEvents = userHasPublishedEvents();
+    const isAdmin = typeof public_isAdmin === 'function' && public_isAdmin();
+
+    scanBtn.style.display = (connected && (hasEvents || isAdmin)) ? 'flex' : 'none';
+    scanBtn.dataset.hasEvents = hasEvents ? 'true' : 'false';
 }
 
 // ============================================================
