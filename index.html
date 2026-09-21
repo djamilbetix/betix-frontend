@@ -7,7 +7,7 @@
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260921.4" />
+    <link rel="stylesheet" href="style.css?v=20260921" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
@@ -77,6 +77,7 @@
             <span class="back-btn-label">Back</span>
         </button>
         <div class="logo" id="mainLogo" onclick="handleLogoClick()">
+            <img src="logo.png" alt="Betix Logo" class="logo-img" onerror="this.style.display='none'" />
             <span class="logo-text">Betix</span>
         </div>
     </div>
@@ -129,9 +130,9 @@
 
 <!-- BOTTOM NAVIGATION -->
 <nav class="bottom-nav" id="bottomNav">
-    <button class="nav-item active" id="navHome"><i class="fas fa-home"></i><span>Home</span></button>
-    <button class="nav-item" id="navCreate"><i class="fas fa-plus-circle"></i><span>Create</span></button>
-    <button class="nav-item" id="navMenu"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <button class="nav-item active" id="navHome" onclick="showPage('home')"><i class="fas fa-home"></i><span>Home</span></button>
+    <button class="nav-item nav-create" id="navCreate" onclick="showPage('create')" aria-label="Create event"><span class="nav-create-circle"><i class="fas fa-plus"></i></span><span class="nav-create-label">Create</span></button>
+    <button class="nav-item" id="navMenu" onclick="openSidebar()"><i class="fas fa-bars"></i><span>Menu</span></button>
 </nav>
 
 <!-- NOTIFICATIONS PAGE -->
@@ -154,6 +155,18 @@
 
 <!-- HOME PAGE -->
 <div id="homePage">
+
+    <!-- 📢 FEED DE PARTAGE -->
+    <div id="shareFeed" class="share-feed-container">
+        <div class="share-feed-header">
+            <div>
+                <h2><i class="fas fa-share-alt" style="color:#F5B400;"></i> Publications</h2>
+                <p class="events-sub">Partagez vos événements avec vos fans</p>
+            </div>
+        </div>
+        <div id="shareFeedList" class="share-feed-list"></div>
+    </div>
+
     <section class="hero">
         <div class="hero-slider-container">
             <div class="hero-slider">
@@ -563,7 +576,7 @@
                 </div>
                 <div class="admin-charts-grid"><div class="chart-card"><h4>Revenue (7 derniers jours)</h4><canvas id="revenueChart"></canvas></div><div class="chart-card"><h4>Tickets par catégorie</h4><canvas id="categoryChart"></canvas></div></div>
             </div>
-            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventStatusFilter"><option value="all">Tous les statuts</option><option value="active">Actifs</option><option value="suspended">Suspendus</option><option value="cancelled">Annulés</option><option value="ended">Terminés</option></select><select id="adminEventSort"><option value="date_desc">Plus récents</option><option value="date_asc">Plus anciens</option><option value="sales_desc">Plus vendus</option><option value="revenue_desc">Plus rentables</option></select><button class="btn-export" onclick="exportEventsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
+            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventSort"><option value="date_desc">Plus récents</option><option value="date_asc">Plus anciens</option><option value="sales_desc">Plus vendus</option><option value="revenue_desc">Plus rentables</option></select><button class="btn-export" onclick="exportEventsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
             <div class="admin-actions" style="margin-top:10px;"><button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444;color:white;">Delete all</button></div>
             <div id="adminEventsList"></div><div id="adminEventsPagination" class="admin-pagination"></div>
         </div>
@@ -626,10 +639,10 @@
 </div>
 
 <!-- GLOBAL LOADER -->
-<div id="globalLoader" class="betix-global-loader" style="display:none;">
-    <div class="betix-loader-card" role="status" aria-live="polite">
-        <div class="betix-spinner" aria-hidden="true"></div>
-        <p id="loaderText">Loading...</p>
+<div id="globalLoader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+    <div style="background:white; padding:30px; border-radius:16px; text-align:center; max-width:300px; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+        <i class="fas fa-spinner fa-spin" style="font-size:2.5rem; color:#08143F;"></i>
+        <p id="loaderText" style="margin-top:12px; font-weight:500; color:#1f2937; font-size:1rem;">Loading...</p>
     </div>
 </div>
 
@@ -874,6 +887,37 @@
 
 <div id="paymentPendingModal" style="display: none;"></div>
 
+<!-- 📢 MODAL DE PARTAGE DE PUBLICATION -->
+<div id="sharePostModal" class="modal">
+    <div class="modal-content" style="max-width:560px;">
+        <span class="modal-close" onclick="closeSharePostModal()"><i class="fas fa-times"></i></span>
+        <h2 style="margin-bottom:8px;">Partager une publication</h2>
+        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">Partagez un événement avec vos fans et permettez-leur d'acheter directement.</p>
+
+        <div class="form-group">
+            <label>Choisir un événement</label>
+            <select id="sharePostEventSelect">
+                <option value="">-- Sélectionner un événement --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Message personnalisé (optionnel)</label>
+            <textarea id="sharePostMessage" rows="3" maxlength="200" placeholder="Ex: Venez nombreux à mon concert, places limitées !"></textarea>
+            <span id="sharePostCharCounter" class="char-counter">200 caractères restants</span>
+        </div>
+
+        <div id="sharePostPreview" style="display:none; margin-top:12px; padding:12px; background:#f8fafc; border-radius:12px;"></div>
+
+        <div class="modal-actions" style="display:flex; gap:10px; margin-top:16px;">
+            <button class="btn-secondary-modal" onclick="closeSharePostModal()" style="flex:1; padding:12px; border-radius:40px; border:2px solid #e6e6e6; background:transparent; font-weight:600; cursor:pointer;">Annuler</button>
+            <button class="btn-primary" id="publishShareBtn" onclick="publishSharePost()" style="flex:2;">
+                <i class="fas fa-share-alt"></i> Publier
+            </button>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <script>
@@ -931,6 +975,6 @@
         }, 500);
     }
 </script>
-<script src="script.js?v=20260921.4"></script>
+<script src="script.js?v=20260921"></script>
 </body>
 </html>
