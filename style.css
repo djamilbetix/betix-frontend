@@ -5554,7 +5554,8 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 
 /* Publication images: slightly larger while preserving the existing card structure */
 .event-card-classic .poster-wrapper-classic {
-    aspect-ratio: 4 / 3 !important;
+    /* Larger social-media style media area (closer to X/Twitter) */
+    aspect-ratio: 16 / 9 !important;
     min-height: 0 !important;
     overflow: hidden !important;
 }
@@ -5565,7 +5566,7 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
     display: block !important;
 }
 @media (max-width: 480px) {
-    .event-card-classic .poster-wrapper-classic { aspect-ratio: 4 / 3 !important; }
+    .event-card-classic .poster-wrapper-classic { aspect-ratio: 16 / 9 !important; }
 }
 
 /* Past events in My Events: visibly inactive + red past marker */
