@@ -935,87 +935,48 @@ function restoreBackupData() {
 // LOAD ALL FROM SUPABASE
 // ============================================================
 async function loadAllFromSupabase() {
-    console.log("=== LOAD ALL FROM SUPABASE (SAFE) ===");
+    console.log("=== LOAD ALL FROM SUPABASE ===");
     loadUsedTickets();
     updateSyncStatus('loading');
-
-    // Always keep a usable local copy while the network is loading.
-    let localEvents = [];
-    let localTickets = [];
-    try { localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]'); } catch (e) { localEvents = []; }
-    try { localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]'); } catch (e) { localTickets = []; }
-
-    // If local storage was cleared/corrupted, recover from the persistent backup.
-    if (!Array.isArray(localEvents) || localEvents.length === 0) {
-        const backup = restoreBackupData();
-        if (backup && Array.isArray(backup.events) && backup.events.length > 0) {
-            localEvents = backup.events;
-            events = backup.events;
-            localStorage.setItem('betix_events', JSON.stringify(events));
-        }
-    }
-    if (Array.isArray(localEvents) && localEvents.length > 0) {
-        events = localEvents;
-        renderEventsByCategory();
-    }
-
-    // Never replace valid local data with an empty response. An empty response can
-    // happen temporarily because of network/RLS/API issues and must not blank the app.
+    
+    let supabaseEvents = [];
     try {
-        const supabaseEvents = await loadEventsFromSupabase();
+        supabaseEvents = await loadEventsFromSupabase();
         console.log("Supabase events:", supabaseEvents.length);
-        if (Array.isArray(supabaseEvents) && supabaseEvents.length > 0) {
-            events = mergeArraysById(Array.isArray(localEvents) ? localEvents : [], supabaseEvents);
-            localStorage.setItem('betix_events', JSON.stringify(events));
-        } else if (!Array.isArray(events) || events.length === 0) {
-            const backup = restoreBackupData();
-            events = (backup && Array.isArray(backup.events)) ? backup.events : [];
-        }
+        const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+        events = mergeArraysById(localEvents, supabaseEvents);
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        saveBackupData(events, tickets);
     } catch (error) {
         console.error('Error loading events from Supabase:', error);
-        if (!Array.isArray(events) || events.length === 0) {
-            const backup = restoreBackupData();
-            events = (backup && Array.isArray(backup.events)) ? backup.events : localEvents;
-        }
+        events = JSON.parse(localStorage.getItem('betix_events') || '[]');
     }
-
-    // Only refresh the backup when we actually have data. Never save an empty
-    // result over a previously valid backup.
-    if (Array.isArray(events) && events.length > 0) {
-        localStorage.setItem('betix_events', JSON.stringify(events));
-    }
-
+    
     const userIdentifier = currentUser.piUid || currentUser.wallet;
     if (userIdentifier) {
         try {
             const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
             console.log("Supabase tickets for user:", supabaseTickets.length);
-            if (Array.isArray(supabaseTickets) && supabaseTickets.length > 0) {
-                tickets = mergeArraysById(Array.isArray(localTickets) ? localTickets : [], supabaseTickets);
-                localStorage.setItem('betix_tickets', JSON.stringify(tickets));
-            } else {
-                tickets = Array.isArray(localTickets) ? localTickets : [];
-            }
+            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+            tickets = mergeArraysById(localTickets, supabaseTickets);
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+            saveBackupData(events, tickets);
         } catch (error) {
             console.error('Error loading tickets from Supabase:', error);
-            tickets = Array.isArray(localTickets) ? localTickets : [];
+            tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         }
     } else {
-        tickets = Array.isArray(localTickets) ? localTickets : [];
+        console.log("User not connected, tickets not loaded.");
+        tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     }
-
-    try {
-        const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-        notifications = Array.isArray(localNotifs) ? localNotifs : [];
-    } catch (e) { notifications = []; }
-
-    if ((events && events.length > 0) || (tickets && tickets.length > 0)) {
-        saveBackupData(events, tickets);
-    }
-
+    
+    const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+    notifications = localNotifs;
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    
     updateSyncStatus('success');
     console.log("Load completed. Events:", events.length, "Tickets:", tickets.length);
-
+    
     renderEventsByCategory();
     renderTickets();
     renderHistory();
@@ -1023,8 +984,8 @@ async function loadAllFromSupabase() {
     setTimeout(() => {
         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
     }, 300);
-
-    try { await retryPendingTickets(); } catch (e) { console.warn('Pending ticket retry skipped:', e); }
+    
+    await retryPendingTickets();
 }
 
 // ============================================================
@@ -1079,12 +1040,6 @@ async function syncUserToSupabase() {
 }
 
 async function syncEventsToSupabase() {
-    // An empty local array is not an instruction to delete remote events.
-    // This protects publications during temporary loading/network failures.
-    if (!Array.isArray(events) || events.length === 0) {
-        console.warn('Skipping empty events sync to protect remote publications.');
-        return Promise.resolve();
-    }
     let success = 0;
     for (let i = 0; i < events.length; i++) {
         const saved = await saveEventToSupabase(events[i]);
@@ -2620,13 +2575,12 @@ function applyStaggeredAnimation(containerSelector, delayIncrement) {
 // ============================================================
 // TOAST NOTIFICATION
 // ============================================================
-function showToast(title, message, type, variant) {
+function showToast(title, message, type) {
     type = type || 'success';
-    variant = variant || '';
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
     const toast = document.createElement('div');
-    toast.className = 'toast-notification toast-' + type + (variant ? ' toast-' + variant : '');
+    toast.className = 'toast-notification toast-' + type;
     toast.innerHTML = '<div class="toast-icon"><i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-info-circle') + '"></i></div>' +
         '<div class="toast-content">' +
             '<div class="toast-title">' + escapeHtml(title) + '</div>' +
@@ -2751,6 +2705,7 @@ async function connectToPi() {
                         currentUser.piUid = 'demo_user';
                         currentUser.name = 'Demo User';
                         currentUser.memberSince = '2026';
+                        showToast('Pi Network', 'Pi account connected successfully.', 'success');
                         currentUser.loyaltyPoints = 0;
                         saveUser();
                         await loadProfileData();
@@ -2767,7 +2722,6 @@ async function connectToPi() {
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
-                        showToast('Pi Network', 'Pi account connected successfully.', 'success', 'connection');
                         closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
@@ -2784,6 +2738,8 @@ async function connectToPi() {
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+                    // Confirmation visuelle immédiate : l'authentification Pi est réussie.
+                    showToast('Pi Network', 'Pi account connected successfully.', 'success');
 
                     // NE PAS réinitialiser les champs de profil ici
                     // Charger d'abord les données existantes depuis Supabase
@@ -2804,7 +2760,6 @@ async function connectToPi() {
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
-                    showToast('Pi Network', 'Pi account connected successfully.', 'success', 'connection');
                     closeSidebar();
 
                     checkAndNotifyProfileCompletion();
@@ -3430,56 +3385,13 @@ async function disconnectPi() {
     renderTickets();
     renderHistory();
     updateConnectButtons();
+    showToast('Pi Network', 'Pi account disconnected successfully.', 'info');
     closeSidebar();
-    showToast('Pi Network', 'Pi account disconnected successfully.', 'info', 'disconnection');
 }
 
 function logout() { disconnectPi(); }
-function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
+function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); showToast('Session expired', t('sessionExpired'), 'warning'); } }, 300000); }
 function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
-
-// ============================================================
-// NAVIGATION CORE — always available, independent from Supabase
-// ============================================================
-function bindCoreNavigation() {
-    // Navigation is deliberately independent from Supabase/network state.
-    // Use onclick properties (instead of stacking listeners) so repeated
-    // initialization can never create dead or duplicated menu actions.
-    const navHome = document.getElementById('navHome');
-    const navCreate = document.getElementById('navCreate');
-    const navMenu = document.getElementById('navMenu');
-
-    if (navHome) navHome.onclick = function(e) { e.preventDefault(); e.stopPropagation(); showPage('home'); };
-    if (navCreate) navCreate.onclick = function(e) { e.preventDefault(); e.stopPropagation(); showPage('create'); };
-    if (navMenu) navMenu.onclick = function(e) { e.preventDefault(); e.stopPropagation(); openSidebar(); };
-
-    // Every internal sidebar item gets a direct, deterministic action.
-    document.querySelectorAll('.sidebar-item[data-page]').forEach(item => {
-        const page = item.dataset.page;
-        // Scan has its own explicit route and should keep that behavior.
-        if (item.id === 'scanMenuItem') return;
-        if (!page) return;
-        item.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            showPage(page);
-        };
-    });
-
-    const closeBtn = document.getElementById('closeSidebarBtn');
-    if (closeBtn) closeBtn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); closeSidebar(); };
-
-    const overlay = document.getElementById('overlay');
-    if (overlay) overlay.onclick = function(e) { e.preventDefault(); closeSidebar(); };
-
-    // Notification button in the sidebar must always work.
-    const notifBtn = document.querySelector('.sidebar-notif-icon-top');
-    if (notifBtn) notifBtn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showPage('notifications');
-    };
-}
 
 // ============================================================
 // SHOW PAGE
@@ -3532,8 +3444,8 @@ function goBack() {
     if (pageHistory.length > 1) { pageHistory.pop(); showPage(pageHistory[pageHistory.length - 1] || 'home'); } else showPage('home');
 }
 
-function closeSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (sidebar) sidebar.classList.remove('open'); if (overlay) overlay.classList.remove('active'); document.body.style.overflow = ''; }
-function openSidebar() { const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('overlay'); if (!sidebar) return; sidebar.classList.add('open'); if (overlay) overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); document.body.style.overflow = ''; }
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
 
 // ============================================================
 // UPDATE CONNECT BUTTONS
@@ -4162,169 +4074,162 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // INITIALISATION DE L'APPLICATION
 // ============================================================
 async function initApp() {
-    const safe = (name, fn) => {
-        try { return fn(); }
-        catch (e) { console.warn('[Betix init] ' + name + ' skipped:', e); return null; }
-    };
-    const safeAsync = async (name, fn) => {
-        try { return await fn(); }
-        catch (e) { console.warn('[Betix init] ' + name + ' skipped:', e); return null; }
-    };
-
-    // 1) Restore the user and local data immediately.
-    safe('user restore', () => {
+    try {
         const savedUser = localStorage.getItem('betix_user');
-        if (savedUser) {
-            try {
-                const userData = JSON.parse(savedUser);
-                if (userData && (userData.wallet || userData.piUid)) {
-                    currentUser = userData;
-                    piUser = { username: userData.wallet || userData.piUid };
-                }
-            } catch (e) { console.warn('Invalid saved user:', e); }
-        }
+        if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
+        
         const localProfile = loadLocalProfile();
-        Object.keys(localProfile || {}).forEach(key => {
-            if (localProfile[key] !== undefined) currentUser[key] = localProfile[key];
-        });
-        if (localProfile && localProfile.profile_completed) currentUser.profile_completed = true;
-    });
-
-    // 2) Bind navigation BEFORE any network call. A slow/failed API must never
-    // disable Home/Create/Menu or the sidebar.
-    safe('navigation binding', bindCoreNavigation);
-
-    // 3) Show the app even if a remote service is slow.
-    const loader = document.getElementById('loader');
-    const main = document.getElementById('main-content');
-    if (loader && main) {
-        setTimeout(() => {
-            loader.classList.add('hidden');
-            setTimeout(() => {
-                loader.style.display = 'none';
-                main.style.display = 'block';
-                safe('updateUserInfo', updateUserInfo);
-                safe('updateProfilePage', updateProfilePage);
-                safe('updateConnectButtons', updateConnectButtons);
-            }, 350);
-        }, 1200);
-        setTimeout(() => {
-            if (loader.style.display !== 'none') {
-                loader.style.display = 'none';
-                main.style.display = 'block';
+        Object.keys(localProfile).forEach(key => {
+            if (localProfile[key] !== undefined) {
+                currentUser[key] = localProfile[key];
             }
-        }, 5000);
-    }
-
-    // 4) Restore cached events and render them immediately.
-    safe('local event restore', () => {
-        let cached = [];
-        try { cached = JSON.parse(localStorage.getItem('betix_events') || '[]'); } catch (e) {}
-        if (!Array.isArray(cached) || cached.length === 0) {
-            const backup = restoreBackupData();
-            if (backup && Array.isArray(backup.events) && backup.events.length > 0) cached = backup.events;
+        });
+        if (localProfile.profile_completed) currentUser.profile_completed = true;
+        
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) {
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                setTimeout(() => { loader.style.display = 'none'; main.style.display = 'block'; updateUserInfo(); updateProfilePage(); updateConnectButtons(); }, 600);
+            }, 3000);
         }
-        if (cached.length > 0) {
-            events = cached;
-            localStorage.setItem('betix_events', JSON.stringify(events));
-        }
+        await loadAppSettings();
+        detectLanguage();
+        syncSettingsLanguageSelector();
+        loadUsedTickets();
+        if (!events || events.length === 0) { events = []; saveEvents(); }
+        initCountrySelectors();
+        calculateLoyaltyPoints();
+        initFilters();
         renderEventsByCategory();
-    });
-
-    // 5) Lightweight/local UI initialization. Each item is isolated so one
-    // optional feature cannot crash the whole application.
-    safe('language', detectLanguage);
-    safe('settings language', syncSettingsLanguageSelector);
-    safe('used tickets', loadUsedTickets);
-    safe('country selectors', initCountrySelectors);
-    safe('loyalty', calculateLoyaltyPoints);
-    safe('filters', initFilters);
-    safe('user info', updateUserInfo);
-    safe('profile page', updateProfilePage);
-    safe('notification badge', updateNotifBadgeHeader);
-    safe('admin', initAdmin);
-    safe('chat', initChat);
-    safe('legal modals', initLegalModals);
-    safe('hero slides', loadHeroSlides);
-    safe('admin logs', renderAdminLogs);
-    safe('ticket types', setupTicketTypesUI);
-    safe('character counters', initCharCounters);
-    safe('profile country', populateProfileCountrySelect);
-
-    const dark = document.getElementById('darkModeToggle');
-    if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
-    if (dark && !dark._betixBound) { dark.addEventListener('change', toggleDarkMode); dark._betixBound = true; }
-
-    const storedPassword = localStorage.getItem('betix_admin_password');
-    if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
-        const adminBtn = document.getElementById('adminMenuItem');
-        if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
-        if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') safe('admin session', startAdminSession);
-    }
-
-    // 6) Network loading is isolated. Failure cannot stop the rest of init.
-    if (currentUser.wallet) {
-        await safeAsync('profile data', loadProfileData);
-        safe('profile completion', checkAndNotifyProfileCompletion);
-    }
-    await safeAsync('Supabase data', loadAllFromSupabase);
-    safe('navigation rebind', bindCoreNavigation);
-
-    // 7) Regular maintenance must never wipe/replace event data.
-    setInterval(() => { safe('expired tickets', updateExpiredTickets); }, 300000);
-    setInterval(() => { if (currentUser.wallet) safe('save user', saveUser); }, 30000);
-    setTimeout(() => safeAsync('background sync', syncAllToSupabase), 5000);
-    setInterval(() => { safeAsync('periodic sync', syncAllToSupabase); safeAsync('pending tickets', retryPendingTickets); }, 120000);
-
-    // 8) Final UI listeners.
-    safe('profile listeners', () => {
+        updateUserInfo();
+        updateProfilePage();
+        updateNotifBadgeHeader();
+        initAdmin();
+        initChat();
+        initLegalModals();
+        const dark = document.getElementById('darkModeToggle');
+        if (localStorage.getItem('darkMode') === 'true') { if (dark) dark.checked = true; document.body.classList.add('dark-mode'); }
+        if (dark) dark.addEventListener('change', toggleDarkMode);
+        loadHeroSlides();
+        renderAdminLogs();
+        setupTicketTypesUI();
+        initCharCounters();
+        const storedPassword = localStorage.getItem('betix_admin_password');
+        if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
+            const adminBtn = document.getElementById('adminMenuItem');
+            if (adminBtn) { adminBtn.style.display = 'block'; adminBtn.style.background = 'linear-gradient(135deg, #1a1a2e, #0B1F5C)'; adminBtn.style.color = 'white'; }
+            if (document.getElementById('adminPage') && document.getElementById('adminPage').style.display !== 'none') startAdminSession();
+        }
+        populateProfileCountrySelect();
+        if (currentUser.wallet) {
+            await loadProfileData();
+            checkAndNotifyProfileCompletion();
+            await loadAllFromSupabase();
+        } else {
+            await loadAllFromSupabase();
+        }
+        
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
         document.getElementById('profileReviewConfirmBtn')?.addEventListener('click', confirmProfileSave);
         document.getElementById('profileReviewClose')?.addEventListener('click', closeProfileReview);
-        document.getElementById('editProfileBtn')?.addEventListener('click', () => enableEditMode(true));
+        document.getElementById('editProfileBtn')?.addEventListener('click', function() { enableEditMode(true); });
         document.getElementById('verifyEmailBtn')?.addEventListener('click', verifyEmail);
         document.getElementById('verifyPhoneBtn')?.addEventListener('click', verifyPhone);
-    });
 
-    safe('back button', () => {
         const backBtn = document.getElementById('backBtn');
-        if (!backBtn || backBtn._betixBound) return;
-        backBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); goBack(); });
-        backBtn._betixBound = true;
-    });
-
-    safe('search', () => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput && !searchInput._betixBound) {
-            searchInput.addEventListener('input', e => { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
-            searchInput._betixBound = true;
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); goBack(); return false; });
+            const homePage = document.getElementById('homePage');
+            if (homePage && homePage.style.display !== 'none') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; } else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
         }
-    });
-
-    safe('event form', () => {
+        document.getElementById('closeSidebarBtn') && document.getElementById('closeSidebarBtn').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); closeSidebar(); });
+        document.getElementById('overlay') && document.getElementById('overlay').addEventListener('click', function() { closeSidebar(); });
         const eventForm = document.getElementById('eventForm');
-        if (eventForm && !eventForm._betixBound) { eventForm.addEventListener('submit', createEvent); eventForm._betixBound = true; }
-    });
-
-    safe('sidebar listeners', bindCoreNavigation);
-    safe('activity listeners', bindActivityListeners);
-
-    if (currentUser.wallet && isSessionExpired()) safe('session expiry', disconnectPi);
-
-    safe('scan visibility', updateScanButtonVisibility);
-    console.log('✅ Betix initialization completed safely. Events:', events.length);
+        const searchInput = document.getElementById('searchInput');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        updateConnectButtons();
+        document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
+        document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
+        // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
+        // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
+        
+        const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
+        const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
+        const adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
+        const adminImageInput = document.getElementById('adminSlideImageInput');
+        const adminUploadBox = document.getElementById('adminUploadBox');
+        const adminPreview = document.getElementById('adminSlidePreview');
+        if (adminAddSlideBtn) adminAddSlideBtn.addEventListener('click', function() { adminShowSlideForm(-1); });
+        if (adminSaveSlideBtn) adminSaveSlideBtn.addEventListener('click', adminSaveSlide);
+        if (adminCancelSlideBtn) adminCancelSlideBtn.addEventListener('click', adminCancelSlideForm);
+        if (adminImageInput && adminUploadBox) {
+            adminImageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) { adminPreview.src = e.target.result; adminPreview.style.display = 'block'; adminUploadBox.classList.add('has-image'); };
+                    reader.readAsDataURL(file);
+                }
+            });
+            adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
+        }
+        if (eventForm) eventForm.addEventListener('submit', createEvent);
+        if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
+        if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
+        document.querySelectorAll('.image-input-modern').forEach(input => {
+            const index = parseInt(input.dataset.index);
+            input.addEventListener('change', function(e) { if (this.files && this.files[0]) handleImageUploadModern(this.files[0], index); });
+            const box = document.getElementById('uploadBox' + (index + 1));
+            if (box) {
+                box.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+                box.addEventListener('dragleave', function(e) { e.preventDefault(); this.classList.remove('dragover'); });
+                box.addEventListener('drop', function(e) {
+                    e.preventDefault(); this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    const inputFile = this.querySelector('.image-input-modern');
+                    if (files && files.length > 0 && inputFile) { inputFile.files = files; inputFile.dispatchEvent(new Event('change')); }
+                });
+            }
+        });
+        document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
+        bindActivityListeners();
+        setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
+        setTimeout(() => syncAllToSupabase(), 2000);
+        setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 60000);
+        window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
+        if (currentUser.wallet && isSessionExpired()) disconnectPi();
+        document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
+        document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
+            document.getElementById('confirmPurchasePopup').style.display = 'none';
+            if (confirmPurchaseResolve) {
+                confirmPurchaseResolve(true);
+                confirmPurchaseResolve = null;
+            }
+        });
+        // Le listener sur transactionProcessedOkBtn a été supprimé, la nouvelle fonction gère les boutons
+        document.getElementById('viewUpcomingEventsBtn')?.addEventListener('click', function() {
+            closePastEventPopup();
+            showPage('home');
+            setTimeout(() => {
+                const eventsSection = document.querySelector('.events-container');
+                if (eventsSection) { eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            }, 300);
+        });
+    } catch (error) {
+        console.error('Init error:', error);
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main-content');
+        if (loader && main) { loader.style.display = 'none'; main.style.display = 'block'; }
+    }
 }
 
 // ============================================================
 // EXPOSITION DES FONCTIONS GLOBALES
 // ============================================================
 window.syncAllToSupabase = syncAllToSupabase;
-window.showPage = showPage;
-window.openSidebar = openSidebar;
-window.closeSidebar = closeSidebar;
-window.goBack = goBack;
-window.bindCoreNavigation = bindCoreNavigation;
 window.loadAllFromSupabase = loadAllFromSupabase;
 window.forceRefreshData = forceRefreshData;
 window.updateSyncStatus = updateSyncStatus;
