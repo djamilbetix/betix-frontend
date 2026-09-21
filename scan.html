@@ -36,9 +36,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ============================================================
-           HEADER
-           ============================================================ */
+        /* HEADER */
         .scan-header {
             position: fixed; top: 0; left: 0; right: 0; height: 60px;
             background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
@@ -76,9 +74,7 @@
             font-weight: 700; border: 2px solid #0B1F5C; padding: 0 3px;
         }
 
-        /* ============================================================
-           MAIN
-           ============================================================ */
+        /* MAIN */
         .scan-main { padding: 80px 16px 30px; max-width: 600px; margin: 0 auto; min-height: 100vh; }
 
         /* STATS */
@@ -184,9 +180,7 @@
             transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,180,0,0.4);
         }
 
-        /* ============================================================
-           RESULT DISPLAY
-           ============================================================ */
+        /* RESULT */
         .result-card {
             display: none; background: white; border-radius: 24px; overflow: hidden;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4); margin-top: 20px;
@@ -227,9 +221,7 @@
             60% { transform: scale(1.2) rotate(10deg); }
             100% { transform: scale(1) rotate(0deg); }
         }
-        .result-banner.invalid .icon {
-            animation: iconShake 0.6s ease;
-        }
+        .result-banner.invalid .icon { animation: iconShake 0.6s ease; }
         @keyframes iconShake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
@@ -267,9 +259,7 @@
         .btn-close-result { background: #f3f4f6; color: var(--dark); }
         .btn-close-result:hover { background: #e5e7eb; }
 
-        /* ============================================================
-           LOADER (démarrage)
-           ============================================================ */
+        /* LOADER */
         .scan-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 40%, #0B1F5C 0%, #060b1a 100%);
@@ -300,9 +290,7 @@
         }
         .scan-loader-logo span { color: var(--accent); }
 
-        /* ============================================================
-           🎬 OVERLAY D'ANALYSE (pendant le scan)
-           ============================================================ */
+        /* 🎬 OVERLAY D'ANALYSE */
         .scanning-overlay {
             position: fixed; inset: 0;
             background: rgba(5, 10, 20, 0.92);
@@ -332,24 +320,16 @@
             0%,100% { box-shadow: 0 0 60px rgba(245,180,0,0.3), inset 0 0 40px rgba(245,180,0,0.05); }
             50% { box-shadow: 0 0 100px rgba(245,180,0,0.5), inset 0 0 60px rgba(245,180,0,0.1); }
         }
-
-        /* Coins décoratifs */
         .scanning-box .corner {
-            position: absolute;
-            width: 40px; height: 40px;
-            border: 4px solid var(--accent);
-            border-radius: 8px;
+            position: absolute; width: 40px; height: 40px;
+            border: 4px solid var(--accent); border-radius: 8px;
         }
         .scanning-box .corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
         .scanning-box .corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
         .scanning-box .corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
         .scanning-box .corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
-
-        /* Ligne de scan qui descend */
         .scanning-box .scan-line {
-            position: absolute;
-            left: 20px; right: 20px;
-            height: 3px;
+            position: absolute; left: 20px; right: 20px; height: 3px;
             background: linear-gradient(90deg, transparent, var(--accent), transparent);
             box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(245,180,0,0.5);
             animation: scanMove 1.8s ease-in-out infinite;
@@ -359,99 +339,60 @@
             50% { top: calc(100% - 30px); opacity: 1; }
             100% { top: 30px; opacity: 0.3; }
         }
-
-        /* Icône QR centrale */
         .scanning-box .qr-icon {
-            position: absolute;
-            top: 50%; left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 3.5rem;
-            color: rgba(245,180,0,0.35);
+            font-size: 3.5rem; color: rgba(245,180,0,0.35);
             animation: qrBlink 1.5s ease-in-out infinite;
         }
         @keyframes qrBlink {
             0%,100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
             50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.08); }
         }
-
-        .scanning-info {
-            margin-top: 28px;
-            text-align: center;
-            max-width: 320px;
-        }
+        .scanning-info { margin-top: 28px; text-align: center; max-width: 320px; }
         .scanning-info .analysis-text {
-            color: white;
-            font-size: 1.05rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 18px;
-            min-height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            color: white; font-size: 1.05rem; font-weight: 600;
+            letter-spacing: 0.5px; margin-bottom: 18px;
+            min-height: 28px; display: flex;
+            align-items: center; justify-content: center; gap: 8px;
         }
-        .scanning-info .analysis-text i {
-            color: var(--accent);
-            animation: spin 1.2s linear infinite;
-        }
+        .scanning-info .analysis-text i { color: var(--accent); animation: spin 1.2s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .scanning-progress {
-            width: 260px;
-            height: 6px;
+            width: 260px; height: 6px;
             background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 0 auto;
+            border-radius: 3px; overflow: hidden; margin: 0 auto;
         }
         .scanning-progress-bar {
             height: 100%;
             background: linear-gradient(90deg, var(--accent), #F5B400, #D89C00);
-            border-radius: 3px;
-            width: 0%;
+            border-radius: 3px; width: 0%;
             transition: width 0.3s ease;
             box-shadow: 0 0 12px rgba(245,180,0,0.6);
         }
         .scanning-percent {
-            color: var(--accent);
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-top: 8px;
-            letter-spacing: 1px;
+            color: var(--accent); font-size: 0.85rem;
+            font-weight: 700; margin-top: 8px; letter-spacing: 1px;
         }
 
-        /* ============================================================
-           ⚡ FLASH OVERLAY (vert / rouge)
-           ============================================================ */
+        /* ⚡ FLASH OVERLAY */
         .flash-overlay {
             position: fixed; inset: 0;
-            pointer-events: none;
-            z-index: 99997;
-            opacity: 0;
+            pointer-events: none; z-index: 99997; opacity: 0;
             transition: opacity 0.2s ease;
         }
         .flash-overlay.green { background: radial-gradient(circle at center, rgba(16,185,129,0.6), rgba(16,185,129,0) 70%); }
         .flash-overlay.red { background: radial-gradient(circle at center, rgba(239,68,68,0.7), rgba(239,68,68,0) 70%); }
         .flash-overlay.flash { animation: flashAnim 0.7s ease-out; }
-        @keyframes flashAnim {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
+        @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* ============================================================
-           🎉 CONFETTIS (ticket valide)
-           ============================================================ */
+        /* 🎉 CONFETTIS */
         .confetti-container {
             position: fixed; inset: 0;
-            pointer-events: none;
-            z-index: 99996;
-            overflow: hidden;
+            pointer-events: none; z-index: 99996; overflow: hidden;
         }
         .confetti-piece {
-            position: absolute;
-            width: 10px;
-            height: 10px;
+            position: absolute; width: 10px; height: 10px;
             top: -20px;
             animation: confettiFall 3s linear forwards;
         }
@@ -461,7 +402,7 @@
         }
 
         /* ============================================================
-           TOAST
+           🔧 TOAST — CORRIGÉ (caché par défaut, sans texte parasite)
            ============================================================ */
         .scan-toast {
             position: fixed; top: 80px; left: 50%;
@@ -469,11 +410,22 @@
             background: white; border-radius: 16px; padding: 14px 20px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 99999;
             min-width: 280px; max-width: calc(100% - 40px);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        opacity 0.3s ease,
+                        visibility 0.3s ease;
             border-left: 5px solid var(--success);
             display: flex; align-items: center; gap: 12px;
+            /* 🔧 CACHÉ PAR DÉFAUT */
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
-        .scan-toast.show { transform: translateX(-50%) translateY(0); }
+        .scan-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
         .scan-toast.error { border-left-color: var(--danger); }
         .scan-toast.warning { border-left-color: var(--warning); }
         .scan-toast.info { border-left-color: #3b82f6; }
@@ -484,9 +436,7 @@
         .scan-toast .toast-title { font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 2px; }
         .scan-toast .toast-message { font-size: 0.8rem; color: var(--gray); }
 
-        /* ============================================================
-           📊 MODAL HISTORIQUE
-           ============================================================ */
+        /* 📊 MODAL HISTORIQUE */
         .history-modal {
             position: fixed; inset: 0;
             background: rgba(10, 15, 30, 0.97);
@@ -519,10 +469,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 1rem; transition: all 0.25s ease;
         }
-        .history-header .close-history:hover {
-            background: rgba(255,255,255,0.3);
-            transform: rotate(90deg);
-        }
+        .history-header .close-history:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
 
         .history-filters {
             padding: 16px 20px 10px;
@@ -575,14 +522,10 @@
             display: inline-flex; align-items: center; gap: 6px;
             border: none;
         }
-        .btn-export-history {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
+        .btn-export-history { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .btn-export-history:hover { transform: translateY(-2px); }
         .btn-clear-history {
-            background: rgba(239,68,68,0.15);
-            color: #ef4444;
+            background: rgba(239,68,68,0.15); color: #ef4444;
             border: 1px solid rgba(239,68,68,0.3) !important;
         }
         .btn-clear-history:hover { background: rgba(239,68,68,0.25); }
@@ -593,14 +536,8 @@
             border-radius: 16px; overflow: hidden;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .history-table {
-            width: 100%; border-collapse: collapse;
-            font-size: 0.78rem; color: #d1d5db;
-        }
-        .history-table thead {
-            background: rgba(11,31,92,0.6);
-            position: sticky; top: 0; z-index: 5;
-        }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; color: #d1d5db; }
+        .history-table thead { background: rgba(11,31,92,0.6); position: sticky; top: 0; z-index: 5; }
         .history-table th {
             padding: 12px 10px; text-align: left;
             font-weight: 700; font-size: 0.7rem;
@@ -613,10 +550,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
             vertical-align: middle;
         }
-        .history-table tbody tr {
-            transition: background 0.2s;
-            cursor: pointer;
-        }
+        .history-table tbody tr { transition: background 0.2s; cursor: pointer; }
         .history-table tbody tr:hover { background: rgba(245,180,0,0.08); }
         .history-table tbody tr:last-child td { border-bottom: none; }
 
@@ -633,9 +567,7 @@
         .status-badge.expired { background: rgba(107,114,128,0.2); color: #9ca3af; }
         .status-badge.refunded { background: rgba(139,92,246,0.15); color: #8b5cf6; }
 
-        .history-empty {
-            text-align: center; padding: 60px 20px; color: #6b7280;
-        }
+        .history-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
         .history-empty i {
             font-size: 3rem; opacity: 0.3;
             margin-bottom: 16px; display: block; color: var(--accent);
@@ -687,10 +619,7 @@
         }
         .detail-row:last-child { border-bottom: none; }
         .detail-row .label { color: #6b7280; font-weight: 500; min-width: 110px; flex-shrink: 0; }
-        .detail-row .value {
-            color: #1a1a2e; font-weight: 600;
-            text-align: right; word-break: break-word;
-        }
+        .detail-row .value { color: #1a1a2e; font-weight: 600; text-align: right; word-break: break-word; }
         .detail-footer { padding: 16px 20px 20px; display: flex; gap: 10px; }
         .detail-footer button {
             flex: 1; padding: 12px; border-radius: 12px;
@@ -883,12 +812,12 @@
     </div>
 </div>
 
-<!-- TOAST -->
-<div class="scan-toast" id="scanToast">
+<!-- TOAST (avec style inline pour cacher au chargement) -->
+<div class="scan-toast" id="scanToast" style="opacity:0;visibility:hidden;">
     <i class="fas fa-check-circle toast-icon" id="toastIcon"></i>
     <div>
-        <div class="toast-title" id="toastTitle">Succès</div>
-        <div class="toast-message" id="toastMessage">Message</div>
+        <div class="toast-title" id="toastTitle"></div>
+        <div class="toast-message" id="toastMessage"></div>
     </div>
 </div>
 
@@ -1224,6 +1153,9 @@ function initQrScanner() {
         verbose: false,
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
     });
+    // Débloquer l'audio au premier clic
+    document.addEventListener('click', () => getAudioCtx(), { once: true });
+    document.addEventListener('touchstart', () => getAudioCtx(), { once: true });
 }
 
 async function toggleScanner() {
@@ -1310,7 +1242,7 @@ function validateManualCode() {
 }
 
 // ============================================================
-// 🎬 OVERLAY D'ANALYSE + PROGRESSION
+// 🎬 OVERLAY D'ANALYSE
 // ============================================================
 const ANALYSIS_STEPS = [
     { text: 'Analyse du ticket...', icon: 'fa-circle-notch', progress: 20 },
@@ -1344,12 +1276,9 @@ function showScanningOverlay() {
 
     analysisInterval = setInterval(() => {
         currentStepIndex++;
-        if (currentStepIndex < ANALYSIS_STEPS.length) {
-            updateStep();
-        }
+        if (currentStepIndex < ANALYSIS_STEPS.length) updateStep();
     }, 500);
 
-    // Durée minimale d'affichage : 2.2s pour un effet pro
     return new Promise(resolve => setTimeout(resolve, 2200));
 }
 
@@ -1396,34 +1325,26 @@ function playTone(freq, duration, delay = 0, volume = 0.15, type = 'sine') {
     } catch(e) {}
 }
 
-function playScanBeep() {
-    playTone(1400, 0.08, 0, 0.06, 'sine');
-}
+function playScanBeep() { playTone(1400, 0.08, 0, 0.06, 'sine'); }
 
 function playSuccessSound() {
-    // Mélodie ascendante harmonieuse (C-E-G-C)
     playTone(523.25, 0.15, 0, 0.18, 'sine');
     playTone(659.25, 0.15, 0.12, 0.18, 'sine');
     playTone(783.99, 0.18, 0.24, 0.20, 'sine');
     playTone(1046.50, 0.30, 0.40, 0.22, 'sine');
 }
-
 function playErrorSound() {
-    // Deux buzzers graves courts
     playTone(180, 0.18, 0, 0.22, 'square');
     playTone(140, 0.30, 0.22, 0.22, 'square');
 }
-
 function playWarningSound() {
     playTone(440, 0.15, 0, 0.15, 'triangle');
     playTone(440, 0.15, 0.20, 0.15, 'triangle');
 }
-
 function playExpiredSound() {
     playTone(300, 0.20, 0, 0.15, 'sawtooth');
     playTone(200, 0.35, 0.25, 0.15, 'sawtooth');
 }
-
 function playRefundedSound() {
     playTone(660, 0.15, 0, 0.12, 'sine');
     playTone(550, 0.20, 0.18, 0.12, 'sine');
@@ -1464,7 +1385,6 @@ function launchConfetti() {
 async function processTicketCode(code) {
     if (isProcessing) return;
 
-    const startTime = Date.now();
     const overlayPromise = showScanningOverlay();
 
     try {
@@ -1472,15 +1392,13 @@ async function processTicketCode(code) {
             .from('tickets').select('*').eq('id', code).maybeSingle();
 
         let ticketData = data;
-        let foundByQr = false;
 
         if (error || !data) {
             const { data: data2, error: error2 } = await supabaseClient
                 .from('tickets').select('*').eq('qr_code', code).maybeSingle();
-            if (!error2 && data2) { ticketData = data2; foundByQr = true; }
+            if (!error2 && data2) ticketData = data2;
         }
 
-        // Attendre au moins 2.2s pour l'animation
         await overlayPromise;
 
         if (!ticketData) {
@@ -1531,7 +1449,6 @@ async function handleTicketData(ticket) {
 
     const status = (ticket.status || 'Valid').toLowerCase();
 
-    // ========== DÉJÀ UTILISÉ ==========
     if (status === 'used') {
         updateStatsUI();
         addScanToHistory({
@@ -1552,7 +1469,6 @@ async function handleTicketData(ticket) {
         return;
     }
 
-    // ========== EXPIRÉ ==========
     if (status === 'expired') {
         updateStatsUI();
         addScanToHistory({
@@ -1571,7 +1487,6 @@ async function handleTicketData(ticket) {
         return;
     }
 
-    // ========== REMBOURSÉ ==========
     if (status === 'refunded' || ticket.refunded) {
         updateStatsUI();
         addScanToHistory({
@@ -1590,7 +1505,6 @@ async function handleTicketData(ticket) {
         return;
     }
 
-    // ========== VÉRIFIER ORGANISATEUR ==========
     const userId = currentUser.piUid || currentUser.wallet;
     const organizerId = ticket.organizer_pi_uid || ticket.organizer_uid;
     if (organizerId && String(organizerId) !== String(userId)) {
@@ -1613,7 +1527,6 @@ async function handleTicketData(ticket) {
         }
     }
 
-    // ========== VÉRIFIER DATE ==========
     const eventDate = ticket.event_date || ticket.purchase_date;
     if (eventDate) {
         const eventEnd = new Date(eventDate);
@@ -1642,7 +1555,6 @@ async function handleTicketData(ticket) {
         }
     }
 
-    // ========== ✅ VALIDE ==========
     await markTicketAsUsed(ticket);
 }
 
@@ -1679,7 +1591,6 @@ async function markTicketAsUsed(ticket) {
             status: 'valid', message: 'Accès autorisé'
         });
 
-        // 🎉 FÉLICITATIONS
         playSuccessSound();
         vibrate([50, 30, 50, 30, 100]);
         triggerFlash('green');
@@ -1705,7 +1616,7 @@ async function markTicketAsUsed(ticket) {
 }
 
 // ============================================================
-// AFFICHAGE DU RÉSULTAT
+// AFFICHAGE RÉSULTAT
 // ============================================================
 function showResult(type, title, subtitle, info) {
     const card = document.getElementById('resultCard');
@@ -1778,25 +1689,43 @@ function vibrate(pattern) {
 }
 
 // ============================================================
-// TOAST
+// TOAST — CORRIGÉ
 // ============================================================
 let toastTimeout = null;
 function showToast(title, message, type = 'success', duration = 3000) {
     const toast = document.getElementById('scanToast');
     const icon = document.getElementById('toastIcon');
+    if (!toast) return;
+
+    // Reset classes + styles inline
     toast.className = 'scan-toast ' + type;
+    toast.style.opacity = '';
+    toast.style.visibility = '';
+
     const icons = {
         success: 'fa-check-circle',
         error: 'fa-times-circle',
         warning: 'fa-exclamation-triangle',
         info: 'fa-info-circle'
     };
-    icon.className = 'fas ' + (icons[type] || 'fa-info-circle') + ' toast-icon';
-    document.getElementById('toastTitle').textContent = title;
-    document.getElementById('toastMessage').textContent = message;
+    if (icon) icon.className = 'fas ' + (icons[type] || 'fa-info-circle') + ' toast-icon';
+    const titleEl = document.getElementById('toastTitle');
+    const msgEl = document.getElementById('toastMessage');
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+
     toast.classList.add('show');
     if (toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+        // Sécurité : re-cache après l'animation
+        setTimeout(() => {
+            if (!toast.classList.contains('show')) {
+                toast.style.opacity = '0';
+                toast.style.visibility = 'hidden';
+            }
+        }, 400);
+    }, duration);
 }
 
 // ============================================================
