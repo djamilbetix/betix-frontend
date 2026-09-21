@@ -5543,132 +5543,110 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 
 
 /* ============================================================
-   BETIX FINAL UI OVERRIDES — 2026-09-21
-   Navigation, logo, past events and responsive consistency
+   BETIX — REQUESTED FINAL POLISH (only targeted changes)
    ============================================================ */
-:root { --betix-blue: #0B1F5C; --betix-gold: #F5B400; --betix-red: #E53935; }
 
-/* Header logo: white and slightly larger */
-.app-header .logo-text,
-header .logo-text,
-.logo .logo-text {
-    color: #ffffff !important;
-    font-size: 2rem !important;
-    line-height: 1 !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.4px;
-}
-@media (max-width: 768px) {
-    .app-header .logo-text,
-    header .logo-text,
-    .logo .logo-text { font-size: 1.85rem !important; }
+/* Header: larger white Betix logo */
+.logo .logo-text { font-size: 1.95rem !important; color: #fff !important; }
+@media (max-width: 480px) {
+    .logo .logo-text { font-size: 1.65rem !important; color: #fff !important; }
 }
 
-/* Bottom navigation: all Betix blue, including active state */
-.bottom-nav {
-    z-index: 10000 !important;
+/* Publication images: slightly taller, X-style visual presence without changing card structure */
+.event-card-classic .poster-wrapper-classic {
+    aspect-ratio: 3 / 2 !important;
+    min-height: 0 !important;
 }
+@media (max-width: 480px) {
+    .event-card-classic .poster-wrapper-classic { aspect-ratio: 3 / 2 !important; }
+}
+
+/* Past events in My Events: visibly inactive + red past marker */
+.my-events-grid-past .my-event-card-modern,
+.my-event-card-past {
+    opacity: .62 !important;
+    filter: grayscale(.72) blur(.15px) !important;
+}
+.my-events-grid-past .my-event-card-modern:hover,
+.my-event-card-past:hover {
+    opacity: .78 !important;
+    filter: grayscale(.5) blur(0) !important;
+}
+.my-event-card-modern .event-status-badge-modern.ended {
+    background: #dc2626 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(220,38,38,.22);
+}
+
+/* Professional Betix notification/toast: centered on mobile and desktop */
+.toast-notification {
+    top: calc(env(safe-area-inset-top, 0px) + 76px) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    width: min(420px, calc(100% - 28px)) !important;
+    max-width: 420px !important;
+    border-left: 0 !important;
+    border-top: 4px solid #F5B400 !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, #0B1F5C, #142d73) !important;
+    color: #fff !important;
+    transform: translate(-50%, -24px) scale(.98) !important;
+    box-shadow: 0 14px 38px rgba(11,31,92,.28) !important;
+    transition: transform .28s ease, opacity .28s ease !important;
+}
+.toast-notification.show {
+    transform: translate(-50%, 0) scale(1) !important;
+    opacity: 1 !important;
+}
+.toast-notification .toast-icon { color: #F5B400 !important; }
+.toast-notification .toast-title,
+.toast-notification .toast-message { color: #fff !important; }
+.toast-notification .toast-message { opacity: .88; }
+.toast-notification .toast-close { color: rgba(255,255,255,.72) !important; }
+.toast-notification .toast-close:hover { color: #fff !important; }
+.toast-notification.toast-error { border-top-color: #ef4444 !important; }
+.toast-notification.toast-error .toast-icon { color: #ff6b6b !important; }
+.toast-notification.toast-info { border-top-color: #F5B400 !important; }
+.toast-notification.toast-info .toast-icon { color: #F5B400 !important; }
+
+/* Bottom navigation: all three controls use Betix navy; central Create is a blue circle */
 .bottom-nav .nav-item,
 .bottom-nav .nav-item i,
 .bottom-nav .nav-item span,
 .bottom-nav .nav-item.active,
 .bottom-nav .nav-item.active i,
 .bottom-nav .nav-item.active span {
-    color: var(--betix-blue) !important;
+    color: #0B1F5C !important;
 }
-.bottom-nav .nav-item {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    cursor: pointer !important;
-    -webkit-tap-highlight-color: transparent;
-}
-.bottom-nav .nav-item:active { transform: translateY(1px); }
-
-/* Publish/Create button: blue outer circle + white plus */
-.bottom-nav .nav-create {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 2px !important;
-}
-.bottom-nav .nav-create-circle {
-    width: 62px !important;
-    height: 62px !important;
-    border-radius: 50% !important;
-    background: var(--betix-blue) !important;
+.bottom-nav .nav-item#navCreate {
     color: #fff !important;
-    border: 5px solid #fff !important;
-    box-shadow: 0 5px 18px rgba(11,31,92,.24) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
+    padding: 0 !important;
     margin-top: -18px !important;
+    border-radius: 50% !important;
+    background: #0B1F5C !important;
+    box-shadow: 0 8px 24px rgba(11,31,92,.28) !important;
+    border: 0 !important;
 }
-.bottom-nav .nav-create-circle i {
+.bottom-nav .nav-item#navCreate i {
+    width: 64px !important;
+    height: 64px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    background: #0B1F5C !important;
     color: #fff !important;
-    font-size: 1.45rem !important;
-    opacity: 1 !important;
-    transform: none !important;
-}
-.bottom-nav .nav-create-label {
-    color: var(--betix-blue) !important;
-    font-weight: 700 !important;
-    font-size: .72rem !important;
-}
-.bottom-nav .nav-create.active .nav-create-circle,
-.bottom-nav .nav-create:hover .nav-create-circle {
-    background: var(--betix-blue) !important;
-    color: #fff !important;
-    transform: translateY(-1px) !important;
-}
-
-/* Past events in My Events: visibly blurred/greyed with red status marker */
-.my-event-card-past {
-    filter: grayscale(.72) !important;
-    opacity: .72 !important;
-    position: relative !important;
-}
-.my-event-card-past .event-image {
-    filter: grayscale(1) blur(1.15px) !important;
-    transform: scale(1.01);
-}
-.my-event-card-past .event-body-modern {
-    filter: blur(.15px);
-}
-.my-event-card-past .event-status-badge-modern.ended {
-    background: #E53935 !important;
-    color: #fff !important;
-    border: 1px solid rgba(255,255,255,.7) !important;
-    box-shadow: 0 4px 12px rgba(229,57,53,.28) !important;
-    font-weight: 700 !important;
-}
-.my-event-card-past .event-status-badge-modern.ended i {
-    color: #fff !important;
-}
-
-/* Explicit red past-event marker */
-.past-event-marker {
-    display: inline-flex !important;
+    box-shadow: none !important;
+    display: flex !important;
     align-items: center !important;
-    gap: 5px !important;
-    background: #E53935 !important;
-    color: #fff !important;
-    border-radius: 999px !important;
-    padding: 5px 10px !important;
-    font-size: .7rem !important;
-    font-weight: 700 !important;
-    letter-spacing: .3px !important;
+    justify-content: center !important;
+    font-size: 1.7rem !important;
 }
-
-/* Keep event images/cards responsive without changing their structure */
-.event-image-wrapper,
-.my-event-card-modern .event-image-wrapper { overflow: hidden; }
-.event-image-wrapper img,
-.my-event-card-modern .event-image { max-width: 100%; }
-
-@media (max-width: 480px) {
-    .bottom-nav .nav-create-circle { width: 58px !important; height: 58px !important; }
-    .bottom-nav .nav-create-circle i { font-size: 1.3rem !important; }
+.bottom-nav .nav-item#navCreate span {
+    display: none !important;
 }
+.bottom-nav .nav-item#navCreate:hover,
+.bottom-nav .nav-item#navCreate:active { background: #142d73 !important; }
