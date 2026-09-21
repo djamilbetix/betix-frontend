@@ -80,16 +80,15 @@ body {
     gap: 10px;
 }
 .logo {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 1.6rem;
+    font-weight: bold;
     cursor: pointer;
-    color: #fff;
+    color: white;
     padding: 2px 0;
     display: flex;
     align-items: center;
     gap: 8px;
     text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    letter-spacing: 0.5px;
 }
 .logo .logo-img {
     height: 40px;
@@ -98,17 +97,12 @@ body {
     filter: brightness(0) invert(1);
 }
 .logo .logo-text {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #fff !important;
-    background: none !important;
-    -webkit-text-fill-color: #fff !important;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    font-size: 1.6rem;
 }
 @media (max-width: 480px) {
-    .logo { font-size: 1.75rem; gap: 6px; }
+    .logo { font-size: 1.2rem; gap: 6px; }
     .logo .logo-img { height: 32px; }
-    .logo .logo-text { font-size: 1.75rem; }
+    .logo .logo-text { font-size: 1.2rem; }
 }
 .back-btn {
     background: rgba(255,255,255,0.15);
@@ -314,23 +308,46 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px 16px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    min-width: 60px;
+    padding: 5px 18px;
+    border-radius: 14px;
+    transition: all 0.25s ease;
+    min-width: 64px;
     position: relative;
-    color: #8892b0;
+    color: #0B1F5C;
+    -webkit-tap-highlight-color: transparent;
 }
-.bottom-nav .nav-item i { font-size: 1.5rem; transition: all 0.3s ease; display: block !important; }
-.bottom-nav .nav-item span { font-size: 0.6rem; font-weight: 500; margin-top: 2px; transition: all 0.3s ease; }
+.bottom-nav .nav-item i { font-size: 1.55rem; transition: all 0.25s ease; display: block !important; color: #0B1F5C; }
+.bottom-nav .nav-item span { font-size: 0.68rem; font-weight: 600; margin-top: 3px; transition: all 0.25s ease; color: #0B1F5C; }
 .bottom-nav .nav-item.active { color: #0B1F5C; }
 .bottom-nav .nav-item.active i { transform: translateY(-2px); color: #0B1F5C; }
-.bottom-nav .nav-item.active span { color: #0B1F5C; font-weight: 600; }
+.bottom-nav .nav-item.active span { color: #0B1F5C; font-weight: 700; }
+.bottom-nav #navCreate {
+    background: #F5B400;
+    color: #0B1F5C;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 7px 20px rgba(11,31,92,0.22);
+    transform: translateY(-10px);
+    border: 4px solid #ffffff;
+}
+.bottom-nav #navCreate i { color: #0B1F5C; font-size: 1.7rem; }
+.bottom-nav #navCreate span {
+    position: absolute;
+    top: 59px;
+    color: #0B1F5C;
+    white-space: nowrap;
+}
+.bottom-nav #navCreate.active,
+.bottom-nav #navCreate:hover { background: #F5B400; color: #0B1F5C; }
 .bottom-nav .nav-item:hover { color: #0B1F5C; }
-.bottom-nav .nav-item:hover i { transform: translateY(-2px) scale(1.05); }
+.bottom-nav .nav-item:hover i { transform: translateY(-2px) scale(1.05); color: #0B1F5C; }
+
 
 /* ============================================================
    SIDEBAR (suite)
@@ -1118,12 +1135,15 @@ body {
     height: 100%;
     gap: 0;
     flex-shrink: 0;
+    width: 100%;
 }
 
 .carousel-slide {
     flex: 0 0 100%;
+    width: 100%;
     height: 100%;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
     overflow: hidden;
     background: #1a1a2e;
     display: flex;
@@ -1184,17 +1204,24 @@ body {
     backdrop-filter: blur(4px);
 }
 .carousel-dots .dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.48);
+    border: 0;
     cursor: pointer;
-    transition: background 0.3s ease;
+    padding: 0;
+    transition: width 0.28s ease, transform 0.28s ease, background 0.28s ease, opacity 0.28s ease;
+    opacity: 0.9;
 }
 .carousel-dots .dot.active {
     background: #F5B400;
-    width: 18px;
-    border-radius: 4px;
+    width: 20px;
+    flex-basis: 20px;
+    border-radius: 999px;
+    opacity: 1;
+    transform: scaleY(1.05);
 }
 
 /* ============================================================
@@ -1202,9 +1229,12 @@ body {
    ============================================================ */
 .ticket-overlay-container {
     position: relative;
+    width: 100%;
     max-width: 780px;
     margin: 0 auto;
     background: #0a1628;
+    container-type: inline-size;
+    container-name: betix-ticket;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
@@ -1244,7 +1274,7 @@ body {
 
 /* --- Style commun des textes (taille normale) --- */
 .ticket-value {
-    font-size: clamp(6px, 1.02vw, 11px);
+    font-size: clamp(6px, 1.32cqw, 11px);
     font-weight: 700;
     color: #1a202c;
     line-height: 1.2;
@@ -1303,7 +1333,7 @@ body {
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: clamp(6px, 1vw, 10px);
+    font-size: clamp(6px, 1.18cqw, 10px);
     color: #1a202c;
     top: 51%;
 }
@@ -1315,7 +1345,7 @@ body {
     text-align: center;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: clamp(5px, 0.9vw, 9px);
+    font-size: clamp(5px, 1.02cqw, 9px);
     color: #1a202c;
     top: 62%;
 }
@@ -4853,85 +4883,81 @@ body.dark-mode .event-detail-meta {
    ============================================================ */
 .toast-notification {
     position: fixed;
-    bottom: 100px;
-    right: 20px;
-    max-width: 380px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 16px 20px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    top: 50%;
+    left: 50%;
+    width: min(420px, calc(100vw - 32px));
+    max-width: 420px;
+    box-sizing: border-box;
+    background: linear-gradient(145deg, #0B1F5C 0%, #162c70 100%);
+    color: #ffffff;
+    border: 1px solid rgba(245,180,0,0.45);
+    border-left: 5px solid #F5B400;
+    border-radius: 18px;
+    padding: 18px 20px;
+    box-shadow: 0 22px 60px rgba(5,18,55,0.35);
     display: flex;
     align-items: center;
     gap: 14px;
-    z-index: 99999;
-    transform: translateY(120px);
+    z-index: 100001;
+    transform: translate(-50%, calc(-50% + 22px)) scale(0.96);
     opacity: 0;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border-left: 6px solid #10b981;
+    visibility: hidden;
+    transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.28s;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 .toast-notification.show {
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
+    visibility: visible;
+    transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .toast-notification .toast-icon {
-    font-size: 1.8rem;
-    color: #10b981;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #0B1F5C;
+    background: #F5B400;
     flex-shrink: 0;
 }
-.toast-notification .toast-content {
-    flex: 1;
-}
+.toast-notification .toast-content { flex: 1; min-width: 0; }
 .toast-notification .toast-title {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 1rem;
-    color: #1a1a2e;
-    margin-bottom: 2px;
+    color: #ffffff;
+    margin-bottom: 3px;
 }
 .toast-notification .toast-message {
-    font-size: 0.85rem;
-    color: #4b5563;
-    line-height: 1.4;
+    font-size: 0.86rem;
+    color: rgba(255,255,255,0.84);
+    line-height: 1.45;
 }
 .toast-notification .toast-close {
-    background: none;
-    border: none;
-    color: #9ca3af;
+    background: rgba(255,255,255,0.08);
+    border: 0;
+    color: rgba(255,255,255,0.75);
     cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 4px;
-    transition: color 0.2s;
+    font-size: 0.9rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    padding: 0;
+    transition: all 0.2s ease;
 }
-.toast-notification .toast-close:hover {
-    color: #1f2937;
-}
-.toast-notification.toast-error {
-    border-left-color: #ef4444;
-}
-.toast-notification.toast-error .toast-icon {
-    color: #ef4444;
-}
-.toast-notification.toast-info {
-    border-left-color: #3b82f6;
-}
-.toast-notification.toast-info .toast-icon {
-    color: #3b82f6;
-}
-body.dark-mode .toast-notification {
-    background: #1f2937;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-}
-body.dark-mode .toast-notification .toast-title {
-    color: #f3f4f6;
-}
-body.dark-mode .toast-notification .toast-message {
-    color: #d1d5db;
-}
-body.dark-mode .toast-notification .toast-close {
-    color: #6b7280;
-}
-body.dark-mode .toast-notification .toast-close:hover {
-    color: #f3f4f6;
-}
+.toast-notification .toast-close:hover { background: rgba(255,255,255,0.16); color: #ffffff; }
+.toast-notification.toast-error { border-left-color: #F5B400; }
+.toast-notification.toast-error .toast-icon { color: #0B1F5C; background: #F5B400; }
+.toast-notification.toast-info { border-left-color: #F5B400; }
+.toast-notification.toast-info .toast-icon { color: #0B1F5C; background: #F5B400; }
+body.dark-mode .toast-notification { background: linear-gradient(145deg, #08143F 0%, #0B1F5C 100%); }
+body.dark-mode .toast-notification .toast-title { color: #ffffff; }
+body.dark-mode .toast-notification .toast-message { color: rgba(255,255,255,0.82); }
+body.dark-mode .toast-notification .toast-close { color: rgba(255,255,255,0.7); }
+
 
 /* ============================================================
    NOTIFICATIONS STYLE MESSAGES (AJOUT)
@@ -5207,94 +5233,58 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
     box-shadow: 0 4px 12px rgba(107,114,128,0.3);
 }
 
-
 /* ============================================================
-   BETIX STABILITY — NAVIGATION & EVENT RENDERING
+   BETIX MOBILE CONSISTENCY
    ============================================================ */
-.bottom-nav { z-index: 9999; pointer-events: auto; }
-.bottom-nav .nav-item { pointer-events: auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.sidebar { z-index: 10001; }
-.overlay { z-index: 10000; }
-.event-card-classic, .event-card-classic * { -webkit-tap-highlight-color: transparent; }
-.event-card-classic .poster-wrapper-classic { width: 100%; min-height: 340px; }
-.event-card-classic .poster-wrapper-classic img { display: block; width: 100%; height: 100%; min-height: 340px; max-height: 520px; object-fit: cover; object-position: center; }
 @media (max-width: 600px) {
-  .event-card-classic .poster-wrapper-classic { min-height: 360px; max-height: none; }
-  .event-card-classic .poster-wrapper-classic img { min-height: 360px; max-height: 560px; }
+    .bottom-nav { padding-top: 7px; }
+    .bottom-nav .nav-item { min-width: 58px; padding-left: 12px; padding-right: 12px; }
+    .bottom-nav .nav-item i { font-size: 1.45rem; }
+    .bottom-nav #navCreate { width: 54px; height: 54px; min-width: 54px; transform: translateY(-9px); }
+    .bottom-nav #navCreate span { top: 57px; }
+    .toast-notification { width: calc(100vw - 28px); padding: 16px; border-radius: 16px; }
+    .toast-notification .toast-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+    .toast-notification .toast-title { font-size: 0.95rem; }
+    .toast-notification .toast-message { font-size: 0.82rem; }
 }
-
 
 /* ============================================================
-   FINAL NAVIGATION + CENTERED PI CONNECTION NOTIFICATIONS
-   These rules intentionally come last to override older duplicated
-   notification styles without changing the application structure.
+   BETIX PROFESSIONAL LOADER
    ============================================================ */
-.sidebar-item,
-.sidebar-notif-icon-top,
-.close-sidebar,
-.bottom-nav .nav-item {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
-.sidebar-item { pointer-events: auto !important; }
-.sidebar-nav { pointer-events: auto !important; }
-.sidebar.open { pointer-events: auto !important; }
-.overlay.active { pointer-events: auto !important; }
-
-/* Professional centered notification for connection/disconnection */
-.toast-notification {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: min(420px, calc(100vw - 32px)) !important;
-    max-width: 420px !important;
-    min-height: 86px;
-    transform: translate(-50%, -42%) scale(.94) !important;
-    opacity: 0 !important;
-    z-index: 2147483647 !important;
-    border: 1px solid rgba(11,31,92,.14) !important;
-    border-left: 5px solid #0B1F5C !important;
-    border-radius: 20px !important;
-    padding: 18px 20px !important;
-    background: rgba(255,255,255,.98) !important;
-    box-shadow: 0 24px 70px rgba(8,20,63,.28), 0 4px 18px rgba(0,0,0,.08) !important;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    transition: opacity .28s ease, transform .38s cubic-bezier(.22,1,.36,1) !important;
-}
-.toast-notification.show {
-    transform: translate(-50%, -50%) scale(1) !important;
-    opacity: 1 !important;
-}
-.toast-notification .toast-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    display: flex;
+.betix-global-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem !important;
-    color: #fff !important;
-    background: #0B1F5C !important;
-    box-shadow: 0 8px 20px rgba(11,31,92,.22);
+    background: rgba(4, 12, 38, 0.42);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
-.toast-notification.toast-success.toast-connection { border-left-color: #10B981 !important; }
-.toast-notification.toast-success.toast-connection .toast-icon { background: #10B981 !important; }
-.toast-notification.toast-info.toast-disconnection { border-left-color: #F5B400 !important; }
-.toast-notification.toast-info.toast-disconnection .toast-icon { background: #0B1F5C !important; }
-.toast-notification .toast-title { color: #0B1F5C !important; font-size: 1.02rem !important; font-weight: 800 !important; }
-.toast-notification .toast-message { color: #667085 !important; font-size: .88rem !important; }
-.toast-notification .toast-close { color: #98A2B3 !important; }
-
-@media (max-width: 480px) {
-    .toast-notification {
-        width: calc(100vw - 28px) !important;
-        min-height: 78px;
-        padding: 15px 16px !important;
-        border-radius: 18px !important;
-    }
-    .toast-notification .toast-icon { width: 42px; height: 42px; font-size: 1.15rem !important; }
+.betix-loader-card {
+    min-width: 150px;
+    padding: 22px 24px 18px;
+    border-radius: 18px;
+    text-align: center;
+    background: rgba(255,255,255,0.98);
+    box-shadow: 0 18px 50px rgba(11,31,92,0.25);
+    border: 1px solid rgba(245,180,0,0.25);
 }
+.betix-spinner {
+    width: 38px;
+    height: 38px;
+    margin: 0 auto;
+    border: 3px solid rgba(11,31,92,0.12);
+    border-top-color: #0B1F5C;
+    border-right-color: #F5B400;
+    border-radius: 50%;
+    animation: betixSpin 0.8s linear infinite;
+}
+.betix-loader-card p {
+    margin: 12px 0 0;
+    color: #0B1F5C;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1px;
+}
+@keyframes betixSpin { to { transform: rotate(360deg); } }
