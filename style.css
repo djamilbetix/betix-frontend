@@ -5552,13 +5552,20 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
     .logo .logo-text { font-size: 1.65rem !important; color: #fff !important; }
 }
 
-/* Publication images: slightly taller, X-style visual presence without changing card structure */
+/* Publication images: slightly larger while preserving the existing card structure */
 .event-card-classic .poster-wrapper-classic {
-    aspect-ratio: 3 / 2 !important;
+    aspect-ratio: 4 / 3 !important;
     min-height: 0 !important;
+    overflow: hidden !important;
+}
+.event-card-classic .poster-wrapper-classic img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
 }
 @media (max-width: 480px) {
-    .event-card-classic .poster-wrapper-classic { aspect-ratio: 3 / 2 !important; }
+    .event-card-classic .poster-wrapper-classic { aspect-ratio: 4 / 3 !important; }
 }
 
 /* Past events in My Events: visibly inactive + red past marker */
