@@ -984,10 +984,16 @@ async function loadTicketsFromSupabase(piUid) {
 // ============================================================
 // CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE
 // ============================================================
-async function loadEventsFromSupabase() {
+async function loadEventsFromSupabase(forceFresh = false) {
     const cacheKey = 'betix_cached_events';
-    const cached = getCachedData(cacheKey, CACHE_DURATION_EVENTS);
-    if (cached) { console.log('📦 Using cached events'); return cached; }
+    const cached = forceFresh ? null : getCachedData(cacheKey, CACHE_DURATION_EVENTS);
+    // Never use an empty event cache as the source of truth. An earlier failed
+    // request must not make the whole application look empty for 5 minutes.
+    if (Array.isArray(cached) && cached.length > 0) {
+        console.log('📦 Using cached events:', cached.length);
+        return cached;
+    }
+    if (Array.isArray(cached) && cached.length === 0) clearCache(cacheKey);
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
         if (error) throw error;
@@ -1012,9 +1018,15 @@ async function loadEventsFromSupabase() {
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-        setCachedData(cacheKey, mapped);
+        // Cache only a real event list. Never cache an empty result.
+        if (mapped.length > 0) setCachedData(cacheKey, mapped);
+        else clearCache(cacheKey);
         return mapped;
-    } catch (error) { console.error('Error loading events from Supabase:', error); return []; }
+    } catch (error) {
+        console.error('Error loading events from Supabase:', error);
+        clearCache(cacheKey);
+        return [];
+    }
 }
 
 // ============================================================
@@ -1043,29 +1055,100 @@ function restoreBackupData() {
 // LOAD ALL FROM SUPABASE
 // ============================================================
 async function loadAllFromSupabase() {
-    console.log('=== LOAD ALL FROM SUPABASE ==='); loadUsedTickets(); updateSyncStatus('loading');
+    console.log('=== LOAD ALL FROM SUPABASE ===');
+    loadUsedTickets();
+    updateSyncStatus('loading');
+
     const userIdentifier = currentUser.piUid || currentUser.wallet;
-    const eventsCached = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
-    const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : [];
-    if (!eventsCached) showEventSkeletons(6);
-    if (eventsCached && (!userIdentifier || ticketsCached)) {
-        console.log('✅ Using full cache for events and tickets'); events = eventsCached; if (userIdentifier) tickets = ticketsCached; else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-        saveBackupData(events,tickets); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage(); return;
+    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
+    const backup = restoreBackupData();
+    const backupEvents = backup && Array.isArray(backup.events) ? backup.events : [];
+    const cachedEvents = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
+
+    // A valid non-empty cache can be rendered immediately, but we still have
+    // a safe fallback chain if the cache is empty or corrupted.
+    if (Array.isArray(cachedEvents) && cachedEvents.length > 0) {
+        events = cachedEvents;
+        console.log('✅ Events restored from cache:', events.length);
+        renderEventsByCategory();
+    } else {
+        clearCache('betix_cached_events');
+        showEventSkeletons(6);
+        let remoteEvents = [];
+        try {
+            // Force a fresh request when there is no usable cache.
+            remoteEvents = await loadEventsFromSupabase(true);
+            console.log('🌐 Fresh Supabase events:', remoteEvents.length);
+        } catch (error) {
+            console.error('Fresh event load failed:', error);
+        }
+
+        if (remoteEvents.length > 0) {
+            // Merge remote + local so locally created/offline events are not lost.
+            events = mergeArraysById(localEvents, remoteEvents);
+            if (events.length === 0) events = remoteEvents;
+        } else if (localEvents.length > 0) {
+            events = localEvents;
+            console.warn('⚠️ Supabase returned no events; using local events:', events.length);
+        } else if (backupEvents.length > 0) {
+            events = backupEvents;
+            console.warn('⚠️ Supabase/local empty; using backup events:', events.length);
+        } else {
+            events = [];
+            console.warn('⚠️ No events available from Supabase, localStorage, or backup.');
+        }
+
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        saveBackupData(events, tickets);
+        renderEventsByCategory();
     }
-    try {
-        const supabaseEvents = await loadEventsFromSupabase();
-        const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-        events = mergeArraysById(localEvents, supabaseEvents); localStorage.setItem('betix_events', JSON.stringify(events)); saveBackupData(events,tickets);
-    } catch(error) { console.error('Error loading events from Supabase:',error); events=JSON.parse(localStorage.getItem('betix_events')||'[]'); }
+
+    // Tickets: keep the same safe cache/local fallback behaviour.
+    const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : null;
+    if (userIdentifier && Array.isArray(ticketsCached) && ticketsCached.length > 0) {
+        tickets = ticketsCached;
+    } else if (userIdentifier) {
+        try {
+            const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+            tickets = supabaseTickets.length > 0 ? mergeArraysById(localTickets, supabaseTickets) : localTickets;
+            localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+        } catch (error) {
+            console.error('Error loading tickets from Supabase:', error);
+            tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+        }
+    } else {
+        tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
+    }
+
     if (userIdentifier) {
         try {
-            const supabaseTickets=await loadTicketsFromSupabase(userIdentifier); const localTickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]');
-            tickets=mergeArraysById(localTickets,supabaseTickets); localStorage.setItem('betix_tickets',JSON.stringify(tickets)); saveBackupData(events,tickets);
-        } catch(error) { console.error('Error loading tickets from Supabase:',error); tickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]'); }
-    } else tickets=JSON.parse(localStorage.getItem('betix_tickets')||'[]');
-    notifications=userIdentifier ? await loadNotificationsFromSupabase() : JSON.parse(localStorage.getItem('betix_notifications')||'[]'); saveNotifications(); updateNotifBadgeHeader();
-    await updateExpiredTickets(); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage();
-    setTimeout(()=>{if(typeof generateAllQRCodes==='function')generateAllQRCodes();},300); await retryPendingTickets();
+            const remoteNotifs = await loadNotificationsFromSupabase();
+            notifications = Array.isArray(remoteNotifs) && remoteNotifs.length > 0
+                ? remoteNotifs
+                : JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+        } catch (e) {
+            notifications = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+        }
+    } else {
+        notifications = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+    }
+    saveNotifications();
+    updateNotifBadgeHeader();
+
+    await updateExpiredTickets();
+    saveBackupData(events, tickets);
+    updateSyncStatus('success');
+    console.log('Load completed. Events:', events.length, 'Tickets:', tickets.length);
+
+    renderEventsByCategory();
+    renderTickets();
+    renderHistory();
+    updateProfilePage();
+    setTimeout(() => {
+        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+    }, 300);
+    await retryPendingTickets();
 }
 
 // ============================================================
