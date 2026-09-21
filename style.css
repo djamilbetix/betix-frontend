@@ -148,7 +148,7 @@ body {
 .back-btn:not(.hidden) { display: flex !important; }
 
 /* ============================================================
-   LOADER
+   LOADER PREMIUM — Cercle rotatif + dots animés
    ============================================================ */
 .loader-container {
     position: fixed;
@@ -156,63 +156,113 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #ffffff;
+    background: radial-gradient(circle at 50% 40%, #f8fafc 0%, #eef2f7 100%);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 999999;
-    transition: opacity 0.8s ease;
+    transition: opacity 0.6s ease;
 }
-.loader-container.hidden { opacity: 0; pointer-events: none; }
+body.dark-mode .loader-container {
+    background: radial-gradient(circle at 50% 40%, #1a2a4a 0%, #0a0f1e 100%);
+}
+.loader-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 .loader-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 32px;
 }
-.loader-logo {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    animation: logoFloat 2s ease-in-out infinite;
+.betix-spinner {
+    position: relative;
+    width: 90px;
+    height: 90px;
 }
-@keyframes logoFloat {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+.betix-spinner-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    animation: spinnerRotate 1.8s linear infinite;
 }
-.loader-balls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: center;
+.betix-spinner-svg .spinner-track {
+    fill: none;
+    stroke: rgba(11, 31, 92, 0.08);
+    stroke-width: 5;
 }
-.loader-ball {
-    width: 14px;
-    height: 14px;
+body.dark-mode .betix-spinner-svg .spinner-track {
+    stroke: rgba(255, 255, 255, 0.08);
+}
+.betix-spinner-svg .spinner-arc {
+    fill: none;
+    stroke: url(#betix-gradient);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 60 220;
+    stroke-dashoffset: 0;
+    animation: spinnerDash 1.6s ease-in-out infinite;
+}
+.betix-spinner-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    animation: ballBounce 1.4s ease-in-out infinite;
+    background: #F5B400;
+    box-shadow: 0 0 20px rgba(245, 180, 0, 0.6);
+    animation: dotPulse 1.4s ease-in-out infinite;
 }
-.loader-ball:nth-child(1) { background: #0B1F5C; animation-delay: 0s; }
-.loader-ball:nth-child(2) { background: #F5B400; animation-delay: 0.16s; }
-.loader-ball:nth-child(3) { background: #0B1F5C; animation-delay: 0.32s; }
-.loader-ball:nth-child(4) { background: #F5B400; animation-delay: 0.48s; }
-.loader-ball:nth-child(5) { background: #0B1F5C; animation-delay: 0.64s; }
-@keyframes ballBounce {
-    0%,80%,100% { transform: translateY(0) scale(1); opacity: 0.6; }
-    40% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+.loader-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #0B1F5C;
+    font-family: 'Poppins', sans-serif;
 }
-.loader-text {
-    color: #6b7280;
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 2px;
-    animation: textPulse 1.8s ease-in-out infinite;
+body.dark-mode .loader-brand {
+    color: #ffffff;
 }
-@keyframes textPulse {
-    0%,100% { opacity: 0.4; }
-    50% { opacity: 1; }
+.loader-brand-text {
+    animation: brandFade 1.8s ease-in-out infinite;
+}
+.loader-brand-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #F5B400;
+    display: inline-block;
+    animation: dotBounce 1.4s ease-in-out infinite;
+}
+.loader-brand-dot:nth-child(2) { animation-delay: 0s; }
+.loader-brand-dot:nth-child(3) { animation-delay: 0.2s; }
+.loader-brand-dot:nth-child(4) { animation-delay: 0.4s; }
+@keyframes spinnerRotate {
+    to { transform: rotate(270deg); }
+}
+@keyframes spinnerDash {
+    0%   { stroke-dasharray: 20 240; stroke-dashoffset: 0; }
+    50%  { stroke-dasharray: 180 80; stroke-dashoffset: -40; }
+    100% { stroke-dasharray: 20 240; stroke-dashoffset: -260; }
+}
+@keyframes dotPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50%      { transform: translate(-50%, -50%) scale(1.35); opacity: 0.65; }
+}
+@keyframes brandFade {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+}
+@keyframes dotBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50%      { transform: translateY(-4px); opacity: 1; }
 }
 
 /* ============================================================
@@ -862,9 +912,9 @@ body {
     width: 100%;
     overflow: hidden;
     background: #f3f4f6;
-    aspect-ratio: auto;
-    min-height: 340px;
-    max-height: 500px;
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    max-height: none;
 }
 .event-card-classic .category-badge-classic {
     position: absolute;
@@ -1082,8 +1132,9 @@ body {
     width: 100%;
     overflow: hidden;
     background: #1a1a2e;
-    min-height: 340px;
-    max-height: 500px;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     display: flex;
     align-items: center;
 }
@@ -1129,6 +1180,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     background: #1a1a2e;
     pointer-events: none;
     user-select: none;
@@ -1198,6 +1250,7 @@ body {
     position: relative;
     max-width: 780px;
     margin: 0 auto;
+    aspect-ratio: 21 / 10;
     background: #0a1628;
     border-radius: 16px;
     overflow: hidden;
@@ -1205,10 +1258,16 @@ body {
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 
+.ticket-overlay-bg {
+    position: absolute;
+    inset: 0;
+}
+
 .ticket-overlay-bg img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
+    object-fit: fill;
 }
 
 /* --- Colonnes --- */
@@ -1274,9 +1333,9 @@ body {
     padding: 3px;
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    top: 9.1%;
-    right: 7.2%;
-    width: 16%;
+    top: 9%;
+    right: 6.3%;
+    width: 17%;
     aspect-ratio: 1/1;
     box-sizing: border-box;
 }
@@ -5199,4 +5258,468 @@ body.dark-mode .notification-item .notif-delete-btn:hover {
     background: #4b5563;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(107,114,128,0.3);
+}
+
+/* Ticket-history status badges. They sit in the action area, not on the ticket card. */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.badge-used { background: #dcfce7; color: #166534; }
+.badge-expired { background: #fee2e2; color: #b91c1c; }
+
+/* Purchase dialog: final visual layer. It only affects the ticket purchase popup. */
+.quantity-popup {
+    padding: 16px;
+    box-sizing: border-box;
+}
+.quantity-popup-content.quantity-popup-professional {
+    width: min(100%, 430px);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 24px;
+    border: 1px solid rgba(11, 31, 92, 0.10);
+}
+.quantity-popup-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: #0B1F5C;
+    background: #eef2ff;
+}
+.quantity-popup-content .quantity-popup-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.purchase-feedback {
+    min-height: 18px;
+    margin: 10px 0 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+}
+.purchase-feedback.is-info { color: #0B1F5C; }
+.purchase-feedback.is-success { color: #15803d; }
+.purchase-feedback.is-error { color: #b91c1c; }
+#confirmBuyBtn {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+#confirmBuyBtn:disabled,
+.buy-btn-classic.is-unavailable {
+    cursor: not-allowed;
+    opacity: 0.68;
+    box-shadow: none;
+    transform: none;
+}
+.buy-btn-classic.is-unavailable:hover {
+    transform: none;
+    box-shadow: none;
+}
+@media (max-width: 420px) {
+    .quantity-popup-content.quantity-popup-professional { padding: 20px 16px; }
+    .quantity-popup-content .quantity-popup-footer { gap: 8px; }
+    .quantity-popup-content .quantity-popup-footer .btn-secondary-modal,
+    .quantity-popup-content .quantity-popup-footer .btn-primary { padding-left: 14px; padding-right: 14px; }
+}
+
+
+/* ============================================================
+   ADMIN DASHBOARD / REFUNDS / REALTIME / MY EVENTS / SKELETONS
+   ============================================================ */
+.admin-dashboard{background:#fff;border-radius:16px;padding:20px;margin-bottom:24px;border:1px solid #e6e6e6;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.admin-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}.kpi-card{display:flex;align-items:center;gap:12px;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1px solid #e6e6e6;transition:transform .2s,box-shadow .2s}.kpi-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.06)}.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0}.kpi-info{display:flex;flex-direction:column}.kpi-value{font-size:1.3rem;font-weight:700;color:#1a1a2e;line-height:1.2}.kpi-label{font-size:.7rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:500}.admin-charts-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}.chart-card{background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e6e6e6;min-height:260px}.chart-card h4{font-size:.85rem;font-weight:600;color:#1a1a2e;margin-bottom:10px}.chart-card canvas{height:220px!important;max-height:220px}.admin-events-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px;padding:12px 0;border-top:1px solid #e6e6e6}.admin-events-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.admin-events-filters input,.admin-events-filters select{padding:7px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.8rem;background:#fff}.admin-events-filters input{min-width:180px}.btn-export{background:#10b981;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}.admin-pagination{display:flex;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap}.admin-pagination button{background:#f3f4f6;border:1px solid #e6e6e6;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:500}.admin-pagination button.active{background:#0B1F5C;color:#fff;border-color:#0B1F5C}.admin-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.badge-status.cancelled{background:#fee2e2;color:#b91c1c}.badge-status.refunded{background:#dbeafe;color:#1e40af}.btn-cancel-event{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;padding:6px 14px;border-radius:30px;font-size:.7rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}.btn-cancel-event:hover{background:#dc2626;color:#fff;border-color:#dc2626}.refunds-table{width:100%;border-collapse:collapse;font-size:.8rem;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e6e6e6}.refunds-table thead{background:#f3f4f6}.refunds-table th,.refunds-table td{padding:10px 12px;text-align:left;border-bottom:1px solid #e6e6e6}.refunds-table th{font-weight:600;color:#1f2937;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}.refunds-table tr:last-child td{border-bottom:none}.refund-status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600}.refund-status.pending{background:#fef3c7;color:#92400e}.refund-status.processed{background:#dcfce7;color:#166534}.btn-mark-refunded{background:#10b981;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.7rem;font-weight:600}.btn-mark-refunded:disabled{background:#d1d5db;cursor:not-allowed}.rt-indicator{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;color:#10b981;font-weight:600;padding:3px 10px;background:#d1fae5;border-radius:20px}.rt-indicator .pulse-dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:rt-pulse 1.5s infinite}.rt-indicator.disconnected{background:#fee2e2;color:#b91c1c}.rt-indicator.disconnected .pulse-dot{background:#b91c1c}@keyframes rt-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}.ticket-refunded-banner{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px}
+.my-events-section{margin-bottom:40px}.my-events-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #e5e7eb}.my-events-section-header h3{font-size:1.1rem;font-weight:700;color:#1a1a2e;margin:0;display:flex;align-items:center;gap:10px}.my-events-count{background:linear-gradient(135deg,#0B1F5C,#1a2a4a);color:#fff;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;min-width:32px;text-align:center}.my-events-section-past .my-events-count{background:linear-gradient(135deg,#6b7280,#4b5563)}.my-events-section-past .my-events-section-header{border-bottom-color:#d1d5db}.my-events-section-past .my-events-section-header h3{color:#4b5563}.my-events-empty{text-align:center;padding:24px;color:#9ca3af;font-size:.85rem;background:#f9fafb;border-radius:12px;border:1px dashed #e5e7eb}.my-events-grid-past .my-event-card-modern{opacity:.75}.my-events-grid-past .my-event-card-modern:hover{opacity:1}.my-event-card-past{filter:grayscale(.5);transition:filter .3s ease,opacity .3s ease}.my-event-card-past:hover{filter:grayscale(.2)}.my-event-card-past .event-image-wrapper::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.25);pointer-events:none}.event-status-badge-modern.ended{background:rgba(107,114,128,.95)!important;color:#fff!important;display:inline-flex;align-items:center;gap:5px}.event-status-badge-modern.live{background:linear-gradient(135deg,#dc2626,#b91c1c)!important;color:#fff!important;animation:livePulseBadge 1.5s infinite}@keyframes livePulseBadge{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+@keyframes skeletonWave{0%{background-position:-200% 0}100%{background-position:200% 0}}.skeleton{background:linear-gradient(90deg,rgba(0,0,0,.06) 0%,rgba(0,0,0,.12) 50%,rgba(0,0,0,.06) 100%);background-size:200% 100%;animation:skeletonWave 1.5s infinite;border-radius:8px}.event-skeleton{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.04)}.event-skeleton .sk-image{width:100%;aspect-ratio:16/9;border-radius:0}.event-skeleton .sk-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px}.event-skeleton .sk-title{height:20px;width:75%}.event-skeleton .sk-line{height:12px;width:100%}.event-skeleton .sk-line.short{width:50%}.event-skeleton .sk-line.medium{width:70%}.event-skeleton .sk-info-box{height:42px;width:100%;margin:4px 0}.event-skeleton .sk-btn{height:38px;width:100%;margin-top:6px}.ticket-skeleton{max-width:780px;margin:0 auto 16px;aspect-ratio:21/10;border-radius:16px;background:#f3f4f6;overflow:hidden;position:relative}.ticket-skeleton:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.04),rgba(0,0,0,.10),rgba(0,0,0,.04));background-size:200% 100%;animation:skeletonWave 1.5s infinite}.notif-skeleton{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;background:#f9fafb;margin-bottom:8px}.notif-skeleton .sk-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0}.notif-skeleton .sk-content{flex:1;display:flex;flex-direction:column;gap:6px}.notif-skeleton .sk-line{height:12px}.notif-skeleton .sk-line.short{width:40%}.my-event-skeleton{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.04)}.my-event-skeleton .sk-image{width:100%;aspect-ratio:16/9}.my-event-skeleton .sk-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px}.my-event-skeleton .sk-title{height:20px;width:70%}.my-event-skeleton .sk-block{height:70px;width:100%;border-radius:10px}.my-event-skeleton .sk-footer{height:32px;width:100%;border-radius:8px;margin-top:4px}
+@media(max-width:768px){.admin-charts-grid{grid-template-columns:1fr}.admin-events-filters{width:100%}.admin-events-filters input{min-width:0;flex:1}body.dark-mode .admin-dashboard,body.dark-mode .chart-card,body.dark-mode .kpi-card{background:#1f2937;border-color:#374151}body.dark-mode .kpi-value,body.dark-mode .chart-card h4{color:#f3f4f6}body.dark-mode .kpi-label{color:#9ca3af}body.dark-mode .refunds-table{background:#1f2937;border-color:#374151}body.dark-mode .refunds-table thead{background:#374151}body.dark-mode .refunds-table th{color:#f3f4f6}body.dark-mode .refunds-table td{border-color:#374151;color:#d1d5db}body.dark-mode .my-events-section-header{border-bottom-color:#374151}body.dark-mode .my-events-section-header h3{color:#f3f4f6}body.dark-mode .my-events-section-past .my-events-section-header h3{color:#9ca3af}body.dark-mode .my-events-empty{background:#1f2937;color:#9ca3af;border-color:#374151}body.dark-mode .event-skeleton,body.dark-mode .my-event-skeleton{background:#1f2937;border-color:#374151}body.dark-mode .notif-skeleton{background:#2d3748}body.dark-mode .ticket-skeleton{background:#374151}}
+
+/* ============================================================
+   BOTTOM NAV — Tous les boutons en bleu Betix
+   ============================================================ */
+.bottom-nav .nav-item,
+.bottom-nav .nav-item i,
+.bottom-nav .nav-item span {
+    color: #0B1F5C !important;
+}
+.bottom-nav .nav-item i {
+    color: #0B1F5C !important;
+    opacity: 0.85;
+}
+.bottom-nav .nav-item.active i {
+    color: #F5B400 !important;
+    opacity: 1;
+    transform: translateY(-2px);
+}
+.bottom-nav .nav-item.active span {
+    color: #0B1F5C !important;
+    font-weight: 700;
+}
+.bottom-nav .nav-item:hover i {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* ============================================================
+   UNIFORMISATION — BOTTOM NAV EN BLEU BETIX
+   ============================================================ */
+.bottom-nav .nav-item,
+.bottom-nav .nav-item i,
+.bottom-nav .nav-item span {
+    color: #0B1F5C !important;
+}
+
+.bottom-nav .nav-item i {
+    color: #0B1F5C !important;
+    opacity: 0.85;
+    transition: all 0.3s ease;
+}
+
+.bottom-nav .nav-item.active i {
+    color: #0B1F5C !important;
+    opacity: 1;
+    transform: translateY(-2px) scale(1.08);
+}
+
+.bottom-nav .nav-item.active span {
+    color: #0B1F5C !important;
+    font-weight: 700;
+}
+
+.bottom-nav .nav-item:hover i {
+    color: #0B1F5C !important;
+    opacity: 1;
+    transform: translateY(-2px) scale(1.05);
+}
+
+.bottom-nav .nav-item.active::after {
+    background: #0B1F5C !important;
+}
+
+/* ============================================================
+   BOTTOM NAV — Les 3 boutons en bleu Betix (même couleur)
+   ============================================================ */
+
+/* Tous les items : icône + texte en bleu Betix */
+.bottom-nav .nav-item,
+.bottom-nav .nav-item i,
+.bottom-nav .nav-item span {
+    color: #0B1F5C !important;
+}
+
+.bottom-nav .nav-item i {
+    color: #0B1F5C !important;
+    opacity: 1;
+}
+
+/* Bouton ACTIF (Home) : même bleu, pas de jaune */
+.bottom-nav .nav-item.active,
+.bottom-nav .nav-item.active i,
+.bottom-nav .nav-item.active span {
+    color: #0B1F5C !important;
+}
+
+/* On enlève la barre jaune au-dessus de l'actif */
+.bottom-nav .nav-item.active::after {
+    background: #0B1F5C !important;
+}
+
+/* Icône + centrale (Publier) : cercle bleu Betix avec le + blanc */
+.bottom-nav .nav-item#navCreate i {
+    color: #ffffff !important;
+    background: #0B1F5C !important;
+    border-radius: 50%;
+    padding: 8px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(11, 31, 92, 0.3);
+}
+
+/* Hover : on garde le bleu */
+.bottom-nav .nav-item:hover,
+.bottom-nav .nav-item:hover i,
+.bottom-nav .nav-item:hover span {
+    color: #0B1F5C !important;
+}
+
+
+/* ============================================================
+   SIDEBAR — Réseaux sociaux aux couleurs officielles
+   ============================================================ */
+.sidebar-social-icons .social-link {
+    background: #ffffff !important;
+    border: 1px solid #e6e6e6 !important;
+    transition: all 0.3s ease !important;
+}
+.sidebar-social-icons .social-link[href*="twitter"],
+.sidebar-social-icons .social-link[href*="x.com"] { color: #1DA1F2 !important; }
+.sidebar-social-icons .social-link[href*="twitter"]:hover,
+.sidebar-social-icons .social-link[href*="x.com"]:hover {
+    background: #1DA1F2 !important; color: #ffffff !important; border-color: #1DA1F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 161, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="t.me"] { color: #0088cc !important; }
+.sidebar-social-icons .social-link[href*="t.me"]:hover {
+    background: #0088cc !important; color: #ffffff !important; border-color: #0088cc !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 136, 204, 0.35);
+}
+.sidebar-social-icons .social-link[href*="discord"] { color: #5865F2 !important; }
+.sidebar-social-icons .social-link[href*="discord"]:hover {
+    background: #5865F2 !important; color: #ffffff !important; border-color: #5865F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="instagram"] { color: #E4405F !important; }
+.sidebar-social-icons .social-link[href*="instagram"]:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    color: #ffffff !important; border-color: transparent !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(228, 64, 95, 0.35);
+}
+.sidebar-social-icons .social-link[href*="facebook"] { color: #1877F2 !important; }
+.sidebar-social-icons .social-link[href*="facebook"]:hover {
+    background: #1877F2 !important; color: #ffffff !important; border-color: #1877F2 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
+}
+.sidebar-social-icons .social-link[href*="whatsapp"] { color: #25D366 !important; }
+.sidebar-social-icons .social-link[href*="whatsapp"]:hover {
+    background: #25D366 !important; color: #ffffff !important; border-color: #25D366 !important;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+/* ============================================================
+   PURCHASE CONFIRMATION TOAST
+   ============================================================ */
+.purchase-confirmation { position: fixed; top: 80px; left: 50%; transform: translate(-50%, -120%); width: calc(100% - 32px); max-width: 460px; background: #ffffff; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.15), 0 8px 20px rgba(11,31,92,.12); z-index: 10000; overflow: hidden; transition: transform .5s cubic-bezier(.175,.885,.32,1.275), opacity .3s ease; opacity: 0; pointer-events: none; }
+.purchase-confirmation.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+.purchase-confirmation.hiding { transform: translate(-50%, -120%); opacity: 0; }
+.pc-content { display:flex; gap:14px; padding:18px 18px 16px; align-items:flex-start; position:relative; }
+.pc-icon { width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#10b981,#059669); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 15px rgba(16,185,129,.35); animation:pcIconPop .5s cubic-bezier(.175,.885,.32,1.275); }
+.pc-icon i { color:#fff; font-size:1.3rem; }
+@keyframes pcIconPop { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+.pc-body { flex:1; min-width:0; }
+.pc-title { font-size:1rem; font-weight:700; color:#1a1a2e; margin:0 0 4px; line-height:1.2; }
+.pc-message { font-size:.82rem; color:#6b7280; line-height:1.4; margin:0 0 12px; }
+.pc-message strong { color:#0B1F5C; font-weight:700; }
+.pc-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.pc-btn { flex:1; min-width:130px; padding:10px 14px; border:none; border-radius:10px; font-size:.8rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all .25s ease; white-space:nowrap; }
+.pc-btn i { font-size:.85rem; }
+.pc-btn-primary { background:linear-gradient(135deg,#0B1F5C,#1a2a4a); color:#fff; box-shadow:0 4px 12px rgba(11,31,92,.25); }
+.pc-btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(11,31,92,.35); }
+.pc-btn-primary:active { transform:scale(.97); }
+.pc-btn-secondary { background:#f3f4f6; color:#1a1a2e; border:1px solid #e5e7eb; }
+.pc-btn-secondary:hover { background:#e5e7eb; transform:translateY(-2px); }
+.pc-btn-secondary:active { transform:scale(.97); }
+.pc-close { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:transparent; border:none; color:#9ca3af; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.pc-close:hover { background:#f3f4f6; color:#1a1a2e; }
+.pc-progress { height:3px; background:linear-gradient(90deg,#F5B400,#0B1F5C); width:100%; transform-origin:left; transform:scaleX(1); }
+.purchase-confirmation.show .pc-progress { animation:pcProgressBar 6s linear forwards; }
+@keyframes pcProgressBar { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+body.dark-mode .purchase-confirmation { background:#1f2937; box-shadow:0 20px 60px rgba(0,0,0,.5),0 8px 20px rgba(0,0,0,.3); }
+body.dark-mode .pc-title { color:#f3f4f6; }
+body.dark-mode .pc-message { color:#9ca3af; }
+body.dark-mode .pc-message strong { color:#F5B400; }
+body.dark-mode .pc-btn-secondary { background:#374151; color:#f3f4f6; border-color:#4b5563; }
+body.dark-mode .pc-btn-secondary:hover { background:#4b5563; }
+body.dark-mode .pc-close { color:#9ca3af; }
+body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
+@media (max-width:480px) { .purchase-confirmation{top:72px;width:calc(100% - 20px)} .pc-content{padding:14px;gap:10px} .pc-icon{width:40px;height:40px} .pc-icon i{font-size:1.1rem} .pc-buttons{flex-direction:column} .pc-btn{width:100%} }
+
+
+/* ============================================================
+   BETIX — REQUESTED FINAL POLISH (only targeted changes)
+   ============================================================ */
+
+/* Header: larger white Betix logo */
+.logo .logo-text { font-size: 1.95rem !important; color: #fff !important; }
+@media (max-width: 480px) {
+    .logo .logo-text { font-size: 1.65rem !important; color: #fff !important; }
+}
+
+/* Publication images: slightly larger while preserving the existing card structure */
+.event-card-classic .poster-wrapper-classic {
+    /* Larger social-media style media area (closer to X/Twitter) */
+    aspect-ratio: 16 / 9 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+.event-card-classic .poster-wrapper-classic img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+@media (max-width: 480px) {
+    .event-card-classic .poster-wrapper-classic { aspect-ratio: 16 / 9 !important; }
+}
+
+/* Past events in My Events: visibly inactive + red past marker */
+.my-events-grid-past .my-event-card-modern,
+.my-event-card-past {
+    opacity: .62 !important;
+    filter: grayscale(.72) blur(.15px) !important;
+}
+.my-events-grid-past .my-event-card-modern:hover,
+.my-event-card-past:hover {
+    opacity: .78 !important;
+    filter: grayscale(.5) blur(0) !important;
+}
+.my-event-card-modern .event-status-badge-modern.ended {
+    background: #dc2626 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(220,38,38,.22);
+}
+
+/* Professional Betix notification/toast: centered on mobile and desktop */
+.toast-notification {
+    top: calc(env(safe-area-inset-top, 0px) + 76px) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    width: min(420px, calc(100% - 28px)) !important;
+    max-width: 420px !important;
+    border-left: 0 !important;
+    border-top: 4px solid #F5B400 !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, #0B1F5C, #142d73) !important;
+    color: #fff !important;
+    transform: translate(-50%, -24px) scale(.98) !important;
+    box-shadow: 0 14px 38px rgba(11,31,92,.28) !important;
+    transition: transform .28s ease, opacity .28s ease !important;
+}
+.toast-notification.show {
+    transform: translate(-50%, 0) scale(1) !important;
+    opacity: 1 !important;
+}
+.toast-notification .toast-icon { color: #F5B400 !important; }
+.toast-notification .toast-title,
+.toast-notification .toast-message { color: #fff !important; }
+.toast-notification .toast-message { opacity: .88; }
+.toast-notification .toast-close { color: rgba(255,255,255,.72) !important; }
+.toast-notification .toast-close:hover { color: #fff !important; }
+.toast-notification.toast-error { border-top-color: #ef4444 !important; }
+.toast-notification.toast-error .toast-icon { color: #ff6b6b !important; }
+.toast-notification.toast-info { border-top-color: #F5B400 !important; }
+.toast-notification.toast-info .toast-icon { color: #F5B400 !important; }
+
+/* Bottom navigation: all three controls use Betix navy; central Create is a blue circle */
+.bottom-nav .nav-item,
+.bottom-nav .nav-item i,
+.bottom-nav .nav-item span,
+.bottom-nav .nav-item.active,
+.bottom-nav .nav-item.active i,
+.bottom-nav .nav-item.active span {
+    color: #0B1F5C !important;
+}
+.bottom-nav .nav-item#navCreate {
+    color: #fff !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
+    padding: 0 !important;
+    margin-top: -18px !important;
+    border-radius: 50% !important;
+    background: #0B1F5C !important;
+    box-shadow: 0 8px 24px rgba(11,31,92,.28) !important;
+    border: 0 !important;
+}
+.bottom-nav .nav-item#navCreate i {
+    width: 64px !important;
+    height: 64px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    background: #0B1F5C !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.7rem !important;
+}
+.bottom-nav .nav-item#navCreate span {
+    display: none !important;
+}
+.bottom-nav .nav-item#navCreate:hover,
+.bottom-nav .nav-item#navCreate:active { background: #142d73 !important; }
+
+
+/* ============================================================
+   BETIX — FINAL MEDIA POLISH
+   Keep the complete photo visible and adapt the card to each
+   image's natural aspect ratio, like modern social feeds.
+   ============================================================ */
+.event-card-classic .poster-wrapper-classic {
+    aspect-ratio: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    background: #111827 !important;
+    transition: height .22s ease;
+}
+.event-card-classic .event-carousel-wrapper {
+    height: auto !important;
+    min-height: 220px !important;
+    max-height: min(72vh, 620px) !important;
+    transition: height .22s ease;
+}
+.event-card-classic .event-carousel,
+.event-card-classic .carousel-track,
+.event-card-classic .carousel-slide {
+    height: 100% !important;
+}
+.event-card-classic .carousel-slide {
+    align-items: center !important;
+    justify-content: center !important;
+    background: #111827 !important;
+}
+.event-card-classic .carousel-slide img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: #111827 !important;
+}
+
+/* Successful connection: unmistakably green Betix success notification. */
+.toast-notification.toast-success {
+    border-top-color: #22c55e !important;
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    box-shadow: 0 14px 38px rgba(22,163,74,.30) !important;
+}
+.toast-notification.toast-success .toast-icon {
+    color: #ffffff !important;
+}
+.toast-notification.toast-success .toast-title,
+.toast-notification.toast-success .toast-message,
+.toast-notification.toast-success .toast-close {
+    color: #ffffff !important;
+}
+.toast-notification.toast-success .toast-message { opacity: .94 !important; }
+
+@media (max-width: 480px) {
+    .event-card-classic .event-carousel-wrapper {
+        min-height: 210px !important;
+        max-height: 72vh !important;
+    }
+    .event-card-classic .carousel-slide img {
+        max-height: 72vh !important;
+    }
 }
