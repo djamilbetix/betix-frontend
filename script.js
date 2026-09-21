@@ -423,92 +423,6 @@ const SECURE_KEY = 'BETIX_SECURE_KEY_2026_v1';
 let pendingTickets = JSON.parse(localStorage.getItem('betix_pending_tickets') || '[]');
 let allUsersCache = [];
 
-
-// ============================================================
-// CACHE MANAGER
-// ============================================================
-const CACHE_DURATION_EVENTS = 5 * 60 * 1000;
-const CACHE_DURATION_TICKETS = 60 * 1000;
-const CACHE_DURATION_SLIDES = 10 * 60 * 1000;
-
-function getCachedData(key, maxAge) {
-    const cached = localStorage.getItem(key);
-    if (!cached) return null;
-    try {
-        const parsed = JSON.parse(cached);
-        if (!parsed || typeof parsed !== 'object') return null;
-        const age = Date.now() - Number(parsed.timestamp || 0);
-        if (age >= 0 && age < maxAge) return parsed.data;
-    } catch (e) { console.warn('Cache read error:', key, e); }
-    return null;
-}
-
-function setCachedData(key, data) {
-    try { localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() })); }
-    catch (e) { console.warn('Cache write error:', key, e); }
-}
-
-function clearCache(key) {
-    if (key) {
-        if (key.endsWith('*')) {
-            const prefix = key.slice(0, -1);
-            Object.keys(localStorage).forEach(k => { if (k.startsWith(prefix)) localStorage.removeItem(k); });
-        } else localStorage.removeItem(key);
-        return;
-    }
-    clearCache('betix_cached_tickets_*');
-    localStorage.removeItem('betix_cached_events');
-    localStorage.removeItem('betix_cached_slides');
-    localStorage.removeItem('betix_admin_cached_tickets');
-}
-
-// ============================================================
-// UTILITAIRE : ÉVÉNEMENT TERMINÉ / EN COURS
-// ============================================================
-function isEventPast(event) {
-    if (!event || !event.date) return false;
-    const startDate = new Date(event.date);
-    if (isNaN(startDate.getTime())) return false;
-    const endDate = new Date(startDate);
-    const val = parseFloat(event.durationValue) || 0;
-    switch (event.durationUnit) {
-        case 'hours': endDate.setHours(endDate.getHours() + val); break;
-        case 'days': endDate.setDate(endDate.getDate() + val); break;
-        case 'weeks': endDate.setDate(endDate.getDate() + val * 7); break;
-        case 'months': endDate.setMonth(endDate.getMonth() + val); break;
-        case 'years': endDate.setFullYear(endDate.getFullYear() + val); break;
-        default: endDate.setHours(endDate.getHours() + 3);
-    }
-    return Date.now() > endDate.getTime();
-}
-
-function isEventLive(event) {
-    if (!event || !event.date) return false;
-    const start = new Date(event.date);
-    if (isNaN(start.getTime())) return false;
-    const end = new Date(start);
-    const val = parseFloat(event.durationValue) || 0;
-    switch (event.durationUnit) {
-        case 'hours': end.setHours(end.getHours() + val); break;
-        case 'days': end.setDate(end.getDate() + val); break;
-        case 'weeks': end.setDate(end.getDate() + val * 7); break;
-        case 'months': end.setMonth(end.getMonth() + val); break;
-        case 'years': end.setFullYear(end.getFullYear() + val); break;
-        default: end.setHours(end.getHours() + 3);
-    }
-    const now = Date.now();
-    return now >= start.getTime() && now <= end.getTime();
-}
-
-let searchTimeout = null;
-let realtimeChannel = null;
-let cancelEventId = null;
-let revenueChartInstance = null;
-let categoryChartInstance = null;
-let adminEventsCurrentPage = 1;
-const ADMIN_EVENTS_PER_PAGE = 10;
-let adminTicketsCache = [];
-
 // ============================================================
 // PARAMÈTRES DE L'APPLICATION
 // ============================================================
@@ -736,31 +650,34 @@ async function uploadHeroImage(base64Data, filename) {
 }
 
 async function loadHeroSlides() {
-    const cacheKey = 'betix_cached_slides';
-    const cached = getCachedData(cacheKey, CACHE_DURATION_SLIDES);
-    if (cached) { heroSlides = cached; initHeroSlider(); renderAdminSlides(); return heroSlides; }
     try {
         const { data, error } = await supabaseClient.from('hero_slides').select('*').order('sort_order', { ascending: true });
         if (error) throw error;
-        if (data && data.length > 0) heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
-        else {
-            const local = localStorage.getItem('betix_hero_slides');
-            if (local) { try { heroSlides = JSON.parse(local); await migrateHeroSlides(heroSlides); } catch(e) { heroSlides = []; } }
-            else { heroSlides = [
-                { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
-                { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
-                { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
-                { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
-                { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
-            ]; await migrateHeroSlides(heroSlides); }
+        if (data && data.length > 0) {
+            heroSlides = data.map(s => ({ id: s.id, image: s.image_url, badge: s.badge || '', title: s.title, description: s.description || '' }));
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
+        } else {
+            let local = localStorage.getItem('betix_hero_slides');
+            if (local) try { heroSlides = JSON.parse(local); await migrateHeroSlides(heroSlides); } catch(e) { heroSlides = []; }
+            else {
+                heroSlides = [
+                    { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&h=600&fit=crop', badge: 'Music Festival', title: 'Summer Music Festival 2026', description: '3 days of electrifying performances by top artists' },
+                    { image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=600&fit=crop', badge: 'Football', title: 'Champions League Final', description: 'The biggest football event of the year live' },
+                    { image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200&h=600&fit=crop', badge: 'Conference', title: 'Web3 Summit 2026', description: 'The future of decentralized technology unveiled' },
+                    { image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=600&fit=crop', badge: 'Cinema', title: 'International Film Festival', description: 'Premieres and exclusive screenings' },
+                    { image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&h=600&fit=crop', badge: 'Concert', title: 'World Tour Concert', description: 'An unforgettable night with global superstars' }
+                ];
+                await migrateHeroSlides(heroSlides);
+            }
+            localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
         }
-        setCachedData(cacheKey, heroSlides); localStorage.setItem('betix_hero_slides', JSON.stringify(heroSlides));
-        initHeroSlider(); renderAdminSlides(); return heroSlides;
+        initHeroSlider();
+        renderAdminSlides();
+        return heroSlides;
     } catch (error) {
-        console.error('Error loading hero slides:', error);
-        const local = localStorage.getItem('betix_hero_slides');
-        if (local) { try { heroSlides = JSON.parse(local); } catch(e) { heroSlides = []; } }
-        initHeroSlider(); renderAdminSlides(); return heroSlides;
+        let local = localStorage.getItem('betix_hero_slides');
+        if (local) try { heroSlides = JSON.parse(local); initHeroSlider(); renderAdminSlides(); } catch(e) { heroSlides = []; }
+        return heroSlides;
     }
 }
 
@@ -842,7 +759,6 @@ async function saveEventToSupabase(eventData) {
             return false;
         }
         console.log('Event saved to Supabase:', eventData.id);
-        clearCache('betix_cached_events');
         return true;
     } catch (error) {
         console.error('saveEventToSupabase exception:', error);
@@ -865,7 +781,7 @@ async function saveTicketToSupabase(ticketData) {
             qr_code: ticketData.qrCode || 'BETIX-' + Date.now(),
             status: ticketData.status || 'Valid',
             purchase_date: ticketData.purchaseDate || new Date().toISOString(),
-            expiration_date: ticketData.expiration_date || calculateTicketExpiration(ticketData.eventDate),
+            expiration_date: ticketData.eventDate || new Date(Date.now() + 86400000 * 30).toISOString(),
             event_title: ticketData.eventTitle || 'Event',
             event_location: ticketData.eventLocation || 'Online',
             pays: ticketData.pays || ticketData.eventPays || 'France',
@@ -884,7 +800,6 @@ async function saveTicketToSupabase(ticketData) {
             return false;
         }
         console.log('Ticket saved to Supabase:', ticketData.id);
-        clearCache('betix_cached_tickets_' + (ticketData.buyerWallet || ticketData.userWallet || currentUser.piUid || currentUser.wallet || ''));
         return true;
     } catch (error) {
         console.error('saveTicketToSupabase exception:', error);
@@ -896,64 +811,102 @@ async function saveTicketToSupabase(ticketData) {
 // CHARGEMENT DES TICKETS DEPUIS SUPABASE
 // ============================================================
 async function loadTicketsFromSupabase(piUid) {
-    if (!piUid) return [];
-    const cacheKey = 'betix_cached_tickets_' + piUid;
-    const cached = getCachedData(cacheKey, CACHE_DURATION_TICKETS);
-    if (cached) { console.log('📦 Using cached tickets for user', piUid); return cached; }
     try {
+        if (!piUid) return [];
         const { data, error } = await supabaseClient.from('tickets').select('*').eq('buyer_pi_uid', piUid).order('purchase_date', { ascending: false });
-        if (error) throw error;
-        const mapped = (data || []).map(t => ({
-            id: t.id, eventId: t.event_id, eventTitle: t.event_title || 'Event',
-            eventDate: deriveEventDateFromExpiration(t.expiration_date) || t.purchase_date,
-            expiration_date: t.expiration_date || calculateTicketExpiration(t.purchase_date),
-            eventLocation: t.event_location || 'Online', category: t.category || '', price: t.price || 0,
-            buyerName: t.buyer_name || 'Anonymous', buyerEmail: t.buyer_email || '', buyerPhone: t.buyer_phone || '',
-            buyerWallet: t.buyer_pi_uid || '', purchaseDate: t.purchase_date, transactionId: t.transaction_id,
-            qrCode: t.qr_code, status: t.status || 'Valid', refunded: Boolean(t.refunded),
-            durationValue: t.duration_value || null, durationUnit: t.duration_unit || null,
-            organizerName: t.organizer_name || '', organizerPiUid: t.organizer_pi_uid || '', pays: t.pays || 'France',
+        if (error) {
+            console.error('Error loading tickets from Supabase:', error);
+            return [];
+        }
+        return (data || []).map(t => ({
+            id: t.id,
+            eventId: t.event_id,
+            eventTitle: t.event_title || 'Event',
+            eventDate: t.expiration_date || t.purchase_date,
+            eventLocation: t.event_location || 'Online',
+            category: t.category || '',
+            price: t.price || 0,
+            buyerName: t.buyer_name || 'Anonymous',
+            buyerEmail: t.buyer_email || '',
+            buyerPhone: t.buyer_phone || '',
+            purchaseDate: t.purchase_date,
+            transactionId: t.transaction_id,
+            qrCode: t.qr_code,
+            status: t.status || 'Valid',
+            durationValue: t.duration_value || null,
+            durationUnit: t.duration_unit || null,
+            organizerName: t.organizer_name || '',
+            organizerPiUid: t.organizer_pi_uid || '',
+            pays: t.pays || 'France',
             ticketNumber: t.ticket_number
         }));
-        setCachedData(cacheKey, mapped);
-        return mapped;
-    } catch (error) { console.error('Error loading tickets from Supabase:', error); return []; }
+    } catch (error) { console.error('loadTicketsFromSupabase exception:', error); return []; }
 }
 
 // ============================================================
 // CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE
 // ============================================================
 async function loadEventsFromSupabase() {
-    const cacheKey = 'betix_cached_events';
-    const cached = getCachedData(cacheKey, CACHE_DURATION_EVENTS);
-    if (cached) { console.log('📦 Using cached events'); return cached; }
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
-        if (error) throw error;
-        const mapped = (data || []).map(e => {
+        if (error) {
+            console.error('Error loading events from Supabase:', error);
+            return [];
+        }
+        return (data || []).map(e => {
             let imagesArray = [];
             if (e.image_urls) {
-                try { const parsed = JSON.parse(e.image_urls); if (Array.isArray(parsed)) imagesArray = parsed.filter(url => url && typeof url === 'string' && url.startsWith('http')); }
-                catch(parseErr) { console.warn('Could not parse image_urls for event', e.id, parseErr); }
+                try {
+                    const parsed = JSON.parse(e.image_urls);
+                    if (Array.isArray(parsed)) {
+                        imagesArray = parsed.filter(url => url && typeof url === 'string' && url.startsWith('http'));
+                    }
+                } catch(parseErr) {
+                    console.warn('Could not parse image_urls for event', e.id, parseErr);
+                }
             }
-            if (imagesArray.length === 0 && e.image_url && e.image_url.startsWith('http')) imagesArray.push(e.image_url);
-            if (imagesArray.length === 0) imagesArray.push(eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop');
+            if (imagesArray.length === 0 && e.image_url && e.image_url.startsWith('http')) {
+                imagesArray.push(e.image_url);
+            }
+            if (imagesArray.length === 0) {
+                const fallback = eventImagesList[e.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
+                imagesArray.push(fallback);
+            }
+            console.log('Event "' + e.title + '" has ' + imagesArray.length + ' images');
+            
             const standardSeats = e.standard_seats || 0;
             const standardSold = e.standard_sold || 0;
             return {
-                id: String(e.id), title: e.title || 'Untitled', category: e.category || '', pays: e.pays || 'France', country: e.pays || 'France',
-                date: e.event_date || new Date().toISOString(), location: e.location || '', description: e.description || '', conditions: e.conditions || '',
-                price: e.ticket_price_standard || 0, seatsTotal: e.max_tickets || 0, seatsLeft: (e.max_tickets || 0) - standardSold,
-                images: imagesArray, coverImage: imagesArray[0] || '', organizer: e.organizer_pi_uid || '', organizerName: e.organizer_name || '', organizerPiUid: e.organizer_pi_uid || '',
-                createdAt: e.created_at || new Date().toISOString(), durationValue: e.duration_value || null, durationUnit: e.duration_unit || null,
-                standardSeats, standardSold, standardLeft: standardSeats - standardSold,
-                status: e.status || 'active', cancelledAt: e.cancelled_at || null, cancellationReason: e.cancellation_reason || null,
+                id: String(e.id),
+                title: e.title || 'Untitled',
+                category: e.category || '',
+                pays: e.pays || 'France',
+                country: e.pays || 'France',
+                date: e.event_date || new Date().toISOString(),
+                location: e.location || '',
+                description: e.description || '',
+                conditions: e.conditions || '',
+                price: e.ticket_price_standard || 0,
+                seatsTotal: e.max_tickets || 0,
+                seatsLeft: (e.max_tickets || 0) - standardSold,
+                images: imagesArray,
+                coverImage: imagesArray.length > 0 ? imagesArray[0] : '',
+                organizer: e.organizer_pi_uid || '',
+                organizerName: e.organizer_name || '',
+                organizerPiUid: e.organizer_pi_uid || '',
+                createdAt: e.created_at || new Date().toISOString(),
+                durationValue: e.duration_value || null,
+                durationUnit: e.duration_unit || null,
+                standardSeats,
+                standardSold,
+                standardLeft: standardSeats - standardSold,
                 ticketTypes: { standard: { enabled: e.ticket_standard_enabled || false, price: e.ticket_price_standard || 0 } }
             };
         });
-        setCachedData(cacheKey, mapped);
-        return mapped;
-    } catch (error) { console.error('Error loading events from Supabase:', error); return []; }
+    } catch (error) {
+        console.error('loadEventsFromSupabase exception:', error);
+        return [];
+    }
 }
 
 // ============================================================
@@ -982,40 +935,14 @@ function restoreBackupData() {
 // LOAD ALL FROM SUPABASE
 // ============================================================
 async function loadAllFromSupabase() {
-    console.log('=== LOAD ALL FROM SUPABASE ===');
+    console.log("=== LOAD ALL FROM SUPABASE ===");
     loadUsedTickets();
     updateSyncStatus('loading');
-    const userIdentifier = currentUser.piUid || currentUser.wallet;
-    const eventsCached = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
-    const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : [];
-    if (!eventsCached) showEventSkeletons(6);
-
-    if (eventsCached && (!userIdentifier || ticketsCached)) {
-        console.log('Using full cache for events and tickets');
-        events = eventsCached;
-        if (userIdentifier) tickets = ticketsCached;
-        else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
-
-        const beforeCount = events.length;
-        events = events.filter(e => !isEventPast(e));
-        if (events.length !== beforeCount) {
-            console.log('Purge: ' + (beforeCount - events.length) + ' événement(s) passé(s) retiré(s) du cache local.');
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            clearCache('betix_cached_events');
-        }
-
-        saveBackupData(events, tickets);
-        updateSyncStatus('success');
-        renderEventsByCategory();
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-        try { await loadShareFeed(); } catch (e) { console.warn('Feed load failed:', e); }
-        return;
-    }
-
+    
+    let supabaseEvents = [];
     try {
-        const supabaseEvents = await loadEventsFromSupabase();
+        supabaseEvents = await loadEventsFromSupabase();
+        console.log("Supabase events:", supabaseEvents.length);
         const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
         events = mergeArraysById(localEvents, supabaseEvents);
         localStorage.setItem('betix_events', JSON.stringify(events));
@@ -1024,10 +951,12 @@ async function loadAllFromSupabase() {
         console.error('Error loading events from Supabase:', error);
         events = JSON.parse(localStorage.getItem('betix_events') || '[]');
     }
-
+    
+    const userIdentifier = currentUser.piUid || currentUser.wallet;
     if (userIdentifier) {
         try {
             const supabaseTickets = await loadTicketsFromSupabase(userIdentifier);
+            console.log("Supabase tickets for user:", supabaseTickets.length);
             const localTickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
             tickets = mergeArraysById(localTickets, supabaseTickets);
             localStorage.setItem('betix_tickets', JSON.stringify(tickets));
@@ -1037,29 +966,25 @@ async function loadAllFromSupabase() {
             tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         }
     } else {
+        console.log("User not connected, tickets not loaded.");
         tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
     }
-
-    notifications = userIdentifier ? await loadNotificationsFromSupabase() : JSON.parse(localStorage.getItem('betix_notifications') || '[]');
-    saveNotifications();
-    updateNotifBadgeHeader();
-
-    const beforeCount = events.length;
-    events = events.filter(e => !isEventPast(e));
-    if (events.length !== beforeCount) {
-        console.log('Purge: ' + (beforeCount - events.length) + ' événement(s) passé(s) retiré(s) du cache local.');
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        clearCache('betix_cached_events');
-    }
-
-    try { await loadShareFeed(); } catch (e) { console.warn('Feed load failed:', e); }
-    await updateExpiredTickets();
+    
+    const localNotifs = JSON.parse(localStorage.getItem('betix_notifications') || '[]');
+    notifications = localNotifs;
+    localStorage.setItem('betix_notifications', JSON.stringify(notifications));
+    
     updateSyncStatus('success');
+    console.log("Load completed. Events:", events.length, "Tickets:", tickets.length);
+    
     renderEventsByCategory();
     renderTickets();
     renderHistory();
     updateProfilePage();
-    setTimeout(() => { if (typeof generateAllQRCodes === 'function') generateAllQRCodes(); }, 300);
+    setTimeout(() => {
+        if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
+    }, 300);
+    
     await retryPendingTickets();
 }
 
@@ -1081,82 +1006,6 @@ function saveTickets() {
 
 function saveUsedTickets() { localStorage.setItem('betix_used_tickets', JSON.stringify(usedTickets)); }
 function loadUsedTickets() { try { usedTickets = JSON.parse(localStorage.getItem('betix_used_tickets') || '[]'); } catch(e) { usedTickets = []; } }
-
-// Tickets stay valid until 24 hours after their event date.
-function calculateTicketExpiration(eventDate) {
-    const eventTime = new Date(eventDate || Date.now());
-    if (isNaN(eventTime.getTime())) return new Date(Date.now() + 86400000).toISOString();
-    return new Date(eventTime.getTime() + 24 * 60 * 60 * 1000).toISOString();
-}
-
-function deriveEventDateFromExpiration(expirationDate) {
-    const expiration = new Date(expirationDate);
-    return isNaN(expiration.getTime()) ? null : new Date(expiration.getTime() - 24 * 60 * 60 * 1000).toISOString();
-}
-
-async function updateExpiredTickets() {
-    const now = new Date();
-    let updated = 0;
-    for (const ticket of tickets) {
-        if (ticket.status === 'Used' || ticket.status === 'Expired' || usedTickets.indexOf(ticket.id) !== -1) continue;
-        const expiration = new Date(ticket.expiration_date || calculateTicketExpiration(ticket.eventDate));
-        if (!isNaN(expiration.getTime()) && now > expiration) {
-            ticket.expiration_date = expiration.toISOString();
-            ticket.status = 'Expired';
-            await saveTicketToSupabase(ticket);
-            updated++;
-        }
-    }
-    if (updated > 0) {
-        saveTickets();
-        renderTickets();
-        renderHistory();
-        updateProfilePage();
-    }
-    return updated;
-}
-
-async function saveNotificationToSupabase(notification) {
-    try {
-        const userId = currentUser.piUid || currentUser.wallet;
-        if (!userId || !notification) return null;
-        const { data, error } = await supabaseClient.from('notifications').insert({
-            user_id: userId,
-            message: notification.message,
-            type: notification.type || 'info',
-            read: Boolean(notification.read),
-            created_at: notification.date || new Date().toISOString()
-        }).select().single();
-        if (error) throw error;
-        return data;
-    } catch (e) { console.error('saveNotificationToSupabase error:', e); return null; }
-}
-
-async function loadNotificationsFromSupabase() {
-    const userId = currentUser.piUid || currentUser.wallet;
-    if (!userId) return [];
-    try {
-        const { data, error } = await supabaseClient.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-        if (error) throw error;
-        return (data || []).map(n => ({ id: String(n.id), message: n.message, type: n.type || 'info', read: Boolean(n.read), date: n.created_at }));
-    } catch (e) { console.error('loadNotificationsFromSupabase error:', e); return []; }
-}
-
-async function deleteNotificationFromSupabase(id) {
-    try {
-        const { error } = await supabaseClient.from('notifications').delete().eq('id', id);
-        if (error) throw error;
-        return true;
-    } catch (e) { console.error('deleteNotificationFromSupabase error:', e); return false; }
-}
-
-async function markNotificationsAsReadInSupabase(ids) {
-    if (!ids || ids.length === 0) return;
-    try {
-        const { error } = await supabaseClient.from('notifications').update({ read: true }).in('id', ids);
-        if (error) throw error;
-    } catch (e) { console.error('markNotificationsAsReadInSupabase error:', e); }
-}
 
 function saveUser() { 
     localStorage.setItem('betix_user', JSON.stringify(currentUser)); 
@@ -1414,8 +1263,6 @@ function generateTicketHTML(ticket) {
     }
 
     const purchaseDate = safeTicket.purchaseDate ? new Date(safeTicket.purchaseDate).toLocaleDateString('en-US') : 'N/A';
-    const expiration = new Date(safeTicket.expiration_date || calculateTicketExpiration(safeTicket.eventDate));
-    const expirationDate = !isNaN(expiration.getTime()) ? expiration.toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
     const category = safeTicket.category || 'default';
     const ticketImage = ticketImages[category] || ticketImages['default'];
@@ -1440,7 +1287,7 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-right line-6"><span class="ticket-value">#' + escapeHtml(String(ticketNumber)) + '</span></div>' +
         '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
-        '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '<br>Expires: ' + escapeHtml(expirationDate) + '</div>' +
+        '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '</div>' +
     '</div>';
 }
 
@@ -1477,7 +1324,12 @@ function generateAllQRCodes() {
 function renderTickets() {
     const container = document.getElementById('ticketsList');
     if (!container) return;
-    const validTickets = tickets.filter(t => t.status === 'Valid' && usedTickets.indexOf(t.id) === -1);
+    const validTickets = tickets.filter(t => {
+        const isUsed = usedTickets.indexOf(t.id) !== -1;
+        const isExpired = new Date(t.eventDate) <= new Date();
+        const isStatusUsed = t.status === 'Used';
+        return !isUsed && !isExpired && !isStatusUsed;
+    });
     // Trier par date d'achat décroissante (les plus récents en premier)
     validTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueTickets = [];
@@ -1512,7 +1364,12 @@ function renderTickets() {
 function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
-    const historyTickets = tickets.filter(t => t.status === 'Used' || t.status === 'Expired' || usedTickets.indexOf(t.id) !== -1);
+    const historyTickets = tickets.filter(t => {
+        const isUsed = usedTickets.indexOf(t.id) !== -1;
+        const isExpired = new Date(t.eventDate) <= new Date();
+        const isStatusUsed = t.status === 'Used';
+        return isUsed || isExpired || isStatusUsed;
+    });
     // Trier par date d'achat décroissante
     historyTickets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
     const uniqueHistory = [];
@@ -1526,13 +1383,8 @@ function renderHistory() {
     }
     let html = '';
     uniqueHistory.forEach(ticket => {
-        const isUsed = ticket.status === 'Used' || usedTickets.indexOf(ticket.id) !== -1;
-        const badgeHtml = isUsed
-            ? '<span class="badge-status badge-used">🟢 UTILISÉ</span>'
-            : '<span class="badge-status badge-expired">🔴 EXPIRÉ</span>';
         html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
             '<div class="ticket-actions-wrapper">' +
-                badgeHtml +
                 '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
                 '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
                 '<button class="btn-action btn-share" onclick="shareTicket(\'' + ticket.id + '\')"><i class="fas fa-share-alt"></i> Share</button>' +
@@ -1702,16 +1554,6 @@ function renderEventCard(event) {
 
     const ratingStars = Array.from({ length: 5 }, (_, i) => i < Math.floor(avgRating) ? '★' : '☆').join('');
     const ratingDisplay = ratings.filter(r => r.eventId === event.id).length > 0 ? '<span class="stars">' + ratingStars + '</span> ' + avgRating.toFixed(1) + ' (' + ratings.filter(r => r.eventId === event.id).length + ')' : '';
-    const remainingTickets = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
-    const eventEnded = isEventPast(event);
-    const isInactive = event.status === 'inactive' || event.status === 'disabled';
-    const buyButtonHtml = isInactive
-        ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-eye-slash"></i> Désactivé</button>'
-        : eventEnded
-            ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-calendar-times"></i> Event ended</button>'
-            : remainingTickets <= 0
-                ? '<button class="buy-btn-classic is-unavailable" type="button" disabled><i class="fas fa-ticket-alt"></i> Sold out</button>'
-                : '<button class="buy-btn-classic" type="button" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>';
 
     const ticketsLabelHtml = '<div class="event-tickets-label"><span class="tickets-label-badge">Tickets</span><span class="ticket-type">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>';
     const priceRightHtml = '<div class="event-price-right">' +
@@ -1737,19 +1579,7 @@ function renderEventCard(event) {
         '<div class="event-datetime-line"><i class="fas fa-calendar-day" style="color:#F5B400;"></i> ' + dateFormatted + ' · <i class="fas fa-clock" style="color:#F5B400;"></i> ' + timeFormatted + (durationDisplay ? ' · <i class="fas fa-hourglass-half" style="color:#F5B400;"></i> ' + durationDisplay : '') + '</div>' +
     '</div>';
 
-    const adminBarHtml = isAdminUser() ? (
-        '<div class="event-admin-bar" onclick="event.stopPropagation();">' +
-            '<button class="event-admin-btn toggle" title="' + (isInactive ? 'Réactiver' : 'Désactiver') + '" onclick="event.stopPropagation(); adminToggleEventVisibility(\'' + event.id + '\')">' +
-                '<i class="fas ' + (isInactive ? 'fa-eye' : 'fa-eye-slash') + '"></i>' +
-            '</button>' +
-            '<button class="event-admin-btn delete" title="Supprimer" onclick="event.stopPropagation(); adminDeleteEventPermanent(\'' + event.id + '\')">' +
-                '<i class="fas fa-trash"></i>' +
-            '</button>' +
-        '</div>'
-    ) : '';
-
     return '<div class="event-card-classic" data-id="' + event.id + '">' +
-        adminBarHtml +
         '<div class="poster-wrapper-classic">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
             carouselHtml +
@@ -1761,7 +1591,7 @@ function renderEventCard(event) {
             infoBoxHtml +
             '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
-            buyButtonHtml +
+            '<button class="buy-btn-classic" onclick="event.stopPropagation(); openQuantityPopup(\'' + event.id + '\')">' + t('buyTicket') + '</button>' +
             '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
         '</div>' +
@@ -1822,41 +1652,40 @@ function renderEventsByCategory() {
     const container = document.getElementById('eventsByCategory');
     if (!container) return;
     const filtered = events.filter(e => {
-        // Bloque tout événement passé, annulé, terminé ou désactivé.
-        if (isEventPast(e)) return false;
-        if (e.status === 'cancelled' || e.status === 'ended' || e.status === 'inactive' || e.status === 'disabled') return false;
-        // Sécurité supplémentaire : si la date de début est passée, vérifier la durée.
-        const now = Date.now();
-        const startTime = new Date(e.date).getTime();
-        if (!isNaN(startTime) && startTime < now) {
-            const val = parseFloat(e.durationValue) || 0;
-            let endTime = startTime;
-            switch (e.durationUnit) {
-                case 'hours': endTime += val * 3600000; break;
-                case 'days': endTime += val * 86400000; break;
-                case 'weeks': endTime += val * 604800000; break;
-                case 'months': endTime += val * 2592000000; break;
-                case 'years': endTime += val * 31536000000; break;
-                default: endTime += 3 * 3600000;
-            }
-            if (now > endTime) return false;
-        }
-        const title = String(e.title || '').toLowerCase();
-        const location = String(e.location || '').toLowerCase();
         const matchCategory = currentFilter === 'All' || e.category === currentFilter;
         const matchCountry = currentCountryFilter === 'All' || (e.pays || e.country) === currentCountryFilter;
-        const matchSearch = title.includes(searchQuery) || location.includes(searchQuery);
+        const matchSearch = e.title.toLowerCase().includes(searchQuery) || (e.location && e.location.toLowerCase().includes(searchQuery));
         return matchCategory && matchCountry && matchSearch;
     });
-    if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>'; return; }
-    const cats = ['Concert','Sport','Conference','Training','Cinema','Festival','Theatre','Dance','Exhibition','Gala','Seminar','Formation'];
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>';
+        return;
+    }
+    const cats = ['Concert', 'Sport', 'Conference', 'Training', 'Cinema', 'Festival', 'Theatre', 'Dance', 'Exhibition', 'Gala', 'Seminar', 'Formation'];
     let html = '';
     if (currentFilter !== 'All') {
-        html = '<div class="category-section"><div class="events-grid-centered">'; filtered.forEach(e => html += renderEventCard(e)); html += '</div></div>';
-    } else cats.forEach(cat => { const catEvents = filtered.filter(e => e.category === cat); if (catEvents.length) { html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">'; catEvents.forEach(e => html += renderEventCard(e)); html += '</div></div>'; } });
+        html = '<div class="category-section"><div class="events-grid-centered">';
+        filtered.forEach(e => html += renderEventCard(e));
+        html += '</div></div>';
+    } else {
+        cats.forEach(cat => {
+            const catEvents = filtered.filter(e => e.category === cat);
+            if (catEvents.length) {
+                html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">';
+                catEvents.forEach(e => html += renderEventCard(e));
+                html += '</div></div>';
+            }
+        });
+    }
     container.innerHTML = html;
-    container.removeEventListener('click', handleEventCardClick); container.addEventListener('click', handleEventCardClick);
-    setTimeout(() => { applyStaggeredAnimation('#eventsByCategory .events-grid-centered'); initCarouselIndicators(); }, 50);
+
+    container.removeEventListener('click', handleEventCardClick);
+    container.addEventListener('click', handleEventCardClick);
+
+    setTimeout(() => {
+        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+        initCarouselIndicators();
+    }, 50);
 }
 
 // ============================================================
@@ -2335,13 +2164,12 @@ function fillProfileReview() {
 
     const content = document.getElementById('profileReviewContent');
     if (!content) return;
-    const reviewValue = value => escapeHtml(value || '—');
-    content.innerHTML = '<div class="review-item"><span class="review-label">First Name</span><span class="review-value">' + reviewValue(firstName) + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Last Name</span><span class="review-value">' + reviewValue(lastName) + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Country</span><span class="review-value">' + reviewValue(country) + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Address</span><span class="review-value">' + reviewValue(address) + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Email</span><span class="review-value">' + reviewValue(email) + '</span></div>' +
-        '<div class="review-item"><span class="review-label">Phone</span><span class="review-value">' + reviewValue(phone) + '</span></div>';
+    content.innerHTML = '<div class="review-item"><span class="review-label">First Name</span><span class="review-value">' + escapeHtml(firstName) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Last Name</span><span class="review-value">' + escapeHtml(lastName) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Country</span><span class="review-value">' + escapeHtml(country) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Address</span><span class="review-value">' + escapeHtml(address) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Email</span><span class="review-value">' + escapeHtml(email) || '—' + '</span></div>' +
+        '<div class="review-item"><span class="review-label">Phone</span><span class="review-value">' + escapeHtml(phone) || '—' + '</span></div>';
 }
 
 function openProfileReview() {
@@ -2462,29 +2290,11 @@ function verifyPhone() {
 // ============================================================
 // QUANTITY POPUP ET ACHAT
 // ============================================================
-let isPurchaseRequestInProgress = false;
-
-function setPurchaseFeedback(message, type) {
-    const feedback = document.getElementById('purchaseFeedback');
-    if (!feedback) return;
-    feedback.textContent = message || '';
-    feedback.className = 'purchase-feedback' + (type ? ' is-' + type : '');
-}
-
-function resetPurchaseButton() {
-    const button = document.getElementById('confirmBuyBtn');
-    if (!button) return;
-    button.disabled = false;
-    button.innerHTML = '<i class="fas fa-lock"></i> Confirm purchase';
-    isPurchaseRequestInProgress = false;
-}
-
 function openQuantityPopup(eventId) {
     if (!requireLogin()) return;
     if (!requireProfileComplete()) return;
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
-    if (isEventPast(event)) { openPastEventPopup(); return; }
     if (!piUser && !currentUser.wallet) { alert(t('pleaseConnect')); connectToPi(); return; }
     const standardLeft = event.standardLeft !== undefined ? event.standardLeft : (event.standardSeats || 0);
     if (standardLeft <= 0) { alert('All tickets are sold out for this event'); return; }
@@ -2496,8 +2306,6 @@ function openQuantityPopup(eventId) {
     if (titleEl) titleEl.textContent = event.title;
     if (quantityInput) { quantityInput.value = 1; quantityInput.min = 1; quantityInput.max = Math.min(standardLeft, 10); }
     if (maxInfo) maxInfo.textContent = 'Maximum: ' + Math.min(standardLeft, 10) + ' ticket(s) available';
-    resetPurchaseButton();
-    setPurchaseFeedback('Secure payment with Pi Wallet', 'info');
     updateTicketTotal();
     popup.classList.add('show');
 }
@@ -2505,7 +2313,6 @@ function openQuantityPopup(eventId) {
 function closeQuantityPopup() {
     document.getElementById('quantityPopup').classList.remove('show');
     selectedEventForPurchase = null;
-    setPurchaseFeedback('', '');
 }
 
 function updateQuantity(delta) {
@@ -2524,9 +2331,7 @@ function updateTicketTotal() {
     const serviceFeeDisplay = document.getElementById('serviceFeeDisplay');
     const totalDisplay = document.getElementById('totalPriceDisplay');
     if (!input || !totalDisplay || !selectedEventForPurchase) return;
-    const maxQuantity = parseInt(input.max) || 10;
-    const qty = Math.min(Math.max(parseInt(input.value) || 1, 1), maxQuantity);
-    input.value = qty;
+    const qty = parseInt(input.value) || 1;
     const price = selectedEventForPurchase.price || 0;
     const subtotal = qty * price;
     const serviceFeePercent = appSettings.serviceFeePercent || 2;
@@ -2537,8 +2342,7 @@ function updateTicketTotal() {
     if (totalDisplay) totalDisplay.textContent = total.toFixed(6) + ' Pi';
 }
 
-async function confirmPurchaseFromPopup() {
-    if (isPurchaseRequestInProgress) return;
+function confirmPurchaseFromPopup() {
     if (!selectedEventForPurchase) { alert('No event selected'); return; }
     const quantityInput = document.getElementById('ticketQuantity');
     const quantity = parseInt(quantityInput.value) || 1;
@@ -2546,11 +2350,7 @@ async function confirmPurchaseFromPopup() {
     const availableSeats = selectedEventForPurchase.standardLeft !== undefined ? selectedEventForPurchase.standardLeft : (selectedEventForPurchase.standardSeats || 0);
     if (quantity > availableSeats) { alert('No seats available. Remaining: ' + availableSeats); return; }
     if (quantity > 10) { alert('Maximum 10 tickets per purchase'); return; }
-    isPurchaseRequestInProgress = true;
-    const button = document.getElementById('confirmBuyBtn');
-    if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Pi Wallet…'; }
-    setPurchaseFeedback('Connecting securely to Pi Wallet…', 'info');
-    await confirmPurchase(selectedEventForPurchase.id, quantity);
+    confirmPurchase(selectedEventForPurchase.id, quantity);
 }
 
 // ============================================================
@@ -2565,10 +2365,9 @@ function closeConfirmPurchasePopup() {}
 async function confirmPurchase(eventId, quantity) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
-    if (isEventPast(event)) {
-        closeQuantityPopup();
+    const eventDate = new Date(event.date);
+    if (eventDate < new Date()) {
         openPastEventPopup();
-        resetPurchaseButton();
         return;
     }
     const price = event.price || 0;
@@ -2582,40 +2381,34 @@ async function confirmPurchase(eventId, quantity) {
     const serviceFee = subtotal * (serviceFeePercent / 100);
     const totalPrice = subtotal + serviceFee;
 
+    closeQuantityPopup();
+
     const confirmBtn = document.getElementById('confirmBuyBtn');
-    if (confirmBtn) { confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting…'; confirmBtn.disabled = true; }
+    if (confirmBtn) { confirmBtn.textContent = t('connecting'); confirmBtn.disabled = true; }
 
     try {
-        if (!await ensurePiSDKReady() || typeof Pi === 'undefined') {
+        if (typeof Pi === 'undefined') {
             alert('Pi SDK not available. Please use Pi Browser.');
-            resetPurchaseButton();
+            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             return;
         }
         if (!piUser || !piUser.username) {
             alert('Please connect your Pi account first with payments scope.');
-            resetPurchaseButton();
+            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             connectToPi();
             return;
         }
-
-        closeQuantityPopup();
 
         const payment = await Pi.createPayment({
             amount: totalPrice,
             memo: quantity + ' ticket(s): ' + event.title + ' (incl. service fee)',
             metadata: { eventId: event.id, eventTitle: event.title, quantity, subtotal, serviceFee }
         }, {
-            onReadyForServerApproval: async function(paymentId) {
-                const response = await fetch(BACKEND_URL + '/api/pi/approve', {
+            onReadyForServerApproval: function(paymentId) {
+                fetch(BACKEND_URL + '/api/pi/approve', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId })
-                });
-                if (!response.ok) {
-                    const error = new Error('Payment approval failed');
-                    console.error('Payment approval error:', error);
-                    resetPurchaseButton();
-                    throw error;
-                }
+                }).catch(() => {});
             },
             onReadyForServerCompletion: async function(paymentId, txid) {
                 if (processingTransactions.has(txid)) {
@@ -2624,18 +2417,12 @@ async function confirmPurchase(eventId, quantity) {
                 }
                 processingTransactions.add(txid);
                 try {
-                    const completionResponse = await fetch(BACKEND_URL + '/api/pi/complete', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ paymentId, txid })
-                    });
-                    if (!completionResponse.ok) throw new Error('Payment completion failed');
                     const existingTickets = tickets.filter(t => t.transactionId === txid);
                     if (existingTickets.length > 0) {
                         openTransactionProcessedPopup(5);
                         showPage('tickets');
                         processingTransactions.delete(txid);
-                        resetPurchaseButton();
+                        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
                         return;
                     }
                     const userIdentifier = currentUser.piUid || currentUser.wallet;
@@ -2650,7 +2437,7 @@ async function confirmPurchase(eventId, quantity) {
                             renderHistory();
                             showPage('tickets');
                             processingTransactions.delete(txid);
-                            resetPurchaseButton();
+                            if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
                             return;
                         }
                     }
@@ -2670,7 +2457,6 @@ async function confirmPurchase(eventId, quantity) {
                     const buyerPhone = currentUser.phone_number || 'Not provided';
                     
                     const ticketsAdded = [];
-                    const expirationDate = calculateTicketExpiration(event.date);
                     for (let i = 0; i < quantity; i++) {
                         const ticketId = Date.now().toString() + '-' + i + '-' + Math.random().toString(36).substring(2, 6);
                         const qrData = ticketId;
@@ -2681,7 +2467,6 @@ async function confirmPurchase(eventId, quantity) {
                             eventId: event.id,
                             eventTitle: event.title || 'Event',
                             eventDate: event.date || new Date().toISOString(),
-                            expiration_date: expirationDate,
                             eventLocation: event.location || 'Online',
                             category: event.category || '',
                             price: price,
@@ -2743,31 +2528,32 @@ async function confirmPurchase(eventId, quantity) {
                         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
                     }, 300);
                     await syncUserToSupabase();
-                    showPurchaseConfirmation(event, quantity, ticketsAdded);
-                    // L'ancien popup reste disponible mais n'est plus déclenché automatiquement.
+                    showSuccessPopup(event, ticketsAdded, quantity);
                     processingTransactions.delete(txid);
-                    resetPurchaseButton();
                 } catch (error) {
                     console.error('Error finalizing payment:', error);
-                    showToast('Payment error', 'The payment could not be finalized. Please try again or contact support.', 'error');
+                    alert('Payment was successful but an error occurred while saving tickets. Please contact support.');
                     processingTransactions.delete(txid);
                 } finally {
-                    resetPurchaseButton();
+                    if (confirmBtn) {
+                        confirmBtn.textContent = t('confirmPurchase');
+                        confirmBtn.disabled = false;
+                    }
                 }
             },
             onCancel: function() {
-                showToast('Payment', t('paymentCancelled'), 'info');
-                resetPurchaseButton();
+                alert(t('paymentCancelled'));
+                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             },
             onError: function(error) {
-                showToast(t('paymentError'), error.message || 'Unknown error', 'error');
-                resetPurchaseButton();
+                alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+                if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
             },
             onIncompletePaymentFound
         });
     } catch (error) {
-        showToast(t('paymentError'), error.message || 'Unknown error', 'error');
-        resetPurchaseButton();
+        alert(t('paymentError') + ': ' + (error.message || 'Unknown error'));
+        if (confirmBtn) { confirmBtn.textContent = t('confirmPurchase'); confirmBtn.disabled = false; }
     }
 }
 
@@ -2921,27 +2707,22 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
-                        // La connexion est établie : mettre à jour immédiatement l'interface
-                        // et afficher le bienvenue avant les synchronisations réseau secondaires.
-                        updateActivity();
-                        updateUserInfo();
-                        updateConnectButtons();
-                        closeSidebar();
-                        hideConnectSpinner();
-                        requestAnimationFrame(() => {
-                            showToast('Betix', t('demoConnected'), 'success');
-                        });
                         await loadProfileData();
                         await syncUserToSupabase();
+                        updateActivity();
+                        updateUserInfo();
                         updateProfilePage();
                         trackUserConnection();
                         renderEventsByCategory();
+                        updateConnectButtons();
                         await loadAllFromSupabase();
                         await syncAllToSupabase();
                         currentFilter = 'All';
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
+                        alert(t('demoConnected'));
+                        closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
                         return;
@@ -2958,34 +2739,30 @@ async function connectToPi() {
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
 
-                    // La connexion Pi est établie. Mettre à jour immédiatement l'état connecté
-                    // et afficher le message de bienvenue sans attendre les appels réseau.
+                    // NE PAS réinitialiser les champs de profil ici
+                    // Charger d'abord les données existantes depuis Supabase
+                    await loadProfileData();
+
+                    // Maintenant synchroniser l'utilisateur (avec les données chargées)
+                    await syncUserToSupabase();
+
                     updateActivity();
                     updateUserInfo();
-                    updateConnectButtons();
-                    closeSidebar();
-                    hideConnectSpinner();
-                    requestAnimationFrame(() => {
-                        showToast('Betix', t('piConnected') + piUser.username, 'success');
-                    });
-
-                    // NE PAS réinitialiser les champs de profil ici.
-                    // Les données existantes sont chargées et synchronisées en arrière-plan.
-                    await loadProfileData();
-                    await syncUserToSupabase();
                     updateProfilePage();
                     trackUserConnection();
                     renderEventsByCategory();
+                    updateConnectButtons();
                     await loadAllFromSupabase();
                     await syncAllToSupabase();
                     currentFilter = 'All';
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
+                    alert(t('piConnected') + piUser.username);
+                    closeSidebar();
 
                     checkAndNotifyProfileCompletion();
                     await retryPendingTickets();
-                    initRealtimeNotifications();
                     hideConnectSpinner();
                     return;
                 } else {
@@ -3000,7 +2777,7 @@ async function connectToPi() {
         if (error.message.includes('timeout')) {
             errorMsg = 'Connection timeout. Please check your internet connection and try again.';
         }
-        showToast(t('connectionError'), errorMsg, 'error');
+        alert(errorMsg);
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
@@ -3021,7 +2798,7 @@ function checkAndNotifyProfileCompletion() {
             showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
             currentUser.profile_reminder_shown = true;
             saveUser();
-        }, 8000);
+        }, 5000);
     }
 }
 
@@ -3079,7 +2856,7 @@ async function createEvent(e) {
             ticketTypes: { standard: { enabled: true, price: 0.0003 } }
         };
         openPublishConfirm(newEvent);
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
+    } catch (error) { alert(t('paymentError') + ': ' + error.message); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
 }
 
 function openPublishConfirm(eventData) {
@@ -3157,10 +2934,9 @@ async function confirmPublishEvent() {
         updateProfilePage();
         if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
         if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); }
-        showToast('Betix', t('eventPublished'), 'success');
-        clearCache('betix_cached_events');
+        alert(t('eventPublished'));
         showPage('home');
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
+    } catch (error) { alert(t('paymentError') + ': ' + error.message); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
 }
 
 function compressImage(file) {
@@ -3457,10 +3233,9 @@ function syncSettingsLanguageSelector() {
 // ============================================================
 // NOTIFICATIONS
 // ============================================================
-async function deleteNotification(id) {
+function deleteNotification(id) {
     notifications = notifications.filter(n => n.id !== id);
     saveNotifications();
-    await deleteNotificationFromSupabase(id);
     renderNotificationsPage();
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
@@ -3481,108 +3256,40 @@ function clearAllNotifications() {
 function renderNotificationsPage() {
     const container = document.getElementById('notificationsList');
     if (!container) return;
-
     if (!notifications || notifications.length === 0) {
-        container.innerHTML = `
-            <div class="notif-empty">
-                <i class="fas fa-bell-slash"></i>
-                <p>${t('noNotifications')}</p>
-            </div>`;
+        container.innerHTML = '<div class="notification-empty">' +
+            '<i class="fas fa-bell-slash"></i>' +
+            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
+        '</div>';
         return;
     }
-
-    // Regroupement par date
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const groups = { today: [], yesterday: [], older: [] };
-    notifications.forEach(n => {
-        const d = new Date(n.date);
-        const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        if (day.getTime() === today.getTime()) groups.today.push(n);
-        else if (day.getTime() === yesterday.getTime()) groups.yesterday.push(n);
-        else groups.older.push(n);
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
+        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
+            '<i class="fas fa-trash"></i> Clear all' +
+        '</button>' +
+    '</div>';
+    notifications.forEach((notif) => {
+        const time = new Date(notif.date);
+        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const unreadClass = notif.read ? '' : 'unread';
+        const type = notif.type || 'info';
+        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
+        const icon = iconMap[type] || 'fa-info-circle';
+        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
+            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
+            '<div class="notif-content">' +
+                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
+                '<div class="notif-time">' + timeStr + '</div>' +
+            '</div>' +
+            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
+        '</div>';
     });
-
-    let html = `
-        <div class="notif-toolbar">
-            <span class="notif-count">${notifications.length} notification(s)</span>
-            <button class="notif-clear-btn" onclick="clearAllNotifications()">
-                <i class="fas fa-trash"></i> Tout effacer
-            </button>
-        </div>`;
-
-    if (groups.today.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Aujourd'hui</div>
-            ${groups.today.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-    if (groups.yesterday.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Hier</div>
-            ${groups.yesterday.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-    if (groups.older.length > 0) {
-        html += `<div class="notif-section">
-            <div class="notif-section-title">Plus ancien</div>
-            ${groups.older.map(renderNotificationCard).join('')}
-        </div>`;
-    }
-
     container.innerHTML = html;
-
-    // Marquer comme lues
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
     notifications.forEach(n => n.read = true);
     saveNotifications();
-    markNotificationsAsReadInSupabase(unreadIds);
     updateNotifBadgeHeader();
     updateSidebarNotifBadge();
-}
-
-function renderNotificationCard(notif) {
-    const time = new Date(notif.date);
-    const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const unreadClass = notif.read ? '' : ' unread';
-    const type = notif.type || 'info';
-
-    const iconMap = {
-        purchase: 'fa-shopping-bag',
-        event: 'fa-calendar-plus',
-        info: 'fa-info-circle',
-        warning: 'fa-exclamation-triangle',
-        success: 'fa-check-circle'
-    };
-    const titleMap = {
-        purchase: 'Achat',
-        event: 'Événement',
-        info: 'Information',
-        warning: 'Attention',
-        success: 'Succès'
-    };
-    const icon = iconMap[type] || 'fa-info-circle';
-    const title = titleMap[type] || 'Notification';
-
-    return `
-    <div class="notif-card type-${type}${unreadClass}">
-        <div class="notif-card-icon">
-            <i class="fas ${icon}"></i>
-        </div>
-        <div class="notif-card-body">
-            <div class="notif-card-header">
-                <span class="notif-card-title">${title}</span>
-                <span class="notif-card-time">${timeStr}</span>
-            </div>
-            <p class="notif-card-message">${escapeHtml(notif.message)}</p>
-        </div>
-        <button class="notif-card-delete" onclick="deleteNotification('${escapeHtml(String(notif.id))}')" title="Supprimer">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>`;
 }
 
 function updateNotifBadgeHeader() {
@@ -3605,15 +3312,6 @@ function addNotification(message, type) {
     notifications.unshift(notif);
     if (notifications.length > 100) notifications = notifications.slice(0, 100);
     saveNotifications();
-    saveNotificationToSupabase(notif).then(saved => {
-        if (!saved) return;
-        const local = notifications.find(n => n.id === notif.id);
-        if (local) {
-            local.id = String(saved.id);
-            local.date = saved.created_at || local.date;
-            saveNotifications();
-        }
-    });
     updateNotifBadgeHeader();
 }
 
@@ -3641,7 +3339,6 @@ function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem
 // ============================================================
 async function disconnectPi() {
     if (!confirm(t('disconnect') + '?')) return;
-    if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
     
     try {
         await syncUserToSupabase();
@@ -3688,11 +3385,11 @@ async function disconnectPi() {
     renderHistory();
     updateConnectButtons();
     closeSidebar();
-    showToast('Betix', t('disconnected'), 'success');
+    alert(t('disconnected'));
 }
 
 function logout() { disconnectPi(); }
-function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); showToast('Session', t('sessionExpired'), 'error'); } }, 300000); }
+function startSessionMonitor() { setInterval(() => { if (currentUser.wallet && isSessionExpired()) { disconnectPi(); alert(t('sessionExpired')); } }, 300000); }
 function bindActivityListeners() { ['click','scroll','keydown','touchstart'].forEach(e => document.addEventListener(e, updateActivity)); }
 
 // ============================================================
@@ -3703,12 +3400,7 @@ function showPage(pageName) {
     const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
     pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
     let displayPage = pageName;
-    if (pageName === 'home') {
-        document.getElementById('homePage').style.display = 'block';
-        renderEventsByCategory();
-        loadShareFeed();
-        displayPage = 'home';
-    }
+    if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
     else { const target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } displayPage = pageName; }
     if (pageHistory[pageHistory.length - 1] !== displayPage) pageHistory.push(displayPage);
     const backBtn = document.getElementById('backBtn');
@@ -3716,8 +3408,8 @@ function showPage(pageName) {
         if (displayPage === 'home') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; }
         else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
     }
-    if (pageName === 'tickets') { if (!document.querySelector('#ticketsList .ticket-list-item, #ticketsList p')) showTicketSkeletons(2); renderTickets(); }
-    if (pageName === 'history') { if (!document.querySelector('#historyList .ticket-list-item, #historyList p')) showHistorySkeletons(2); renderHistory(); }
+    if (pageName === 'tickets') renderTickets();
+    if (pageName === 'history') renderHistory();
     if (pageName === 'profile') { 
         updateProfilePage(); 
         if (currentUser.piUid || currentUser.wallet) {
@@ -3736,8 +3428,8 @@ function showPage(pageName) {
     }
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
-    if (pageName === 'myevents') { if (!document.querySelector('#myEventsList .my-event-card-modern, #myEventsList .my-events-section')) showMyEventsSkeletons(3); renderMyEvents(); }
-    if (pageName === 'notifications') { if (!document.querySelector('#notificationsList .notification-item, #notificationsList .notification-empty')) showNotificationSkeletons(4); renderNotificationsPage(); }
+    if (pageName === 'myevents') renderMyEvents();
+    if (pageName === 'notifications') renderNotificationsPage();
     if (pageName === 'home' || pageName === 'myevents') {
         setTimeout(initCarouselIndicators, 300);
     }
@@ -3811,49 +3503,51 @@ function trackUserConnection() {
 // RENDER MY EVENTS
 // ============================================================
 function renderMyEvents() {
-    const container = document.getElementById('myEventsList'); if (!container) return;
+    const container = document.getElementById('myEventsList');
+    if (!container) return;
     const userId = currentUser.piUid || currentUser.wallet;
-    const myEvents = events.filter(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
-    if (myEvents.length === 0) { container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">' + t('noEvents') + '</p><p style="font-size:0.85rem;">' + t('createEvent') + '</p></div>'; return; }
-    const ongoingEvents = myEvents.filter(e => !isEventPast(e) && e.status !== 'cancelled').sort((a,b) => new Date(a.date)-new Date(b.date));
-    const pastEvents = myEvents.filter(e => isEventPast(e) || e.status === 'cancelled').sort((a,b) => new Date(b.date)-new Date(a.date));
-    let html = '<div class="my-events-section"><div class="my-events-section-header"><h3><i class="fas fa-calendar-check" style="color:#10b981;"></i> Événements en cours</h3><span class="my-events-count">' + ongoingEvents.length + '</span></div>';
-    html += ongoingEvents.length ? '<div class="my-events-grid">' + ongoingEvents.map(e => renderMyEventCardModern(e)).join('') + '</div>' : '<p class="my-events-empty">Aucun événement en cours ou à venir.</p>';
-    html += '</div><div class="my-events-section my-events-section-past"><div class="my-events-section-header"><h3><i class="fas fa-calendar-times" style="color:#6b7280;"></i> Événements passés</h3><span class="my-events-count">' + pastEvents.length + '</span></div>';
-    html += pastEvents.length ? '<div class="my-events-grid my-events-grid-past">' + pastEvents.map(e => renderMyEventCardModern(e)).join('') + '</div>' : '<p class="my-events-empty">Aucun événement passé.</p>';
-    html += '</div>'; container.innerHTML = html;
-    updateScanButtonVisibility(); setTimeout(() => applyStaggeredAnimation('#myEventsList .my-events-grid'), 50); setTimeout(initCarouselIndicators, 300);
+    const myEvents = events.filter(e => 
+        e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name
+    );
+    if (myEvents.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);background:#f9fafb;border-radius:16px;border:1px solid #e5e7eb;"><i class="fas fa-calendar-plus" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;display:block;"></i><p style="font-size:1rem;font-weight:500;margin-bottom:4px;">' + t('noEvents') + '</p><p style="font-size:0.85rem;">' + t('createEvent') + '</p></div>';
+        return;
+    }
+    container.innerHTML = myEvents.map(e => renderMyEventCardModern(e)).join('');
+    updateScanButtonVisibility();
+    setTimeout(() => { applyStaggeredAnimation('#myEventsList'); }, 50);
+    setTimeout(initCarouselIndicators, 300);
 }
 
 function renderMyEventCardModern(event) {
     const dateEvent = new Date(event.date);
-    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Date to be defined';
-    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : 'Time to be defined';
+    const dateFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date to be defined';
+    const timeFormatted = !isNaN(dateEvent.getTime()) ? dateEvent.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time to be defined';
     const fallbackImage = eventImagesList[event.category] || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop';
     const imageUrl = event.coverImage || (event.images && event.images[0]) || fallbackImage;
     const ticketSold = tickets.filter(t => t.eventId === event.id).length;
-    const past = isEventPast(event), cancelled = event.status === 'cancelled', live = isEventLive(event);
-    let statusBadge='', statusClass='';
-    if (cancelled) { statusBadge='ANNULÉ'; statusClass='ended'; }
-    else if (past) { statusBadge='<i class="fas fa-history"></i> PASSÉ'; statusClass='ended'; }
-    else if (live) { statusBadge='🔴 EN COURS'; statusClass='live'; }
-    else if (event.seatsLeft <= 0) { statusBadge=t('soldOut'); statusClass='sold-out'; }
-    else { statusBadge=t('new'); }
-    const countryFlag = countryFlags[event.pays || event.country] || '', countryDisplay = event.pays || event.country || 'International';
-    let durationDisplay=''; if (event.durationValue && event.durationUnit) { const u={hours:'Hour',days:'Day',weeks:'Week',months:'Month',years:'Year'}; durationDisplay=event.durationValue+' '+(u[event.durationUnit]||event.durationUnit); }
-    const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: '+(event.ticketTypes.standard.price||0).toFixed(6)+' Pi' : 'No ticket types';
-    const cardClass='my-event-card-modern'+(past||cancelled?' my-event-card-past':'');
-    return '<div class="'+cardClass+'"><div class="event-image-wrapper"><img src="'+imageUrl+'" class="event-image" alt="'+escapeHtml(event.title)+'" onerror="this.src=\''+fallbackImage+'\'"><span class="event-status-badge-modern '+statusClass+'">'+statusBadge+'</span></div><div class="event-body-modern"><div class="event-title-modern">'+escapeHtml(event.title)+'</div><div class="event-details-modern">'+
-    '<div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">'+t('eventDate')+'</span> <span class="detail-value">'+dateFormatted+'</span></div>'+
-    '<div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">'+t('eventTime')+'</span> <span class="detail-value">'+timeFormatted+'</span></div>'+
-    '<div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">'+t('locationLabel')+'</span> <span class="detail-value">'+escapeHtml(event.location||'Online')+'</span></div>'+
-    '<div class="detail-item-modern"><span style="font-size:1rem;">'+countryFlag+'</span> <span class="detail-label">'+t('countryLabel')+'</span> <span class="detail-value">'+escapeHtml(countryDisplay)+'</span></div>'+
-    '<div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">'+t('tickets')+' Sold</span> <span class="detail-value">'+ticketSold+'</span></div>'+
-    '<div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">'+t('seatsLeft')+'</span> <span class="detail-value">'+event.seatsLeft+'/'+event.seatsTotal+'</span></div>'+ (durationDisplay?'<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">'+t('duration')+'</span> <span class="detail-value">'+durationDisplay+'</span></div>':'')+
-    '<div class="detail-item-modern" style="grid-column:'+(durationDisplay?'2':'1')+'/-1;"><i class="fas fa-tags"></i> <span class="detail-label">'+t('ticketTypes')+'</span> <span class="detail-value" style="font-size:0.7rem;">'+escapeHtml(typesDisplay)+'</span></div></div>'+ 
-    '<div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> '+(event.boosts||0)+' '+t('views')+'</span><span><i class="fas fa-calendar-plus"></i> '+new Date(event.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span></div><div class="event-actions-modern">'+
-    ((!past&&!cancelled)?'<button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal(\''+event.id+'\')"><i class="fas fa-pen"></i> '+t('editEvent')+'</button>':'<button class="btn-edit-modern" style="background:#e5e7eb;color:#6b7280;" onclick="event.stopPropagation(); openEventDetails(\''+event.id+'\')"><i class="fas fa-eye"></i> Voir</button>')+
-    '</div></div></div></div>';
+    let statusBadge = '', statusClass = '';
+    if (event.seatsLeft <= 0) { statusBadge = t('soldOut'); statusClass = 'sold-out'; }
+    else if (new Date(event.date) < new Date()) { statusBadge = t('ended'); statusClass = 'ended'; }
+    else { statusBadge = t('new'); statusClass = ''; }
+    const countryFlag = countryFlags[event.pays || event.country] || '';
+    const countryDisplay = event.pays || event.country || 'International';
+    let durationDisplay = '';
+    if (event.durationValue && event.durationUnit) {
+        const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
+        durationDisplay = event.durationValue + ' ' + (unitLabels[event.durationUnit] || event.durationUnit);
+    }
+    const typesDisplay = event.ticketTypes?.standard?.enabled ? 'Standard: ' + (event.ticketTypes.standard.price || 0).toFixed(6) + ' Pi' : 'No ticket types';
+    return '<div class="my-event-card-modern"><div class="event-image-wrapper"><img src="' + imageUrl + '" class="event-image" alt="' + escapeHtml(event.title) + '" onerror="this.src=\'' + fallbackImage + '\'"><span class="event-status-badge-modern ' + statusClass + '">' + statusBadge + '</span></div><div class="event-body-modern"><div class="event-title-modern">' + escapeHtml(event.title) + '</div><div class="event-details-modern">' +
+        '<div class="detail-item-modern"><i class="fas fa-calendar-day"></i> <span class="detail-label">' + t('eventDate') + '</span> <span class="detail-value">' + dateFormatted + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-clock"></i> <span class="detail-label">' + t('eventTime') + '</span> <span class="detail-value">' + timeFormatted + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-map-marker-alt"></i> <span class="detail-label">' + t('locationLabel') + '</span> <span class="detail-value">' + escapeHtml(event.location || 'Online') + '</span></div>' +
+        '<div class="detail-item-modern"><span style="font-size:1rem;">' + countryFlag + '</span> <span class="detail-label">' + t('countryLabel') + '</span> <span class="detail-value">' + escapeHtml(countryDisplay) + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-ticket-alt"></i> <span class="detail-label">' + t('tickets') + ' Sold</span> <span class="detail-value">' + ticketSold + '</span></div>' +
+        '<div class="detail-item-modern"><i class="fas fa-users"></i> <span class="detail-label">' + t('seatsLeft') + '</span> <span class="detail-value">' + event.seatsLeft + '/' + event.seatsTotal + '</span></div>' +
+        (durationDisplay ? '<div class="detail-item-modern" style="grid-column:1/2;"><i class="fas fa-hourglass-half"></i> <span class="detail-label">' + t('duration') + '</span> <span class="detail-value">' + durationDisplay + '</span></div>' : '') +
+        '<div class="detail-item-modern" style="grid-column:' + (durationDisplay ? '2' : '1') + '/-1;"><i class="fas fa-tags"></i> <span class="detail-label">' + t('ticketTypes') + '</span> <span class="detail-value" style="font-size:0.7rem;">' + escapeHtml(typesDisplay) + '</span></div>' +
+    '</div><div class="event-footer-modern"><div class="event-stats-modern"><span><i class="fas fa-eye"></i> ' + (event.boosts || 0) + ' ' + t('views') + '</span><span><i class="fas fa-calendar-plus"></i> ' + new Date(event.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</span></div><div class="event-actions-modern"><button class="btn-edit-modern" onclick="event.stopPropagation(); openEditEventModal(\'' + event.id + '\')"><i class="fas fa-pen"></i> ' + t('editEvent') + '</button></div></div></div></div>';
 }
 
 function initFilters() {
@@ -3945,7 +3639,14 @@ function addAdminLog(action, details) {
     renderAdminLogs();
 }
 
-function renderAdminLogs() { renderAdminLogsFiltered(); }
+function renderAdminLogs() {
+    const container = document.getElementById('adminLogsList');
+    if (!container) return;
+    if (adminLogs.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray);">' + t('noLogs') + '</p>'; return; }
+    container.innerHTML = adminLogs.map(log =>
+        '<div class="admin-log-item"><div><span class="log-user">' + escapeHtml(log.user) + '</span> <span class="log-action">' + escapeHtml(log.action) + '</span>' + (log.details ? ' <span style="color:var(--gray);font-size:0.8rem;">' + escapeHtml(log.details) + '</span>' : '') + '</div><span class="log-time">' + escapeHtml(log.date) + '</span></div>'
+    ).join('');
+}
 
 function adminClearLogs() {
     if (confirm('Clear all connection logs?')) {
@@ -4043,36 +3744,16 @@ async function adminSaveSettings() {
 // ============================================================
 async function loadAllUsersFromSupabase() {
     try {
-        const { data: users, error: usersError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (usersError) {
-            console.error('Supabase users error:', usersError);
-            throw usersError;
-        }
-
-        let eventCounts = {};
-        try {
-            const { data: eventsData, error: eventsError } = await supabaseClient
-                .from('events')
-                .select('organizer_pi_uid');
-            if (!eventsError && eventsData) {
-                eventsData.forEach(ev => {
-                    const uid = ev.organizer_pi_uid;
-                    if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
-                });
-            }
-        } catch (e) {
-            console.warn('Could not load event counts:', e);
-        }
-
-        const mapped = (users || []).map(user => ({
-            ...user,
-            events_created: eventCounts[user.pi_uid] || eventCounts[user.wallet] || 0
-        }));
-        console.log('Loaded ' + mapped.length + ' users from Supabase');
-        return mapped;
+        const { data: users, error: usersError } = await supabaseClient.from('users').select('*').order('created_at', { ascending: false });
+        if (usersError) throw usersError;
+        const { data: eventsData, error: eventsError } = await supabaseClient.from('events').select('organizer_pi_uid');
+        if (eventsError) throw eventsError;
+        const eventCounts = {};
+        eventsData.forEach(ev => {
+            const uid = ev.organizer_pi_uid;
+            if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
+        });
+        return users.map(user => ({ ...user, events_created: eventCounts[user.pi_uid] || 0 }));
     } catch (error) {
         console.error('Error loading users from Supabase:', error);
         return [];
@@ -4082,26 +3763,18 @@ async function loadAllUsersFromSupabase() {
 async function renderAdminUsers() {
     const container = document.getElementById('adminUsersList');
     if (!container) return;
-
-    container.innerHTML = '<p style="text-align:center;padding:20px;color:#6b7280;"><i class="fas fa-spinner fa-spin"></i> Chargement des utilisateurs...</p>';
-
     const users = await loadAllUsersFromSupabase();
     allUsersCache = users;
-
-    const countEl = document.getElementById('adminUserCount');
-    if (countEl) countEl.innerText = users.length;
-
+    document.getElementById('adminUserCount').innerText = users.length;
     if (!users || users.length === 0) {
-        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">Aucun utilisateur trouvé.</p>';
+        container.innerHTML = '<p style="color: var(--gray); text-align:center; padding:20px;">' + t('noUsers') + '</p>';
         return;
     }
-
     let html = '<div style="margin-bottom: 12px; display: flex; justify-content: flex-end;">' +
         '<button class="btn-secondary" onclick="refreshUsersList()" style="padding: 6px 16px; font-size: 0.85rem;">' +
             '<i class="fas fa-sync"></i> Refresh' +
         '</button>' +
     '</div>' +
-    '<div style="overflow-x:auto;">' +
     '<table style="width:100%; border-collapse: collapse; font-size: 0.8rem;">' +
         '<thead>' +
             '<tr style="background: #f3f4f6; color: #1f2937;">' +
@@ -4116,13 +3789,13 @@ async function renderAdminUsers() {
         '</thead>' +
         '<tbody>';
     users.forEach(user => {
-        const fullName = ((user.first_name ? user.first_name + ' ' : '') + (user.last_name || '')).trim() || 'User';
+        const fullName = (user.first_name ? user.first_name + ' ' : '') + (user.last_name || '') || 'User';
         const email = user.email || '—';
         const phone = user.phone_number || '—';
         const address = user.address || '—';
         const country = user.country || '—';
         const wallet = user.wallet || user.pi_uid || '—';
-        const evCount = user.events_created || 0;
+        const events = user.events_created || 0;
 
         html += '<tr style="border-bottom: 1px solid #e5e7eb;">' +
             '<td style="padding: 8px 6px;">' + escapeHtml(fullName) + '</td>' +
@@ -4131,10 +3804,10 @@ async function renderAdminUsers() {
             '<td style="padding: 8px 6px;">' + escapeHtml(address) + '</td>' +
             '<td style="padding: 8px 6px;">' + escapeHtml(country) + '</td>' +
             '<td style="padding: 8px 6px; font-family: monospace; font-size: 0.7rem;">' + escapeHtml(wallet) + '</td>' +
-            '<td style="padding: 8px 6px; text-align: center;">' + evCount + '</td>' +
+            '<td style="padding: 8px 6px; text-align: center;">' + events + '</td>' +
         '</tr>';
     });
-    html += '</tbody></table></div>';
+    html += '</tbody></table>';
     container.innerHTML = html;
 }
 
@@ -4143,81 +3816,32 @@ async function refreshUsersList() {
     addAdminLog('Users refreshed', 'List updated');
 }
 
-async function loadAdminPage() {
+function loadAdminPage() {
     const storedPassword = localStorage.getItem('betix_admin_password');
     if (storedPassword !== adminPassword && storedPassword !== 'Betix@2026#') {
-        showToast('Accès refusé', t('adminDenied'), 'error');
+        alert(t('adminDenied'));
         showPage('home');
         return;
     }
     if (storedPassword && storedPassword !== adminPassword) adminPassword = storedPassword;
-
-    document.getElementById('adminUserCount').innerText = allUsersCache.length || '…';
-    document.getElementById('adminTicketCount').innerText = adminTicketsCache.length || tickets.length || '…';
-    document.getElementById('adminEventCount').innerText = events.length || '0';
+    document.getElementById('adminUserCount').innerText = allUsersCache.length || 0;
+    document.getElementById('adminTicketCount').innerText = tickets.length;
+    document.getElementById('adminEventCount').innerText = events.length;
     document.getElementById('adminLastLogin').textContent = localStorage.getItem('betix_admin_last_login') || 'Never';
     document.getElementById('adminLoginCount').textContent = localStorage.getItem('betix_admin_login_count') || 0;
     document.getElementById('adminCurrentPasswordDisplay').textContent = '••••••••';
     document.getElementById('adminCommission').value = appSettings.commissionPercent;
     document.getElementById('adminServiceFee').value = appSettings.serviceFeePercent;
     document.getElementById('adminPiRate').value = appSettings.piRate;
-
-    updateSyncStatus('ready');
-
-    try { await loadAdminTickets(); } catch (e) {
-        console.error('loadAdminTickets failed:', e);
-        adminTicketsCache = tickets || [];
-    }
-    try { renderAdminSlides(); } catch (e) { console.error('renderAdminSlides failed:', e); }
-    try {
-        await renderAdminUsers();
-        const userCountEl = document.getElementById('adminUserCount');
-        if (userCountEl) userCountEl.innerText = allUsersCache.length || 0;
-    } catch (e) {
-        console.error('renderAdminUsers failed:', e);
-        const container = document.getElementById('adminUsersList');
-        if (container) container.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">Erreur de chargement des utilisateurs.</p>';
-    }
-    try { renderAdminLogsFiltered(); } catch (e) { console.error(e); }
-    try { renderAdminRefunds(); } catch (e) { console.error(e); }
-    try { refreshAdminDashboard(); } catch (e) { console.error('refreshAdminDashboard failed:', e); }
-
+    renderAdminEvents();
+    renderAdminSlides();
+    renderAdminUsers();
+    renderAdminLogs();
     initAdminTabs();
     if (!adminTimerInterval) startAdminSession();
-
-    const eventSearch = document.getElementById('adminEventSearch');
-    const eventSort = document.getElementById('adminEventSort');
-    if (eventSearch && !eventSearch._bound) {
-        eventSearch.addEventListener('input', () => { adminEventsCurrentPage = 1; renderAdminEventsFiltered(); });
-        eventSearch._bound = true;
-    }
-    if (eventSort && !eventSort._bound) {
-        eventSort.addEventListener('change', () => { adminEventsCurrentPage = 1; renderAdminEventsFiltered(); });
-        eventSort._bound = true;
-    }
-    const logSearch = document.getElementById('adminLogSearch');
-    const logType = document.getElementById('adminLogType');
-    const logDate = document.getElementById('adminLogDate');
-    [logSearch, logType, logDate].forEach(el => {
-        if (el && !el._bound) {
-            el.addEventListener('input', renderAdminLogsFiltered);
-            el.addEventListener('change', renderAdminLogsFiltered);
-            el._bound = true;
-        }
-    });
     const userSearch = document.getElementById('adminUserSearch');
-    if (userSearch && !userSearch._bound) {
-        userSearch.addEventListener('input', function() { filterAdminUsers(this.value); });
-        userSearch._bound = true;
-    }
-    const rs = document.getElementById('adminRefundSearch');
-    const rf = document.getElementById('adminRefundFilter');
-    [rs, rf].forEach(el => {
-        if (el && !el._bound) {
-            el.addEventListener('input', renderAdminRefunds);
-            el.addEventListener('change', renderAdminRefunds);
-            el._bound = true;
-        }
+    if (userSearch) userSearch.addEventListener('input', function() {
+        filterAdminUsers(this.value);
     });
 }
 
@@ -4246,7 +3870,15 @@ function renderAdminEvents() {
 }
 
 function adminDeleteEvent(id) {
-    return adminDeleteEventPermanent(id);
+    if (confirm('Delete this event?')) {
+        events = events.filter(e => e.id !== id);
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents(); renderEventsByCategory();
+        document.getElementById('adminEventCount').innerText = events.length;
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert(t('eventDeleted'));
+    }
 }
 
 function adminDeleteAllEvents() {
@@ -4261,9 +3893,16 @@ function adminDeleteAllEvents() {
 }
 
 function initAdminTabs() {
-    const tabs=document.querySelectorAll('.admin-tab');
-    const contents={events:document.getElementById('adminTabEvents'),slides:document.getElementById('adminTabSlides'),users:document.getElementById('adminTabUsers'),logs:document.getElementById('adminTabLogs'),refunds:document.getElementById('adminTabRefunds'),settings:document.getElementById('adminTabSettings')};
-    tabs.forEach(tab=>{ if(tab._betixBound)return; tab.addEventListener('click',function(){tabs.forEach(t=>t.classList.remove('active'));this.classList.add('active');Object.values(contents).forEach(c=>c&&c.classList.remove('active'));if(contents[this.dataset.tab])contents[this.dataset.tab].classList.add('active');if(this.dataset.tab==='refunds')renderAdminRefunds();});tab._betixBound=true; });
+    const tabs = document.querySelectorAll('.admin-tab');
+    const contents = { events: document.getElementById('adminTabEvents'), slides: document.getElementById('adminTabSlides'), users: document.getElementById('adminTabUsers'), logs: document.getElementById('adminTabLogs'), settings: document.getElementById('adminTabSettings') };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            for (let key in contents) if (contents[key]) contents[key].classList.remove('active');
+            if (contents[this.dataset.tab]) contents[this.dataset.tab].classList.add('active');
+        });
+    });
 }
 
 // ============================================================
@@ -4435,8 +4074,6 @@ function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add
 // ============================================================
 async function initApp() {
     try {
-        removeLegacyHeaderShareButton();
-        showEventSkeletons(6);
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
         
@@ -4465,7 +4102,6 @@ async function initApp() {
         calculateLoyaltyPoints();
         initFilters();
         renderEventsByCategory();
-        loadShareFeed();
         updateUserInfo();
         updateProfilePage();
         updateNotifBadgeHeader();
@@ -4479,16 +4115,6 @@ async function initApp() {
         renderAdminLogs();
         setupTicketTypesUI();
         initCharCounters();
-        const shareMessage = document.getElementById('sharePostMessage');
-        const shareCounter = document.getElementById('sharePostCharCounter');
-        if (shareMessage && shareCounter && !shareMessage._bound) {
-            shareMessage.addEventListener('input', () => {
-                const rem = 200 - shareMessage.value.length;
-                shareCounter.textContent = rem + ' caractères restants';
-                shareCounter.style.color = rem < 20 ? '#ef4444' : '#6b7280';
-            });
-            shareMessage._bound = true;
-        }
         const storedPassword = localStorage.getItem('betix_admin_password');
         if (storedPassword === adminPassword || storedPassword === 'Betix@2026#') {
             const adminBtn = document.getElementById('adminMenuItem');
@@ -4500,12 +4126,9 @@ async function initApp() {
             await loadProfileData();
             checkAndNotifyProfileCompletion();
             await loadAllFromSupabase();
-            if (currentUser.wallet || currentUser.piUid) initRealtimeNotifications();
         } else {
             await loadAllFromSupabase();
-            if (currentUser.wallet || currentUser.piUid) initRealtimeNotifications();
         }
-        setInterval(() => { updateExpiredTickets(); }, 300000);
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
         document.getElementById('profileReviewEditBtn')?.addEventListener('click', closeProfileReview);
@@ -4529,11 +4152,6 @@ async function initApp() {
         updateConnectButtons();
         document.getElementById('confirmPublishBtn') && document.getElementById('confirmPublishBtn').addEventListener('click', confirmPublishEvent);
         document.getElementById('confirmBuyBtn') && document.getElementById('confirmBuyBtn').addEventListener('click', confirmPurchaseFromPopup);
-        const ticketQuantityInput = document.getElementById('ticketQuantity');
-        if (ticketQuantityInput) {
-            ticketQuantityInput.addEventListener('input', updateTicketTotal);
-            ticketQuantityInput.addEventListener('change', updateTicketTotal);
-        }
         // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
         // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
         
@@ -4558,7 +4176,7 @@ async function initApp() {
             adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
         }
         if (eventForm) eventForm.addEventListener('submit', createEvent);
-        if (searchInput) searchInput.addEventListener('input', function(e) { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { searchQuery = e.target.value.toLowerCase().trim(); renderEventsByCategory(); }, 300); });
+        if (searchInput) searchInput.addEventListener('input', function(e) { searchQuery = e.target.value.toLowerCase(); renderEventsByCategory(); });
         if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
         document.querySelectorAll('.image-input-modern').forEach(input => {
             const index = parseInt(input.dataset.index);
@@ -4643,471 +4261,6 @@ window.loadAllUsersFromSupabase = loadAllUsersFromSupabase;
 window.deleteNotification = deleteNotification;
 window.clearAllNotifications = clearAllNotifications;
 
-
-
-// ============================================================
-// ÉTAPE 3/4 – ADMIN DASHBOARD, REFUNDS, REALTIME, SKELETONS
-// ============================================================
-async function loadAdminTickets() {
-    try {
-        const { data, error } = await supabaseClient
-            .from('tickets')
-            .select('*')
-            .order('purchase_date', { ascending: false });
-        if (error) {
-            console.error('Admin tickets Supabase error:', error);
-            throw error;
-        }
-        adminTicketsCache = (data || []).map(t => ({
-            id: t.id,
-            eventId: t.event_id,
-            eventTitle: t.event_title || 'Event',
-            buyerName: t.buyer_name || 'Anonymous',
-            buyerEmail: t.buyer_email || '',
-            buyerPhone: t.buyer_phone || '',
-            buyerWallet: t.buyer_pi_uid || '',
-            price: parseFloat(t.price) || 0,
-            status: t.status || 'Valid',
-            purchaseDate: t.purchase_date,
-            transactionId: t.transaction_id,
-            category: t.category || ''
-        }));
-        setCachedData('betix_admin_cached_tickets', adminTicketsCache);
-        console.log('Loaded ' + adminTicketsCache.length + ' tickets for admin');
-        return adminTicketsCache;
-    } catch (e) {
-        console.error('Admin tickets error, falling back to cache:', e);
-        const cached = getCachedData('betix_admin_cached_tickets', CACHE_DURATION_TICKETS);
-        adminTicketsCache = cached || tickets || [];
-        return adminTicketsCache;
-    }
-}
-
-function computeAdminStats() {
-    const source = (adminTicketsCache && adminTicketsCache.length) ? adminTicketsCache : (tickets || []);
-    const totalRevenue = source
-        .filter(t => t.status !== 'Refunded' && t.status !== 'refunded')
-        .reduce((s, t) => s + (parseFloat(t.price) || 0), 0);
-    const buyers = new Set(
-        source.map(t => t.buyerWallet || t.buyerEmail || t.buyer_pi_uid).filter(Boolean)
-    );
-    const activeEvents = events.filter(e => !isEventPast(e) && e.status !== 'cancelled' && e.status !== 'ended' && e.status !== 'inactive' && e.status !== 'disabled').length;
-
-    const revEl = document.getElementById('kpiRevenue');
-    if (revEl) revEl.textContent = totalRevenue.toFixed(4) + ' Pi';
-    const tickEl = document.getElementById('kpiTicketsSold');
-    if (tickEl) tickEl.textContent = source.length;
-    const buyEl = document.getElementById('kpiUniqueBuyers');
-    if (buyEl) buyEl.textContent = buyers.size;
-    const evEl = document.getElementById('kpiActiveEvents');
-    if (evEl) evEl.textContent = activeEvents;
-
-    return { totalRevenue, ticketsSold: source.length, uniqueBuyers: buyers.size, activeEvents };
-}
-
-function renderRevenueChart(){const c=document.getElementById('revenueChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets;const labels=[],values=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);const n=new Date(d);n.setDate(n.getDate()+1);labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));values.push(source.filter(t=>{const pd=new Date(t.purchaseDate||0);return t.status!=='Refunded'&&pd>=d&&pd<n;}).reduce((s,t)=>s+(parseFloat(t.price)||0),0));}if(revenueChartInstance)revenueChartInstance.destroy();revenueChartInstance=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Revenue (Pi)',data:values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});}
-function renderCategoryChart(){const c=document.getElementById('categoryChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets,counts={};source.forEach(t=>{const e=events.find(x=>String(x.id)===String(t.eventId));const cat=(e&&e.category)||t.category||'Other';counts[cat]=(counts[cat]||0)+1;});const labels=Object.keys(counts),values=Object.values(counts);if(categoryChartInstance)categoryChartInstance.destroy();categoryChartInstance=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:['#0B1F5C','#F5B400','#10b981','#3b82f6','#8b5cf6','#ef4444','#f59e0b','#06b6d4'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});}
-function getFilteredAdminEvents(){const search=(document.getElementById('adminEventSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('adminEventSort')?.value||'date_desc';let filtered=events.filter(e=>!search||(String(e.title||'').toLowerCase().includes(search)||String(e.category||'').toLowerCase().includes(search)||String(e.organizerName||'').toLowerCase().includes(search)));const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);filtered.sort((a,b)=>sort==='date_asc'?new Date(a.date)-new Date(b.date):sort==='sales_desc'?(sales[b.id]||0)-(sales[a.id]||0):sort==='revenue_desc'?((sales[b.id]||0)*(parseFloat(b.price)||0))-((sales[a.id]||0)*(parseFloat(a.price)||0)):new Date(b.date)-new Date(a.date));return{filtered,salesByEvent:sales};}
-function renderAdminEventsFiltered() {
-    const container = document.getElementById('adminEventsList');
-    if (!container) return;
-    const { filtered, salesByEvent } = getFilteredAdminEvents();
-    if (!filtered.length) {
-        container.innerHTML = '<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';
-        const p = document.getElementById('adminEventsPagination');
-        if (p) p.innerHTML = '';
-        return;
-    }
-    const totalPages = Math.ceil(filtered.length / ADMIN_EVENTS_PER_PAGE);
-    if (adminEventsCurrentPage > totalPages) adminEventsCurrentPage = totalPages;
-    const page = filtered.slice((adminEventsCurrentPage - 1) * ADMIN_EVENTS_PER_PAGE, adminEventsCurrentPage * ADMIN_EVENTS_PER_PAGE);
-    container.innerHTML = page.map(e => {
-        const sold = salesByEvent[e.id] || 0;
-        const revenue = (sold * (parseFloat(e.price) || 0)).toFixed(4);
-        const past = isEventPast(e);
-        const cancelled = e.status === 'cancelled';
-        const isInactive = e.status === 'inactive' || e.status === 'disabled';
-        const badge = cancelled
-            ? '<span class="badge-status cancelled">Annulé</span>'
-            : past
-                ? '<span class="badge-status badge-expired">Terminé</span>'
-                : isInactive
-                    ? '<span class="badge-status" style="background:#fef3c7;color:#92400e;"><i class="fas fa-eye-slash"></i> Désactivé</span>'
-                    : '<span class="badge-status badge-used">Actif</span>';
-        const toggleButton = (!past && !cancelled)
-            ? '<button class="btn-toggle-event" onclick="event.stopPropagation(); adminToggleEventVisibility(\'' + e.id + '\')" style="background:' + (isInactive ? '#dcfce7' : '#fef3c7') + ';color:' + (isInactive ? '#166534' : '#92400e') + ';border:none;padding:6px 12px;border-radius:30px;font-size:0.7rem;font-weight:600;cursor:pointer;margin-right:6px;">' +
-                '<i class="fas ' + (isInactive ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (isInactive ? 'Réactiver' : 'Désactiver') +
-              '</button>'
-            : '';
-        const cancelButton = (!past && !cancelled)
-            ? '<button class="btn-cancel-event" onclick="event.stopPropagation(); openCancelEventModal(\'' + e.id + '\')"><i class="fas fa-ban"></i> Annuler</button>'
-            : '';
-        return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>' + escapeHtml(e.title) + '</strong>' + badge + '</div><small>' + escapeHtml(e.category) + ' · ' + escapeHtml(e.pays || e.country || 'France') + ' · ' + new Date(e.date).toLocaleDateString('en-US') + '</small><small>Standard: ' + (parseFloat(e.price) || 0).toFixed(6) + ' Pi</small><small>Organisateur: ' + escapeHtml(e.organizerName || e.organizer || '—') + '</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> ' + sold + ' vendu(s) · ' + revenue + ' Pi</small></div><div class="event-actions">' + toggleButton + cancelButton + '<button class="admin-delete-btn" onclick="adminDeleteEventPermanent(\'' + e.id + '\')"><i class="fas fa-trash"></i> Supprimer</button></div></div>';
-    }).join('');
-    const p = document.getElementById('adminEventsPagination');
-    if (p) {
-        let h = totalPages > 1 ? '<button ' + (adminEventsCurrentPage === 1 ? 'disabled' : '') + ' onclick="goToAdminEventsPage(' + (adminEventsCurrentPage - 1) + ')">‹ Précédent</button>' : '';
-        for (let i = 1; i <= totalPages; i++) h += '<button class="' + (i === adminEventsCurrentPage ? 'active' : '') + '" onclick="goToAdminEventsPage(' + i + ')">' + i + '</button>';
-        if (totalPages > 1) h += '<button ' + (adminEventsCurrentPage === totalPages ? 'disabled' : '') + ' onclick="goToAdminEventsPage(' + (adminEventsCurrentPage + 1) + ')">Suivant ›</button>';
-        p.innerHTML = h;
-    }
-}
-
-// ============================================================
-// ADMIN — ACTIONS DIRECTES SUR LES ÉVÉNEMENTS
-// ============================================================
-function isAdminUser() {
-    const storedPassword = localStorage.getItem('betix_admin_password');
-    return storedPassword === adminPassword || storedPassword === 'Betix@2026#';
-}
-
-async function adminToggleEventVisibility(eventId) {
-    if (!isAdminUser()) { showToast('Accès refusé', 'Vous devez être administrateur.', 'error'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { showToast('Erreur', 'Événement introuvable.', 'error'); return; }
-
-    const isCurrentlyActive = event.status !== 'inactive' && event.status !== 'disabled';
-    const newStatus = isCurrentlyActive ? 'inactive' : 'active';
-    const label = isCurrentlyActive ? 'désactiver' : 'réactiver';
-    if (!confirm(`Voulez-vous ${label} l'événement "${event.title}" ?\n\n${isCurrentlyActive ? "Il ne sera plus visible sur la page d'accueil." : "Il sera de nouveau visible."}`)) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('events')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
-            .eq('id', eventId);
-        if (error) throw error;
-
-        event.status = newStatus;
-        clearCache('betix_cached_events');
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        renderEventsByCategory();
-        renderAdminEventsFiltered();
-        if (document.getElementById('adminEventCount')) {
-            document.getElementById('adminEventCount').innerText = events.length;
-        }
-        addAdminLog('Event ' + (isCurrentlyActive ? 'désactivé' : 'réactivé'), '"' + event.title + '"');
-        showToast('Succès', "L'événement a été " + (isCurrentlyActive ? 'désactivé' : 'réactivé') + '.', 'success');
-    } catch (err) {
-        console.error('adminToggleEventVisibility error:', err);
-        showToast('Erreur', 'Impossible de mettre à jour le statut.', 'error');
-    }
-}
-
-async function adminDeleteEventPermanent(eventId) {
-    if (!isAdminUser()) { showToast('Accès refusé', 'Vous devez être administrateur.', 'error'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { showToast('Erreur', 'Événement introuvable.', 'error'); return; }
-
-    const confirmMsg = '⚠️ SUPPRESSION DÉFINITIVE ⚠️\n\n' +
-        'Événement : "' + event.title + '"\n\n' +
-        'Cette action est IRRÉVERSIBLE.\n' +
-        "Les billets associés resteront dans l'historique mais l'événement sera retiré de la base.\n\n" +
-        'Confirmer la suppression ?';
-    if (!confirm(confirmMsg)) return;
-
-    try {
-        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
-        if (error) throw error;
-
-        events = events.filter(e => String(e.id) !== String(eventId));
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        clearCache('betix_cached_events');
-
-        renderEventsByCategory();
-        renderAdminEventsFiltered();
-        renderMyEvents();
-
-        addAdminLog('Event supprimé', '"' + event.title + '" (ID: ' + eventId + ')');
-        showToast('Supprimé', "L'événement a été supprimé définitivement.", 'success');
-    } catch (err) {
-        console.error('adminDeleteEventPermanent error:', err);
-        showToast('Erreur', "Impossible de supprimer l'événement.", 'error');
-    }
-}
-
-window.isAdminUser = isAdminUser;
-window.adminToggleEventVisibility = adminToggleEventVisibility;
-window.adminDeleteEventPermanent = adminDeleteEventPermanent;
-
-function goToAdminEventsPage(page){adminEventsCurrentPage=page;renderAdminEventsFiltered();document.getElementById('adminEventsList')?.scrollIntoView({behavior:'smooth',block:'start'});}
-function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),0);}
-function exportEventsCSV(){if(!events.length){showToast('Export','Aucun événement à exporter.','info');return;}const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);const rows=[['ID','Titre','Catégorie','Pays','Date','Lieu','Prix (Pi)','Places totales','Places vendues','Revenu (Pi)','Statut','Organisateur']];events.forEach(e=>{const sold=sales[e.id]||0;rows.push([e.id,e.title,e.category,e.pays||e.country,new Date(e.date).toISOString(),e.location,(parseFloat(e.price)||0).toFixed(6),e.seatsTotal||0,sold,(sold*(parseFloat(e.price)||0)).toFixed(6),e.status||'active',e.organizerName||e.organizer||'']);});downloadCSV('betix_events_'+Date.now()+'.csv',rows);showToast('Export réussi',events.length+' événements exportés.','success');}
-function exportTicketsCSV(){const source=adminTicketsCache.length?adminTicketsCache:tickets;if(!source.length){showToast('Export','Aucun ticket à exporter.','info');return;}const rows=[['ID','Événement','Acheteur','Email','Téléphone','Prix (Pi)','Statut','Date achat','Transaction ID']];source.forEach(t=>rows.push([t.id,t.eventTitle,t.buyerName,t.buyerEmail,t.buyerPhone,(parseFloat(t.price)||0).toFixed(6),t.status||'Valid',t.purchaseDate?new Date(t.purchaseDate).toISOString():'',t.transactionId||'']));downloadCSV('betix_tickets_'+Date.now()+'.csv',rows);showToast('Export réussi',source.length+' tickets exportés.','success');}
-function exportUsersCSV(){const users=allUsersCache||[];if(!users.length){showToast('Export','Aucun utilisateur à exporter.','info');return;}const rows=[['Nom','Email','Téléphone','Adresse','Pays','Wallet','Événements créés']];users.forEach(u=>rows.push([((u.first_name||'')+' '+(u.last_name||'')).trim()||'User',u.email||'',u.phone_number||'',u.address||'',u.country||'',u.wallet||u.pi_uid||'',u.events_created||0]));downloadCSV('betix_users_'+Date.now()+'.csv',rows);showToast('Export réussi',users.length+' utilisateurs exportés.','success');}
-function renderAdminLogsFiltered(){const c=document.getElementById('adminLogsList');if(!c)return;const s=(document.getElementById('adminLogSearch')?.value||'').toLowerCase().trim(),type=(document.getElementById('adminLogType')?.value||'all'),date=(document.getElementById('adminLogDate')?.value||'');const filtered=adminLogs.filter(l=>(!s||[l.user,l.action,l.details].join(' ').toLowerCase().includes(s))&&(type==='all'||String(l.action||'').toLowerCase().includes(type.toLowerCase()))&&(!date||String(l.timestamp||'').slice(0,10)===date));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:var(--gray);">Aucun log trouvé.</p>';return;}c.innerHTML=filtered.map(l=>'<div class="admin-log-item"><div><span class="log-user">'+escapeHtml(l.user||'')+'</span> <span class="log-action">'+escapeHtml(l.action||'')+'</span>'+(l.details?' <span style="color:var(--gray);font-size:.8rem;">'+escapeHtml(l.details)+'</span>':'')+'</div><span class="log-time">'+escapeHtml(l.date||'')+'</span></div>').join('');}
-function refreshAdminDashboard() {
-    try { computeAdminStats(); } catch (e) { console.error('computeAdminStats:', e); }
-    try { renderRevenueChart(); } catch (e) { console.error('renderRevenueChart:', e); }
-    try { renderCategoryChart(); } catch (e) { console.error('renderCategoryChart:', e); }
-    try { renderAdminEventsFiltered(); } catch (e) { console.error('renderAdminEventsFiltered:', e); }
-}
-
-// ---------- REFUNDS ----------
-function openCancelEventModal(eventId){const event=events.find(e=>String(e.id)===String(eventId));if(!event){showToast('Erreur','Événement introuvable.','error');return;}const userId=currentUser.piUid||currentUser.wallet;if(event.organizer!==userId&&event.organizerPiUid!==userId&&!public_isAdmin()){showToast('Accès refusé','Vous n’êtes pas l’organisateur.','error');return;}const eventTickets=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(eventId)&&t.status!=='Refunded');const total=eventTickets.reduce((s,t)=>s+(parseFloat(t.price)||0),0);cancelEventId=eventId;document.getElementById('cancelEventReason').value='';document.getElementById('cancelEventTicketCount').textContent=eventTickets.length;document.getElementById('cancelEventRefundAmount').textContent=total.toFixed(6)+' Pi';const ta=document.getElementById('cancelEventReason');const counter=document.getElementById('cancelReasonCounter');if(ta){ta.oninput=()=>{const r=200-ta.value.length;counter.textContent=r+' caractères restants';counter.style.color=r<20?'#dc2626':'#6b7280';};}document.getElementById('cancelEventModal').classList.add('show');}
-function closeCancelEventModal(){document.getElementById('cancelEventModal')?.classList.remove('show');cancelEventId=null;}
-function public_isAdmin(){const p=localStorage.getItem('betix_admin_password');return p===adminPassword||p==='Betix@2026#';}
-async function confirmCancelEvent(){if(!cancelEventId)return;const reason=document.getElementById('cancelEventReason').value.trim();if(reason.length<5){showToast('Raison requise','Veuillez indiquer une raison (5 caractères min).','error');return;}const event=events.find(e=>String(e.id)===String(cancelEventId));if(!event)return;const btn=document.getElementById('confirmCancelEventBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Annulation…';try{const now=new Date().toISOString();const {error:eventErr}=await supabaseClient.from('events').update({status:'cancelled',cancelled_at:now,cancellation_reason:reason,updated_at:now}).eq('id',event.id);if(eventErr)throw eventErr;event.status='cancelled';event.cancelledAt=now;event.cancellationReason=reason;const source=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(event.id)&&t.status!=='Refunded');if(source.length){const refunds=source.map(t=>({ticket_id:t.id,event_id:event.id,buyer_pi_uid:t.buyerWallet||'',buyer_name:t.buyerName||'Unknown',amount:parseFloat(t.price)||0,status:'pending',reason,created_at:now}));const {error:re}=await supabaseClient.from('refunds').insert(refunds);if(re)throw re;for(const ticket of source){const {error:te}=await supabaseClient.from('tickets').update({status:'Refunded',refunded:true}).eq('id',ticket.id);if(te)throw te;ticket.status='Refunded';ticket.refunded=true;const buyerId=ticket.buyerWallet;if(buyerId)await supabaseClient.from('notifications').insert({user_id:buyerId,message:'L’événement "'+event.title+'" a été annulé. Raison : '+reason+'. Votre remboursement est en cours.',type:'warning',read:false});}}addAdminLog('Événement annulé','"'+event.title+'" – '+source.length+' remboursement(s)');clearCache('betix_cached_events');clearCache('betix_cached_tickets_*');clearCache('betix_admin_cached_tickets');closeCancelEventModal();renderEventsByCategory();renderMyEvents();renderTickets();renderHistory();await loadAdminTickets();refreshAdminDashboard();renderAdminRefunds();showToast('Événement annulé',source.length+' remboursement(s) créé(s).','success');}catch(err){console.error('Cancel error:',err);showToast('Erreur',err.message||'Impossible d’annuler.','error');}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-ban"></i> Confirmer l’annulation';}}
-async function renderAdminRefunds(){const c=document.getElementById('adminRefundsList');if(!c)return;const search=(document.getElementById('adminRefundSearch')?.value||'').toLowerCase().trim(),filter=document.getElementById('adminRefundFilter')?.value||'all';try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;const filtered=(data||[]).filter(r=>(filter==='all'||r.status===filter)&&(!search||[r.buyer_name,r.ticket_id,r.event_id,r.reason].join(' ').toLowerCase().includes(search)));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:#6b7280;">Aucun remboursement trouvé.</p>';return;}c.innerHTML='<div style="overflow-x:auto;"><table class="refunds-table"><thead><tr><th>Ticket ID</th><th>Événement</th><th>Acheteur</th><th>Montant</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead><tbody>'+filtered.map(r=>{const e=events.find(x=>String(x.id)===String(r.event_id));const badge=r.status==='pending'?'<span class="refund-status pending"><i class="fas fa-clock"></i> En attente</span>':'<span class="refund-status processed"><i class="fas fa-check"></i> Traité</span>';const action=r.status==='pending'?'<button class="btn-mark-refunded" onclick="markRefundProcessed(\''+String(r.id).replace(/'/g,'\\\'')+'\')"><i class="fas fa-check"></i> Marquer traité</button>':'<button class="btn-mark-refunded" disabled>✓ Traité</button>';return '<tr><td style="font-family:monospace;font-size:.7rem;">'+escapeHtml(String(r.ticket_id||'').slice(0,12))+'…</td><td>'+escapeHtml(e?e.title:String(r.event_id||''))+'</td><td>'+escapeHtml(r.buyer_name||'—')+'</td><td style="color:#10b981;font-weight:700;">'+(parseFloat(r.amount)||0).toFixed(6)+' Pi</td><td>'+badge+'</td><td style="font-size:.7rem;color:#6b7280;">'+new Date(r.created_at).toLocaleDateString('en-US')+'</td><td>'+action+'</td></tr>';}).join('')+'</tbody></table></div>';}catch(err){console.error('renderAdminRefunds error:',err);c.innerHTML='<p style="text-align:center;color:#dc2626;">Erreur de chargement.</p>';}}
-async function markRefundProcessed(refundId){try{const {error}=await supabaseClient.from('refunds').update({status:'processed',processed_at:new Date().toISOString()}).eq('id',refundId);if(error)throw error;addAdminLog('Remboursement traité','ID: '+refundId);renderAdminRefunds();showToast('Remboursement','Marqué comme traité.','success');}catch(err){showToast('Erreur',err.message||'Impossible de mettre à jour le remboursement.','error');}}
-async function exportRefundsCSV(){try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;if(!data?.length){showToast('Export','Aucun remboursement.','info');return;}const rows=[['ID','Ticket ID','Event ID','Acheteur','Montant (Pi)','Statut','Raison','Créé le','Traité le']];data.forEach(r=>rows.push([r.id,r.ticket_id,r.event_id,r.buyer_name,(parseFloat(r.amount)||0).toFixed(6),r.status,r.reason||'',new Date(r.created_at).toISOString(),r.processed_at?new Date(r.processed_at).toISOString():'']));downloadCSV('betix_refunds_'+Date.now()+'.csv',rows);showToast('Export réussi',data.length+' remboursements exportés.','success');}catch(e){showToast('Export','Impossible de charger les remboursements.','error');}}
-
-// ---------- REALTIME ----------
-function updateRealtimeIndicator(connected){const el=document.getElementById('rtIndicator');if(!el)return;el.className='rt-indicator'+(connected?'':' disconnected');el.innerHTML='<span class="pulse-dot"></span>'+(connected?'Temps réel actif':'Déconnecté');}
-function initRealtimeNotifications(){const userIdentifier=currentUser.piUid||currentUser.wallet;if(!userIdentifier||!supabaseClient?.channel)return;if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('betix-realtime-'+String(userIdentifier)).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+String(userIdentifier)},payload=>{const n=payload.new;if(!n)return;const exists=notifications.some(x=>String(x.id)===String(n.id));if(exists)return;notifications.unshift({id:String(n.id),message:n.message,type:n.type||'info',read:Boolean(n.read),date:n.created_at||new Date().toISOString()});saveNotifications();updateNotifBadgeHeader();updateSidebarNotifBadge();showToast('🔔 Notification',n.message,n.type==='warning'?'error':'success');}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'events'},payload=>{const u=payload.new;if(!u)return;const ev=events.find(e=>String(e.id)===String(u.id));if(ev){ev.status=u.status||ev.status;ev.cancelledAt=u.cancelled_at||ev.cancelledAt;ev.cancellationReason=u.cancellation_reason||ev.cancellationReason;}clearCache('betix_cached_events');renderEventsByCategory();if(u.status==='cancelled')showToast('Événement annulé','"'+(u.title||'Événement')+'" a été annulé.','error');}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tickets'},payload=>{const t=payload.new;if(!t)return;const owner=currentUser.piUid||currentUser.wallet;if(String(t.buyer_pi_uid)===String(owner)){clearCache('betix_cached_tickets_'+owner);loadTicketsFromSupabase(owner).then(data=>{tickets=data;localStorage.setItem('betix_tickets',JSON.stringify(tickets));renderTickets();renderHistory();});showToast('Nouvelle vente','Votre achat de ticket a été enregistré.','success');}}).subscribe(status=>{console.log('Realtime status:',status);updateRealtimeIndicator(status==='SUBSCRIBED');});}
-
-// ---------- SKELETONS ----------
-function getEventSkeletonHTML(){return '<div class="event-skeleton"><div class="sk-image skeleton"></div><div class="sk-body"><div class="sk-title skeleton"></div><div class="sk-line skeleton"></div><div class="sk-line medium skeleton"></div><div class="sk-info-box skeleton"></div><div class="sk-line short skeleton"></div><div class="sk-btn skeleton"></div></div></div>';}
-function showEventSkeletons(count=6){const c=document.getElementById('eventsByCategory');if(!c)return;let h='<div class="events-grid-centered">';for(let i=0;i<count;i++)h+=getEventSkeletonHTML();c.innerHTML=h+'</div>';}
-function showMyEventsSkeletons(count=3){const c=document.getElementById('myEventsList');if(!c)return;let h='<div class="my-events-grid">';for(let i=0;i<count;i++)h+='<div class="my-event-skeleton"><div class="sk-image skeleton"></div><div class="sk-body"><div class="sk-title skeleton"></div><div class="sk-block skeleton"></div><div class="sk-footer skeleton"></div></div></div>';c.innerHTML=h+'</div>';}
-function showTicketSkeletons(count=2){const c=document.getElementById('ticketsList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="ticket-skeleton"></div>';c.innerHTML=h;}
-function showHistorySkeletons(count=2){const c=document.getElementById('historyList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="ticket-skeleton"></div>';c.innerHTML=h;}
-function showNotificationSkeletons(count=4){const c=document.getElementById('notificationsList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="notif-skeleton"><div class="sk-avatar skeleton"></div><div class="sk-content"><div class="sk-line skeleton"></div><div class="sk-line short skeleton"></div></div></div>';c.innerHTML=h;}
-
-window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
-
-// ============================================================
-// NETTOYAGE DU PARTAGE LEGACY DANS LE HEADER
-// ============================================================
-function removeLegacyHeaderShareButton() {
-    document.querySelectorAll('.header .btn-share-quick, .header .share-post-main-btn, .header [data-action="share-publication"]').forEach(el => el.remove());
-}
-
-// ============================================================
-// FEED DE PARTAGE — Publications d'événements
-// ============================================================
-async function loadShareFeed() {
-    const container = document.getElementById('shareFeedList');
-    if (!container) return;
-    try {
-        const { data, error } = await supabaseClient
-            .from('posts')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(20);
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-share-alt"></i> Aucune publication pour le moment. Soyez le premier à partager !</p>';
-            return;
-        }
-        const postsHtml = data.map(post => renderSharePost(post)).filter(html => html !== '').join('');
-        if (!postsHtml) {
-            container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-share-alt"></i> Aucune publication active pour le moment.</p>';
-            return;
-        }
-        container.innerHTML = postsHtml;
-    } catch (err) {
-        console.error('loadShareFeed error:', err);
-        container.innerHTML = '<p style="text-align:center;padding:1rem;color:#9ca3af;">Impossible de charger les publications.</p>';
-    }
-}
-
-function renderSharePost(post) {
-    const event = events.find(e => String(e.id) === String(post.event_id));
-    if (!event) return '';
-    if (isEventPast(event)) return '';
-    if (event.status === 'cancelled' || event.status === 'ended' || event.status === 'inactive' || event.status === 'disabled') return '';
-
-    const date = new Date(post.created_at);
-    const timeAgo = getTimeAgo(date);
-    const initial = (post.user_name || 'U')[0].toUpperCase();
-    const eventCardHtml = renderEventCard(event);
-    const shareUrl = window.location.origin + '/?event=' + encodeURIComponent(event.id);
-    const shareText = encodeURIComponent(post.message || 'Découvrez cet événement sur Betix !');
-    const shareUrlEnc = encodeURIComponent(shareUrl);
-
-    return `
-    <div class="share-post-card" data-post-id="${escapeHtml(String(post.id))}">
-        <div class="share-post-header">
-            <div class="share-post-avatar">${escapeHtml(initial)}</div>
-            <div class="share-post-user-info">
-                <div class="share-post-username">${escapeHtml(post.user_name || 'Utilisateur')}</div>
-                <div class="share-post-time"><i class="far fa-clock"></i> ${escapeHtml(timeAgo)}</div>
-            </div>
-        </div>
-        ${post.message ? `<div class="share-post-message">${escapeHtml(post.message)}</div>` : ''}
-        <div class="share-post-event-wrapper">
-            ${eventCardHtml}
-        </div>
-        <div class="share-post-footer">
-            <button class="share-post-action-main" type="button"
-                onclick="event.stopPropagation(); sharePublication('${escapeHtml(String(post.id))}','${escapeHtml(String(event.id))}')">
-                <i class="fas fa-share-alt"></i>
-                <span>Partager</span>
-            </button>
-            <div class="share-post-actions-group">
-                <button class="share-post-icon-btn wa" title="WhatsApp"
-                    onclick="event.stopPropagation(); sharePostExternal('whatsapp','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
-                <button class="share-post-icon-btn tg" title="Telegram"
-                    onclick="event.stopPropagation(); sharePostExternal('telegram','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-telegram-plane"></i>
-                </button>
-                <button class="share-post-icon-btn tw" title="X / Twitter"
-                    onclick="event.stopPropagation(); sharePostExternal('twitter','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-twitter"></i>
-                </button>
-                <button class="share-post-icon-btn fb" title="Facebook"
-                    onclick="event.stopPropagation(); sharePostExternal('facebook','${escapeHtml(String(event.id))}','${shareText}','${shareUrlEnc}')">
-                    <i class="fab fa-facebook-f"></i>
-                </button>
-                <button class="share-post-icon-btn copy" title="Copier le lien"
-                    onclick="event.stopPropagation(); copyShareLink('${escapeHtml(shareUrl)}')">
-                    <i class="fas fa-link"></i>
-                </button>
-            </div>
-        </div>
-    </div>`;
-}
-
-function getTimeAgo(date) {
-    const diff = Date.now() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "à l'instant";
-    if (mins < 60) return mins + ' min';
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + ' h';
-    const days = Math.floor(hrs / 24);
-    if (days < 7) return days + ' j';
-    return date.toLocaleDateString('fr-FR');
-}
-
-function openSharePostModal() {
-    if (!requireLogin()) return;
-    if (!requireProfileComplete()) return;
-    const modal = document.getElementById('sharePostModal');
-    const select = document.getElementById('sharePostEventSelect');
-    if (!modal || !select) return;
-    const userId = currentUser.piUid || currentUser.wallet;
-    const myUpcoming = events.filter(e =>
-        !isEventPast(e) &&
-        e.status !== 'cancelled' &&
-        e.status !== 'ended' &&
-        e.status !== 'inactive' &&
-        e.status !== 'disabled' &&
-        (e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name)
-    );
-    if (myUpcoming.length === 0) {
-        alert("Vous devez d'abord créer un événement à venir pour le partager.");
-        return;
-    }
-    select.innerHTML = '<option value="">-- Sélectionner un événement --</option>' +
-        myUpcoming.map(e => `<option value="${escapeHtml(String(e.id))}">${escapeHtml(e.title)} — ${new Date(e.date).toLocaleDateString('fr-FR')}</option>`).join('');
-    document.getElementById('sharePostMessage').value = '';
-    document.getElementById('sharePostPreview').style.display = 'none';
-    const counter = document.getElementById('sharePostCharCounter');
-    if (counter) counter.textContent = '200 caractères restants';
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-}
-
-function closeSharePostModal() {
-    const modal = document.getElementById('sharePostModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-}
-
-async function publishSharePost() {
-    const eventId = document.getElementById('sharePostEventSelect')?.value;
-    const message = (document.getElementById('sharePostMessage')?.value || '').trim();
-    if (!eventId) { alert('Veuillez sélectionner un événement.'); return; }
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) { alert('Événement introuvable.'); return; }
-    if (isEventPast(event)) { alert('Cet événement est déjà passé.'); return; }
-    if (event.status === 'cancelled' || event.status === 'ended' || event.status === 'inactive' || event.status === 'disabled') { alert("Cet événement n'est plus disponible."); return; }
-
-    const btn = document.getElementById('publishShareBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication...'; }
-    try {
-        const userId = currentUser.piUid || currentUser.wallet;
-        const userName = (currentUser.first_name || currentUser.name || 'Utilisateur') + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-        const { error } = await supabaseClient.from('posts').insert({
-            user_id: userId,
-            user_name: userName,
-            event_id: eventId,
-            message: message || null
-        });
-        if (error) throw error;
-        closeSharePostModal();
-        await loadShareFeed();
-        showToast('Publication partagée !', "Votre événement est maintenant visible sur la page d'accueil.", 'success');
-    } catch (err) {
-        console.error('publishSharePost error:', err);
-        showToast('Erreur', 'Impossible de publier. Réessayez.', 'error');
-    } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-share-alt"></i> Publier'; }
-    }
-}
-
-async function sharePublication(postId, eventId) {
-    const event = events.find(e => String(e.id) === String(eventId));
-    if (!event) {
-        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
-        return;
-    }
-    if (isEventPast(event) || ['cancelled', 'ended', 'inactive', 'disabled'].includes(event.status)) {
-        showToast('Partage', 'Cette publication n’est plus disponible.', 'error');
-        return;
-    }
-
-    const card = document.querySelector('.share-post-card[data-post-id="' + CSS.escape(String(postId)) + '"]');
-    const postUser = card?.querySelector('.share-post-username')?.textContent || 'Betix';
-    const message = card?.querySelector('.share-post-message')?.textContent?.trim() || '';
-    const shareUrl = window.location.origin + '/?event=' + encodeURIComponent(event.id);
-    const shareText = message || ('Découvrez « ' + (event.title || 'cet événement') + ' » sur Betix !');
-
-    // Partage natif : sur iOS/Android, ouvre directement le menu de partage du téléphone.
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: event.title || 'Betix',
-                text: shareText,
-                url: shareUrl
-            });
-            return;
-        } catch (err) {
-            // Annulation par l'utilisateur : ne rien afficher.
-            if (err && err.name === 'AbortError') return;
-            console.warn('Native share unavailable:', err);
-        }
-    }
-
-    // Fallback desktop : ouvrir le partage WhatsApp par défaut.
-    sharePostExternal('whatsapp', String(event.id), encodeURIComponent(shareText), encodeURIComponent(shareUrl));
-}
-
-function sharePostExternal(network, eventId, text, url) {
-    let shareLink = '';
-    switch (network) {
-        case 'whatsapp': shareLink = `https://wa.me/?text=${text}%20${url}`; break;
-        case 'telegram': shareLink = `https://t.me/share/url?url=${url}&text=${text}`; break;
-        case 'twitter': shareLink = `https://twitter.com/intent/tweet?text=${text}&url=${url}`; break;
-        case 'facebook': shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
-    }
-    if (shareLink) window.open(shareLink, '_blank', 'width=600,height=500');
-}
-
-function copyShareLink(url) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Lien copié !', "Le lien de l'événement a été copié.", 'success');
-        }).catch(() => prompt('Copiez ce lien :', url));
-    } else prompt('Copiez ce lien :', url);
-}
-
-window.removeLegacyHeaderShareButton = removeLegacyHeaderShareButton;
-window.loadShareFeed = loadShareFeed;
-window.renderSharePost = renderSharePost;
-window.renderNotificationCard = renderNotificationCard;
-window.openSharePostModal = openSharePostModal;
-window.closeSharePostModal = closeSharePostModal;
-window.publishSharePost = publishSharePost;
-window.sharePublication = sharePublication;
-window.sharePostExternal = sharePostExternal;
-window.copyShareLink = copyShareLink;
-
 // ============================================================
 // LANCEMENT DE L'APPLICATION
 // ============================================================
@@ -5116,58 +4269,3 @@ if (document.readyState === 'loading') {
 } else {
     initApp();
 }
-
-
-// ============================================================
-// PURCHASE CONFIRMATION TOAST
-// ============================================================
-let pcAutoCloseTimer = null;
-
-function showPurchaseConfirmation(event, quantity, ticketsList) {
-    const toast = document.getElementById('purchaseConfirmation');
-    if (!toast) return;
-    const titleEl = document.getElementById('pcTitle');
-    const messageEl = document.getElementById('pcMessage');
-    const qty = quantity || (ticketsList ? ticketsList.length : 1);
-    const eventName = event ? event.title : "l'événement";
-    const eventDate = event && event.date
-        ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        : '';
-    if (titleEl) titleEl.textContent = qty > 1 ? `🎉 ${qty} tickets achetés !` : '🎉 Ticket acheté !';
-    if (messageEl) {
-        messageEl.innerHTML = `Ticket${qty > 1 ? 's' : ''} confirmé${qty > 1 ? 's' : ''} pour l'événement <strong>"${escapeHtml(eventName)}"</strong>${eventDate ? ` · ${eventDate}` : ''}. Retrouvez-le${qty > 1 ? 's' : ''} dans "Mes Tickets".`;
-    }
-    toast.classList.remove('hiding');
-    void toast.offsetWidth;
-    toast.classList.add('show');
-    const progress = document.getElementById('pcProgress');
-    if (progress) { progress.style.animation = 'none'; void progress.offsetWidth; progress.style.animation = ''; }
-    if (pcAutoCloseTimer) clearTimeout(pcAutoCloseTimer);
-    pcAutoCloseTimer = setTimeout(closePurchaseConfirmation, 6000);
-    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-}
-
-function closePurchaseConfirmation() {
-    const toast = document.getElementById('purchaseConfirmation');
-    if (!toast) return;
-    toast.classList.add('hiding');
-    setTimeout(() => toast.classList.remove('show', 'hiding'), 500);
-    if (pcAutoCloseTimer) { clearTimeout(pcAutoCloseTimer); pcAutoCloseTimer = null; }
-}
-
-function pcGoToTickets() {
-    closePurchaseConfirmation();
-    showPage('tickets');
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
-}
-
-function pcGoToHome() {
-    closePurchaseConfirmation();
-    showPage('home');
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
-}
-
-window.showPurchaseConfirmation = showPurchaseConfirmation;
-window.closePurchaseConfirmation = closePurchaseConfirmation;
-window.pcGoToTickets = pcGoToTickets;
-window.pcGoToHome = pcGoToHome;
