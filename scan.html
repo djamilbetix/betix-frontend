@@ -136,24 +136,25 @@
         .scanner-actions { display: flex; gap: 10px; padding: 16px; background: #f8fafc; }
         .scanner-actions button {
             flex: 1; padding: 12px 16px; border-radius: 40px; border: none;
-            font-weight: 600; font-size: 0.85rem; cursor: pointer;
-            transition: all 0.25s ease; display: flex;
-            align-items: center; justify-content: center; gap: 8px;
+            font           -weight: 600; font-size: 0. border85rem; cursor: pointer;
+            transition: all-radius 0.25s ease; display: flex;
+           : align-items: center; justify-content: center; gap:  8px;
         }
         .btn-camera {
-            background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-            color: white; box-shadow: 0 4px 16px rgba(11,31,92,0.3);
+            background: linear12-gradient(135deg, #0B1F5C,px #1a2a4a);
+            color: white; font; box-shadow-size: 0 4px 16px rgba(11,31,92:,0.3);
         }
-        .btn-camera:hover { transform: translateY(-2px); }
-        .btn-camera.stop { background: linear-gradient(135deg, #7f1d1d, #991b1b); }
+        .btn-camera :hover { transform: translateY(-2px); }
+       0 .btn-camera.stop { background: linear-gradient(135deg,. #7f1d1d, #991b91b); }
         .btn-manual {
-            background: white; color: #0B1F5C; border: 2px solid #e6e6e6;
+           rem background: white; color: #0B1F;
+           5C; border:  font-family2px solid #e6e:6e6;
         }
-        .btn-manual:hover { border-color: var(--accent); }
+        .btn-manual:hover { border-color ': var(--accent); }
 
         /* MANUAL INPUT */
-        .manual-input-section {
-            display: none; padding: 20px; background: #f8fafc;
+        .manual-inputP-section {
+            display: none; padding: 20px;opp background: #f8fafc;
             border-top: 1px solid #e6e6e6;
         }
         .manual-input-section.show { display: block; }
@@ -164,8 +165,7 @@
         .manual-input-group { display: flex; gap: 8px; }
         .manual-input-group input {
             flex: 1; padding: 12px 16px; border: 2px solid #e6e6e6;
-            border-radius: 12px; font-size: 0.9rem;
-            font-family: 'Poppins', monospace; transition: all 0.25s; background: white;
+ins', monospace; transition: all 0.25s; background: white;
         }
         .manual-input-group input:focus {
             outline: none; border-color: var(--accent);
@@ -247,20 +247,22 @@
         .result-actions { display: flex; gap: 10px; padding: 16px 20px 20px; }
         .result-actions button {
             flex: 1; padding: 14px; border-radius: 40px; border: none;
-            font-weight: 700; font-size: 0.9rem; cursor: pointer;
-            transition: all 0.25s; display: flex;
-            align-items: center; justify-content: center; gap: 8px;
-        }
+            font justify-weight: 700; font-size: 0.-content9rem; cursor: pointer;
+           : transition: all 0.25s; display center: flex;
+            align-items:; center; justify-content: center; gap gap: 8px;
+:        }
         .btn-scan-again {
-            background: linear-gradient(135deg, #0B1F5C, #1a2a4a);
-            color: white; box-shadow: 0 4px 16px rgba(11,31,92,0.3);
+            background : linear-gradient(135deg, #0B1F5C,8 #1a2a4a);
+            color: white;px box-shadow: 0 4px;
+ 16px rgba(       11,31,92,0.3);
         }
-        .btn-scan-again:hover { transform: translateY(-2px); }
-        .btn-close-result { background: #f3f4f6; color: var(--dark); }
-        .btn-close-result:hover { background: #e5e7eb; }
+        .btn-scan-again:hover { }
+ transform: translateY(-2px); }
+        .btn-       close-result { background: #f3f4f6 .; color: var(--dark); }
+        .btnscan-close-result:hover { background: #e5ening7eb; }
 
         /* LOADER */
-        .scan-loader {
+        .scan-info-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 40%, #0B1F5C 0%, #060b1a 100%);
             display: flex; flex-direction: column;
@@ -290,7 +292,7 @@
         }
         .scan-loader-logo span { color: var(--accent); }
 
-        /* 🎬 OVERLAY D'ANALYSE */
+        /* OVERLAY D'ANALYSE */
         .scanning-overlay {
             position: fixed; inset: 0;
             background: rgba(5, 10, 20, 0.92);
@@ -354,9 +356,7 @@
             color: white; font-size: 1.05rem; font-weight: 600;
             letter-spacing: 0.5px; margin-bottom: 18px;
             min-height: 28px; display: flex;
-            align-items: center; justify-content: center; gap: 8px;
-        }
-        .scanning-info .analysis-text i { color: var(--accent); animation: spin 1.2s linear infinite; }
+            align-items: center; .analysis-text i { color: var(--accent); animation: spin 1.2s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .scanning-progress {
             width: 260px; height: 6px;
@@ -375,7 +375,7 @@
             font-weight: 700; margin-top: 8px; letter-spacing: 1px;
         }
 
-        /* ⚡ FLASH OVERLAY */
+        /* FLASH OVERLAY */
         .flash-overlay {
             position: fixed; inset: 0;
             pointer-events: none; z-index: 99997; opacity: 0;
@@ -386,7 +386,7 @@
         .flash-overlay.flash { animation: flashAnim 0.7s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* 🎉 CONFETTIS */
+        /* CONFETTIS */
         .confetti-container {
             position: fixed; inset: 0;
             pointer-events: none; z-index: 99996; overflow: hidden;
@@ -401,9 +401,7 @@
             100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
         }
 
-        /* ============================================================
-           🔧 TOAST — CORRIGÉ (caché par défaut, sans texte parasite)
-           ============================================================ */
+        /* TOAST */
         .scan-toast {
             position: fixed; top: 80px; left: 50%;
             transform: translateX(-50%) translateY(-150%);
@@ -411,20 +409,14 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 99999;
             min-width: 280px; max-width: calc(100% - 40px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                        opacity 0.3s ease,
-                        visibility 0.3s ease;
+                        opacity 0.3s ease, visibility 0.3s ease;
             border-left: 5px solid var(--success);
             display: flex; align-items: center; gap: 12px;
-            /* 🔧 CACHÉ PAR DÉFAUT */
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
+            opacity: 0; visibility: hidden; pointer-events: none;
         }
         .scan-toast.show {
             transform: translateX(-50%) translateY(0);
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
+            opacity: 1; visibility: visible; pointer-events: auto;
         }
         .scan-toast.error { border-left-color: var(--danger); }
         .scan-toast.warning { border-left-color: var(--warning); }
@@ -436,7 +428,7 @@
         .scan-toast .toast-title { font-weight: 700; font-size: 0.9rem; color: var(--dark); margin-bottom: 2px; }
         .scan-toast .toast-message { font-size: 0.8rem; color: var(--gray); }
 
-        /* 📊 MODAL HISTORIQUE */
+        /* MODAL HISTORIQUE */
         .history-modal {
             position: fixed; inset: 0;
             background: rgba(10, 15, 30, 0.97);
@@ -628,6 +620,17 @@
         }
         .btn-detail-close { background: #f3f4f6; color: #1a1a2e; }
         .btn-detail-close:hover { background: #e5e7eb; }
+        .btn-delete-scan {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            flex: 0.7;
+        }
+        .btn-delete-scan:hover {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
 
         /* RESPONSIVE */
         @media (max-width: 480px) {
@@ -650,7 +653,7 @@
     <div class="scan-loader-text">Préparation du scanner...</div>
 </div>
 
-<!-- 🎬 OVERLAY D'ANALYSE -->
+<!-- OVERLAY D'ANALYSE -->
 <div class="scanning-overlay" id="scanningOverlay">
     <div class="scanning-box">
         <div class="corner tl"></div>
@@ -672,10 +675,10 @@
     </div>
 </div>
 
-<!-- ⚡ FLASH OVERLAY -->
+<!-- FLASH OVERLAY -->
 <div class="flash-overlay" id="flashOverlay"></div>
 
-<!-- 🎉 CONFETTIS CONTAINER -->
+<!-- CONFETTIS -->
 <div class="confetti-container" id="confettiContainer"></div>
 
 <!-- HEADER -->
@@ -761,7 +764,7 @@
     </div>
 </main>
 
-<!-- 📊 MODAL HISTORIQUE -->
+<!-- MODAL HISTORIQUE -->
 <div class="history-modal" id="historyModal">
     <div class="history-header">
         <h2><i class="fas fa-history"></i> Historique des scans</h2>
@@ -807,12 +810,15 @@
         </div>
         <div class="detail-body" id="detailBody"></div>
         <div class="detail-footer">
+            <button class="btn-delete-scan" id="deleteScanBtn" onclick="deleteCurrentScan()">
+                <i class="fas fa-trash"></i> Supprimer
+            </button>
             <button class="btn-detail-close" onclick="closeDetailModal()">Fermer</button>
         </div>
     </div>
 </div>
 
-<!-- TOAST (avec style inline pour cacher au chargement) -->
+<!-- TOAST -->
 <div class="scan-toast" id="scanToast" style="opacity:0;visibility:hidden;">
     <i class="fas fa-check-circle toast-icon" id="toastIcon"></i>
     <div>
@@ -846,6 +852,7 @@ const SCAN_COOLDOWN = 2000;
 let scanStats = { today: 0, total: 0, valid: 0 };
 let scanHistory = [];
 let currentHistoryFilter = 'all';
+let currentScanIdForDeletion = null;
 let audioCtx = null;
 
 // ============================================================
@@ -873,6 +880,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateStatsUI();
     initQrScanner();
+
+    // ☁️ Charger l'historique depuis Supabase en arrière-plan
+    setTimeout(async () => {
+        try {
+            const remoteHistory = await loadScanHistoryFromSupabase();
+            if (remoteHistory.length > 0) {
+                // Fusionner local + distant sans doublons
+                const merged = [...remoteHistory];
+                const localOnly = scanHistory.filter(local => {
+                    return !remoteHistory.some(r =>
+                        (r.code === local.code &&
+                         Math.abs(new Date(r.timestamp) - new Date(local.timestamp)) < 60000)
+                    );
+                });
+                scanHistory = [...localOnly, ...merged].sort((a, b) =>
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                );
+                if (scanHistory.length > 500) scanHistory = scanHistory.slice(0, 500);
+                saveScanHistory();
+                updateHistoryBadge();
+                console.log('☁️ Historique synchronisé depuis Supabase:', remoteHistory.length, 'entrées');
+            }
+        } catch (e) {
+            console.warn('Sync history from Supabase failed:', e);
+        }
+    }, 1500);
 });
 
 // ============================================================
@@ -922,7 +955,7 @@ function updateStatsUI() {
 }
 
 // ============================================================
-// HISTORIQUE
+// HISTORIQUE LOCAL (localStorage)
 // ============================================================
 function loadScanHistory() {
     try {
@@ -942,22 +975,159 @@ function saveScanHistory() {
     } catch (e) { console.error('Erreur sauvegarde historique:', e); }
 }
 
-function addScanToHistory(entry) {
-    scanHistory.unshift({
+// ============================================================
+// ☁️ SYNCHRONISATION SUPABASE - HISTORIQUE
+// ============================================================
+async function saveScanToSupabase(entry) {
+    try {
+        const userId = currentUser.piUid || currentUser.wallet;
+        if (!userId) return null;
+
+        const dbEntry = {
+            ticket_id: entry.code || '',
+            ticket_code: entry.code || '',
+            event_id: entry.eventId || '',
+            event_title: entry.eventTitle || 'N/A',
+            buyer_name: entry.buyerName || 'N/A',
+            buyer_email: entry.buyerEmail || '',
+            buyer_phone: entry.buyerPhone || '',
+            ticket_type: entry.ticketType || 'standard',
+            price: parseFloat(entry.price) || 0,
+            status: entry.status || 'valid',
+            message: entry.message || '',
+            scanned_by_pi_uid: userId,
+            scanned_by_name: currentUser.name || currentUser.first_name || 'Organisateur',
+            scanned_at: entry.timestamp || new Date().toISOString()
+        };
+
+        const { data, error } = await supabaseClient
+            .from('scan_history')
+            .insert(dbEntry)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('❌ Erreur save scan Supabase:', error);
+            return null;
+        }
+
+        console.log('✅ Scan sauvegardé dans Supabase:', data.id);
+        return data;
+    } catch (err) {
+        console.error('saveScanToSupabase exception:', err);
+        return null;
+    }
+}
+
+async function loadScanHistoryFromSupabase() {
+    try {
+        const userId = currentUser.piUid || currentUser.wallet;
+        if (!userId) return [];
+
+        const { data, error } = await supabaseClient
+            .from('scan_history')
+            .select('*')
+            .eq('scanned_by_pi_uid', userId)
+            .order('scanned_at', { ascending: false })
+            .limit(500);
+
+        if (error) {
+            console.error('❌ Erreur load scan Supabase:', error);
+            return [];
+        }
+
+        return (data || []).map(row => ({
+            id: row.id,
+            timestamp: row.scanned_at,
+            code: row.ticket_code || row.ticket_id || '',
+            eventId: row.event_id || '',
+            eventTitle: row.event_title || 'N/A',
+            buyerName: row.buyer_name || 'N/A',
+            buyerEmail: row.buyer_email || '',
+            buyerPhone: row.buyer_phone || '',
+            ticketType: row.ticket_type || 'standard',
+            price: row.price || 0,
+            status: row.status || 'valid',
+            message: row.message || '',
+            scannedBy: row.scanned_by_name || row.scanned_by_pi_uid || 'Anonyme'
+        }));
+    } catch (err) {
+        console.error('loadScanHistoryFromSupabase exception:', err);
+        return [];
+    }
+}
+
+async function deleteScanFromSupabase(scanId) {
+    try {
+        const { error } = await supabaseClient
+            .from('scan_history')
+            .delete()
+            .eq('id', scanId);
+        if (error) throw error;
+        return true;
+    } catch (err) {
+        console.error('deleteScanFromSupabase error:', err);
+        return false;
+    }
+}
+
+async function clearAllScansFromSupabase() {
+    try {
+        const userId = currentUser.piUid || currentUser.wallet;
+        if (!userId) return false;
+
+        const { error } = await supabaseClient
+            .from('scan_history')
+            .delete()
+            .eq('scanned_by_pi_uid', userId);
+
+        if (error) throw error;
+        console.log('✅ Historique Supabase vidé');
+        return true;
+    } catch (err) {
+        console.error('clearAllScansFromSupabase error:', err);
+        return false;
+    }
+}
+
+// ============================================================
+// AJOUT D'UN SCAN À L'HISTORIQUE (LOCAL + CLOUD)
+// ============================================================
+async function addScanToHistory(entry) {
+    const localEntry = {
         id: 'scan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         timestamp: new Date().toISOString(),
         code: entry.code || '',
+        eventId: entry.eventId || '',
         eventTitle: entry.eventTitle || 'N/A',
         buyerName: entry.buyerName || 'N/A',
         buyerEmail: entry.buyerEmail || '',
+        buyerPhone: entry.buyerPhone || '',
         ticketType: entry.ticketType || 'standard',
         price: entry.price || 0,
         status: entry.status || 'valid',
         scannedBy: currentUser.wallet || currentUser.piUid || 'Anonyme',
         message: entry.message || ''
-    });
+    };
+
+    // 1. Ajouter dans localStorage (cache offline immédiat)
+    scanHistory.unshift(localEntry);
     saveScanHistory();
     updateHistoryBadge();
+
+    // 2. Synchroniser avec Supabase en arrière-plan (non bloquant)
+    try {
+        const saved = await saveScanToSupabase(localEntry);
+        if (saved && saved.id) {
+            const idx = scanHistory.findIndex(h => h.id === localEntry.id);
+            if (idx !== -1) {
+                scanHistory[idx].id = saved.id;
+                saveScanHistory();
+            }
+        }
+    } catch (e) {
+        console.warn('Sync scan to Supabase failed (offline mode):', e);
+    }
 }
 
 function updateHistoryBadge() {
@@ -1080,6 +1250,7 @@ function renderHistoryTable() {
 }
 
 function showDetailModal(scanId) {
+    currentScanIdForDeletion = scanId;
     const entry = scanHistory.find(h => h.id === scanId);
     if (!entry) return;
 
@@ -1106,6 +1277,27 @@ function showDetailModal(scanId) {
 
 function closeDetailModal() {
     document.getElementById('detailModal').classList.remove('show');
+    currentScanIdForDeletion = null;
+}
+
+async function deleteCurrentScan() {
+    if (!currentScanIdForDeletion) return;
+    if (!confirm('Supprimer définitivement ce scan ?')) return;
+
+    const idToDelete = currentScanIdForDeletion;
+
+    scanHistory = scanHistory.filter(h => h.id !== idToDelete);
+    saveScanHistory();
+    updateHistoryBadge();
+    renderHistoryTable();
+    closeDetailModal();
+
+    // Si l'ID ressemble à un UUID Supabase, supprimer du cloud
+    if (idToDelete.length > 20) {
+        await deleteScanFromSupabase(idToDelete);
+    }
+
+    showToast('Supprimé', 'Le scan a été supprimé.', 'success');
 }
 
 function exportHistoryCSV() {
@@ -1135,13 +1327,21 @@ function exportHistoryCSV() {
     showToast('Export réussi', filtered.length + ' scan(s) exporté(s).', 'success');
 }
 
-function clearHistory() {
-    if (!confirm('Voulez-vous vraiment vider tout l\'historique des scans ?')) return;
+async function clearHistory() {
+    if (!confirm('Voulez-vous vraiment vider tout l\'historique des scans ? Cette action est irréversible et supprimera aussi l\'historique cloud.')) return;
+
     scanHistory = [];
     saveScanHistory();
     updateHistoryBadge();
     renderHistoryTable();
-    showToast('Historique vidé', 'Tous les scans ont été supprimés.', 'success');
+
+    // Supprimer de Supabase aussi
+    const success = await clearAllScansFromSupabase();
+    if (success) {
+        showToast('Historique vidé', 'Tous les scans ont été supprimés (local + cloud).', 'success');
+    } else {
+        showToast('Partiel', 'Historique local vidé, mais erreur cloud.', 'warning');
+    }
 }
 
 // ============================================================
@@ -1242,7 +1442,7 @@ function validateManualCode() {
 }
 
 // ============================================================
-// 🎬 OVERLAY D'ANALYSE
+// OVERLAY D'ANALYSE
 // ============================================================
 const ANALYSIS_STEPS = [
     { text: 'Analyse du ticket...', icon: 'fa-circle-notch', progress: 20 },
@@ -1296,7 +1496,7 @@ function hideScanningOverlay() {
 }
 
 // ============================================================
-// 🔊 SONS
+// SONS
 // ============================================================
 function getAudioCtx() {
     if (!audioCtx) {
@@ -1351,7 +1551,7 @@ function playRefundedSound() {
 }
 
 // ============================================================
-// ⚡ FLASH + 🎉 CONFETTIS
+// FLASH + CONFETTIS
 // ============================================================
 function triggerFlash(color) {
     const overlay = document.getElementById('flashOverlay');
@@ -1380,7 +1580,7 @@ function launchConfetti() {
 }
 
 // ============================================================
-// TRAITEMENT PRINCIPAL
+// TRAITEMENT PRINCIPAL DU TICKET
 // ============================================================
 async function processTicketCode(code) {
     if (isProcessing) return;
@@ -1405,7 +1605,7 @@ async function processTicketCode(code) {
             scanStats.total++;
             saveScanStats();
             updateStatsUI();
-            addScanToHistory({
+            await addScanToHistory({
                 code, eventTitle: 'N/A', buyerName: 'N/A',
                 status: 'invalid', message: 'Ticket introuvable'
             });
@@ -1428,7 +1628,7 @@ async function processTicketCode(code) {
         console.error('Erreur traitement:', err);
         await overlayPromise;
         hideScanningOverlay();
-        addScanToHistory({
+        await addScanToHistory({
             code, eventTitle: 'N/A', buyerName: 'N/A',
             status: 'invalid', message: 'Erreur de connexion'
         });
@@ -1449,13 +1649,20 @@ async function handleTicketData(ticket) {
 
     const status = (ticket.status || 'Valid').toLowerCase();
 
+    // ========== DÉJÀ UTILISÉ ==========
     if (status === 'used') {
         updateStatsUI();
-        addScanToHistory({
-            code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-            buyerName: ticket.buyer_name || 'N/A', buyerEmail: ticket.buyer_email || '',
-            ticketType: ticket.ticket_type || 'standard', price: ticket.price || 0,
-            status: 'used', message: 'Déjà utilisé'
+        await addScanToHistory({
+            code: ticket.id,
+            eventId: ticket.event_id,
+            eventTitle: ticket.event_title || 'N/A',
+            buyerName: ticket.buyer_name || 'N/A',
+            buyerEmail: ticket.buyer_email || '',
+            buyerPhone: ticket.buyer_phone || '',
+            ticketType: ticket.ticket_type || 'standard',
+            price: ticket.price || 0,
+            status: 'used',
+            message: 'Déjà utilisé'
         });
         playWarningSound();
         vibrate([100, 50, 100, 50, 100]);
@@ -1469,12 +1676,18 @@ async function handleTicketData(ticket) {
         return;
     }
 
+    // ========== EXPIRÉ ==========
     if (status === 'expired') {
         updateStatsUI();
-        addScanToHistory({
-            code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-            buyerName: ticket.buyer_name || 'N/A', ticketType: ticket.ticket_type || 'standard',
-            price: ticket.price || 0, status: 'expired', message: 'Ticket expiré'
+        await addScanToHistory({
+            code: ticket.id,
+            eventId: ticket.event_id,
+            eventTitle: ticket.event_title || 'N/A',
+            buyerName: ticket.buyer_name || 'N/A',
+            ticketType: ticket.ticket_type || 'standard',
+            price: ticket.price || 0,
+            status: 'expired',
+            message: 'Ticket expiré'
         });
         playExpiredSound();
         vibrate([150, 80, 150]);
@@ -1487,12 +1700,18 @@ async function handleTicketData(ticket) {
         return;
     }
 
+    // ========== REMBOURSÉ ==========
     if (status === 'refunded' || ticket.refunded) {
         updateStatsUI();
-        addScanToHistory({
-            code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-            buyerName: ticket.buyer_name || 'N/A', ticketType: ticket.ticket_type || 'standard',
-            price: ticket.price || 0, status: 'refunded', message: 'Ticket remboursé'
+        await addScanToHistory({
+            code: ticket.id,
+            eventId: ticket.event_id,
+            eventTitle: ticket.event_title || 'N/A',
+            buyerName: ticket.buyer_name || 'N/A',
+            ticketType: ticket.ticket_type || 'standard',
+            price: ticket.price || 0,
+            status: 'refunded',
+            message: 'Ticket remboursé'
         });
         playRefundedSound();
         vibrate([100, 50, 100]);
@@ -1505,16 +1724,22 @@ async function handleTicketData(ticket) {
         return;
     }
 
+    // ========== VÉRIFIER ORGANISATEUR ==========
     const userId = currentUser.piUid || currentUser.wallet;
     const organizerId = ticket.organizer_pi_uid || ticket.organizer_uid;
     if (organizerId && String(organizerId) !== String(userId)) {
         const isAdmin = localStorage.getItem('betix_admin_password') !== null;
         if (!isAdmin) {
             updateStatsUI();
-            addScanToHistory({
-                code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-                buyerName: ticket.buyer_name || 'N/A', ticketType: ticket.ticket_type || 'standard',
-                price: ticket.price || 0, status: 'invalid', message: 'Non organisateur'
+            await addScanToHistory({
+                code: ticket.id,
+                eventId: ticket.event_id,
+                eventTitle: ticket.event_title || 'N/A',
+                buyerName: ticket.buyer_name || 'N/A',
+                ticketType: ticket.ticket_type || 'standard',
+                price: ticket.price || 0,
+                status: 'invalid',
+                message: 'Non organisateur'
             });
             playErrorSound();
             vibrate([200, 100, 200, 100, 200]);
@@ -1527,6 +1752,7 @@ async function handleTicketData(ticket) {
         }
     }
 
+    // ========== VÉRIFIER DATE ==========
     const eventDate = ticket.event_date || ticket.purchase_date;
     if (eventDate) {
         const eventEnd = new Date(eventDate);
@@ -1539,10 +1765,15 @@ async function handleTicketData(ticket) {
         }
         if (Date.now() > eventEnd.getTime() + (24 * 60 * 60 * 1000)) {
             updateStatsUI();
-            addScanToHistory({
-                code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-                buyerName: ticket.buyer_name || 'N/A', ticketType: ticket.ticket_type || 'standard',
-                price: ticket.price || 0, status: 'expired', message: 'Événement terminé'
+            await addScanToHistory({
+                code: ticket.id,
+                eventId: ticket.event_id,
+                eventTitle: ticket.event_title || 'N/A',
+                buyerName: ticket.buyer_name || 'N/A',
+                ticketType: ticket.ticket_type || 'standard',
+                price: ticket.price || 0,
+                status: 'expired',
+                message: 'Événement terminé'
             });
             playExpiredSound();
             vibrate([150, 80, 150]);
@@ -1555,6 +1786,7 @@ async function handleTicketData(ticket) {
         }
     }
 
+    // ========== ✅ VALIDE ==========
     await markTicketAsUsed(ticket);
 }
 
@@ -1584,11 +1816,17 @@ async function markTicketAsUsed(ticket) {
         saveScanStats();
         updateStatsUI();
 
-        addScanToHistory({
-            code: ticket.id, eventTitle: ticket.event_title || 'N/A',
-            buyerName: ticket.buyer_name || 'N/A', buyerEmail: ticket.buyer_email || '',
-            ticketType: ticket.ticket_type || 'standard', price: ticket.price || 0,
-            status: 'valid', message: 'Accès autorisé'
+        await addScanToHistory({
+            code: ticket.id,
+            eventId: ticket.event_id,
+            eventTitle: ticket.event_title || 'N/A',
+            buyerName: ticket.buyer_name || 'N/A',
+            buyerEmail: ticket.buyer_email || '',
+            buyerPhone: ticket.buyer_phone || '',
+            ticketType: ticket.ticket_type || 'standard',
+            price: ticket.price || 0,
+            status: 'valid',
+            message: 'Accès autorisé'
         });
 
         playSuccessSound();
@@ -1689,7 +1927,7 @@ function vibrate(pattern) {
 }
 
 // ============================================================
-// TOAST — CORRIGÉ
+// TOAST
 // ============================================================
 let toastTimeout = null;
 function showToast(title, message, type = 'success', duration = 3000) {
@@ -1697,7 +1935,6 @@ function showToast(title, message, type = 'success', duration = 3000) {
     const icon = document.getElementById('toastIcon');
     if (!toast) return;
 
-    // Reset classes + styles inline
     toast.className = 'scan-toast ' + type;
     toast.style.opacity = '';
     toast.style.visibility = '';
@@ -1718,7 +1955,6 @@ function showToast(title, message, type = 'success', duration = 3000) {
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-        // Sécurité : re-cache après l'animation
         setTimeout(() => {
             if (!toast.classList.contains('show')) {
                 toast.style.opacity = '0';
