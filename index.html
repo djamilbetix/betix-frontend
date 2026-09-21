@@ -7,7 +7,7 @@
     <meta name="description" content="Betix - The first decentralized event platform on Pi Network" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260921.3" />
+    <link rel="stylesheet" href="style.css?v=20260921.4" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
@@ -626,10 +626,10 @@
 </div>
 
 <!-- GLOBAL LOADER -->
-<div id="globalLoader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
-    <div style="background:white; padding:30px; border-radius:16px; text-align:center; max-width:300px; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
-        <i class="fas fa-spinner fa-spin" style="font-size:2.5rem; color:#08143F;"></i>
-        <p id="loaderText" style="margin-top:12px; font-weight:500; color:#1f2937; font-size:1rem;">Loading...</p>
+<div id="globalLoader" class="betix-global-loader" style="display:none;">
+    <div class="betix-loader-card" role="status" aria-live="polite">
+        <div class="betix-spinner" aria-hidden="true"></div>
+        <p id="loaderText">Loading...</p>
     </div>
 </div>
 
@@ -931,6 +931,6 @@
         }, 500);
     }
 </script>
-<script src="script.js?v=20260921.3"></script>
+<script src="script.js?v=20260921.4"></script>
 </body>
 </html>
