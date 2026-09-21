@@ -1,4 +1,65 @@
 // ============================================================
+// SÉCURITÉ — Fonctions de secours (anti-crash)
+// ============================================================
+(function ensureSafetyNet() {
+    const safeFuncs = {
+        deleteNotification: function() {},
+        clearAllNotifications: function() {},
+        renderNotificationsPage: function() {},
+        updateNotifBadgeHeader: function() {},
+        updateSidebarNotifBadge: function() {},
+        addNotification: function() {},
+        saveNotifications: function() {},
+        loadNotificationsFromSupabase: function() { return Promise.resolve([]); },
+        deleteNotificationFromSupabase: function() { return Promise.resolve(false); },
+        markNotificationsAsReadInSupabase: function() { return Promise.resolve(); },
+        saveNotificationToSupabase: function() { return Promise.resolve(null); },
+        renderAdminUsers: function() {},
+        refreshUsersList: function() {},
+        loadAllUsersFromSupabase: function() { return Promise.resolve([]); },
+        renderAdminEventsFiltered: function() {},
+        renderAdminLogsFiltered: function() {},
+        renderAdminRefunds: function() {},
+        refreshAdminDashboard: function() {},
+        loadAdminTickets: function() { return Promise.resolve([]); },
+        adminToggleEventStatus: function() {},
+        initRealtimeNotifications: function() {},
+        loadAdminPage: function() {},
+        initAdminTabs: function() {},
+        adminLogout: function() {},
+        adminChangePassword: function() {},
+        adminSaveSettings: function() {},
+        adminDeleteEvent: function() {},
+        adminDeleteAllEvents: function() {},
+        adminClearLogs: function() {},
+        adminShowSlideForm: function() {},
+        adminSaveSlide: function() {},
+        adminDeleteSlide: function() {},
+        adminCancelSlideForm: function() {},
+        renderAdminSlides: function() {},
+        renderAdminEvents: function() {},
+        exportEventsCSV: function() {},
+        exportTicketsCSV: function() {},
+        exportUsersCSV: function() {},
+        exportRefundsCSV: function() {},
+        goToAdminEventsPage: function() {},
+        openCancelEventModal: function() {},
+        closeCancelEventModal: function() {},
+        confirmCancelEvent: function() {},
+        markRefundProcessed: function() {},
+        showEventSkeletons: function() {},
+        showMyEventsSkeletons: function() {},
+        showTicketSkeletons: function() {},
+        showHistorySkeletons: function() {},
+        showNotificationSkeletons: function() {}
+    };
+    Object.keys(safeFuncs).forEach(fn => {
+        if (typeof window[fn] === 'undefined') window[fn] = safeFuncs[fn];
+    });
+})();
+console.log('✅ Betix script.js chargé -', new Date().toISOString());
+
+// ============================================================
 // CONFIGURATION SUPABASE
 // ============================================================
 const SUPABASE_URL = "https://tycebwzgsujiazgopkri.supabase.co";
