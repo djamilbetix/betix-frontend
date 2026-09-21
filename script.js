@@ -1700,6 +1700,31 @@ function renderEventCard(event) {
 // ============================================================
 // FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
 // ============================================================
+function resizeCarouselToActiveImage(scroller, index) {
+    const wrapper = scroller && scroller.closest('.event-carousel-wrapper');
+    const track = scroller && scroller.querySelector('.carousel-track');
+    const slides = track ? Array.from(track.querySelectorAll('.carousel-slide')) : [];
+    if (!wrapper || !slides.length) return;
+
+    const slide = slides[Math.max(0, Math.min(index || 0, slides.length - 1))];
+    const img = slide && slide.querySelector('img');
+    if (!img) return;
+
+    const applyHeight = () => {
+        const width = scroller.clientWidth || wrapper.clientWidth || 1;
+        const naturalWidth = img.naturalWidth || width;
+        const naturalHeight = img.naturalHeight || Math.round(width * 0.5625);
+        let targetHeight = width * (naturalHeight / naturalWidth);
+        const maxHeight = Math.max(260, Math.min(window.innerHeight * 0.72, 620));
+        targetHeight = Math.max(220, Math.min(targetHeight, maxHeight));
+        wrapper.style.setProperty('height', targetHeight + 'px', 'important');
+        wrapper.style.setProperty('min-height', targetHeight + 'px', 'important');
+    };
+
+    if (img.complete && img.naturalWidth) applyHeight();
+    else img.addEventListener('load', applyHeight, { once: true });
+}
+
 function updateCarouselIndicators(scroller) {
     const wrapper = scroller && scroller.closest('.event-carousel-wrapper');
     if (!wrapper) return;
@@ -1713,6 +1738,7 @@ function updateCarouselIndicators(scroller) {
     const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
     dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
     if (counter) counter.textContent = (clampedIndex + 1) + '/' + slides.length;
+    resizeCarouselToActiveImage(scroller, clampedIndex);
 }
 
 function initCarouselIndicators() {
@@ -2836,6 +2862,8 @@ async function connectToPi() {
                         currentUser.memberSince = '2026';
                         currentUser.loyaltyPoints = 0;
                         saveUser();
+                        // Demo connection is also confirmed immediately; database sync follows in the background flow.
+                        showToast('Betix', t('demoConnected'), 'success');
                         await loadProfileData();
                         await syncUserToSupabase();
                         updateActivity();
@@ -2851,7 +2879,6 @@ async function connectToPi() {
                         initFilters();
                         renderEventsByCategory();
                         addNotification('Connexion réussie à Pi Network.', 'success');
-                        showToast('Betix', t('demoConnected'), 'success');
                         closeSidebar();
                         checkAndNotifyProfileCompletion();
                         hideConnectSpinner();
@@ -2868,6 +2895,10 @@ async function connectToPi() {
                     currentUser.piUid = piUser.username;
                     currentUser.name = piUser.username;
                     if (!currentUser.loyaltyPoints) currentUser.loyaltyPoints = 0;
+
+                    // Confirm the connection immediately after Pi authentication.
+                    // Do not wait for profile/database synchronization before showing feedback.
+                    showToast('Betix', t('piConnected') + piUser.username, 'success');
 
                     // NE PAS réinitialiser les champs de profil ici
                     // Charger d'abord les données existantes depuis Supabase
@@ -2889,7 +2920,6 @@ async function connectToPi() {
                     initFilters();
                     renderEventsByCategory();
                     addNotification('Connexion réussie à Pi Network.', 'success');
-                    showToast('Betix', t('piConnected') + piUser.username, 'success');
                     closeSidebar();
 
                     checkAndNotifyProfileCompletion();
