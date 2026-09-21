@@ -5658,3 +5658,68 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 }
 .bottom-nav .nav-item#navCreate:hover,
 .bottom-nav .nav-item#navCreate:active { background: #142d73 !important; }
+
+
+/* ============================================================
+   BETIX — FINAL MEDIA POLISH
+   Keep the complete photo visible and adapt the card to each
+   image's natural aspect ratio, like modern social feeds.
+   ============================================================ */
+.event-card-classic .poster-wrapper-classic {
+    aspect-ratio: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    background: #111827 !important;
+    transition: height .22s ease;
+}
+.event-card-classic .event-carousel-wrapper {
+    height: auto !important;
+    min-height: 220px !important;
+    max-height: min(72vh, 620px) !important;
+    transition: height .22s ease;
+}
+.event-card-classic .event-carousel,
+.event-card-classic .carousel-track,
+.event-card-classic .carousel-slide {
+    height: 100% !important;
+}
+.event-card-classic .carousel-slide {
+    align-items: center !important;
+    justify-content: center !important;
+    background: #111827 !important;
+}
+.event-card-classic .carousel-slide img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: #111827 !important;
+}
+
+/* Successful connection: unmistakably green Betix success notification. */
+.toast-notification.toast-success {
+    border-top-color: #22c55e !important;
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    box-shadow: 0 14px 38px rgba(22,163,74,.30) !important;
+}
+.toast-notification.toast-success .toast-icon {
+    color: #ffffff !important;
+}
+.toast-notification.toast-success .toast-title,
+.toast-notification.toast-success .toast-message,
+.toast-notification.toast-success .toast-close {
+    color: #ffffff !important;
+}
+.toast-notification.toast-success .toast-message { opacity: .94 !important; }
+
+@media (max-width: 480px) {
+    .event-card-classic .event-carousel-wrapper {
+        min-height: 210px !important;
+        max-height: 72vh !important;
+    }
+    .event-card-classic .carousel-slide img {
+        max-height: 72vh !important;
+    }
+}
