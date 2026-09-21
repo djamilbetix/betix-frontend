@@ -463,23 +463,16 @@ function clearCache(key) {
 }
 
 // ============================================================
-// UTILITAIRE : ÉVÉNEMENT TERMINÉ / EN COURS
+// UTILITAIRE : DATE DE L'ÉVÉNEMENT DÉPASSÉE
+// Règle globale : dès que la date/heure de début de l'événement
+// est passée, il est considéré comme passé. La durée n'intervient
+// pas dans le filtrage du fil d'actualité.
 // ============================================================
 function isEventPast(event) {
     if (!event || !event.date) return false;
-    const startDate = new Date(event.date);
-    if (isNaN(startDate.getTime())) return false;
-    const endDate = new Date(startDate);
-    const val = parseFloat(event.durationValue) || 0;
-    switch (event.durationUnit) {
-        case 'hours': endDate.setHours(endDate.getHours() + val); break;
-        case 'days': endDate.setDate(endDate.getDate() + val); break;
-        case 'weeks': endDate.setDate(endDate.getDate() + val * 7); break;
-        case 'months': endDate.setMonth(endDate.getMonth() + val); break;
-        case 'years': endDate.setFullYear(endDate.getFullYear() + val); break;
-        default: endDate.setHours(endDate.getHours() + 3);
-    }
-    return Date.now() > endDate.getTime();
+    const eventDate = new Date(event.date);
+    if (isNaN(eventDate.getTime())) return false;
+    return Date.now() > eventDate.getTime();
 }
 
 function isEventLive(event) {
