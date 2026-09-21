@@ -2819,7 +2819,7 @@ function closeSuccessPopup() {
 async function connectToPi() {
     showConnectSpinner();
     const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout (15s)')), 15000);
+        setTimeout(() => reject(new Error('Connection timeout (30s)')), 30000);
     });
     try {
         await Promise.race([
@@ -2905,11 +2905,16 @@ async function connectToPi() {
         ]);
     } catch (error) {
         console.error('Connection error:', error);
-        let errorMsg = t('connectionError') + ': ' + (error.message || "Please try again");
-        if (error.message.includes('timeout')) {
-            errorMsg = 'Connection timeout. Please check your internet connection and try again.';
+        const isTimeout = /timeout|aborted|abort/i.test(error?.message || '');
+
+        // A temporary network timeout must not cover the application with an
+        // alarming error banner. Keep the UI usable and let the user retry.
+        // Connection notifications are reserved for confirmed connect/disconnect
+        // actions, not transient network failures.
+        if (!isTimeout) {
+            showToast(t('connectionError'), error.message || 'Please try again.', 'error');
         }
-        showToast(t('connectionError'), errorMsg, 'error');
+
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
