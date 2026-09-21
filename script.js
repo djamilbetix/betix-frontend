@@ -1047,21 +1047,7 @@ async function loadAllFromSupabase() {
     const userIdentifier = currentUser.piUid || currentUser.wallet;
     const eventsCached = getCachedData('betix_cached_events', CACHE_DURATION_EVENTS);
     const ticketsCached = userIdentifier ? getCachedData('betix_cached_tickets_' + userIdentifier, CACHE_DURATION_TICKETS) : [];
-    if (!eventsCached) {
-        showEventSkeletons(6);
-        // Ne jamais laisser les skeletons indéfiniment si Supabase tarde.
-        setTimeout(() => {
-            const c = document.getElementById('eventsByCategory');
-            if (c && c.querySelector('.event-skeleton')) {
-                console.warn('⚠️ Timeout events — rendu local de secours');
-                try {
-                    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-                    if (Array.isArray(localEvents)) events = localEvents;
-                    renderEventsByCategory();
-                } catch (e) { console.warn('Local events fallback failed:', e); }
-            }
-        }, 8000);
-    }
+    if (!eventsCached) showEventSkeletons(6);
     if (eventsCached && (!userIdentifier || ticketsCached)) {
         console.log('✅ Using full cache for events and tickets'); events = eventsCached; if (userIdentifier) tickets = ticketsCached; else tickets = JSON.parse(localStorage.getItem('betix_tickets') || '[]');
         saveBackupData(events,tickets); updateSyncStatus('success'); renderEventsByCategory(); renderTickets(); renderHistory(); updateProfilePage(); return;
@@ -1436,12 +1422,10 @@ function generateTicketHTML(ticket) {
     const expiration = new Date(safeTicket.expiration_date || calculateTicketExpiration(safeTicket.eventDate));
     const expirationDate = !isNaN(expiration.getTime()) ? expiration.toLocaleDateString('en-US') : 'N/A';
     const ticketNumber = safeTicket.ticketNumber || 'N/A';
-    const rawCategory = String(safeTicket.category || 'default').trim();
-    const categoryKey = Object.keys(ticketImages).find(k => k.toLowerCase() === rawCategory.toLowerCase()) || 'default';
-    const ticketImage = ticketImages[categoryKey] || ticketImages['default'];
-    // Classe normalisée : évite qu'un espace ou une différence de casse
-    // empêche les réglages précis de positionnement par catégorie.
-    const categoryClass = 'ticket-category-' + categoryKey.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const category = safeTicket.category || 'default';
+    const ticketImage = ticketImages[category] || ticketImages['default'];
+    // Classe de catégorie en minuscules pour correspondre aux sélecteurs CSS
+    const categoryClass = 'ticket-category-' + category.toLowerCase();
 
     return '<div class="ticket-overlay-container ' + categoryClass + '" id="ticket-' + (safeTicket.id || 'unknown') + '">' +
         '<div class="ticket-overlay-bg">' +
@@ -1461,7 +1445,7 @@ function generateTicketHTML(ticket) {
         '<div class="ticket-right line-6"><span class="ticket-value">#' + escapeHtml(String(ticketNumber)) + '</span></div>' +
         '<div class="ticket-qr" id="qr-ticket-' + (safeTicket.id || 'unknown') + '"></div>' +
         '<div class="ticket-qr-id">' + escapeHtml(ticketIdShort) + '</div>' +
-        '<div class="ticket-qr-date">' + escapeHtml(purchaseDate) + '<br>Expires: ' + escapeHtml(expirationDate) + '</div>' +
+        '<div class="ticket-qr-date">Expires: ' + escapeHtml(expirationDate) + '</div>' +
     '</div>';
 }
 
@@ -2786,38 +2770,21 @@ function applyStaggeredAnimation(containerSelector, delayIncrement) {
 // ============================================================
 // NOTIFICATION CENTRÉE PREMIUM (Betix)
 // ============================================================
-function showCenterNotification(title, message, type = 'success', duration = 3500) {
-    const existing = document.getElementById('betixCenterNotification');
+function showCenterNotification(title, message, type = 'connected', duration = 3200) {
+    const existing=document.getElementById('betixCenterNotification');
     if (existing) existing.remove();
-
-    const colors = {
-        success: { bg: 'linear-gradient(135deg, #0B1F5C, #1a2a4a)', icon: 'fa-check-circle', accent: '#10b981' },
-        error:   { bg: 'linear-gradient(135deg, #7f1d1d, #991b1b)', icon: 'fa-exclamation-circle', accent: '#ef4444' },
-        warning: { bg: 'linear-gradient(135deg, #78350f, #92400e)', icon: 'fa-exclamation-triangle', accent: '#f59e0b' },
-        info:    { bg: 'linear-gradient(135deg, #1e3a8a, #1e40af)', icon: 'fa-info-circle', accent: '#3b82f6' }
-    };
-    const style = colors[type] || colors.success;
-
-    const notif = document.createElement('div');
-    notif.id = 'betixCenterNotification';
-    notif.innerHTML = `
-        <div class="bcn-content" style="background:${style.bg};">
-            <div class="bcn-icon" style="background:${style.accent}22;border-color:${style.accent};">
-                <i class="fas ${style.icon}" style="color:${style.accent};"></i>
-            </div>
-            <h3>${escapeHtml(title)}</h3>
-            <p>${escapeHtml(message)}</p>
-            <div class="bcn-timer" style="background:${style.accent};animation-duration:${duration}ms;"></div>
-        </div>`;
-    notif.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:999999;display:flex;align-items:center;justify-content:center;animation:bcnFade .25s ease;`;
+    const variants={ connected:{icon:'fa-link'}, disconnected:{icon:'fa-right-from-bracket'} };
+    const variant=variants[type]||variants.connected;
+    const notif=document.createElement('div');
+    notif.id='betixCenterNotification';
+    notif.innerHTML='<div class="bcn-content" role="status" aria-live="polite">'+
+        '<div class="bcn-icon"><i class="fas '+variant.icon+'"></i></div>'+
+        '<div class="bcn-copy"><h3>'+escapeHtml(title)+'</h3><p>'+escapeHtml(message)+'</p></div>'+
+        '<div class="bcn-timer" style="animation-duration:'+duration+'ms"></div>'+
+        '</div>';
     document.body.appendChild(notif);
-
-    const close = () => {
-        if (!notif.isConnected) return;
-        notif.style.animation = 'bcnFade .3s ease reverse';
-        setTimeout(() => notif.remove(), 300);
-    };
-    setTimeout(close, duration);
+    const close=()=>{ if(!notif.isConnected)return; notif.classList.add('bcn-closing'); setTimeout(()=>notif.remove(),280); };
+    setTimeout(close,duration);
 }
 
 function showToast(title, message, type) {
@@ -2953,7 +2920,7 @@ async function connectToPi() {
                         currentUser.loyaltyPoints = 0;
                         saveUser();
 
-                        showCenterNotification('Betix', t('demoConnected'), 'success');
+                        showCenterNotification('Betix', 'Pi account connected', 'connected', 3200);
                         hideConnectSpinner();
                         closeSidebar();
                         updateConnectButtons();
@@ -2994,7 +2961,7 @@ async function connectToPi() {
                     saveUser();
 
                     // Immediate feedback: network-heavy profile/event synchronization happens below.
-                    showCenterNotification('Betix', t('piConnected') + piUser.username, 'success');
+                    showCenterNotification('Betix', 'Pi account connected', 'connected', 3200);
                     hideConnectSpinner();
                     closeSidebar();
                     updateConnectButtons();
@@ -3029,7 +2996,7 @@ async function connectToPi() {
         if (error.message && error.message.includes('timeout')) {
             errorMsg = 'Connection timeout. Please check your internet connection and try again.';
         }
-        showCenterNotification(t('connectionError'), errorMsg, 'error');
+        showToast(t('connectionError'), errorMsg, 'error');
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
@@ -3083,7 +3050,7 @@ async function disconnectPi() {
     saveUser();
     localStorage.removeItem('betix_last_activity');
     localStorage.removeItem('betix_pending_payment');
-    showCenterNotification('Betix', t('disconnected'), 'success');
+    showCenterNotification('Betix', 'Pi account disconnected', 'disconnected', 3200);
     updateUserInfo();
     updateProfilePage();
     renderEventsByCategory();
@@ -3292,45 +3259,15 @@ function updateProfilePage() {
 }
 
 function userHasPublishedEvents() {
-    const identifiers = [
-        currentUser.piUid,
-        currentUser.wallet,
-        currentUser.username,
-        currentUser.name,
-        currentUser.first_name && currentUser.last_name ? (currentUser.first_name + ' ' + currentUser.last_name) : null,
-        currentUser.first_name,
-        currentUser.last_name
-    ].filter(Boolean).map(v => String(v).trim().toLowerCase());
-
-    if (!identifiers.length) return false;
-
-    return events.some(e => {
-        const organizerValues = [
-            e.organizer,
-            e.organizerPiUid,
-            e.organizerName,
-            e.organizer_username,
-            e.organizerWallet,
-            e.organizer_wallet,
-            e.organizer_pi_uid
-        ].filter(Boolean).map(v => String(v).trim().toLowerCase());
-
-        return organizerValues.some(value => identifiers.includes(value));
-    });
+    if (!currentUser.wallet && !currentUser.piUid) return false;
+    const userId = currentUser.piUid || currentUser.wallet;
+    return events.some(e => e.organizer === userId || e.organizerPiUid === userId || e.organizerName === currentUser.name);
 }
 
 function updateScanButtonVisibility() {
     const scanBtn = document.getElementById('scanMenuItem');
     if (!scanBtn) return;
-
-    // Le bouton doit rester accessible dès qu'un utilisateur est connecté.
-    // La page scan.html doit effectuer sa propre vérification d'accès.
-    const connected = !!(currentUser.wallet || currentUser.piUid);
-    const hasEvents = userHasPublishedEvents();
-    const isAdmin = typeof public_isAdmin === 'function' && public_isAdmin();
-
-    scanBtn.style.display = (connected && (hasEvents || isAdmin)) ? 'flex' : 'none';
-    scanBtn.dataset.hasEvents = hasEvents ? 'true' : 'false';
+    scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
 }
 
 // ============================================================
@@ -3836,632 +3773,70 @@ function showLegal(type) {
 function clearAllData() { if (confirm(t('clearDataConfirm'))) { localStorage.clear(); location.reload(); } }
 function toggleDarkMode(e) { if (e.target.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('darkMode', 'true'); } else { document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', 'false'); } }
 
-
-
 // ============================================================
-// RESTORED CORE FUNCTIONS — compatibility repair
+// LANGUAGE / UI TRANSLATION SAFETY
 // ============================================================
-
-function addNotification(message, type) {
-    const notif = { id: Date.now().toString(), message, type: type || 'info', read: false, date: new Date().toISOString() };
-    notifications.unshift(notif);
-    if (notifications.length > 100) notifications = notifications.slice(0, 100);
-    saveNotifications();
-    saveNotificationToSupabase(notif).then(saved => {
-        if (!saved) return;
-        const local = notifications.find(n => n.id === notif.id);
-        if (local) {
-            local.id = String(saved.id);
-            local.date = saved.created_at || local.date;
-            saveNotifications();
-        }
-    });
-    updateNotifBadgeHeader();
-}
-
-
-function calculateLoyaltyPoints() {
-    let points = 0;
-    for (let i = 0; i < ratings.length; i++) if (ratings[i].userWallet === (currentUser.wallet || currentUser.name)) points += ratings[i].rating;
-    currentUser.loyaltyPoints = points;
-    saveUser();
-    return points;
-}
-
-function changeLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('betix_language', lang);
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = lang;
-    updateUITranslations();
-    const googleSelect = document.querySelector('.goog-te-combo');
-    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
-    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
-}
-
-function checkAndNotifyProfileCompletion() {
-    if (currentUser.wallet && !currentUser.profile_completed && !currentUser.profile_reminder_shown) {
-        setTimeout(() => {
-            showToast(t('incompleteProfile'), t('pleaseCompleteProfile'), 'info');
-            currentUser.profile_reminder_shown = true;
-            saveUser();
-        }, 5000);
-    }
-}
-
-
-function clearAllNotifications() {
-    if (notifications.length === 0) return;
-    if (confirm('Delete all notifications?')) {
-        notifications = [];
-        saveNotifications();
-        renderNotificationsPage();
-        updateNotifBadgeHeader();
-        updateSidebarNotifBadge();
-        addNotification('All notifications have been cleared.', 'info');
-    }
-}
-
-
-function closeEditEventModal() { document.getElementById('editEventModal').classList.remove('show'); editingEventId = null; }
-
-
-function closePublishConfirmPopup() {
-    document.getElementById('publishConfirmPopup').classList.remove('show');
-    const publishBtn = document.getElementById('publishEventBtn');
-    if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-    pendingEventData = null;
-}
-
-
-function compressImage(file) {
-    return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) { reject(new Error('Not an image')); return; }
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const img = new Image();
-            img.onload = function() {
-                let width = img.width, height = img.height;
-                const maxWidth = 1200, maxHeight = 1200;
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.round(width * ratio); height = Math.round(height * ratio);
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, width, height);
-                let format = 'image/webp';
-                const testCanvas = document.createElement('canvas');
-                testCanvas.width = 1; testCanvas.height = 1;
-                if (!testCanvas.toDataURL('image/webp').includes('image/webp')) format = 'image/jpeg';
-                resolve(canvas.toDataURL(format, 0.7));
-            };
-            img.onerror = function() { reject(new Error('Failed to load image')); };
-            img.src = ev.target.result;
-        };
-        reader.onerror = function() { reject(new Error('Failed to read file')); };
-        reader.readAsDataURL(file);
-    });
-}
-
-
-async function confirmPublishEvent() {
-    if (!pendingEventData) { alert('Event not found'); return; }
-    const publishBtn = document.getElementById('publishEventBtn');
-    const confirmBtn = document.getElementById('confirmPublishBtn');
-    if (confirmBtn) { confirmBtn.classList.add('loading'); confirmBtn.disabled = true; confirmBtn.textContent = t('publishing'); }
-    try {
-        const newEvent = pendingEventData;
-        const uploadedUrls = [];
-        if (newEvent.images && newEvent.images.length > 0) {
-            for (let i = 0; i < newEvent.images.length; i++) {
-                const url = await uploadEventImage(newEvent.id, newEvent.images[i], i);
-                uploadedUrls.push(url || newEvent.images[i]);
-            }
-        }
-        newEvent.images = uploadedUrls;
-        newEvent.coverImage = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
-        newEvent.organizerPiUid = currentUser.piUid || currentUser.wallet;
-        newEvent.organizerName = currentUser.name;
-        events.push(newEvent);
-        saveEvents();
-        await saveEventToSupabase(newEvent);
-        await syncUserToSupabase();
-        document.getElementById('eventForm').reset();
-        for (let i = 0; i < 3; i++) removeImageModern(i);
-        uploadedImages = {};
-        addNotification(t('eventPublished') + ' "' + newEvent.title + '"', 'event');
-        closePublishConfirmPopup();
-        document.getElementById('publishConfirmPopup').classList.remove('show');
-        renderEventsByCategory();
-        updateProfilePage();
-        if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-        if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); }
-        showToast('Betix', t('eventPublished'), 'success');
-        clearCache('betix_cached_events');
-        showPage('home');
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); if (confirmBtn) { confirmBtn.classList.remove('loading'); confirmBtn.disabled = false; confirmBtn.textContent = t('publishEvent'); } if (publishBtn) { publishBtn.classList.remove('loading'); publishBtn.disabled = false; } }
-}
-
-async function createEvent(e) {
-    e.preventDefault();
-    if (!requireLogin()) return;
-    if (!requireProfileComplete()) return;
-    const publishBtn = document.getElementById('publishEventBtn');
-    if (publishBtn.classList.contains('loading')) return;
-    if (!currentUser.wallet) { alert(t('pleaseConnect')); return; }
-    const title = document.getElementById('eventTitle').value.trim();
-    const category = document.getElementById('eventCategory').value;
-    const pays = document.getElementById('eventCountry').value;
-    const date = document.getElementById('eventDate').value;
-    const location = document.getElementById('eventLocation').value.trim();
-    const description = document.getElementById('eventDescription').value.trim();
-    const conditions = document.getElementById('eventConditions').value.trim();
-    const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
-    const durationValue = document.getElementById('eventDurationValue').value;
-    const durationUnit = document.getElementById('eventDurationUnit').value;
-    const durationValueNum = durationValue ? parseInt(durationValue) : null;
-    if (!title) { alert(t('title') + ' ' + t('required')); return; }
-    if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
-    if (!location) { alert(t('location') + ' ' + t('required')); return; }
-    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
-    if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
-    const images = getUploadedImages();
-    if (images.length < 1) { alert('At least 1 image is required (up to 3)'); return; }
-    publishBtn.classList.add('loading');
-    publishBtn.disabled = true;
-    try {
-        const newEvent = {
-            id: Date.now().toString(),
-            title, category, pays, country: pays, date, location,
-            description: description || '',
-            conditions,
-            price: 0.0003,
-            seatsTotal,
-            seatsLeft: seatsTotal,
-            standardSeats: seatsTotal,
-            standardSold: 0,
-            standardLeft: seatsTotal,
-            images,
-            coverImage: images[0],
-            organizer: currentUser.wallet,
-            organizerPiUid: currentUser.piUid || currentUser.wallet,
-            organizerName: currentUser.name,
-            createdAt: new Date().toISOString(),
-            boosts: 0,
-            durationValue: durationValueNum,
-            durationUnit,
-            ticketTypes: { standard: { enabled: true, price: 0.0003 } }
-        };
-        openPublishConfirm(newEvent);
-    } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
-}
-
-async function deleteNotification(id) {
-    notifications = notifications.filter(n => n.id !== id);
-    saveNotifications();
-    await deleteNotificationFromSupabase(id);
-    renderNotificationsPage();
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-
 function detectLanguage() {
     let savedLang = localStorage.getItem('betix_language') || 'en';
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get('lang');
-    if (urlLang) { localStorage.setItem('betix_language', urlLang); savedLang = urlLang; }
+    if (urlLang) { savedLang = urlLang; localStorage.setItem('betix_language', savedLang); }
     currentLang = savedLang;
-    const nativeSelect = document.getElementById('nativeLangSelect');
-    if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
     const settingsSelect = document.getElementById('settingsLangSelect');
     if (settingsSelect) settingsSelect.value = savedLang;
-    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
-    setTimeout(() => updateUITranslations(), 500);
+    setTimeout(() => {
+        try {
+            const googleSelect = document.querySelector('.goog-te-combo');
+            if (googleSelect && googleSelect.value !== savedLang) {
+                googleSelect.value = savedLang;
+                googleSelect.dispatchEvent(new Event('change'));
+            }
+        } catch(e) { console.warn('Google language sync skipped:', e); }
+    }, 1500);
     return savedLang;
 }
 
-
-function getUploadedImages() {
-    const images = [];
-    for (let key in uploadedImages) if (uploadedImages.hasOwnProperty(key)) images.push(uploadedImages[key]);
-    return images;
-}
-
-function goToHistory() { showPage('history'); }
-
-function goToMyEvents() { showPage('myevents'); }
-
-function goToRatings() { showPage('ratings'); }
-
-function goToTickets() { showPage('tickets'); }
-
-
-async function handleImageUploadModern(file, index) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please select an image'); return; }
-    if (file.size > 10 * 1024 * 1024) { alert('Image is too large (max 10MB)'); return; }
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const progress = document.getElementById('progress' + (index + 1));
-    const progressFill = document.getElementById('progressFill' + (index + 1));
-    const progressText = document.getElementById('progressText' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    progress.style.display = 'block';
-    progressFill.style.width = '0%';
-    progressText.textContent = '0%';
-    box.classList.add('compress');
-    try {
-        let interval = setInterval(() => {
-            let cur = parseInt(progressFill.style.width) || 0;
-            if (cur < 90) { let nw = cur + Math.random() * 15; if (nw > 90) nw = 90; progressFill.style.width = nw + '%'; progressText.textContent = Math.round(nw) + '%'; }
-        }, 200);
-        const compressedData = await compressImage(file);
-        clearInterval(interval);
-        progressFill.style.width = '100%';
-        progressText.textContent = '100%';
-        setTimeout(() => {
-            progress.style.display = 'none';
-            progressFill.style.width = '0%';
-            previewImage.src = compressedData;
-            previewContainer.style.display = 'block';
-            box.classList.add('has-image');
-            box.classList.remove('compress');
-            uploadedImages[index] = compressedData;
-        }, 300);
-    } catch (error) { alert('Error compressing image. Please try with a smaller image.'); progress.style.display = 'none'; box.classList.remove('compress'); }
-}
-
-
-function initCountrySelectors() {
-    const filterSelect = document.getElementById('countrySelect');
-    if (filterSelect) {
-        filterSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === currentCountryFilter) option.selected = true;
-            filterSelect.appendChild(option);
-        });
-    }
-    const eventSelect = document.getElementById('eventCountry');
-    if (eventSelect) {
-        eventSelect.innerHTML = '';
-        countriesList.forEach(country => {
-            if (country === 'All') return;
-            const flag = countryFlags[country] || '';
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = flag + ' ' + country;
-            if (country === 'France') option.selected = true;
-            eventSelect.appendChild(option);
-        });
-    }
-    setTimeout(() => {
-        const filterSelect = document.getElementById('countrySelect');
-        if (filterSelect) {
-            const options = filterSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
-            });
-        }
-        const eventSelect = document.getElementById('eventCountry');
-        if (eventSelect) {
-            const options = eventSelect.querySelectorAll('option');
-            options.forEach((opt, i) => {
-                opt.classList.add('stagger-item');
-                opt.style.animationDelay = (i * 0.015) + 's';
-            });
-        }
-    }, 50);
-}
-
-function isSessionExpired() { return (Date.now() - parseInt(localStorage.getItem('betix_last_activity') || 0)) > 2592000000; }
-
-
-function openEditEventModal(eventId) {
-    const event = events.find(e => e.id === eventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    if (event.organizer !== currentUser.wallet && event.organizerName !== currentUser.name) { alert('You are not the organizer of this event'); return; }
-    editingEventId = eventId;
-    document.getElementById('editEventDescription').value = event.description || '';
-    document.getElementById('editEventLocation').value = event.location || '';
-    document.getElementById('editEventConditions').value = event.conditions || '';
-    document.getElementById('editEventDurationValue').value = event.durationValue || '';
-    document.getElementById('editEventDurationUnit').value = event.durationUnit || 'hours';
-    document.getElementById('editEventSeats').value = event.seatsTotal || 0;
-    document.getElementById('editEventModal').classList.add('show');
-}
-
-
-function openPublishConfirm(eventData) {
-    pendingEventData = eventData;
-    document.getElementById('confirmTitle').textContent = eventData.title || 'Untitled';
-    document.getElementById('confirmCategory').textContent = eventData.category || 'Uncategorized';
-    document.getElementById('confirmCountry').textContent = eventData.pays || eventData.country || 'Not specified';
-    document.getElementById('confirmDate').textContent = new Date(eventData.date).toLocaleDateString('en-US') + ' at ' + new Date(eventData.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('confirmLocation').textContent = eventData.location || 'Online';
-    document.getElementById('confirmPrice').textContent = eventData.price + ' Pi';
-    document.getElementById('confirmSeats').textContent = eventData.seatsTotal || 0;
-    document.getElementById('confirmOrganizer').textContent = currentUser.name || currentUser.wallet || 'Unknown';
-    document.getElementById('confirmDescription').textContent = eventData.description || 'No description';
-    document.getElementById('confirmConditions').textContent = eventData.conditions || 'No conditions specified';
-    const confirmTicketTypes = document.getElementById('confirmTicketTypes');
-    if (confirmTicketTypes) confirmTicketTypes.textContent = 'Standard: ' + (eventData.price || 0).toFixed(6) + ' Pi';
-    const confirmDuration = document.getElementById('confirmDuration');
-    if (confirmDuration) {
-        if (eventData.durationValue && eventData.durationUnit) {
-            const unitLabels = { hours: 'Hour', days: 'Day', weeks: 'Week', months: 'Month', years: 'Year' };
-            confirmDuration.textContent = eventData.durationValue + ' ' + (unitLabels[eventData.durationUnit] || eventData.durationUnit);
-            confirmDuration.style.display = 'block';
-        } else { confirmDuration.style.display = 'none'; }
-    }
-    const confirmImages = document.getElementById('confirmImages');
-    if (confirmImages) {
-        confirmImages.innerHTML = '';
-        if (eventData.images && eventData.images.length > 0) {
-            eventData.images.forEach(img => {
-                const imgEl = document.createElement('img');
-                imgEl.src = img; imgEl.alt = 'Event image'; imgEl.style.objectFit = 'contain'; imgEl.style.width = '70px'; imgEl.style.height = '70px'; imgEl.style.background = '#1a1a2e';
-                confirmImages.appendChild(imgEl);
-            });
-        }
-    }
-    document.getElementById('publishConfirmPopup').classList.add('show');
-}
-
-
-function removeImageModern(index) {
-    const box = document.getElementById('uploadBox' + (index + 1));
-    const previewContainer = document.getElementById('previewContainer' + index);
-    const previewImage = document.getElementById('previewImage' + index);
-    const input = document.getElementById('imageInput' + index);
-    previewContainer.style.display = 'none';
-    previewImage.src = '#';
-    box.classList.remove('has-image');
-    box.classList.remove('compress');
-    input.value = '';
-    delete uploadedImages[index];
-}
-
-
-function renderMyRatings() {
-    const container = document.getElementById('myRatingsList');
-    if (!container) return;
-    const myRatings = ratings.filter(r => r.userWallet === (currentUser.wallet || currentUser.name));
-    if (!myRatings.length) { container.innerHTML = '<p style="text-align:center;padding:2rem;">' + t('noReviews') + '</p>'; return; }
-    container.innerHTML = myRatings.map(r => {
-        const stars = Array.from({ length: 5 }, (_, i) => i < r.rating ? '★' : '☆').join('');
-        return '<div class="ticket-card"><h3>' + escapeHtml(r.eventTitle) + '</h3><div>' + t('rating') + ': ' + r.rating + '/5 ' + stars + '</div>' + (r.comment ? '<p>"' + escapeHtml(r.comment) + '"</p>' : '') + '<small>' + new Date(r.date).toLocaleDateString() + '</small></div>';
-    }).join('');
-    setTimeout(() => { applyStaggeredAnimation('#myRatingsList'); }, 50);
-}
-
-
-function renderNotificationsPage() {
-    const container = document.getElementById('notificationsList');
-    if (!container) return;
-    if (!notifications || notifications.length === 0) {
-        container.innerHTML = '<div class="notification-empty">' +
-            '<i class="fas fa-bell-slash"></i>' +
-            '<p style="font-size:0.95rem;">' + t('noNotifications') + '</p>' +
-        '</div>';
-        return;
-    }
-    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
-        '<span style="font-size:0.85rem;color:#6b7280;">' + notifications.length + ' notification(s)</span>' +
-        '<button class="btn-secondary" onclick="clearAllNotifications()" style="background:#ef4444;color:white;border:none;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:0.75rem;">' +
-            '<i class="fas fa-trash"></i> Clear all' +
-        '</button>' +
-    '</div>';
-    notifications.forEach((notif) => {
-        const time = new Date(notif.date);
-        const timeStr = time.toLocaleDateString('en-US') + ' ' + time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const unreadClass = notif.read ? '' : 'unread';
-        const type = notif.type || 'info';
-        const iconMap = { purchase: 'fa-shopping-cart', event: 'fa-calendar-plus', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', success: 'fa-check-circle' };
-        const icon = iconMap[type] || 'fa-info-circle';
-        html += '<div class="notification-item type-' + type + ' ' + unreadClass + '">' +
-            '<div class="notif-icon"><i class="fas ' + icon + '"></i></div>' +
-            '<div class="notif-content">' +
-                '<div class="notif-msg">' + escapeHtml(notif.message) + '</div>' +
-                '<div class="notif-time">' + timeStr + '</div>' +
-            '</div>' +
-            '<button class="notif-delete-btn" onclick="deleteNotification(\'' + notif.id + '\')" title="Delete"><i class="fas fa-times"></i></button>' +
-        '</div>';
-    });
-    container.innerHTML = html;
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-    notifications.forEach(n => n.read = true);
-    saveNotifications();
-    markNotificationsAsReadInSupabase(unreadIds);
-    updateNotifBadgeHeader();
-    updateSidebarNotifBadge();
-}
-
-
-async function saveEventEdits() {
-    if (!editingEventId) return;
-    const event = events.find(e => e.id === editingEventId);
-    if (!event) { alert(t('eventNotFound')); return; }
-    const description = document.getElementById('editEventDescription').value.trim();
-    const location = document.getElementById('editEventLocation').value.trim();
-    const conditions = document.getElementById('editEventConditions').value.trim();
-    const durationValue = document.getElementById('editEventDurationValue').value;
-    const durationUnit = document.getElementById('editEventDurationUnit').value;
-    const seatsTotal = parseInt(document.getElementById('editEventSeats').value) || 0;
-    if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
-    const ticketsSold = tickets.filter(t => t.eventId === editingEventId).length;
-    if (seatsTotal < ticketsSold) { alert('You cannot reduce the number of seats below the ' + ticketsSold + ' already sold'); return; }
-    const updates = {
-        description, location, conditions,
-        seatsTotal,
-        seatsLeft: seatsTotal - ticketsSold,
-        durationValue: durationValue ? parseInt(durationValue) : null,
-        durationUnit: durationUnit || null,
-        standardSeats: seatsTotal,
-        standardLeft: seatsTotal - ticketsSold,
-        standardSold: ticketsSold
-    };
-    Object.assign(event, updates);
-    saveEvents();
-    await updateEventInSupabase(editingEventId, {
-        description: updates.description, location: updates.location, conditions: updates.conditions,
-        max_tickets: updates.seatsTotal, duration_value: updates.durationValue, duration_unit: updates.durationUnit,
-        standard_seats: updates.standardSeats, standard_sold: updates.standardSold
-    });
-    addNotification(t('editEvent') + ' "' + event.title + '"', 'event');
-    closeEditEventModal();
-    renderEventsByCategory();
-    renderMyEvents();
-    alert(t('eventPublished'));
-}
-
-
-function setupTicketTypesUI() { /* no-op */ }
-
-
-function syncSettingsLanguageSelector() {
-    const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) {
-        settingsSelect.value = currentLang;
-        settingsSelect.addEventListener('change', function() { changeLanguage(this.value); });
-    }
-}
-
-
-function updateActivity() { lastActivity = Date.now(); localStorage.setItem('betix_last_activity', lastActivity); }
-
-
-function updateNotifBadgeHeader() {
-    const badge = document.getElementById('notifBadgeHeader');
-    if (!badge) return;
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) { badge.textContent = unread; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
-    updateSidebarNotifBadge();
-}
-
-
-function updateSidebarNotifBadge() {
-    const badge = document.getElementById('sidebarNotifBadge');
-    if (!badge) return;
-    const unread = notifications.filter(n => !n.read).length;
-    if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-}
-
-
 function updateUITranslations() {
-    const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
-    const pageMap = { home: t('home'), myevents: t('myEvents'), profile: t('profile'), settings: t('settings'), tickets: t('myTickets'), history: t('ticketHistory'), faq: t('faq'), admin: t('administration'), scan: 'Scan Ticket' };
-    sidebarItems.forEach(item => {
-        const page = item.dataset.page;
-        if (pageMap[page]) {
-            const icon = item.querySelector('i');
-            item.innerHTML = '';
-            if (icon) item.appendChild(icon);
-            item.appendChild(document.createTextNode(' ' + pageMap[page]));
-        }
-    });
-    document.getElementById('sidebarName') && (document.getElementById('sidebarName').textContent = currentUser.name || t('guest'));
-    document.getElementById('sidebarWallet') && (document.getElementById('sidebarWallet').textContent = currentUser.wallet ? 'Connected' : t('notConnected'));
-    document.getElementById('sidebarWalletBtn') && (document.getElementById('sidebarWalletBtn').textContent = currentUser.wallet ? t('disconnect') : t('connectPi'));
-    const socialTitle = document.querySelector('.sidebar-social-title');
-    if (socialTitle) socialTitle.textContent = t('followUs');
-    const heroTitle = document.querySelector('.hero-text h1');
-    if (heroTitle) heroTitle.textContent = "The first ticketing platform powered by Pi Network";
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.placeholder = t('searchEvent');
-    const countryLabel = document.querySelector('.filter-country-select label');
-    if (countryLabel) countryLabel.innerHTML = '<i class="fas fa-globe-africa"></i> ' + t('chooseCountry');
-    const eventsTitle = document.querySelector('.events-title');
-    if (eventsTitle) eventsTitle.textContent = t('upcomingEvents');
-    const eventsSub = document.querySelector('.events-sub');
-    if (eventsSub) eventsSub.textContent = t('joinCommunity');
-    document.querySelector('#navHome span') && (document.querySelector('#navHome span').textContent = t('home'));
-    document.querySelector('#navCreate span') && (document.querySelector('#navCreate span').textContent = 'Create');
-    document.querySelector('#navMenu span') && (document.querySelector('#navMenu span').textContent = 'Menu');
-    const backLabel = document.querySelector('.back-btn .back-btn-label');
-    if (backLabel) backLabel.textContent = t('back');
-    const footerTitles = document.querySelectorAll('.footer-col h4');
-    if (footerTitles.length >= 3) {
-        footerTitles[0].textContent = t('footerTitleInfo');
-        footerTitles[1].textContent = t('footerTitleBetix');
-        footerTitles[2].textContent = t('footerTitlePartners');
-    }
-    const footerLinks = document.querySelectorAll('.footer-col ul li a');
-    const footerLinkTexts = [
-        t('footerTermsSale'), t('footerTermsUse'), t('footerPrivacy'), t('footerAccessibility'),
-        t('footerPrivacyChoices'), t('footerFanGuide'), t('footerLegal'), t('footerCookies'),
-        t('footerAbout'), t('footerContact'), t('footerFeedback'), t('footerHelp'),
-        t('footerJoinCommunity'), t('footerPiNetwork'), t('footerSecure')
-    ];
-    footerLinks.forEach((link, index) => { if (index < footerLinkTexts.length) link.textContent = footerLinkTexts[index]; });
-    const footerSlogan = document.querySelector('.footer-slogan');
-    if (footerSlogan) footerSlogan.textContent = t('footerSlogan');
-    const footerDesc = document.querySelector('.footer-desc');
-    if (footerDesc) footerDesc.textContent = t('footerDesc');
-    const footerRights = document.querySelectorAll('.footer-bottom span');
-    if (footerRights.length >= 1) footerRights[0].textContent = '© 2026 Betix. ' + t('footerRights');
-    if (footerRights.length >= 2) footerRights[footerRights.length - 1].textContent = t('footerBuiltOn');
+    try {
+        const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]');
+        const pageMap = { home:t('home'), myevents:t('myEvents'), profile:t('profile'), settings:t('settings'), tickets:t('myTickets'), history:t('ticketHistory'), faq:t('faq'), admin:t('administration'), scan:'Scan Ticket' };
+        sidebarItems.forEach(item => {
+            const page=item.dataset.page; if (!pageMap[page]) return;
+            const icon=item.querySelector('i'); item.innerHTML=''; if (icon) item.appendChild(icon);
+            item.appendChild(document.createTextNode(' '+pageMap[page]));
+        });
+        const sidebarName=document.getElementById('sidebarName');
+        if (sidebarName) sidebarName.textContent=currentUser.name||t('guest');
+        const sidebarWallet=document.getElementById('sidebarWallet');
+        if (sidebarWallet) sidebarWallet.textContent=currentUser.wallet?'Connected':t('notConnected');
+        const sidebarBtn=document.getElementById('sidebarWalletBtn');
+        if (sidebarBtn && !sidebarBtn.classList.contains('loading')) sidebarBtn.textContent=currentUser.wallet?t('disconnect'):t('connectPi');
+        const socialTitle=document.querySelector('.sidebar-social-title');
+        if (socialTitle) socialTitle.textContent=t('followUs');
+        const heroTitle=document.querySelector('.hero-text h1');
+        if (heroTitle) heroTitle.textContent='The first ticketing platform powered by Pi Network';
+        const searchInput=document.getElementById('searchInput');
+        if (searchInput) searchInput.placeholder=t('searchEvent');
+        const countryLabel=document.querySelector('.filter-country-select label');
+        if (countryLabel) countryLabel.innerHTML='<i class="fas fa-globe-africa"></i> '+t('chooseCountry');
+        const eventsTitle=document.querySelector('.events-title');
+        if (eventsTitle) eventsTitle.textContent=t('upcomingEvents');
+        const eventsSub=document.querySelector('.events-sub');
+        if (eventsSub) eventsSub.textContent=t('joinCommunity');
+        const navHome=document.querySelector('#navHome span'); if (navHome) navHome.textContent=t('home');
+        const navCreate=document.querySelector('#navCreate span'); if (navCreate) navCreate.textContent='Create';
+        const navMenu=document.querySelector('#navMenu span'); if (navMenu) navMenu.textContent='Menu';
+        const backLabel=document.querySelector('.back-btn .back-btn-label'); if (backLabel) backLabel.textContent=t('back');
+    } catch(e) { console.warn('updateUITranslations error:',e); }
 }
-
-// ============================================================
-// NAVIGATION ROBUSTE — liée avant les opérations réseau
-// ============================================================
-function bindAppNavigation() {
-    document.querySelectorAll('.sidebar-item[data-page]').forEach(item => {
-        if (item._betixNavBound) return;
-        item.addEventListener('click', function(e) {
-            const page = this.dataset.page;
-            if (!page) return;
-            // Les entrées scan/admin peuvent avoir leur propre logique.
-            if (page === 'scan') return;
-            e.preventDefault();
-            if (typeof window.showPage === 'function') window.showPage(page);
-            if (typeof window.closeSidebar === 'function') window.closeSidebar();
-        });
-        item._betixNavBound = true;
-    });
-
-    const navHome = document.getElementById('navHome');
-    const navCreate = document.getElementById('navCreate');
-    const navMenu = document.getElementById('navMenu');
-    if (navHome && !navHome._betixNavBound) {
-        navHome.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.showPage('home');
-        });
-        navHome._betixNavBound = true;
-    }
-    if (navCreate && !navCreate._betixNavBound) {
-        navCreate.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.showPage('create');
-        });
-        navCreate._betixNavBound = true;
-    }
-    if (navMenu && !navMenu._betixNavBound) {
-        navMenu.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.openSidebar();
-        });
-        navMenu._betixNavBound = true;
-    }
-}
+window.detectLanguage=detectLanguage;
+window.updateUITranslations=updateUITranslations;
 
 // ============================================================
 // INITIALISATION DE L'APPLICATION
 // ============================================================
 async function initApp() {
     try {
-        // Toujours lier la navigation AVANT tout appel réseau.
-        bindAppNavigation();
         showEventSkeletons(6);
         const savedUser = localStorage.getItem('betix_user');
         if (savedUser) try { const userData = JSON.parse(savedUser); if (userData.wallet || userData.piUid) { currentUser = userData; piUser = { username: userData.wallet || userData.piUid }; } } catch(e) {}
@@ -4496,23 +3871,15 @@ async function initApp() {
                 }
             }, 8000);
         }
-
-        // Secours : si un chargement réseau reste bloqué, tenter de rendre
-        // les événements locaux sans attendre la fin de toute l'initialisation.
         setTimeout(() => {
-            const eventsContainer = document.getElementById('eventsByCategory');
-            if (eventsContainer && eventsContainer.querySelector('.event-skeleton')) {
-                console.warn('⚠️ Skeletons événements bloqués — rendu de secours');
-                try {
-                    const localEvents = JSON.parse(localStorage.getItem('betix_events') || '[]');
-                    if (Array.isArray(localEvents) && localEvents.length) events = localEvents;
-                    renderEventsByCategory();
-                } catch (e) {
-                    console.error('Fallback renderEvents error:', e);
+            const eventsContainer=document.getElementById('eventsByCategory');
+            if(eventsContainer && eventsContainer.querySelector('.event-skeleton')) {
+                try { renderEventsByCategory(); } catch(e) {
+                    console.warn('Event fallback render skipped:',e);
+                    eventsContainer.innerHTML='<p style="text-align:center;padding:2rem;color:#6b7280;">No events found</p>';
                 }
             }
-        }, 8000);
-
+        },8000);
         await loadAppSettings();
         detectLanguage();
         syncSettingsLanguageSelector();
@@ -4551,6 +3918,7 @@ async function initApp() {
             await loadAllFromSupabase();
             if (currentUser.wallet || currentUser.piUid) initRealtimeNotifications();
         }
+        try { renderEventsByCategory(); } catch(e) { console.warn('Final event render skipped:',e); }
         setInterval(() => { updateExpiredTickets(); }, 300000);
         
         document.getElementById('saveProfileBtn')?.addEventListener('click', openProfileReview);
@@ -4580,8 +3948,6 @@ async function initApp() {
             ticketQuantityInput.addEventListener('input', updateTicketTotal);
             ticketQuantityInput.addEventListener('change', updateTicketTotal);
         }
-        // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
-        // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
         
         const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
         const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
@@ -4621,7 +3987,19 @@ async function initApp() {
                 });
             }
         });
-        bindAppNavigation();
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            if (item._betixBound) return;
+            item.addEventListener('click', function() {
+                const page=this.dataset.page;
+                if (page && typeof showPage==='function') showPage(page);
+                if (typeof closeSidebar==='function') closeSidebar();
+            });
+            item._betixBound=true;
+        });
+        const navHome=document.getElementById('navHome'), navCreate=document.getElementById('navCreate'), navMenu=document.getElementById('navMenu');
+        if(navHome && !navHome._betixBound){ navHome.addEventListener('click',()=>showPage('home')); navHome._betixBound=true; }
+        if(navCreate && !navCreate._betixBound){ navCreate.addEventListener('click',()=>showPage('create')); navCreate._betixBound=true; }
+        if(navMenu && !navMenu._betixBound){ navMenu.addEventListener('click',()=>openSidebar()); navMenu._betixBound=true; }
         bindActivityListeners();
         setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
         setTimeout(() => syncAllToSupabase(), 2000);
@@ -4636,7 +4014,6 @@ async function initApp() {
                 confirmPurchaseResolve = null;
             }
         });
-        // Le listener sur transactionProcessedOkBtn a été supprimé, la nouvelle fonction gère les boutons
         document.getElementById('viewUpcomingEventsBtn')?.addEventListener('click', function() {
             closePastEventPopup();
             showPage('home');
@@ -4656,10 +4033,6 @@ async function initApp() {
 // ============================================================
 // EXPOSITION DES FONCTIONS GLOBALES
 // ============================================================
-window.bindAppNavigation = bindAppNavigation;
-window.showPage = showPage;
-window.openSidebar = openSidebar;
-window.closeSidebar = closeSidebar;
 window.syncAllToSupabase = syncAllToSupabase;
 window.loadAllFromSupabase = loadAllFromSupabase;
 window.forceRefreshData = forceRefreshData;
