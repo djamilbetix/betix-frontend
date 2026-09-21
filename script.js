@@ -466,12 +466,20 @@ function clearCache(key) {
 // UTILITAIRE : ÉVÉNEMENT TERMINÉ / EN COURS
 // ============================================================
 function isEventPast(event) {
-    // Betix rule: once the scheduled event date/time has passed,
-    // the publication is no longer an upcoming event.
     if (!event || !event.date) return false;
     const startDate = new Date(event.date);
     if (isNaN(startDate.getTime())) return false;
-    return Date.now() >= startDate.getTime();
+    const endDate = new Date(startDate);
+    const val = parseFloat(event.durationValue) || 0;
+    switch (event.durationUnit) {
+        case 'hours': endDate.setHours(endDate.getHours() + val); break;
+        case 'days': endDate.setDate(endDate.getDate() + val); break;
+        case 'weeks': endDate.setDate(endDate.getDate() + val * 7); break;
+        case 'months': endDate.setMonth(endDate.getMonth() + val); break;
+        case 'years': endDate.setFullYear(endDate.getFullYear() + val); break;
+        default: endDate.setHours(endDate.getHours() + 3);
+    }
+    return Date.now() > endDate.getTime();
 }
 
 function isEventLive(event) {
@@ -1692,26 +1700,24 @@ function renderEventCard(event) {
 // ============================================================
 // FONCTIONS DE MISE À JOUR DES INDICATEURS DE CARROUSEL
 // ============================================================
-function updateCarouselIndicators(track) {
-    const wrapper = track.closest('.event-carousel-wrapper');
+function updateCarouselIndicators(scroller) {
+    const wrapper = scroller && scroller.closest('.event-carousel-wrapper');
     if (!wrapper) return;
-    const slides = track.querySelectorAll('.carousel-slide');
+    const track = scroller.querySelector('.carousel-track');
+    const slides = track ? track.querySelectorAll('.carousel-slide') : [];
     const dots = wrapper.querySelectorAll('.carousel-dots .dot');
     const counter = wrapper.querySelector('.carousel-counter');
-    if (slides.length === 0) return;
-    const scrollLeft = track.scrollLeft;
-    const slideWidth = slides[0].offsetWidth || 1;
-    const activeIndex = Math.round(scrollLeft / slideWidth);
+    if (!slides.length) return;
+    const slideWidth = slides[0].getBoundingClientRect().width || scroller.clientWidth || 1;
+    const activeIndex = Math.round(scroller.scrollLeft / slideWidth);
     const clampedIndex = Math.max(0, Math.min(activeIndex, slides.length - 1));
     dots.forEach((dot, i) => dot.classList.toggle('active', i === clampedIndex));
-    if (counter) {
-        counter.textContent = (clampedIndex + 1) + '/' + slides.length;
-    }
+    if (counter) counter.textContent = (clampedIndex + 1) + '/' + slides.length;
 }
 
 function initCarouselIndicators() {
-    document.querySelectorAll('.event-carousel .carousel-track').forEach(track => {
-        track.removeEventListener('scroll', track._scrollHandler);
+    document.querySelectorAll('.event-carousel').forEach(scroller => {
+        if (scroller._scrollHandler) scroller.removeEventListener('scroll', scroller._scrollHandler);
         const handler = function() {
             if (!this._rafId) {
                 this._rafId = requestAnimationFrame(() => {
@@ -1720,9 +1726,9 @@ function initCarouselIndicators() {
                 });
             }
         };
-        track._scrollHandler = handler;
-        track.addEventListener('scroll', handler);
-        setTimeout(() => updateCarouselIndicators(track), 100);
+        scroller._scrollHandler = handler;
+        scroller.addEventListener('scroll', handler, { passive: true });
+        setTimeout(() => updateCarouselIndicators(scroller), 100);
     });
 }
 
@@ -2844,6 +2850,7 @@ async function connectToPi() {
                         currentCountryFilter = 'All';
                         initFilters();
                         renderEventsByCategory();
+                        addNotification('Connexion réussie à Pi Network.', 'success');
                         showToast('Betix', t('demoConnected'), 'success');
                         closeSidebar();
                         checkAndNotifyProfileCompletion();
@@ -2881,6 +2888,7 @@ async function connectToPi() {
                     currentCountryFilter = 'All';
                     initFilters();
                     renderEventsByCategory();
+                    addNotification('Connexion réussie à Pi Network.', 'success');
                     showToast('Betix', t('piConnected') + piUser.username, 'success');
                     closeSidebar();
 
@@ -3356,19 +3364,6 @@ function syncSettingsLanguageSelector() {
 }
 
 // ============================================================
-// MOBILE NAVIGATION SAFETY
-// ============================================================
-window.addEventListener('DOMContentLoaded', function() {
-    const home = document.getElementById('navHome');
-    const create = document.getElementById('navCreate');
-    const menu = document.getElementById('navMenu');
-    if (home) home.onclick = function(e) { e.preventDefault(); showPage('home'); };
-    if (create) create.onclick = function(e) { e.preventDefault(); showPage('create'); };
-    if (menu) menu.onclick = function(e) { e.preventDefault(); openSidebar(); };
-    updateBottomNavigation('home');
-});
-
-// ============================================================
 // NOTIFICATIONS
 // ============================================================
 async function deleteNotification(id) {
@@ -3463,6 +3458,8 @@ function addNotification(message, type) {
         }
     });
     updateNotifBadgeHeader();
+    const notificationsPage = document.getElementById('notificationsPage');
+    if (notificationsPage && notificationsPage.style.display !== 'none') renderNotificationsPage();
 }
 
 // ============================================================
@@ -3536,6 +3533,7 @@ async function disconnectPi() {
     renderHistory();
     updateConnectButtons();
     closeSidebar();
+    addNotification('Déconnexion effectuée avec succès.', 'success');
     showToast('Betix', t('disconnected'), 'success');
 }
 
@@ -3546,95 +3544,47 @@ function bindActivityListeners() { ['click','scroll','keydown','touchstart'].for
 // ============================================================
 // SHOW PAGE
 // ============================================================
-function updateBottomNavigation(pageName) {
-    const navHome = document.getElementById('navHome');
-    const navCreate = document.getElementById('navCreate');
-    const navMenu = document.getElementById('navMenu');
-    [navHome, navCreate, navMenu].forEach(btn => {
-        if (btn) btn.classList.remove('active');
-    });
-    if (pageName === 'home' && navHome) navHome.classList.add('active');
-    if (pageName === 'create' && navCreate) navCreate.classList.add('active');
-    // Menu opens the sidebar, so it is not kept selected after the drawer closes.
-}
-
 function showPage(pageName) {
     updateActivity();
     const pages = ['homePage','createPage','ticketsPage','historyPage','profilePage','settingsPage','ratingsPage','adminPage','slidesPage','myeventsPage','notificationsPage'];
-    pages.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); }
-    });
-
+    pages.forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.classList.add('hidden-page'); } });
     let displayPage = pageName;
-    if (pageName === 'home') {
-        const home = document.getElementById('homePage');
-        if (home) { home.style.display = 'block'; home.classList.remove('hidden-page'); }
-        // Always render from the current in-memory dataset. Do not clear it here.
-        renderEventsByCategory();
-        if (typeof renderShareFeed === 'function') renderShareFeed();
-        displayPage = 'home';
-    } else {
-        const target = document.getElementById(pageName + 'Page');
-        if (target) {
-            target.style.display = 'block';
-            target.classList.remove('hidden-page');
-        } else {
-            console.warn('Betix: page not found:', pageName);
-            return;
-        }
-        displayPage = pageName;
-    }
-
-    updateBottomNavigation(displayPage);
+    if (pageName === 'home') { document.getElementById('homePage').style.display = 'block'; renderEventsByCategory(); displayPage = 'home'; }
+    else { const target = document.getElementById(pageName + 'Page'); if (target) { target.style.display = 'block'; target.classList.remove('hidden-page'); } displayPage = pageName; }
     if (pageHistory[pageHistory.length - 1] !== displayPage) pageHistory.push(displayPage);
-
     const backBtn = document.getElementById('backBtn');
     if (backBtn) {
         if (displayPage === 'home') { backBtn.classList.add('hidden'); backBtn.style.display = 'none'; }
         else { backBtn.classList.remove('hidden'); backBtn.style.display = 'flex'; }
     }
-
-    if (pageName === 'tickets') {
-        if (!document.querySelector('#ticketsList .ticket-list-item, #ticketsList p')) showTicketSkeletons(2);
-        renderTickets();
-    }
-    if (pageName === 'history') {
-        if (!document.querySelector('#historyList .ticket-list-item, #historyList p')) showHistorySkeletons(2);
-        renderHistory();
-    }
-    if (pageName === 'profile') {
-        updateProfilePage();
-        if (currentUser.piUid || currentUser.wallet) loadProfileData();
-        else {
+    if (pageName === 'tickets') { if (!document.querySelector('#ticketsList .ticket-list-item, #ticketsList p')) showTicketSkeletons(2); renderTickets(); }
+    if (pageName === 'history') { if (!document.querySelector('#historyList .ticket-list-item, #historyList p')) showHistorySkeletons(2); renderHistory(); }
+    if (pageName === 'profile') { 
+        updateProfilePage(); 
+        if (currentUser.piUid || currentUser.wallet) {
+            loadProfileData(); 
+        } else {
             populateProfileForm();
             const complete = checkProfileComplete().complete;
             enableEditMode(!complete);
-            if (currentUser.email) document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
-            if (currentUser.phone_number) document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            if (currentUser.email) {
+                document.getElementById('emailVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            }
+            if (currentUser.phone_number) {
+                document.getElementById('phoneVerificationStatus').innerHTML = '<span class="success"><i class="fas fa-check-circle"></i> Verified</span>';
+            }
         }
     }
     if (pageName === 'ratings') renderMyRatings();
     if (pageName === 'admin') loadAdminPage();
-    if (pageName === 'myevents') {
-        if (!document.querySelector('#myEventsList .my-event-card-modern, #myEventsList .my-events-section')) showMyEventsSkeletons(3);
-        renderMyEvents();
+    if (pageName === 'myevents') { if (!document.querySelector('#myEventsList .my-event-card-modern, #myEventsList .my-events-section')) showMyEventsSkeletons(3); renderMyEvents(); }
+    if (pageName === 'notifications') { if (!document.querySelector('#notificationsList .notification-item, #notificationsList .notification-empty')) showNotificationSkeletons(4); renderNotificationsPage(); }
+    if (pageName === 'home' || pageName === 'myevents') {
+        setTimeout(initCarouselIndicators, 300);
     }
-    if (pageName === 'notifications') {
-        if (!document.querySelector('#notificationsList .notification-item, #notificationsList .notification-empty')) showNotificationSkeletons(4);
-        renderNotificationsPage();
-    }
-    if (pageName === 'home' || pageName === 'myevents') setTimeout(initCarouselIndicators, 300);
-
     closeSidebar();
     window.scrollTo(0, 0);
 }
-
-// Keep navigation functions available to inline HTML handlers and mobile browsers.
-window.showPage = showPage;
-window.openSidebar = openSidebar;
-window.closeSidebar = closeSidebar;
-window.updateBottomNavigation = updateBottomNavigation;
 
 function goBack() {
     const detailModal = document.getElementById('eventDetailModal');
@@ -3726,7 +3676,7 @@ function renderMyEventCardModern(event) {
     const past = isEventPast(event), cancelled = event.status === 'cancelled', live = isEventLive(event);
     let statusBadge='', statusClass='';
     if (cancelled) { statusBadge='ANNULÉ'; statusClass='ended'; }
-    else if (past) { statusBadge='<span class="past-event-marker"><i class="fas fa-circle"></i> PAST EVENT</span>'; statusClass='ended'; }
+    else if (past) { statusBadge='<i class="fas fa-calendar-times"></i> ÉVÉNEMENT PASSÉ'; statusClass='ended'; }
     else if (live) { statusBadge='🔴 EN COURS'; statusClass='live'; }
     else if (event.seatsLeft <= 0) { statusBadge=t('soldOut'); statusClass='sold-out'; }
     else { statusBadge=t('new'); }
@@ -4377,18 +4327,7 @@ async function initApp() {
                 });
             }
         });
-        document.querySelectorAll('.sidebar-item[data-page]').forEach(item => {
-            if (item._betixNavBound) return;
-            item.addEventListener('click', function(e) {
-                const page = this.dataset.page;
-                if (!page) return;
-                e.preventDefault();
-                e.stopPropagation();
-                closeSidebar();
-                setTimeout(() => showPage(page), 0);
-            });
-            item._betixNavBound = true;
-        });
+        document.querySelectorAll('.sidebar-item').forEach(item => item.addEventListener('click', function() { const page = this.dataset.page; if (page) showPage(page); closeSidebar(); }));
         bindActivityListeners();
         setInterval(() => { if (currentUser.wallet) { saveUser(); } }, 30000);
         setTimeout(() => syncAllToSupabase(), 2000);
