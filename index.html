@@ -14,7 +14,6 @@
     <script src="https://sdk.minepi.com/pi-sdk.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" async></script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
     <script>
         (function initPiSDK() {
             if (typeof Pi !== 'undefined') {
@@ -504,7 +503,7 @@
             <p><strong>Language</strong></p>
             <select id="settingsLangSelect" class="settings-lang-select" onchange="changeLanguage(this.value)">
                 <option value="en">English</option><option value="fr">Français</option><option value="es">Español</option>
-                <option value="pt">Português</option><option value="zh">中文</option><option value="id">Indonesia</option>
+                <option value="pt">Português</option><option value="zh">中文</option><option value="id">Indonesian</option>
                 <option value="ar">العربية</option><option value="hi">हिन्दी</option><option value="ru">Русский</option>
                 <option value="ja">日本語</option><option value="ko">한국어</option><option value="de">Deutsch</option><option value="it">Italiano</option>
             </select>
@@ -527,7 +526,7 @@
         <p class="admin-subtitle">Manage your Betix platform</p>
         <div class="admin-session-timer">
             <span>Session active</span>
-            <span id="rtIndicator" class="rt-indicator"><span class="pulse-dot"></span>Temps réel actif</span>
+            <span id="rtIndicator" class="rt-indicator"><span class="pulse-dot"></span>Real-time active</span>
             <span id="adminSessionTimer">30:00</span>
             <button class="admin-logout-btn" onclick="adminLogout()">Logout</button>
         </div>
@@ -563,9 +562,9 @@
                     <div class="kpi-card"><div class="kpi-icon" style="background:#f59e0b;"><i class="fas fa-users"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiUniqueBuyers">0</span><span class="kpi-label">Unique Buyers</span></div></div>
                     <div class="kpi-card"><div class="kpi-icon" style="background:#8b5cf6;"><i class="fas fa-calendar-check"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiActiveEvents">0</span><span class="kpi-label">Active Events</span></div></div>
                 </div>
-                <div class="admin-charts-grid"><div class="chart-card"><h4>Revenue (7 derniers jours)</h4><canvas id="revenueChart"></canvas></div><div class="chart-card"><h4>Tickets par catégorie</h4><canvas id="categoryChart"></canvas></div></div>
+                <div class="admin-charts-grid"><div class="chart-card"><h4>Revenue (last 7 days)</h4><canvas id="revenueChart"></canvas></div><div class="chart-card"><h4>Tickets by category</h4><canvas id="categoryChart"></canvas></div></div>
             </div>
-            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventSort"><option value="date_desc">Plus récents</option><option value="date_asc">Plus anciens</option><option value="sales_desc">Plus vendus</option><option value="revenue_desc">Plus rentables</option></select><button class="btn-export" onclick="exportEventsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
+            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventSort"><option value="date_desc">Newest</option><option value="date_asc">Oldest</option><option value="sales_desc">Most sold</option><option value="revenue_desc">Highest revenue</option></select><button class="btn-export" onclick="exportEventsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
             <div class="admin-actions" style="margin-top:10px;"><button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444;color:white;">Delete all</button></div>
             <div id="adminEventsList"></div><div id="adminEventsPagination" class="admin-pagination"></div>
         </div>
@@ -597,11 +596,11 @@
             <div id="adminUsersList"></div>
         </div>
         <div id="adminTabLogs" class="admin-tab-content">
-            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminLogSearch" placeholder="🔍 Rechercher dans les logs..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminLogType" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous les types</option><option value="login">Login</option><option value="event">Event</option><option value="ticket">Ticket</option><option value="refund">Refund</option><option value="password">Password</option></select><input type="date" id="adminLogDate" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444;color:white;">Clear logs</button></div>
+            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminLogSearch" placeholder="🔍 Search logs..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminLogType" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">All types</option><option value="login">Login</option><option value="event">Event</option><option value="ticket">Ticket</option><option value="refund">Refund</option><option value="password">Password</option></select><input type="date" id="adminLogDate" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444;color:white;">Clear logs</button></div>
             <div id="adminLogsList"></div>
         </div>
         <div id="adminTabRefunds" class="admin-tab-content">
-            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminRefundSearch" placeholder="🔍 Rechercher un remboursement..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminRefundFilter" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous</option><option value="pending">En attente</option><option value="processed">Traités</option></select><button class="btn-export" onclick="exportRefundsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div><div id="adminRefundsList"></div>
+            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminRefundSearch" placeholder="🔍 Search refunds..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminRefundFilter" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">All</option><option value="pending">Pending</option><option value="processed">Processed</option></select><button class="btn-export" onclick="exportRefundsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div><div id="adminRefundsList"></div>
         </div>
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
@@ -846,7 +845,7 @@
 
 <!-- CANCEL EVENT MODAL -->
 <div id="cancelEventModal" class="modal">
-    <div class="modal-content" style="max-width:520px;"><span class="modal-close" onclick="closeCancelEventModal()"><i class="fas fa-times"></i></span><div style="text-align:center;margin-bottom:12px;"><div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:1.6rem;"><i class="fas fa-exclamation-triangle"></i></div><h2 style="color:#1a1a2e;font-size:1.2rem;margin:0;">Annuler l'événement</h2><p style="color:#6b7280;font-size:.85rem;margin-top:4px;">Cette action est <strong>irréversible</strong>. Les acheteurs seront notifiés et les remboursements seront enregistrés.</p></div><div class="form-group"><label>Raison de l'annulation <span style="color:red;">*</span></label><textarea id="cancelEventReason" rows="3" placeholder="Ex: Problème technique, report de l'événement..." maxlength="200" style="width:100%;padding:10px;border:2px solid #e6e6e6;border-radius:10px;font-family:inherit;"></textarea><span id="cancelReasonCounter" class="char-counter">200 caractères restants</span></div><div style="background:#fef3c7;border-radius:10px;padding:12px;margin-bottom:14px;font-size:.8rem;color:#92400e;"><i class="fas fa-info-circle"></i> <strong id="cancelEventTicketCount">0</strong> ticket(s) seront remboursés, pour un total de <strong id="cancelEventRefundAmount">0 Pi</strong>.</div><div class="modal-actions" style="display:flex;gap:10px;"><button class="btn-secondary-modal" style="flex:1;padding:12px;border-radius:40px;border:2px solid #e6e6e6;background:transparent;font-weight:600;cursor:pointer;" onclick="closeCancelEventModal()">Annuler</button><button id="confirmCancelEventBtn" style="flex:2;padding:12px;border-radius:40px;border:none;background:#dc2626;color:white;font-weight:700;cursor:pointer;" onclick="confirmCancelEvent()"><i class="fas fa-ban"></i> Confirmer l'annulation</button></div></div>
+    <div class="modal-content" style="max-width:520px;"><span class="modal-close" onclick="closeCancelEventModal()"><i class="fas fa-times"></i></span><div style="text-align:center;margin-bottom:12px;"><div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:1.6rem;"><i class="fas fa-exclamation-triangle"></i></div><h2 style="color:#1a1a2e;font-size:1.2rem;margin:0;">Cancel event</h2><p style="color:#6b7280;font-size:.85rem;margin-top:4px;">This action is <strong>irreversible</strong>. Buyers will be notified and refunds will be recorded.</p></div><div class="form-group"><label>Cancellation reason <span style="color:red;">*</span></label><textarea id="cancelEventReason" rows="3" placeholder="E.g. Technical issue, event postponed..." maxlength="200" style="width:100%;padding:10px;border:2px solid #e6e6e6;border-radius:10px;font-family:inherit;"></textarea><span id="cancelReasonCounter" class="char-counter">200 characters remaining</span></div><div style="background:#fef3c7;border-radius:10px;padding:12px;margin-bottom:14px;font-size:.8rem;color:#92400e;"><i class="fas fa-info-circle"></i> <strong id="cancelEventTicketCount">0</strong> ticket(s) will be refunded, for a total of <strong id="cancelEventRefundAmount">0 Pi</strong>.</div><div class="modal-actions" style="display:flex;gap:10px;"><button class="btn-secondary-modal" style="flex:1;padding:12px;border-radius:40px;border:2px solid #e6e6e6;background:transparent;font-weight:600;cursor:pointer;" onclick="closeCancelEventModal()">Cancel</button><button id="confirmCancelEventBtn" style="flex:2;padding:12px;border-radius:40px;border:none;background:#dc2626;color:white;font-weight:700;cursor:pointer;" onclick="confirmCancelEvent()"><i class="fas fa-ban"></i> Confirm cancellation</button></div></div>
 </div>
 
 <!-- PURCHASE CONFIRMATION TOAST -->
@@ -857,7 +856,7 @@
         </div>
         <div class="pc-body">
             <h3 class="pc-title" id="pcTitle">Ticket acheté !</h3>
-            <p class="pc-message" id="pcMessage">Votre ticket pour l'événement est confirmé.</p>
+            <p class="pc-message" id="pcMessage">Your ticket for the event is confirmed.</p>
             <div class="pc-buttons">
                 <button class="pc-btn pc-btn-primary" onclick="pcGoToTickets()">
                     <i class="fas fa-ticket-alt"></i> Voir mon ticket
@@ -880,28 +879,28 @@
 <div id="sharePostModal" class="modal">
     <div class="modal-content" style="max-width:560px;">
         <span class="modal-close" onclick="closeSharePostModal()"><i class="fas fa-times"></i></span>
-        <h2 style="margin-bottom:8px;">Partager une publication</h2>
-        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">Partagez un événement avec vos fans et permettez-leur d'acheter directement.</p>
+        <h2 style="margin-bottom:8px;">Share a post</h2>
+        <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">Share an event with your audience and let them buy directly.</p>
 
         <div class="form-group">
-            <label>Choisir un événement</label>
+            <label>Choose an event</label>
             <select id="sharePostEventSelect">
-                <option value="">-- Sélectionner un événement --</option>
+                <option value="">-- Select an event --</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Message personnalisé (optionnel)</label>
-            <textarea id="sharePostMessage" rows="3" maxlength="200" placeholder="Ex: Venez nombreux à mon concert, places limitées !"></textarea>
-            <span id="sharePostCharCounter" class="char-counter">200 caractères restants</span>
+            <label>Custom message (optional)</label>
+            <textarea id="sharePostMessage" rows="3" maxlength="200" placeholder="E.g. Join us at my concert, limited seats!"></textarea>
+            <span id="sharePostCharCounter" class="char-counter">200 characters remaining</span>
         </div>
 
         <div id="sharePostPreview" style="display:none; margin-top:12px; padding:12px; background:#f8fafc; border-radius:12px;"></div>
 
         <div class="modal-actions" style="display:flex; gap:10px; margin-top:16px;">
-            <button class="btn-secondary-modal" onclick="closeSharePostModal()" style="flex:1; padding:12px; border-radius:40px; border:2px solid #e6e6e6; background:transparent; font-weight:600; cursor:pointer;">Annuler</button>
+            <button class="btn-secondary-modal" onclick="closeSharePostModal()" style="flex:1; padding:12px; border-radius:40px; border:2px solid #e6e6e6; background:transparent; font-weight:600; cursor:pointer;">Cancel</button>
             <button class="btn-primary" id="publishShareBtn" onclick="publishSharePost()" style="flex:2;">
-                <i class="fas fa-share-alt"></i> Publier
+                <i class="fas fa-share-alt"></i> Publish
             </button>
         </div>
     </div>
@@ -912,6 +911,7 @@
 <script>
     window.BETIX_CONFIG = { backendURL: "https://betix-backend.onrender.com" };
 </script>
+<div id="google_translate_element" aria-hidden="true" style="position:fixed;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;"></div>
 <script>
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
@@ -964,6 +964,7 @@
         }, 500);
     }
 </script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 <script src="script.js?v=20260921b"></script>
 </body>
 </html>
