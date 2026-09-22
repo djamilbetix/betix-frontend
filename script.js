@@ -3930,15 +3930,25 @@ function adminChangePassword() {
 }
 
 async function adminSaveSettings() {
-    const commission = parseFloat(document.getElementById('adminCommission').value);
-    const serviceFee = parseFloat(document.getElementById('adminServiceFee').value);
-    const piRate = parseFloat(document.getElementById('adminPiRate').value);
+    const commissionField = document.getElementById('adminCommission');
+    const serviceFeeField = document.getElementById('adminServiceFee');
+    const piRateField = document.getElementById('adminPiRate');
+    const msg = document.getElementById('adminSettingsMessage');
+    if (!commissionField || !serviceFeeField || !piRateField) {
+        if (msg) {
+            msg.textContent = 'No editable platform settings are available in this version.';
+            msg.style.color = '#6b7280';
+        }
+        return false;
+    }
+    const commission = parseFloat(commissionField.value);
+    const serviceFee = parseFloat(serviceFeeField.value);
+    const piRate = parseFloat(piRateField.value);
     if (isNaN(commission) || commission < 0 || commission > 100) { alert('Commission must be between 0 and 100'); return; }
     if (isNaN(serviceFee) || serviceFee < 0 || serviceFee > 100) { alert('Service Fee must be between 0 and 100'); return; }
     if (isNaN(piRate) || piRate <= 0) { alert('Pi Rate must be greater than 0'); return; }
     const settings = { commissionPercent: commission, serviceFeePercent: serviceFee, piRate: piRate };
     const success = await saveAppSettings(settings);
-    const msg = document.getElementById('adminSettingsMessage');
     if (success) {
         msg.textContent = t('settingsSaved');
         msg.style.color = '#10b981';
@@ -4038,7 +4048,15 @@ async function loadAdminPage() {
     document.getElementById('adminLastLogin').textContent=localStorage.getItem('betix_admin_last_login')||'Never';
     document.getElementById('adminLoginCount').textContent=localStorage.getItem('betix_admin_login_count')||0;
     document.getElementById('adminCurrentPasswordDisplay').textContent='••••••••';
-    document.getElementById('adminCommission').value=appSettings.commissionPercent; document.getElementById('adminServiceFee').value=appSettings.serviceFeePercent; document.getElementById('adminPiRate').value=appSettings.piRate;
+    // These optional settings fields are not present in the current admin UI.
+    // Only populate them when they exist so one missing optional field cannot
+    // stop the rest of the administration controls from being initialized.
+    const commissionField = document.getElementById('adminCommission');
+    const serviceFeeField = document.getElementById('adminServiceFee');
+    const piRateField = document.getElementById('adminPiRate');
+    if (commissionField) commissionField.value = appSettings.commissionPercent;
+    if (serviceFeeField) serviceFeeField.value = appSettings.serviceFeePercent;
+    if (piRateField) piRateField.value = appSettings.piRate;
     await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); await renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
     const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
     if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
@@ -4696,3 +4714,55 @@ window.showPurchaseConfirmation = showPurchaseConfirmation;
 window.closePurchaseConfirmation = closePurchaseConfirmation;
 window.pcGoToTickets = pcGoToTickets;
 window.pcGoToHome = pcGoToHome;
+
+
+// ============================================================
+// GLOBAL ADMIN / NAVIGATION ACTIONS
+// Keep inline HTML actions operational even when the application is
+// embedded or served with a stricter script context.
+// ============================================================
+Object.assign(window, {
+    showPage,
+    openSidebar,
+    handleLogoClick,
+    goToMyEvents,
+    goToTickets,
+    goToHistory,
+    goToRatings,
+    removeImageModern,
+    saveEventEdits,
+    updateQuantity,
+    closeQuantityPopup,
+    closeConfirmPurchasePopup,
+    closePublishConfirmPopup,
+    closeEditEventModal,
+    closePastEventPopup,
+    closeTransactionProcessedPopup,
+    adminLogout,
+    adminChangePassword,
+    adminClearLogs,
+    adminDeleteEvent,
+    adminDeleteAllEvents,
+    closeCancelEventModal,
+    confirmCancelEvent,
+    adminShowSlideForm,
+    adminSaveSlide,
+    adminCancelSlideForm,
+    adminDeleteSlide,
+    forceRefreshData,
+    exportEventsCSV,
+    exportTicketsCSV,
+    exportUsersCSV,
+    exportRefundsCSV,
+    goToAdminEventsPage,
+    markRefundProcessed,
+    renderAdminEventsFiltered,
+    renderAdminLogsFiltered,
+    renderAdminRefunds,
+    refreshAdminDashboard,
+    refreshUsersList,
+    filterAdminUsers,
+    openSharePostModal,
+    closeSharePostModal,
+    publishSharePost
+});
