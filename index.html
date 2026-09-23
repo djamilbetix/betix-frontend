@@ -534,7 +534,7 @@
             <span>Session active</span>
             <span id="rtIndicator" class="rt-indicator"><span class="pulse-dot"></span>Temps réel actif</span>
             <span id="adminSessionTimer">30:00</span>
-            <button class="admin-logout-btn" onclick="adminLogout()">Logout</button>
+            <button class="admin-logout-btn" id="adminLogoutBtn" type="button">Logout</button>
         </div>
         <div class="admin-stats">
             <div class="stat-card"><h3>Events</h3><p id="adminEventCount">0</p></div>
@@ -547,7 +547,7 @@
                 <span class="sync-text">Ready</span>
                 <span class="sync-dot"></span>
             </div>
-            <button class="admin-refresh-btn" id="refreshDataBtn" onclick="forceRefreshData()">
+            <button class="admin-refresh-btn" id="refreshDataBtn" type="button">
                 <i class="fas fa-sync"></i> Refresh Data
             </button>
         </div>
@@ -570,8 +570,8 @@
                 </div>
                 <div class="admin-charts-grid"><div class="chart-card"><h4>Revenue (7 derniers jours)</h4><canvas id="revenueChart"></canvas></div><div class="chart-card"><h4>Tickets par catégorie</h4><canvas id="categoryChart"></canvas></div></div>
             </div>
-            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventSort"><option value="date_desc">Plus récents</option><option value="date_asc">Plus anciens</option><option value="sales_desc">Plus vendus</option><option value="revenue_desc">Plus rentables</option></select><button class="btn-export" onclick="exportEventsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
-            <div class="admin-actions" style="margin-top:10px;"><button class="btn-secondary" onclick="adminDeleteAllEvents()" style="background:#ef4444;color:white;">Delete all</button></div>
+            <div class="admin-events-header"><h3 style="margin:0;">📋 Manage Events</h3><div class="admin-events-filters"><input type="text" id="adminEventSearch" placeholder="🔍 Search event..."><select id="adminEventSort"><option value="date_desc">Plus récents</option><option value="date_asc">Plus anciens</option><option value="sales_desc">Plus vendus</option><option value="revenue_desc">Plus rentables</option></select><button class="btn-export" id="adminExportEventsBtn" type="button"><i class="fas fa-file-csv"></i> Export CSV</button></div></div>
+            <div class="admin-actions" style="margin-top:10px;"><button class="btn-secondary" id="adminDeleteAllEventsBtn" type="button" style="background:#ef4444;color:white;">Delete all</button></div>
             <div id="adminEventsList"></div><div id="adminEventsPagination" class="admin-pagination"></div>
         </div>
         <div id="adminTabSlides" class="admin-tab-content">
@@ -598,15 +598,15 @@
             <div id="adminSlidesList"></div>
         </div>
         <div id="adminTabUsers" class="admin-tab-content">
-            <div class="admin-users-filters" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;"><input type="text" id="adminUserSearch" placeholder="🔍 Search user..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-export" onclick="exportTicketsCSV()"><i class="fas fa-file-csv"></i> Export Tickets</button><button class="btn-export" onclick="exportUsersCSV()"><i class="fas fa-users"></i> Export Users</button></div>
+            <div class="admin-users-filters" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;"><input type="text" id="adminUserSearch" placeholder="🔍 Search user..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-export" id="adminExportTicketsBtn" type="button"><i class="fas fa-file-csv"></i> Export Tickets</button><button class="btn-export" id="adminExportUsersBtn" type="button"><i class="fas fa-users"></i> Export Users</button></div>
             <div id="adminUsersList"></div>
         </div>
         <div id="adminTabLogs" class="admin-tab-content">
-            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminLogSearch" placeholder="🔍 Rechercher dans les logs..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminLogType" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous les types</option><option value="login">Login</option><option value="event">Event</option><option value="ticket">Ticket</option><option value="refund">Refund</option><option value="password">Password</option></select><input type="date" id="adminLogDate" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-secondary" onclick="adminClearLogs()" style="background:#ef4444;color:white;">Clear logs</button></div>
+            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminLogSearch" placeholder="🔍 Rechercher dans les logs..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminLogType" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous les types</option><option value="login">Login</option><option value="event">Event</option><option value="ticket">Ticket</option><option value="refund">Refund</option><option value="password">Password</option></select><input type="date" id="adminLogDate" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><button class="btn-secondary" id="adminClearLogsBtn" type="button" style="background:#ef4444;color:white;">Clear logs</button></div>
             <div id="adminLogsList"></div>
         </div>
         <div id="adminTabRefunds" class="admin-tab-content">
-            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminRefundSearch" placeholder="🔍 Rechercher un remboursement..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminRefundFilter" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous</option><option value="pending">En attente</option><option value="processed">Traités</option></select><button class="btn-export" onclick="exportRefundsCSV()"><i class="fas fa-file-csv"></i> Export CSV</button></div><div id="adminRefundsList"></div>
+            <div class="admin-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><input type="text" id="adminRefundSearch" placeholder="🔍 Rechercher un remboursement..." style="flex:1;min-width:200px;padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><select id="adminRefundFilter" style="padding:8px 12px;border:2px solid #e6e6e6;border-radius:8px;font-size:.85rem;"><option value="all">Tous</option><option value="pending">En attente</option><option value="processed">Traités</option></select><button class="btn-export" id="adminExportRefundsBtn" type="button"><i class="fas fa-file-csv"></i> Export CSV</button></div><div id="adminRefundsList"></div>
         </div>
         <div id="adminTabSettings" class="admin-tab-content">
             <div class="admin-settings">
@@ -619,7 +619,7 @@
                     <label>Confirm</label>
                     <input type="password" id="adminConfirmPassword" placeholder="Confirm...">
                 </div>
-                <button class="btn-primary" onclick="adminChangePassword()" style="width:auto; padding:10px 30px;">Change</button>
+                <button class="btn-primary" id="adminChangePasswordBtn" type="button" style="width:auto; padding:10px 30px;">Change</button>
                 <p id="adminPasswordMessage" style="margin-top:10px; font-size:0.9rem;"></p>
                 <hr style="margin: 30px 0; border-color: #e5e7eb;">
                 <h3>Information</h3>
