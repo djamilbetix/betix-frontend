@@ -284,23 +284,23 @@ const translations = {
         description: 'Description', conditions: 'Conditions', totalSeats: 'Places Totales',
         ticketTypes: 'Types de Billets',
         enableAtLeastOne: 'Activez au moins un type de billet et définissez son prix',
-        standard: 'Standard', price: 'Prix', active: 'Active', inactive: 'Inactif',
+        standard: 'Standard', price: 'Prix', active: 'Actif', inactive: 'Inactif',
         photos: 'Photos', imagesRequired: '1 image requise',
         dropImage: 'Déposez votre image ici', orClick: 'ou cliquez pour parcourir',
         compressed: 'Compressée',
         imagesAutoCompressed: 'Images automatiquement compressées au format WebP pour de meilleures performances',
-        publishEvent: 'Publier l\'Event', confirmPublication: 'Confirmer la Publication',
+        publishEvent: 'Publier l\'Événement', confirmPublication: 'Confirmer la Publication',
         reviewInfo: 'Veuillez vérifier toutes les informations avant de publier votre événement',
         cancel: 'Annuler', publishing: 'Publication...',
         eventPublished: 'L\'événement a été publié avec succès !',
-        editEvent: 'Modifier l\'Event',
+        editEvent: 'Modifier l\'Événement',
         modifyFields: 'Modifiez les champs ci-dessous pour mettre à jour votre événement',
         saveChanges: 'Enregistrer les Modifications',
         chooseQuantity: 'Choisir la quantité', maximumTickets: 'Maximum de tickets disponibles',
         total: 'Total', confirmPurchase: 'Confirmer l\'achat',
         purchaseSuccessful: 'Achat réussi !',
         ticketsAdded: 'ticket(s) ajouté(s) avec succès.',
-        event: 'Event', type: 'Type', quantity: 'Quantité', code: 'Code', ok: 'OK',
+        event: 'Événement', type: 'Type', quantity: 'Quantité', code: 'Code', ok: 'OK',
         pendingPaymentFound: 'Paiement en Attente Trouvé',
         pendingPaymentMessage: 'Vous avez déjà un paiement en attente sur cette application. Vous pouvez annuler le paiement en attente et réessayer, ou attendre qu\'il se termine.',
         ignore: 'Ignorer', cancelAndRetry: 'Annuler et Réessayer',
@@ -319,18 +319,18 @@ const translations = {
         markUsedConfirm: 'Marquer ce ticket comme utilisé ? Cette action est irréversible.',
         ticketMarkedUsed: 'Ticket marqué comme utilisé avec succès !',
         noActiveTickets: 'Aucun ticket actif', noTicketHistory: 'Aucun historique de tickets',
-        clearData: 'Effacer mes données', clearDataConfirm: 'Delete toutes vos données ?',
-        darkMode: 'Mode sombre', all: 'All',
+        clearData: 'Effacer mes données', clearDataConfirm: 'Supprimer toutes vos données ?',
+        darkMode: 'Mode sombre', all: 'Tous',
         concert: 'Concert', sport: 'Sport', conference: 'Conférence',
         training: 'Formation', cinema: 'Cinéma', festival: 'Festival',
         theatre: 'Théâtre', dance: 'Danse', exhibition: 'Exposition',
         gala: 'Gala', seminar: 'Séminaire', formation: 'Formation',
         fullDescription: 'Description complète', information: 'Informations',
-        organizer: 'Organizer', createdOn: 'Created at',
+        organizer: 'Organisateur', createdOn: 'Créé le',
         seatsLeft: 'Places restantes', rating: 'Évaluation',
         notYetRated: 'Pas encore évalué', noReviews: 'Aucun avis pour le moment',
         noConditions: 'Aucune condition spécifiée', by: 'Par',
-        new: 'Nouveau', soldOut: 'Complet', ended: 'Ended',
+        new: 'Nouveau', soldOut: 'Complet', ended: 'Terminé',
         tickets: 'tickets', views: 'vues',
         footerTitleInfo: 'Infos', footerTitleBetix: 'Betix', footerTitlePartners: 'Partenaires',
         footerTermsSale: 'Conditions de vente', footerTermsUse: 'Conditions d\'utilisation',
@@ -343,7 +343,7 @@ const translations = {
         footerFeedback: 'Votre avis', footerHelp: 'Aide',
         footerJoinCommunity: 'Rejoignez la communauté Betix',
         footerPiNetwork: 'Réseau Pi', footerSecure: 'Sécurisé',
-        footerRights: 'All droits réservés.',
+        footerRights: 'Tous droits réservés.',
         footerBuiltOn: 'Construit sur Pi Network | Sécurisé par Blockchain',
         footerSlogan: 'La première plateforme de billetterie décentralisée sur Pi Network',
         footerDesc: 'Plateforme sécurisée pour acheter et vendre des billets avec paiement en Pi.'
@@ -352,36 +352,11 @@ const translations = {
 
 let currentLang = 'en';
 function t(key) {
-    // Native translations are maintained for English/French. For every other
-    // selected language, keep the application in English and let Google
-    // Translate translate the complete rendered interface.
-    const lang = (currentLang === 'fr' || currentLang === 'en') ? currentLang : 'en';
+    let lang = currentLang || 'en';
     if (translations[lang] && translations[lang][key] !== undefined) return translations[lang][key];
     if (translations.en && translations.en[key] !== undefined) return translations.en[key];
     return key;
 }
-
-// Google Translate uses different codes for a few languages exposed by the
-// Betix selector. Keep the selector independent from the provider codes.
-const googleLanguageCodes = {
-    en: 'en', fr: 'fr', es: 'es', pt: 'pt', zh: 'zh-CN', id: 'id',
-    ar: 'ar', hi: 'hi', ru: 'ru', ja: 'ja', ko: 'ko', de: 'de', it: 'it'
-};
-
-function triggerGoogleTranslation(lang) {
-    const code = googleLanguageCodes[lang] || 'en';
-    const select = document.querySelector('.goog-te-combo');
-    if (!select) return false;
-    if (select.value !== code) select.value = code;
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
-}
-
-function retryGoogleTranslation(lang, attempts = 8) {
-    if (triggerGoogleTranslation(lang) || attempts <= 0) return;
-    setTimeout(() => retryGoogleTranslation(lang, attempts - 1), 500);
-}
-
 
 // ============================================================
 // IMAGES DE TICKET PAR CATÉGORIE (AJOUT)
@@ -864,21 +839,6 @@ async function saveEventToSupabase(eventData) {
         return true;
     } catch (error) {
         console.error('saveEventToSupabase exception:', error);
-        return false;
-    }
-}
-
-async function deleteEventFromSupabase(eventId) {
-    try {
-        if (eventId === undefined || eventId === null || eventId === '') return false;
-        const { error } = await supabaseClient.from('events').delete().eq('id', eventId);
-        if (error) throw error;
-        clearCache('betix_cached_events');
-        clearCache('betix_cached_tickets_*');
-        clearCache('betix_admin_cached_tickets');
-        return true;
-    } catch (error) {
-        console.error('Error deleting event from Supabase:', error);
         return false;
     }
 }
@@ -3019,6 +2979,7 @@ async function createEvent(e) {
     const location = document.getElementById('eventLocation').value.trim();
     const description = document.getElementById('eventDescription').value.trim();
     const conditions = document.getElementById('eventConditions').value.trim();
+    const ticketPrice = parseFloat(document.getElementById('eventPrice').value);
     const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
     const durationValue = document.getElementById('eventDurationValue').value;
     const durationUnit = document.getElementById('eventDurationUnit').value;
@@ -3026,6 +2987,7 @@ async function createEvent(e) {
     if (!title) { alert(t('title') + ' ' + t('required')); return; }
     if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
     if (!location) { alert(t('location') + ' ' + t('required')); return; }
+    if (!Number.isFinite(ticketPrice) || ticketPrice <= 0) { alert(t('price') + ' ' + t('required')); return; }
     if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
     if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
     const images = getUploadedImages();
@@ -3038,7 +3000,7 @@ async function createEvent(e) {
             title, category, pays, country: pays, date, location,
             description: description || '',
             conditions,
-            price: 0.0003,
+            price: ticketPrice,
             seatsTotal,
             seatsLeft: seatsTotal,
             standardSeats: seatsTotal,
@@ -3053,7 +3015,7 @@ async function createEvent(e) {
             boosts: 0,
             durationValue: durationValueNum,
             durationUnit,
-            ticketTypes: { standard: { enabled: true, price: 0.0003 } }
+            ticketTypes: { standard: { enabled: true, price: ticketPrice } }
         };
         openPublishConfirm(newEvent);
     } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
@@ -3343,16 +3305,14 @@ function initCountrySelectors() {
 // LANGUE, TRADUCTIONS ET UI
 // ============================================================
 function changeLanguage(lang) {
-    const allowed = Object.prototype.hasOwnProperty.call(googleLanguageCodes, lang) ? lang : 'en';
-    currentLang = allowed;
-    localStorage.setItem('betix_language', allowed);
+    currentLang = lang;
+    localStorage.setItem('betix_language', lang);
     const settingsSelect = document.getElementById('settingsLangSelect');
-    if (settingsSelect) settingsSelect.value = allowed;
-
-    // Always render the complete application first, then translate the whole
-    // page. This also covers content generated later by JavaScript.
+    if (settingsSelect) settingsSelect.value = lang;
     updateUITranslations();
-    retryGoogleTranslation(allowed);
+    const googleSelect = document.querySelector('.goog-te-combo');
+    if (googleSelect) { googleSelect.value = lang; googleSelect.dispatchEvent(new Event('change')); }
+    setTimeout(() => { const retry = document.querySelector('.goog-te-combo'); if (retry && retry.value !== lang) { retry.value = lang; retry.dispatchEvent(new Event('change')); } }, 1000);
 }
 
 function updateUITranslations() {
@@ -3420,8 +3380,8 @@ function detectLanguage() {
     if (nativeSelect) { nativeSelect.value = savedLang; nativeSelect.style.display = 'none'; }
     const settingsSelect = document.getElementById('settingsLangSelect');
     if (settingsSelect) settingsSelect.value = savedLang;
+    setTimeout(() => { const googleSelect = document.querySelector('.goog-te-combo'); if (googleSelect && googleSelect.value !== savedLang) { googleSelect.value = savedLang; googleSelect.dispatchEvent(new Event('change')); } }, 1500);
     setTimeout(() => updateUITranslations(), 500);
-    setTimeout(() => retryGoogleTranslation(savedLang), 800);
     return savedLang;
 }
 
@@ -3654,8 +3614,6 @@ function showPage(pageName) {
     }
     closeSidebar();
     window.scrollTo(0, 0);
-    // Re-apply the selected language after page-specific content has been rendered.
-    if (currentLang !== 'en') setTimeout(() => retryGoogleTranslation(currentLang), 250);
 }
 
 function goBack() {
@@ -3930,25 +3888,15 @@ function adminChangePassword() {
 }
 
 async function adminSaveSettings() {
-    const commissionField = document.getElementById('adminCommission');
-    const serviceFeeField = document.getElementById('adminServiceFee');
-    const piRateField = document.getElementById('adminPiRate');
-    const msg = document.getElementById('adminSettingsMessage');
-    if (!commissionField || !serviceFeeField || !piRateField) {
-        if (msg) {
-            msg.textContent = 'No editable platform settings are available in this version.';
-            msg.style.color = '#6b7280';
-        }
-        return false;
-    }
-    const commission = parseFloat(commissionField.value);
-    const serviceFee = parseFloat(serviceFeeField.value);
-    const piRate = parseFloat(piRateField.value);
+    const commission = parseFloat(document.getElementById('adminCommission').value);
+    const serviceFee = parseFloat(document.getElementById('adminServiceFee').value);
+    const piRate = parseFloat(document.getElementById('adminPiRate').value);
     if (isNaN(commission) || commission < 0 || commission > 100) { alert('Commission must be between 0 and 100'); return; }
     if (isNaN(serviceFee) || serviceFee < 0 || serviceFee > 100) { alert('Service Fee must be between 0 and 100'); return; }
     if (isNaN(piRate) || piRate <= 0) { alert('Pi Rate must be greater than 0'); return; }
     const settings = { commissionPercent: commission, serviceFeePercent: serviceFee, piRate: piRate };
     const success = await saveAppSettings(settings);
+    const msg = document.getElementById('adminSettingsMessage');
     if (success) {
         msg.textContent = t('settingsSaved');
         msg.style.color = '#10b981';
@@ -4040,7 +3988,7 @@ async function refreshUsersList() {
 
 async function loadAdminPage() {
     const storedPassword=localStorage.getItem('betix_admin_password');
-    if(storedPassword!==adminPassword && storedPassword!=='Betix@2026#'){showToast('Access denied',t('adminDenied'),'error');showPage('home');return;}
+    if(storedPassword!==adminPassword && storedPassword!=='Betix@2026#'){showToast('Accès refusé',t('adminDenied'),'error');showPage('home');return;}
     if(storedPassword && storedPassword!==adminPassword)adminPassword=storedPassword;
     document.getElementById('adminUserCount').innerText=allUsersCache.length||0;
     document.getElementById('adminTicketCount').innerText=adminTicketsCache.length||tickets.length;
@@ -4048,16 +3996,8 @@ async function loadAdminPage() {
     document.getElementById('adminLastLogin').textContent=localStorage.getItem('betix_admin_last_login')||'Never';
     document.getElementById('adminLoginCount').textContent=localStorage.getItem('betix_admin_login_count')||0;
     document.getElementById('adminCurrentPasswordDisplay').textContent='••••••••';
-    // These optional settings fields are not present in the current admin UI.
-    // Only populate them when they exist so one missing optional field cannot
-    // stop the rest of the administration controls from being initialized.
-    const commissionField = document.getElementById('adminCommission');
-    const serviceFeeField = document.getElementById('adminServiceFee');
-    const piRateField = document.getElementById('adminPiRate');
-    if (commissionField) commissionField.value = appSettings.commissionPercent;
-    if (serviceFeeField) serviceFeeField.value = appSettings.serviceFeePercent;
-    if (piRateField) piRateField.value = appSettings.piRate;
-    await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); await renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
+    document.getElementById('adminCommission').value=appSettings.commissionPercent; document.getElementById('adminServiceFee').value=appSettings.serviceFeePercent; document.getElementById('adminPiRate').value=appSettings.piRate;
+    await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
     const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
     if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
     if(eventSort&&!eventSort._bound){eventSort.addEventListener('change',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSort._bound=true;}
@@ -4065,7 +4005,6 @@ async function loadAdminPage() {
     [logSearch,logType,logDate].forEach(el=>{if(el&&!el._bound){el.addEventListener('input',renderAdminLogsFiltered);el.addEventListener('change',renderAdminLogsFiltered);el._bound=true;}});
     const userSearch=document.getElementById('adminUserSearch'); if(userSearch&&!userSearch._bound){userSearch.addEventListener('input',function(){filterAdminUsers(this.value);});userSearch._bound=true;}
     const rs=document.getElementById('adminRefundSearch'), rf=document.getElementById('adminRefundFilter'); [rs,rf].forEach(el=>{if(el&&!el._bound){el.addEventListener('input',renderAdminRefunds);el.addEventListener('change',renderAdminRefunds);el._bound=true;}});
-    if (currentLang !== 'en') setTimeout(() => retryGoogleTranslation(currentLang), 250);
 }
 
 function filterAdminUsers(query) {
@@ -4092,73 +4031,26 @@ function renderAdminEvents() {
     }).join('');
 }
 
-async function adminDeleteEvent(id) {
-    if (!confirm('Delete this event? This action cannot be undone.')) return;
-    const event = events.find(e => String(e.id) === String(id));
-    if (!event) {
-        showToast('Error', 'Event not found.', 'error');
-        return;
-    }
-
-    try {
-        const deleted = await deleteEventFromSupabase(id);
-        if (!deleted) throw new Error('The event could not be deleted from the database.');
-
-        events = events.filter(e => String(e.id) !== String(id));
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        saveBackupData(events, tickets);
-        clearCache('betix_cached_events');
-        clearCache('betix_cached_tickets_*');
-        clearCache('betix_admin_cached_tickets');
-        renderAdminEventsFiltered();
-        renderEventsByCategory();
+function adminDeleteEvent(id) {
+    if (confirm('Delete this event?')) {
+        events = events.filter(e => e.id !== id);
+        saveEvents();
+        deleteEventFromSupabase(id);
+        renderAdminEvents(); renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = events.length;
-        addAdminLog('Event deleted', 'ID: ' + id + ' — ' + (event.title || 'Untitled'));
-        showToast('Event deleted', 'The event was permanently deleted.', 'success');
-    } catch (error) {
-        console.error('Admin delete event error:', error);
-        showToast('Deletion failed', error.message || 'Unable to delete the event.', 'error');
+        addAdminLog('Event deleted', 'ID: ' + id);
+        alert(t('eventDeleted'));
     }
 }
 
-async function adminDeleteAllEvents() {
-    if (!events.length) {
-        showToast('Events', 'There are no events to delete.', 'info');
-        return;
-    }
-    if (!confirm('Delete ALL events? This action cannot be undone.')) return;
-
-    const originalEvents = [...events];
-    try {
-        for (const event of originalEvents) {
-            const deleted = await deleteEventFromSupabase(event.id);
-            if (!deleted) throw new Error('Unable to delete event: ' + (event.title || event.id));
-        }
-
+function adminDeleteAllEvents() {
+    if (confirm('Delete ALL events? This action is irreversible.')) {
         events = [];
-        localStorage.setItem('betix_events', JSON.stringify(events));
-        saveBackupData(events, tickets);
-        clearCache('betix_cached_events');
-        clearCache('betix_cached_tickets_*');
-        clearCache('betix_admin_cached_tickets');
-        renderAdminEventsFiltered();
-        renderEventsByCategory();
+        saveEvents();
+        renderAdminEvents(); renderEventsByCategory();
         document.getElementById('adminEventCount').innerText = 0;
-        addAdminLog('All events deleted', originalEvents.length + ' event(s) permanently deleted');
-        showToast('Events deleted', originalEvents.length + ' event(s) were permanently deleted.', 'success');
-    } catch (error) {
-        console.error('Admin delete all events error:', error);
-        // Reload the authoritative database state so a partial failure never
-        // leaves the UI pretending that every event was deleted.
-        clearCache('betix_cached_events');
-        await loadEventsFromSupabase().then(data => {
-            events = data || [];
-            localStorage.setItem('betix_events', JSON.stringify(events));
-        }).catch(() => {});
-        renderAdminEventsFiltered();
-        renderEventsByCategory();
-        document.getElementById('adminEventCount').innerText = events.length;
-        showToast('Deletion failed', error.message || 'Unable to delete all events.', 'error');
+        addAdminLog('All events deleted', 'Mass deletion');
+        alert(t('allEventsDeleted'));
     }
 }
 
@@ -4498,69 +4390,6 @@ async function initApp() {
 }
 
 // ============================================================
-// SHARE POST MODAL – restore the existing modal actions
-// ============================================================
-function openSharePostModal(eventId) {
-    const modal = document.getElementById('sharePostModal');
-    const select = document.getElementById('sharePostEventSelect');
-    const message = document.getElementById('sharePostMessage');
-    const preview = document.getElementById('sharePostPreview');
-    if (!modal || !select) return;
-
-    const userId = currentUser.piUid || currentUser.wallet;
-    const ownEvents = events.filter(e => !userId || e.organizerPiUid === userId || e.organizer === userId);
-    select.innerHTML = '<option value="">-- Select an event --</option>' + ownEvents.map(e =>
-        '<option value="' + escapeHtml(String(e.id)) + '">' + escapeHtml(e.title || 'Untitled') + '</option>'
-    ).join('');
-    if (eventId !== undefined && eventId !== null) select.value = String(eventId);
-    if (message) message.value = '';
-    if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
-    modal.classList.add('show');
-}
-
-function closeSharePostModal() {
-    const modal = document.getElementById('sharePostModal');
-    if (modal) modal.classList.remove('show');
-}
-
-async function publishSharePost() {
-    const select = document.getElementById('sharePostEventSelect');
-    const messageInput = document.getElementById('sharePostMessage');
-    if (!select || !select.value) {
-        showToast('Share', 'Please select an event first.', 'error');
-        return;
-    }
-    const event = events.find(e => String(e.id) === String(select.value));
-    if (!event) {
-        showToast('Share', 'Event not found.', 'error');
-        return;
-    }
-
-    const customMessage = (messageInput?.value || '').trim();
-    const shareUrl = new URL(window.location.href);
-    shareUrl.searchParams.set('event', String(event.id));
-    const shareText = customMessage || ('Check out this event on Betix: ' + event.title);
-    const shareData = { title: event.title || 'Betix Event', text: shareText, url: shareUrl.toString() };
-
-    try {
-        if (navigator.share) {
-            await navigator.share(shareData);
-        } else if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(shareText + '\n' + shareUrl.toString());
-            showToast('Share', 'Share link copied to clipboard.', 'success');
-        } else {
-            window.prompt('Copy this share link:', shareUrl.toString());
-        }
-        closeSharePostModal();
-    } catch (error) {
-        if (error?.name !== 'AbortError') {
-            console.error('Share error:', error);
-            showToast('Share', 'Unable to share this event.', 'error');
-        }
-    }
-}
-
-// ============================================================
 // EXPOSITION DES FONCTIONS GLOBALES
 // ============================================================
 window.syncAllToSupabase = syncAllToSupabase;
@@ -4568,10 +4397,6 @@ window.loadAllFromSupabase = loadAllFromSupabase;
 window.forceRefreshData = forceRefreshData;
 window.updateSyncStatus = updateSyncStatus;
 window.saveEventToSupabase = saveEventToSupabase;
-window.deleteEventFromSupabase = deleteEventFromSupabase;
-window.openSharePostModal = openSharePostModal;
-window.closeSharePostModal = closeSharePostModal;
-window.publishSharePost = publishSharePost;
 window.saveTicketToSupabase = saveTicketToSupabase;
 window.saveUserToSupabase = saveUserToSupabase;
 window.loadEventsFromSupabase = loadEventsFromSupabase;
@@ -4619,27 +4444,27 @@ function computeAdminStats(){const source=adminTicketsCache.length?adminTicketsC
 function renderRevenueChart(){const c=document.getElementById('revenueChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets;const labels=[],values=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);d.setHours(0,0,0,0);const n=new Date(d);n.setDate(n.getDate()+1);labels.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));values.push(source.filter(t=>{const pd=new Date(t.purchaseDate||0);return t.status!=='Refunded'&&pd>=d&&pd<n;}).reduce((s,t)=>s+(parseFloat(t.price)||0),0));}if(revenueChartInstance)revenueChartInstance.destroy();revenueChartInstance=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Revenue (Pi)',data:values,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});}
 function renderCategoryChart(){const c=document.getElementById('categoryChart');if(!c||typeof Chart==='undefined')return;const source=adminTicketsCache.length?adminTicketsCache:tickets,counts={};source.forEach(t=>{const e=events.find(x=>String(x.id)===String(t.eventId));const cat=(e&&e.category)||t.category||'Other';counts[cat]=(counts[cat]||0)+1;});const labels=Object.keys(counts),values=Object.values(counts);if(categoryChartInstance)categoryChartInstance.destroy();categoryChartInstance=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:['#0B1F5C','#F5B400','#10b981','#3b82f6','#8b5cf6','#ef4444','#f59e0b','#06b6d4'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});}
 function getFilteredAdminEvents(){const search=(document.getElementById('adminEventSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('adminEventSort')?.value||'date_desc';let filtered=events.filter(e=>!search||(String(e.title||'').toLowerCase().includes(search)||String(e.category||'').toLowerCase().includes(search)||String(e.organizerName||'').toLowerCase().includes(search)));const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);filtered.sort((a,b)=>sort==='date_asc'?new Date(a.date)-new Date(b.date):sort==='sales_desc'?(sales[b.id]||0)-(sales[a.id]||0):sort==='revenue_desc'?((sales[b.id]||0)*(parseFloat(b.price)||0))-((sales[a.id]||0)*(parseFloat(a.price)||0)):new Date(b.date)-new Date(a.date));return{filtered,salesByEvent:sales};}
-function renderAdminEventsFiltered(){const container=document.getElementById('adminEventsList');if(!container)return;const {filtered,salesByEvent}=getFilteredAdminEvents();if(!filtered.length){container.innerHTML='<p style="color:var(--gray);text-align:center;padding:20px;">No events found.</p>';const p=document.getElementById('adminEventsPagination');if(p)p.innerHTML='';return;}const totalPages=Math.ceil(filtered.length/ADMIN_EVENTS_PER_PAGE);if(adminEventsCurrentPage>totalPages)adminEventsCurrentPage=totalPages;const page=filtered.slice((adminEventsCurrentPage-1)*ADMIN_EVENTS_PER_PAGE,adminEventsCurrentPage*ADMIN_EVENTS_PER_PAGE);container.innerHTML=page.map(e=>{const sold=salesByEvent[e.id]||0,revenue=(sold*(parseFloat(e.price)||0)).toFixed(4),past=isEventPast(e),cancelled=e.status==='cancelled';const badge=cancelled?'<span class="badge-status cancelled">Cancelled</span>':past?'<span class="badge-status badge-expired">Ended</span>':'<span class="badge-status badge-used">Active</span>';return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>'+escapeHtml(e.title)+'</strong>'+badge+'</div><small>'+escapeHtml(e.category)+' · '+escapeHtml(e.pays||e.country||'France')+' · '+new Date(e.date).toLocaleDateString('en-US')+'</small><small>Standard: '+(parseFloat(e.price)||0).toFixed(6)+' Pi</small><small>Organizer: '+escapeHtml(e.organizerName||e.organizer||'—')+'</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> '+sold+' sold · '+revenue+' Pi</small></div><div class="event-actions">'+((!past&&!cancelled)?'<button class="btn-cancel-event" onclick="event.stopPropagation();openCancelEventModal(\''+e.id+'\')"><i class="fas fa-ban"></i> Cancel</button>':'')+'<button class="admin-delete-btn" onclick="adminDeleteEvent(\''+e.id+'\')">Delete</button></div></div>';}).join('');const p=document.getElementById('adminEventsPagination');if(p){let h=totalPages>1?'<button '+(adminEventsCurrentPage===1?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage-1)+')">‹ Previous</button>':'';for(let i=1;i<=totalPages;i++)h+='<button class="'+(i===adminEventsCurrentPage?'active':'')+'" onclick="goToAdminEventsPage('+i+')">'+i+'</button>';if(totalPages>1)h+='<button '+(adminEventsCurrentPage===totalPages?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage+1)+')">Next ›</button>';p.innerHTML=h;}}
+function renderAdminEventsFiltered(){const container=document.getElementById('adminEventsList');if(!container)return;const {filtered,salesByEvent}=getFilteredAdminEvents();if(!filtered.length){container.innerHTML='<p style="color:var(--gray);text-align:center;padding:20px;">Aucun événement trouvé.</p>';const p=document.getElementById('adminEventsPagination');if(p)p.innerHTML='';return;}const totalPages=Math.ceil(filtered.length/ADMIN_EVENTS_PER_PAGE);if(adminEventsCurrentPage>totalPages)adminEventsCurrentPage=totalPages;const page=filtered.slice((adminEventsCurrentPage-1)*ADMIN_EVENTS_PER_PAGE,adminEventsCurrentPage*ADMIN_EVENTS_PER_PAGE);container.innerHTML=page.map(e=>{const sold=salesByEvent[e.id]||0,revenue=(sold*(parseFloat(e.price)||0)).toFixed(4),past=isEventPast(e),cancelled=e.status==='cancelled';const badge=cancelled?'<span class="badge-status cancelled">Annulé</span>':past?'<span class="badge-status badge-expired">Terminé</span>':'<span class="badge-status badge-used">Actif</span>';return '<div class="admin-event-item"><div class="event-info"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong>'+escapeHtml(e.title)+'</strong>'+badge+'</div><small>'+escapeHtml(e.category)+' · '+escapeHtml(e.pays||e.country||'France')+' · '+new Date(e.date).toLocaleDateString('en-US')+'</small><small>Standard: '+(parseFloat(e.price)||0).toFixed(6)+' Pi</small><small>Organisateur: '+escapeHtml(e.organizerName||e.organizer||'—')+'</small><small style="color:#10b981;font-weight:600;"><i class="fas fa-chart-line"></i> '+sold+' vendu(s) · '+revenue+' Pi</small></div><div class="event-actions">'+((!past&&!cancelled)?'<button class="btn-cancel-event" onclick="event.stopPropagation();openCancelEventModal(\''+e.id+'\')"><i class="fas fa-ban"></i> Annuler</button>':'')+'<button class="admin-delete-btn" onclick="adminDeleteEvent(\''+e.id+'\')">Supprimer</button></div></div>';}).join('');const p=document.getElementById('adminEventsPagination');if(p){let h=totalPages>1?'<button '+(adminEventsCurrentPage===1?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage-1)+')">‹ Précédent</button>':'';for(let i=1;i<=totalPages;i++)h+='<button class="'+(i===adminEventsCurrentPage?'active':'')+'" onclick="goToAdminEventsPage('+i+')">'+i+'</button>';if(totalPages>1)h+='<button '+(adminEventsCurrentPage===totalPages?'disabled':'')+' onclick="goToAdminEventsPage('+(adminEventsCurrentPage+1)+')">Suivant ›</button>';p.innerHTML=h;}}
 function goToAdminEventsPage(page){adminEventsCurrentPage=page;renderAdminEventsFiltered();document.getElementById('adminEventsList')?.scrollIntoView({behavior:'smooth',block:'start'});}
 function downloadCSV(filename,rows){const csv=rows.map(row=>row.map(cell=>'"'+String(cell??'').replace(/"/g,'""')+'"').join(',')).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),0);}
-function exportEventsCSV(){if(!events.length){showToast('Export','No events to export.','info');return;}const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);const rows=[['ID','Titre','Catégorie','Pays','Date','Lieu','Prix (Pi)','Places totales','Places vendues','Revenu (Pi)','Status','Organizer']];events.forEach(e=>{const sold=sales[e.id]||0;rows.push([e.id,e.title,e.category,e.pays||e.country,new Date(e.date).toISOString(),e.location,(parseFloat(e.price)||0).toFixed(6),e.seatsTotal||0,sold,(sold*(parseFloat(e.price)||0)).toFixed(6),e.status||'active',e.organizerName||e.organizer||'']);});downloadCSV('betix_events_'+Date.now()+'.csv',rows);showToast('Export successful',events.length+' événements exportés.','success');}
-function exportTicketsCSV(){const source=adminTicketsCache.length?adminTicketsCache:tickets;if(!source.length){showToast('Export','No tickets to export.','info');return;}const rows=[['ID','Event','Buyer','Email','Téléphone','Prix (Pi)','Status','Date achat','Transaction ID']];source.forEach(t=>rows.push([t.id,t.eventTitle,t.buyerName,t.buyerEmail,t.buyerPhone,(parseFloat(t.price)||0).toFixed(6),t.status||'Valid',t.purchaseDate?new Date(t.purchaseDate).toISOString():'',t.transactionId||'']));downloadCSV('betix_tickets_'+Date.now()+'.csv',rows);showToast('Export successful',source.length+' tickets exportés.','success');}
-function exportUsersCSV(){const users=allUsersCache||[];if(!users.length){showToast('Export','No users to export.','info');return;}const rows=[['Nom','Email','Téléphone','Adresse','Pays','Wallet','Events créés']];users.forEach(u=>rows.push([((u.first_name||'')+' '+(u.last_name||'')).trim()||'User',u.email||'',u.phone_number||'',u.address||'',u.country||'',u.wallet||u.pi_uid||'',u.events_created||0]));downloadCSV('betix_users_'+Date.now()+'.csv',rows);showToast('Export successful',users.length+' utilisateurs exportés.','success');}
-function renderAdminLogsFiltered(){const c=document.getElementById('adminLogsList');if(!c)return;const s=(document.getElementById('adminLogSearch')?.value||'').toLowerCase().trim(),type=(document.getElementById('adminLogType')?.value||'all'),date=(document.getElementById('adminLogDate')?.value||'');const filtered=adminLogs.filter(l=>(!s||[l.user,l.action,l.details].join(' ').toLowerCase().includes(s))&&(type==='all'||String(l.action||'').toLowerCase().includes(type.toLowerCase()))&&(!date||String(l.timestamp||'').slice(0,10)===date));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:var(--gray);">No logs found.</p>';return;}c.innerHTML=filtered.map(l=>'<div class="admin-log-item"><div><span class="log-user">'+escapeHtml(l.user||'')+'</span> <span class="log-action">'+escapeHtml(l.action||'')+'</span>'+(l.details?' <span style="color:var(--gray);font-size:.8rem;">'+escapeHtml(l.details)+'</span>':'')+'</div><span class="log-time">'+escapeHtml(l.date||'')+'</span></div>').join('');}
+function exportEventsCSV(){if(!events.length){showToast('Export','Aucun événement à exporter.','info');return;}const sales={};(adminTicketsCache.length?adminTicketsCache:tickets).forEach(t=>sales[t.eventId]=(sales[t.eventId]||0)+1);const rows=[['ID','Titre','Catégorie','Pays','Date','Lieu','Prix (Pi)','Places totales','Places vendues','Revenu (Pi)','Statut','Organisateur']];events.forEach(e=>{const sold=sales[e.id]||0;rows.push([e.id,e.title,e.category,e.pays||e.country,new Date(e.date).toISOString(),e.location,(parseFloat(e.price)||0).toFixed(6),e.seatsTotal||0,sold,(sold*(parseFloat(e.price)||0)).toFixed(6),e.status||'active',e.organizerName||e.organizer||'']);});downloadCSV('betix_events_'+Date.now()+'.csv',rows);showToast('Export réussi',events.length+' événements exportés.','success');}
+function exportTicketsCSV(){const source=adminTicketsCache.length?adminTicketsCache:tickets;if(!source.length){showToast('Export','Aucun ticket à exporter.','info');return;}const rows=[['ID','Événement','Acheteur','Email','Téléphone','Prix (Pi)','Statut','Date achat','Transaction ID']];source.forEach(t=>rows.push([t.id,t.eventTitle,t.buyerName,t.buyerEmail,t.buyerPhone,(parseFloat(t.price)||0).toFixed(6),t.status||'Valid',t.purchaseDate?new Date(t.purchaseDate).toISOString():'',t.transactionId||'']));downloadCSV('betix_tickets_'+Date.now()+'.csv',rows);showToast('Export réussi',source.length+' tickets exportés.','success');}
+function exportUsersCSV(){const users=allUsersCache||[];if(!users.length){showToast('Export','Aucun utilisateur à exporter.','info');return;}const rows=[['Nom','Email','Téléphone','Adresse','Pays','Wallet','Événements créés']];users.forEach(u=>rows.push([((u.first_name||'')+' '+(u.last_name||'')).trim()||'User',u.email||'',u.phone_number||'',u.address||'',u.country||'',u.wallet||u.pi_uid||'',u.events_created||0]));downloadCSV('betix_users_'+Date.now()+'.csv',rows);showToast('Export réussi',users.length+' utilisateurs exportés.','success');}
+function renderAdminLogsFiltered(){const c=document.getElementById('adminLogsList');if(!c)return;const s=(document.getElementById('adminLogSearch')?.value||'').toLowerCase().trim(),type=(document.getElementById('adminLogType')?.value||'all'),date=(document.getElementById('adminLogDate')?.value||'');const filtered=adminLogs.filter(l=>(!s||[l.user,l.action,l.details].join(' ').toLowerCase().includes(s))&&(type==='all'||String(l.action||'').toLowerCase().includes(type.toLowerCase()))&&(!date||String(l.timestamp||'').slice(0,10)===date));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:var(--gray);">Aucun log trouvé.</p>';return;}c.innerHTML=filtered.map(l=>'<div class="admin-log-item"><div><span class="log-user">'+escapeHtml(l.user||'')+'</span> <span class="log-action">'+escapeHtml(l.action||'')+'</span>'+(l.details?' <span style="color:var(--gray);font-size:.8rem;">'+escapeHtml(l.details)+'</span>':'')+'</div><span class="log-time">'+escapeHtml(l.date||'')+'</span></div>').join('');}
 function refreshAdminDashboard(){computeAdminStats();renderRevenueChart();renderCategoryChart();renderAdminEventsFiltered();}
 
 // ---------- REFUNDS ----------
-function openCancelEventModal(eventId){const event=events.find(e=>String(e.id)===String(eventId));if(!event){showToast('Error','Event not found.','error');return;}const userId=currentUser.piUid||currentUser.wallet;if(event.organizer!==userId&&event.organizerPiUid!==userId&&!public_isAdmin()){showToast('Access denied','You are not the organizer.','error');return;}const eventTickets=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(eventId)&&t.status!=='Refunded');const total=eventTickets.reduce((s,t)=>s+(parseFloat(t.price)||0),0);cancelEventId=eventId;document.getElementById('cancelEventReason').value='';document.getElementById('cancelEventTicketCount').textContent=eventTickets.length;document.getElementById('cancelEventRefundAmount').textContent=total.toFixed(6)+' Pi';const ta=document.getElementById('cancelEventReason');const counter=document.getElementById('cancelReasonCounter');if(ta){ta.oninput=()=>{const r=200-ta.value.length;counter.textContent=r+' characters remaining';counter.style.color=r<20?'#dc2626':'#6b7280';};}document.getElementById('cancelEventModal').classList.add('show');}
+function openCancelEventModal(eventId){const event=events.find(e=>String(e.id)===String(eventId));if(!event){showToast('Erreur','Événement introuvable.','error');return;}const userId=currentUser.piUid||currentUser.wallet;if(event.organizer!==userId&&event.organizerPiUid!==userId&&!public_isAdmin()){showToast('Accès refusé','Vous n’êtes pas l’organisateur.','error');return;}const eventTickets=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(eventId)&&t.status!=='Refunded');const total=eventTickets.reduce((s,t)=>s+(parseFloat(t.price)||0),0);cancelEventId=eventId;document.getElementById('cancelEventReason').value='';document.getElementById('cancelEventTicketCount').textContent=eventTickets.length;document.getElementById('cancelEventRefundAmount').textContent=total.toFixed(6)+' Pi';const ta=document.getElementById('cancelEventReason');const counter=document.getElementById('cancelReasonCounter');if(ta){ta.oninput=()=>{const r=200-ta.value.length;counter.textContent=r+' caractères restants';counter.style.color=r<20?'#dc2626':'#6b7280';};}document.getElementById('cancelEventModal').classList.add('show');}
 function closeCancelEventModal(){document.getElementById('cancelEventModal')?.classList.remove('show');cancelEventId=null;}
 function public_isAdmin(){const p=localStorage.getItem('betix_admin_password');return p===adminPassword||p==='Betix@2026#';}
-async function confirmCancelEvent(){if(!cancelEventId)return;const reason=document.getElementById('cancelEventReason').value.trim();if(reason.length<5){showToast('Reason required','Please provide a reason (minimum 5 characters).','error');return;}const event=events.find(e=>String(e.id)===String(cancelEventId));if(!event)return;const btn=document.getElementById('confirmCancelEventBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Cancelling…';try{const now=new Date().toISOString();const {error:eventErr}=await supabaseClient.from('events').update({status:'cancelled',cancelled_at:now,cancellation_reason:reason,updated_at:now}).eq('id',event.id);if(eventErr)throw eventErr;event.status='cancelled';event.cancelledAt=now;event.cancellationReason=reason;const source=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(event.id)&&t.status!=='Refunded');if(source.length){const refunds=source.map(t=>({ticket_id:t.id,event_id:event.id,buyer_pi_uid:t.buyerWallet||'',buyer_name:t.buyerName||'Unknown',amount:parseFloat(t.price)||0,status:'pending',reason,created_at:now}));const {error:re}=await supabaseClient.from('refunds').insert(refunds);if(re)throw re;for(const ticket of source){const {error:te}=await supabaseClient.from('tickets').update({status:'Refunded',refunded:true}).eq('id',ticket.id);if(te)throw te;ticket.status='Refunded';ticket.refunded=true;const buyerId=ticket.buyerWallet;if(buyerId)await supabaseClient.from('notifications').insert({user_id:buyerId,message:'L’événement "'+event.title+'" has been cancelled. Reason: '+reason+'. Your refund is being processed.',type:'warning',read:false});}}addAdminLog('Event cancelled','"'+event.title+'" – '+source.length+' refund(s)');clearCache('betix_cached_events');clearCache('betix_cached_tickets_*');clearCache('betix_admin_cached_tickets');closeCancelEventModal();renderEventsByCategory();renderMyEvents();renderTickets();renderHistory();await loadAdminTickets();refreshAdminDashboard();renderAdminRefunds();showToast('Event cancelled',source.length+' refund(s) created.','success');}catch(err){console.error('Cancel error:',err);showToast('Error',err.message||'Unable to cancel.','error');}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-ban"></i> Confirm cancellation';}}
-async function renderAdminRefunds(){const c=document.getElementById('adminRefundsList');if(!c)return;const search=(document.getElementById('adminRefundSearch')?.value||'').toLowerCase().trim(),filter=document.getElementById('adminRefundFilter')?.value||'all';try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;const filtered=(data||[]).filter(r=>(filter==='all'||r.status===filter)&&(!search||[r.buyer_name,r.ticket_id,r.event_id,r.reason].join(' ').toLowerCase().includes(search)));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:#6b7280;">No refunds found.</p>';return;}c.innerHTML='<div style="overflow-x:auto;"><table class="refunds-table"><thead><tr><th>Ticket ID</th><th>Event</th><th>Buyer</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>'+filtered.map(r=>{const e=events.find(x=>String(x.id)===String(r.event_id));const badge=r.status==='pending'?'<span class="refund-status pending"><i class="fas fa-clock"></i> Pending</span>':'<span class="refund-status processed"><i class="fas fa-check"></i> Processed</span>';const action=r.status==='pending'?'<button class="btn-mark-refunded" onclick="markRefundProcessed(\''+String(r.id).replace(/'/g,'\\\'')+'\')"><i class="fas fa-check"></i> Mark as processed</button>':'<button class="btn-mark-refunded" disabled>✓ Processed</button>';return '<tr><td style="font-family:monospace;font-size:.7rem;">'+escapeHtml(String(r.ticket_id||'').slice(0,12))+'…</td><td>'+escapeHtml(e?e.title:String(r.event_id||''))+'</td><td>'+escapeHtml(r.buyer_name||'—')+'</td><td style="color:#10b981;font-weight:700;">'+(parseFloat(r.amount)||0).toFixed(6)+' Pi</td><td>'+badge+'</td><td style="font-size:.7rem;color:#6b7280;">'+new Date(r.created_at).toLocaleDateString('en-US')+'</td><td>'+action+'</td></tr>';}).join('')+'</tbody></table></div>';}catch(err){console.error('renderAdminRefunds error:',err);c.innerHTML='<p style="text-align:center;color:#dc2626;">Loading error.</p>';}}
-async function markRefundProcessed(refundId){try{const {error}=await supabaseClient.from('refunds').update({status:'processed',processed_at:new Date().toISOString()}).eq('id',refundId);if(error)throw error;addAdminLog('Refund processed','ID: '+refundId);renderAdminRefunds();showToast('Refund','Marked as processed.','success');}catch(err){showToast('Error',err.message||'Unable to update the refund.','error');}}
-async function exportRefundsCSV(){try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;if(!data?.length){showToast('Export','No refunds.','info');return;}const rows=[['ID','Ticket ID','Event ID','Buyer','Amount (Pi)','Status','Reason','Created at','Processed at']];data.forEach(r=>rows.push([r.id,r.ticket_id,r.event_id,r.buyer_name,(parseFloat(r.amount)||0).toFixed(6),r.status,r.reason||'',new Date(r.created_at).toISOString(),r.processed_at?new Date(r.processed_at).toISOString():'']));downloadCSV('betix_refunds_'+Date.now()+'.csv',rows);showToast('Export successful',data.length+' refund(s) exported.','success');}catch(e){showToast('Export','Unable to load refunds.','error');}}
+async function confirmCancelEvent(){if(!cancelEventId)return;const reason=document.getElementById('cancelEventReason').value.trim();if(reason.length<5){showToast('Raison requise','Veuillez indiquer une raison (5 caractères min).','error');return;}const event=events.find(e=>String(e.id)===String(cancelEventId));if(!event)return;const btn=document.getElementById('confirmCancelEventBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Annulation…';try{const now=new Date().toISOString();const {error:eventErr}=await supabaseClient.from('events').update({status:'cancelled',cancelled_at:now,cancellation_reason:reason,updated_at:now}).eq('id',event.id);if(eventErr)throw eventErr;event.status='cancelled';event.cancelledAt=now;event.cancellationReason=reason;const source=(adminTicketsCache.length?adminTicketsCache:tickets).filter(t=>String(t.eventId)===String(event.id)&&t.status!=='Refunded');if(source.length){const refunds=source.map(t=>({ticket_id:t.id,event_id:event.id,buyer_pi_uid:t.buyerWallet||'',buyer_name:t.buyerName||'Unknown',amount:parseFloat(t.price)||0,status:'pending',reason,created_at:now}));const {error:re}=await supabaseClient.from('refunds').insert(refunds);if(re)throw re;for(const ticket of source){const {error:te}=await supabaseClient.from('tickets').update({status:'Refunded',refunded:true}).eq('id',ticket.id);if(te)throw te;ticket.status='Refunded';ticket.refunded=true;const buyerId=ticket.buyerWallet;if(buyerId)await supabaseClient.from('notifications').insert({user_id:buyerId,message:'L’événement "'+event.title+'" a été annulé. Raison : '+reason+'. Votre remboursement est en cours.',type:'warning',read:false});}}addAdminLog('Événement annulé','"'+event.title+'" – '+source.length+' remboursement(s)');clearCache('betix_cached_events');clearCache('betix_cached_tickets_*');clearCache('betix_admin_cached_tickets');closeCancelEventModal();renderEventsByCategory();renderMyEvents();renderTickets();renderHistory();await loadAdminTickets();refreshAdminDashboard();renderAdminRefunds();showToast('Événement annulé',source.length+' remboursement(s) créé(s).','success');}catch(err){console.error('Cancel error:',err);showToast('Erreur',err.message||'Impossible d’annuler.','error');}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-ban"></i> Confirmer l’annulation';}}
+async function renderAdminRefunds(){const c=document.getElementById('adminRefundsList');if(!c)return;const search=(document.getElementById('adminRefundSearch')?.value||'').toLowerCase().trim(),filter=document.getElementById('adminRefundFilter')?.value||'all';try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;const filtered=(data||[]).filter(r=>(filter==='all'||r.status===filter)&&(!search||[r.buyer_name,r.ticket_id,r.event_id,r.reason].join(' ').toLowerCase().includes(search)));if(!filtered.length){c.innerHTML='<p style="text-align:center;padding:20px;color:#6b7280;">Aucun remboursement trouvé.</p>';return;}c.innerHTML='<div style="overflow-x:auto;"><table class="refunds-table"><thead><tr><th>Ticket ID</th><th>Événement</th><th>Acheteur</th><th>Montant</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead><tbody>'+filtered.map(r=>{const e=events.find(x=>String(x.id)===String(r.event_id));const badge=r.status==='pending'?'<span class="refund-status pending"><i class="fas fa-clock"></i> En attente</span>':'<span class="refund-status processed"><i class="fas fa-check"></i> Traité</span>';const action=r.status==='pending'?'<button class="btn-mark-refunded" onclick="markRefundProcessed(\''+String(r.id).replace(/'/g,'\\\'')+'\')"><i class="fas fa-check"></i> Marquer traité</button>':'<button class="btn-mark-refunded" disabled>✓ Traité</button>';return '<tr><td style="font-family:monospace;font-size:.7rem;">'+escapeHtml(String(r.ticket_id||'').slice(0,12))+'…</td><td>'+escapeHtml(e?e.title:String(r.event_id||''))+'</td><td>'+escapeHtml(r.buyer_name||'—')+'</td><td style="color:#10b981;font-weight:700;">'+(parseFloat(r.amount)||0).toFixed(6)+' Pi</td><td>'+badge+'</td><td style="font-size:.7rem;color:#6b7280;">'+new Date(r.created_at).toLocaleDateString('en-US')+'</td><td>'+action+'</td></tr>';}).join('')+'</tbody></table></div>';}catch(err){console.error('renderAdminRefunds error:',err);c.innerHTML='<p style="text-align:center;color:#dc2626;">Erreur de chargement.</p>';}}
+async function markRefundProcessed(refundId){try{const {error}=await supabaseClient.from('refunds').update({status:'processed',processed_at:new Date().toISOString()}).eq('id',refundId);if(error)throw error;addAdminLog('Remboursement traité','ID: '+refundId);renderAdminRefunds();showToast('Remboursement','Marqué comme traité.','success');}catch(err){showToast('Erreur',err.message||'Impossible de mettre à jour le remboursement.','error');}}
+async function exportRefundsCSV(){try{const {data,error}=await supabaseClient.from('refunds').select('*').order('created_at',{ascending:false});if(error)throw error;if(!data?.length){showToast('Export','Aucun remboursement.','info');return;}const rows=[['ID','Ticket ID','Event ID','Acheteur','Montant (Pi)','Statut','Raison','Créé le','Traité le']];data.forEach(r=>rows.push([r.id,r.ticket_id,r.event_id,r.buyer_name,(parseFloat(r.amount)||0).toFixed(6),r.status,r.reason||'',new Date(r.created_at).toISOString(),r.processed_at?new Date(r.processed_at).toISOString():'']));downloadCSV('betix_refunds_'+Date.now()+'.csv',rows);showToast('Export réussi',data.length+' remboursements exportés.','success');}catch(e){showToast('Export','Impossible de charger les remboursements.','error');}}
 
 // ---------- REALTIME ----------
 function updateRealtimeIndicator(connected){const el=document.getElementById('rtIndicator');if(!el)return;el.className='rt-indicator'+(connected?'':' disconnected');el.innerHTML='<span class="pulse-dot"></span>'+(connected?'Temps réel actif':'Déconnecté');}
-function initRealtimeNotifications(){const userIdentifier=currentUser.piUid||currentUser.wallet;if(!userIdentifier||!supabaseClient?.channel)return;if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('betix-realtime-'+String(userIdentifier)).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+String(userIdentifier)},payload=>{const n=payload.new;if(!n)return;const exists=notifications.some(x=>String(x.id)===String(n.id));if(exists)return;notifications.unshift({id:String(n.id),message:n.message,type:n.type||'info',read:Boolean(n.read),date:n.created_at||new Date().toISOString()});saveNotifications();updateNotifBadgeHeader();updateSidebarNotifBadge();showToast('🔔 Notification',n.message,n.type==='warning'?'error':'success');}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'events'},payload=>{const u=payload.new;if(!u)return;const ev=events.find(e=>String(e.id)===String(u.id));if(ev){ev.status=u.status||ev.status;ev.cancelledAt=u.cancelled_at||ev.cancelledAt;ev.cancellationReason=u.cancellation_reason||ev.cancellationReason;}clearCache('betix_cached_events');renderEventsByCategory();if(u.status==='cancelled')showToast('Event cancelled','"'+(u.title||'Event')+'" has been cancelled.','error');}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tickets'},payload=>{const t=payload.new;if(!t)return;const owner=currentUser.piUid||currentUser.wallet;if(String(t.buyer_pi_uid)===String(owner)){clearCache('betix_cached_tickets_'+owner);loadTicketsFromSupabase(owner).then(data=>{tickets=data;localStorage.setItem('betix_tickets',JSON.stringify(tickets));renderTickets();renderHistory();});showToast('New ticket sale','Your ticket purchase has been recorded.','success');}}).subscribe(status=>{console.log('Realtime status:',status);updateRealtimeIndicator(status==='SUBSCRIBED');});}
+function initRealtimeNotifications(){const userIdentifier=currentUser.piUid||currentUser.wallet;if(!userIdentifier||!supabaseClient?.channel)return;if(realtimeChannel)supabaseClient.removeChannel(realtimeChannel);realtimeChannel=supabaseClient.channel('betix-realtime-'+String(userIdentifier)).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+String(userIdentifier)},payload=>{const n=payload.new;if(!n)return;const exists=notifications.some(x=>String(x.id)===String(n.id));if(exists)return;notifications.unshift({id:String(n.id),message:n.message,type:n.type||'info',read:Boolean(n.read),date:n.created_at||new Date().toISOString()});saveNotifications();updateNotifBadgeHeader();updateSidebarNotifBadge();showToast('🔔 Notification',n.message,n.type==='warning'?'error':'success');}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'events'},payload=>{const u=payload.new;if(!u)return;const ev=events.find(e=>String(e.id)===String(u.id));if(ev){ev.status=u.status||ev.status;ev.cancelledAt=u.cancelled_at||ev.cancelledAt;ev.cancellationReason=u.cancellation_reason||ev.cancellationReason;}clearCache('betix_cached_events');renderEventsByCategory();if(u.status==='cancelled')showToast('Événement annulé','"'+(u.title||'Événement')+'" a été annulé.','error');}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tickets'},payload=>{const t=payload.new;if(!t)return;const owner=currentUser.piUid||currentUser.wallet;if(String(t.buyer_pi_uid)===String(owner)){clearCache('betix_cached_tickets_'+owner);loadTicketsFromSupabase(owner).then(data=>{tickets=data;localStorage.setItem('betix_tickets',JSON.stringify(tickets));renderTickets();renderHistory();});showToast('Nouvelle vente','Votre achat de ticket a été enregistré.','success');}}).subscribe(status=>{console.log('Realtime status:',status);updateRealtimeIndicator(status==='SUBSCRIBED');});}
 
 // ---------- SKELETONS ----------
 function getEventSkeletonHTML(){return '<div class="event-skeleton"><div class="sk-image skeleton"></div><div class="sk-body"><div class="sk-title skeleton"></div><div class="sk-line skeleton"></div><div class="sk-line medium skeleton"></div><div class="sk-info-box skeleton"></div><div class="sk-line short skeleton"></div><div class="sk-btn skeleton"></div></div></div>';}
@@ -4672,13 +4497,13 @@ function showPurchaseConfirmation(event, quantity, ticketsList) {
     const titleEl = document.getElementById('pcTitle');
     const messageEl = document.getElementById('pcMessage');
     const qty = quantity || (ticketsList ? ticketsList.length : 1);
-    const eventName = event ? event.title : 'the event';
+    const eventName = event ? event.title : "l'événement";
     const eventDate = event && event.date
         ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : '';
     if (titleEl) titleEl.textContent = qty > 1 ? `🎉 ${qty} tickets achetés !` : '🎉 Ticket acheté !';
     if (messageEl) {
-        messageEl.innerHTML = `Ticket${qty > 1 ? 's' : ''} confirmed${qty > 1 ? 's' : ''} for <strong>"${escapeHtml(eventName)}"</strong>${eventDate ? ` · ${eventDate}` : ''}. You can find ${qty > 1 ? 'them' : 'it'} in "My Tickets".`;
+        messageEl.innerHTML = `Ticket${qty > 1 ? 's' : ''} confirmé${qty > 1 ? 's' : ''} pour l'événement <strong>"${escapeHtml(eventName)}"</strong>${eventDate ? ` · ${eventDate}` : ''}. Retrouvez-le${qty > 1 ? 's' : ''} dans "Mes Tickets".`;
     }
     toast.classList.remove('hiding');
     void toast.offsetWidth;
@@ -4714,55 +4539,3 @@ window.showPurchaseConfirmation = showPurchaseConfirmation;
 window.closePurchaseConfirmation = closePurchaseConfirmation;
 window.pcGoToTickets = pcGoToTickets;
 window.pcGoToHome = pcGoToHome;
-
-
-// ============================================================
-// GLOBAL ADMIN / NAVIGATION ACTIONS
-// Keep inline HTML actions operational even when the application is
-// embedded or served with a stricter script context.
-// ============================================================
-Object.assign(window, {
-    showPage,
-    openSidebar,
-    handleLogoClick,
-    goToMyEvents,
-    goToTickets,
-    goToHistory,
-    goToRatings,
-    removeImageModern,
-    saveEventEdits,
-    updateQuantity,
-    closeQuantityPopup,
-    closeConfirmPurchasePopup,
-    closePublishConfirmPopup,
-    closeEditEventModal,
-    closePastEventPopup,
-    closeTransactionProcessedPopup,
-    adminLogout,
-    adminChangePassword,
-    adminClearLogs,
-    adminDeleteEvent,
-    adminDeleteAllEvents,
-    closeCancelEventModal,
-    confirmCancelEvent,
-    adminShowSlideForm,
-    adminSaveSlide,
-    adminCancelSlideForm,
-    adminDeleteSlide,
-    forceRefreshData,
-    exportEventsCSV,
-    exportTicketsCSV,
-    exportUsersCSV,
-    exportRefundsCSV,
-    goToAdminEventsPage,
-    markRefundProcessed,
-    renderAdminEventsFiltered,
-    renderAdminLogsFiltered,
-    renderAdminRefunds,
-    refreshAdminDashboard,
-    refreshUsersList,
-    filterAdminUsers,
-    openSharePostModal,
-    closeSharePostModal,
-    publishSharePost
-});
