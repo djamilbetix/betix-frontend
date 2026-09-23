@@ -2979,7 +2979,8 @@ async function createEvent(e) {
     const location = document.getElementById('eventLocation').value.trim();
     const description = document.getElementById('eventDescription').value.trim();
     const conditions = document.getElementById('eventConditions').value.trim();
-    const ticketPrice = parseFloat(document.getElementById('eventPrice').value);
+    const ticketPriceInput = document.getElementById('eventTicketPrice');
+    const ticketPrice = parseFloat(ticketPriceInput?.value);
     const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
     const durationValue = document.getElementById('eventDurationValue').value;
     const durationUnit = document.getElementById('eventDurationUnit').value;
@@ -2987,7 +2988,11 @@ async function createEvent(e) {
     if (!title) { alert(t('title') + ' ' + t('required')); return; }
     if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
     if (!location) { alert(t('location') + ' ' + t('required')); return; }
-    if (!Number.isFinite(ticketPrice) || ticketPrice <= 0) { alert(t('price') + ' ' + t('required')); return; }
+    if (!Number.isFinite(ticketPrice) || ticketPrice <= 0) {
+        alert('Please enter a valid ticket price greater than 0 Pi');
+        ticketPriceInput?.focus();
+        return;
+    }
     if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
     if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
     const images = getUploadedImages();
