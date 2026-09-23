@@ -3781,6 +3781,19 @@ function updateScanButtonVisibility() {
     scanBtn.style.display = userHasPublishedEvents() ? 'block' : 'none';
 }
 
+async function deleteEventFromSupabase(id) {
+    try {
+        const { error } = await supabaseClient.from('events').delete().eq('id', id);
+        if (error) throw error;
+        clearCache('betix_cached_events');
+        clearCache('betix_cached_tickets_*');
+        return true;
+    } catch (error) {
+        console.error('deleteEventFromSupabase error:', error);
+        return false;
+    }
+}
+
 // ============================================================
 // ADMIN
 // ============================================================
@@ -4036,26 +4049,48 @@ function renderAdminEvents() {
     }).join('');
 }
 
-function adminDeleteEvent(id) {
-    if (confirm('Delete this event?')) {
-        events = events.filter(e => e.id !== id);
-        saveEvents();
-        deleteEventFromSupabase(id);
-        renderAdminEvents(); renderEventsByCategory();
-        document.getElementById('adminEventCount').innerText = events.length;
-        addAdminLog('Event deleted', 'ID: ' + id);
-        alert(t('eventDeleted'));
+async function adminDeleteEvent(id) {
+    if (!confirm('Delete this event?')) return;
+    const originalEvents = events.slice();
+    events = events.filter(e => String(e.id) !== String(id));
+    localStorage.setItem('betix_events', JSON.stringify(events));
+    saveBackupData(events, tickets);
+    const deleted = await deleteEventFromSupabase(id);
+    if (!deleted) {
+        events = originalEvents;
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        showToast('Delete event', 'The event could not be deleted from the server.', 'error');
+        renderAdminEventsFiltered();
+        return;
     }
+    renderAdminEventsFiltered();
+    renderEventsByCategory();
+    const count = document.getElementById('adminEventCount');
+    if (count) count.innerText = events.length;
+    addAdminLog('Event deleted', 'ID: ' + id);
+    showToast('Betix', t('eventDeleted'), 'success');
 }
 
-function adminDeleteAllEvents() {
-    if (confirm('Delete ALL events? This action is irreversible.')) {
+async function adminDeleteAllEvents() {
+    if (!confirm('Delete ALL events? This action is irreversible.')) return;
+    const originalEvents = events.slice();
+    try {
+        const { error } = await supabaseClient.from('events').delete().neq('id', '');
+        if (error) throw error;
         events = [];
-        saveEvents();
-        renderAdminEvents(); renderEventsByCategory();
-        document.getElementById('adminEventCount').innerText = 0;
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        saveBackupData(events, tickets);
+        clearCache('betix_cached_events');
+        renderAdminEventsFiltered();
+        renderEventsByCategory();
+        const count = document.getElementById('adminEventCount');
+        if (count) count.innerText = 0;
         addAdminLog('All events deleted', 'Mass deletion');
-        alert(t('allEventsDeleted'));
+        showToast('Betix', t('allEventsDeleted'), 'success');
+    } catch (error) {
+        events = originalEvents;
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        showToast('Delete events', error.message || 'Unable to delete all events.', 'error');
     }
 }
 
@@ -4267,6 +4302,7 @@ async function initApp() {
         updateProfilePage();
         updateNotifBadgeHeader();
         initAdmin();
+        bindAdminControls();
         initChat();
         initLegalModals();
         const dark = document.getElementById('darkModeToggle');
@@ -4324,26 +4360,6 @@ async function initApp() {
         // Suppression de l'ancien écouteur sur transactionProcessedOkBtn car le bouton n'existe plus
         // document.getElementById('transactionProcessedOkBtn')?.addEventListener('click', closeTransactionProcessedPopup); // <- à supprimer
         
-        const adminAddSlideBtn = document.getElementById('adminAddSlideBtn');
-        const adminSaveSlideBtn = document.getElementById('adminSaveSlideBtn');
-        const adminCancelSlideBtn = document.getElementById('adminCancelSlideBtn');
-        const adminImageInput = document.getElementById('adminSlideImageInput');
-        const adminUploadBox = document.getElementById('adminUploadBox');
-        const adminPreview = document.getElementById('adminSlidePreview');
-        if (adminAddSlideBtn) adminAddSlideBtn.addEventListener('click', function() { adminShowSlideForm(-1); });
-        if (adminSaveSlideBtn) adminSaveSlideBtn.addEventListener('click', adminSaveSlide);
-        if (adminCancelSlideBtn) adminCancelSlideBtn.addEventListener('click', adminCancelSlideForm);
-        if (adminImageInput && adminUploadBox) {
-            adminImageInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) { adminPreview.src = e.target.result; adminPreview.style.display = 'block'; adminUploadBox.classList.add('has-image'); };
-                    reader.readAsDataURL(file);
-                }
-            });
-            adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
-        }
         if (eventForm) eventForm.addEventListener('submit', createEvent);
         if (searchInput) searchInput.addEventListener('input', function(e) { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { searchQuery = e.target.value.toLowerCase().trim(); renderEventsByCategory(); }, 300); });
         if (clearDataBtn) clearDataBtn.addEventListener('click', clearAllData);
@@ -4369,7 +4385,6 @@ async function initApp() {
         setInterval(() => { syncAllToSupabase(); retryPendingTickets(); }, 60000);
         window.addEventListener('beforeunload', () => { syncAllToSupabase(); retryPendingTickets(); });
         if (currentUser.wallet && isSessionExpired()) disconnectPi();
-        document.getElementById('adminSaveSettingsBtn')?.addEventListener('click', adminSaveSettings);
         document.getElementById('confirmPurchaseFinalBtn')?.addEventListener('click', function() {
             document.getElementById('confirmPurchasePopup').style.display = 'none';
             if (confirmPurchaseResolve) {
@@ -4479,7 +4494,47 @@ function showTicketSkeletons(count=2){const c=document.getElementById('ticketsLi
 function showHistorySkeletons(count=2){const c=document.getElementById('historyList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="ticket-skeleton"></div>';c.innerHTML=h;}
 function showNotificationSkeletons(count=4){const c=document.getElementById('notificationsList');if(!c)return;let h='';for(let i=0;i<count;i++)h+='<div class="notif-skeleton"><div class="sk-avatar skeleton"></div><div class="sk-content"><div class="sk-line skeleton"></div><div class="sk-line short skeleton"></div></div></div>';c.innerHTML=h;}
 
+window.adminLogout=adminLogout;window.forceRefreshData=forceRefreshData;window.adminDeleteEvent=adminDeleteEvent;window.adminDeleteAllEvents=adminDeleteAllEvents;window.adminClearLogs=adminClearLogs;window.adminChangePassword=adminChangePassword;window.adminSaveSettings=adminSaveSettings;window.adminShowSlideForm=adminShowSlideForm;window.adminSaveSlide=adminSaveSlide;window.adminCancelSlideForm=adminCancelSlideForm;window.refreshUsersList=refreshUsersList;window.deleteEventFromSupabase=deleteEventFromSupabase;
 window.exportEventsCSV=exportEventsCSV;window.exportTicketsCSV=exportTicketsCSV;window.exportUsersCSV=exportUsersCSV;window.goToAdminEventsPage=goToAdminEventsPage;window.refreshAdminDashboard=refreshAdminDashboard;window.renderAdminEventsFiltered=renderAdminEventsFiltered;window.renderAdminLogsFiltered=renderAdminLogsFiltered;window.openCancelEventModal=openCancelEventModal;window.closeCancelEventModal=closeCancelEventModal;window.confirmCancelEvent=confirmCancelEvent;window.renderAdminRefunds=renderAdminRefunds;window.markRefundProcessed=markRefundProcessed;window.exportRefundsCSV=exportRefundsCSV;window.initRealtimeNotifications=initRealtimeNotifications;window.showEventSkeletons=showEventSkeletons;window.showMyEventsSkeletons=showMyEventsSkeletons;window.showTicketSkeletons=showTicketSkeletons;window.showHistorySkeletons=showHistorySkeletons;window.showNotificationSkeletons=showNotificationSkeletons;
+
+function bindAdminControls() {
+    const bindOnce = (id, event, handler) => {
+        const el = document.getElementById(id);
+        if (!el || el._betixAdminBound) return;
+        el.addEventListener(event, handler);
+        el._betixAdminBound = true;
+    };
+    bindOnce('adminLogoutBtn', 'click', adminLogout);
+    bindOnce('refreshDataBtn', 'click', forceRefreshData);
+    bindOnce('adminExportEventsBtn', 'click', exportEventsCSV);
+    bindOnce('adminDeleteAllEventsBtn', 'click', adminDeleteAllEvents);
+    bindOnce('adminExportTicketsBtn', 'click', exportTicketsCSV);
+    bindOnce('adminExportUsersBtn', 'click', exportUsersCSV);
+    bindOnce('adminClearLogsBtn', 'click', adminClearLogs);
+    bindOnce('adminExportRefundsBtn', 'click', exportRefundsCSV);
+    bindOnce('adminChangePasswordBtn', 'click', adminChangePassword);
+    bindOnce('adminSaveSettingsBtn', 'click', adminSaveSettings);
+    bindOnce('adminAddSlideBtn', 'click', () => adminShowSlideForm(-1));
+    bindOnce('adminSaveSlideBtn', 'click', adminSaveSlide);
+    bindOnce('adminCancelSlideBtn', 'click', adminCancelSlideForm);
+    const adminImageInput = document.getElementById('adminSlideImageInput');
+    const adminUploadBox = document.getElementById('adminUploadBox');
+    const adminPreview = document.getElementById('adminSlidePreview');
+    if (adminImageInput && adminUploadBox && !adminImageInput._betixAdminBound) {
+        adminImageInput.addEventListener('change', function() {
+            const file = this.files && this.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (adminPreview) { adminPreview.src = e.target.result; adminPreview.style.display = 'block'; }
+                adminUploadBox.classList.add('has-image');
+            };
+            reader.readAsDataURL(file);
+        });
+        adminUploadBox.addEventListener('click', function(e) { if (e.target.tagName !== 'INPUT') adminImageInput.click(); });
+        adminImageInput._betixAdminBound = true;
+    }
+}
 
 // ============================================================
 // LANCEMENT DE L'APPLICATION
