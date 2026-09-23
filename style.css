@@ -2939,29 +2939,6 @@ body.dark-mode .success-buttons .btn-secondary:hover {
 }
 #eventConditions { resize: vertical; min-height: 80px; }
 
-.ticket-price-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-.ticket-price-input-wrapper input[type="number"] {
-    padding-right: 3.2rem;
-}
-.ticket-price-currency {
-    position: absolute;
-    right: 1rem;
-    color: var(--gray);
-    font-size: 0.85rem;
-    font-weight: 700;
-    pointer-events: none;
-}
-.ticket-price-help {
-    font-size: 0.7rem;
-    color: var(--gray);
-    margin-top: 6px;
-}
-.ticket-price-help i { color: #F5B400; }
-
 .ticket-types-container {
     background: #f8fafc;
     border-radius: 14px;
@@ -5745,4 +5722,75 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
     .event-card-classic .carousel-slide img {
         max-height: 72vh !important;
     }
+}
+
+
+/* ============================================================
+   BETIX — TICKET PRICE FIELD
+   Default example shown softly as a placeholder (not a fixed price)
+   ============================================================ */
+.ticket-price-form-group .ticket-price-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.ticket-price-form-group .ticket-price-input {
+    width: 100%;
+    padding: 0.85rem 3.6rem 0.85rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 1rem;
+    background: #fff;
+    color: #111827;
+    box-sizing: border-box;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.ticket-price-form-group .ticket-price-input::placeholder {
+    color: #9ca3af;
+    opacity: .62;
+}
+.ticket-price-form-group .ticket-price-input:focus {
+    outline: none;
+    border-color: #0B1F5C;
+    box-shadow: 0 0 0 4px rgba(11,31,92,.10);
+}
+.ticket-price-form-group .ticket-price-suffix {
+    position: absolute;
+    right: 1rem;
+    color: #6b7280;
+    font-weight: 700;
+    pointer-events: none;
+}
+.ticket-price-form-group .ticket-price-help {
+    margin: .45rem 0 0;
+    color: #6b7280;
+    font-size: .82rem;
+}
+.ticket-price-form-group .ticket-price-help i {
+    color: #F5B400;
+    margin-right: 5px;
+}
+
+/* ============================================================
+   BETIX — SIDEBAR MENU SYMBOLS IN BETIX BLUE
+   ============================================================ */
+.sidebar-item i {
+    color: #0B1F5C !important;
+}
+.sidebar-item:hover i {
+    color: #ffffff !important;
+}
+.close-sidebar {
+    color: #0B1F5C !important;
+}
+.sidebar-notif-icon-top {
+    color: #0B1F5C !important;
+}
+.sidebar-notif-icon-top:hover {
+    color: #0B1F5C !important;
+}
+/* Keep icons white on the dark action buttons for contrast. */
+.sidebar-item#scanMenuItem i,
+.sidebar-item#adminMenuItem i {
+    color: #ffffff !important;
 }
