@@ -3020,6 +3020,7 @@ async function createEvent(e) {
     const description = document.getElementById('eventDescription').value.trim();
     const conditions = document.getElementById('eventConditions').value.trim();
     const seatsTotal = parseInt(document.getElementById('eventSeats').value) || 0;
+    const eventPrice = parseFloat(document.getElementById('eventPrice').value);
     const durationValue = document.getElementById('eventDurationValue').value;
     const durationUnit = document.getElementById('eventDurationUnit').value;
     const durationValueNum = durationValue ? parseInt(durationValue) : null;
@@ -3027,6 +3028,7 @@ async function createEvent(e) {
     if (!date) { alert(t('dateTime') + ' ' + t('required')); return; }
     if (!location) { alert(t('location') + ' ' + t('required')); return; }
     if (seatsTotal < 1) { alert('At least one ticket must be available'); return; }
+    if (!Number.isFinite(eventPrice) || eventPrice <= 0) { alert('Price must be greater than 0 Pi'); return; }
     if (!conditions) { alert(t('conditions') + ' ' + t('required')); return; }
     const images = getUploadedImages();
     if (images.length < 1) { alert('At least 1 image is required (up to 3)'); return; }
@@ -3038,7 +3040,7 @@ async function createEvent(e) {
             title, category, pays, country: pays, date, location,
             description: description || '',
             conditions,
-            price: 0.0003,
+            price: eventPrice,
             seatsTotal,
             seatsLeft: seatsTotal,
             standardSeats: seatsTotal,
@@ -3053,7 +3055,7 @@ async function createEvent(e) {
             boosts: 0,
             durationValue: durationValueNum,
             durationUnit,
-            ticketTypes: { standard: { enabled: true, price: 0.0003 } }
+            ticketTypes: { standard: { enabled: true, price: eventPrice } }
         };
         openPublishConfirm(newEvent);
     } catch (error) { showToast(t('paymentError'), error.message || 'Unknown error', 'error'); publishBtn.classList.remove('loading'); publishBtn.disabled = false; }
