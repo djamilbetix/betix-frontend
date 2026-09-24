@@ -5726,3 +5726,27 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
         max-height: 72vh !important;
     }
 }
+
+/* ============================================================
+   BETIX FOOTER — mobile order
+   Keep Betix + slogan at the top, then Quick Links and Contact,
+   without changing the desktop footer layout.
+   ============================================================ */
+@media (max-width: 600px) {
+    .betix-footer .footer-container {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .betix-footer .footer-col:nth-child(1) { order: 1; }
+    .betix-footer .footer-col:nth-child(2) { order: 2; }
+    .betix-footer .footer-col:nth-child(3) { order: 3; }
+
+    .betix-footer .footer-desc {
+        max-width: 100%;
+    }
+
+    .betix-footer .footer-bottom {
+        margin-top: 8px;
+    }
+}
