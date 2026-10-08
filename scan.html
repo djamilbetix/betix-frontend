@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Betix - Scan Ticket</title>
     <meta name="description" content="Scannez et validez les tickets Betix" />
+    <link rel="icon" type="image/jpeg" href="logo.jpg.jpeg" />
+    <link rel="apple-touch-icon" href="logo.jpg.jpeg" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1030,16 +1032,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const remoteHistory = await loadScanHistoryFromSupabase();
             if (remoteHistory.length > 0) {
-                const merged = [...remoteHistory];
-                const localOnly = scanHistory.filter(local => {
-                    return !remoteHistory.some(r =>
-                        (r.code === local.code &&
-                         Math.abs(new Date(r.timestamp) - new Date(local.timestamp)) < 60000)
-                    );
-                });
-                scanHistory = [...localOnly, ...merged].sort((a, b) =>
-                    new Date(b.timestamp) - new Date(a.timestamp)
-                );
+                const merged = [...remoteHistory, ...scanHistory];
+                merged.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                scanHistory = dedupeScanHistoryByTicketCode(merged);
                 if (scanHistory.length > 500) scanHistory = scanHistory.slice(0, 500);
                 saveScanHistory();
                 updateHistoryBadge();
@@ -1099,6 +1094,8 @@ function loadScanHistory() {
         const saved = localStorage.getItem('betix_scan_history');
         scanHistory = saved ? JSON.parse(saved) : [];
         if (!Array.isArray(scanHistory)) scanHistory = [];
+        scanHistory = dedupeScanHistoryByTicketCode(scanHistory);
+        saveScanHistory();
     } catch (e) {
         console.error('Erreur chargement historique:', e);
         scanHistory = [];
@@ -1110,6 +1107,24 @@ function saveScanHistory() {
         if (scanHistory.length > 500) scanHistory = scanHistory.slice(0, 500);
         localStorage.setItem('betix_scan_history', JSON.stringify(scanHistory));
     } catch (e) { console.error('Erreur sauvegarde historique:', e); }
+}
+
+function normalizeScanCode(code) { return String(code || '').trim(); }
+
+function dedupeScanHistoryByTicketCode(history) {
+    const seen = new Set();
+    return (Array.isArray(history) ? history : []).filter(item => {
+        const code = normalizeScanCode(item.code);
+        if (!code) return true;
+        if (seen.has(code)) return false;
+        seen.add(code);
+        return true;
+    });
+}
+
+function hasScanHistoryCode(code) {
+    const normalized = normalizeScanCode(code);
+    return normalized ? scanHistory.some(item => normalizeScanCode(item.code) === normalized) : false;
 }
 
 async function saveScanToSupabase(entry) {
@@ -1133,6 +1148,14 @@ async function saveScanToSupabase(entry) {
             scanned_by_name: currentUser.name || currentUser.first_name || 'Organisateur',
             scanned_at: entry.timestamp || new Date().toISOString()
         };
+
+        const { data: existingRows, error: existingError } = await supabaseClient
+            .from('scan_history')
+            .select('id')
+            .eq('scanned_by_pi_uid', userId)
+            .eq('ticket_code', dbEntry.ticket_code)
+            .limit(1);
+        if (!existingError && existingRows && existingRows.length) return existingRows[0];
 
         const { data, error } = await supabaseClient
             .from('scan_history')
@@ -1221,6 +1244,11 @@ async function clearAllScansFromSupabase() {
 }
 
 async function addScanToHistory(entry) {
+    const code = normalizeScanCode(entry?.code);
+    if (code && hasScanHistoryCode(code)) {
+        console.log('ℹ️ Ticket déjà présent dans l’historique, aucune duplication:', code);
+        return false;
+    }
     const localEntry = {
         id: 'scan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         timestamp: new Date().toISOString(),
