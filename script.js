@@ -1468,7 +1468,7 @@ function renderTickets() {
     }
     let html = '';
     uniqueTickets.forEach(ticket => {
-        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
+        html += '<div class="ticket-list-item' + (isUsed ? ' used-history' : '') + '">' + generateTicketHTML(ticket) +
             '<div class="ticket-actions-wrapper">' +
                 '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
                 '<button class="btn-action btn-png" onclick="downloadTicketPNG(\'' + ticket.id + '\')"><i class="fas fa-image"></i> PNG</button>' +
@@ -1625,6 +1625,63 @@ function shareTicket(ticketId) {
 }
 
 // ============================================================
+// SHARE EVENT PUBLICATION + DEEP LINK
+// ============================================================
+function getEventPublicationUrl(eventId) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('ticket');
+    url.searchParams.set('event', String(eventId));
+    return url.toString();
+}
+
+async function shareEventPublication(eventId) {
+    const event = events.find(e => String(e.id) === String(eventId));
+    if (!event) { showToast('Share', 'Event not found.', 'error'); return; }
+    const url = getEventPublicationUrl(event.id);
+    const data = { title: event.title || 'Betix Event', text: 'Check out this event on Betix: ' + (event.title || 'Event'), url };
+    try {
+        if (navigator.share) {
+            await navigator.share(data);
+            return;
+        }
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+            showToast('Share', 'Event link copied to clipboard.', 'success');
+            return;
+        }
+        prompt('Copy this event link:', url);
+    } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        try {
+            await navigator.clipboard.writeText(url);
+            showToast('Share', 'Event link copied to clipboard.', 'success');
+        } catch (_) { prompt('Copy this event link:', url); }
+    }
+}
+
+function openSharedEventFromUrl() {
+    const eventId = new URLSearchParams(window.location.search).get('event');
+    if (!eventId) return;
+    const open = () => {
+        const event = events.find(e => String(e.id) === String(eventId));
+        if (event) {
+            setTimeout(() => openEventDetails(event.id), 150);
+            return true;
+        }
+        return false;
+    };
+    if (!open()) {
+        setTimeout(async () => {
+            try {
+                const loaded = await loadEventsFromSupabase();
+                if (loaded.length) { events = loaded; localStorage.setItem('betix_events', JSON.stringify(events)); renderEventsByCategory(); }
+                open();
+            } catch (e) { console.warn('Unable to open shared event:', e); }
+        }, 700);
+    }
+}
+
+// ============================================================
 // RENDER EVENT CARD
 // ============================================================
 function renderEventCard(event) {
@@ -1724,6 +1781,7 @@ function renderEventCard(event) {
             '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
             buyButtonHtml +
+            '<button class="event-share-btn" type="button" onclick="event.stopPropagation(); shareEventPublication(\'' + event.id + '\')"><i class="fas fa-share-alt"></i> Share event</button>' +
             '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
         '</div>' +
@@ -2535,6 +2593,36 @@ let confirmPurchaseResolve = null;
 function openConfirmPurchasePopup(title, subtotal, serviceFee, total) { return Promise.resolve(false); }
 function closeConfirmPurchasePopup() {}
 
+function updateEventInventoryAfterPurchase(event, quantity, category) {
+    const qty = Math.max(0, parseInt(quantity) || 0);
+    const key = String(category || 'standard').toLowerCase();
+    const cap = key.charAt(0).toUpperCase() + key.slice(1);
+    const seatsKey = key + 'Seats';
+    const soldKey = key + 'Sold';
+    const leftKey = key + 'Left';
+
+    if (event.ticketTypes && event.ticketTypes[key]) {
+        const type = event.ticketTypes[key];
+        type.sold = (parseInt(type.sold) || 0) + qty;
+        if (type.seats !== undefined) type.left = Math.max(0, (parseInt(type.seats) || 0) - type.sold);
+        else if (type.left !== undefined) type.left = Math.max(0, (parseInt(type.left) || 0) - qty);
+    }
+    if (event[seatsKey] !== undefined || event[soldKey] !== undefined || event[leftKey] !== undefined) {
+        event[soldKey] = (parseInt(event[soldKey]) || 0) + qty;
+        const total = parseInt(event[seatsKey]) || 0;
+        event[leftKey] = Math.max(0, total - event[soldKey]);
+    }
+    // Betix currently publishes Standard tickets; keep legacy aggregate fields synchronized.
+    if (key === 'standard') {
+        event.standardSold = (parseInt(event.standardSold) || 0) + qty;
+        event.standardLeft = Math.max(0, (parseInt(event.standardSeats) || 0) - event.standardSold);
+        event.seatsLeft = Math.max(0, (parseInt(event.seatsLeft) || parseInt(event.seatsTotal) || 0) - qty);
+    }
+    if (event.seatsTotal !== undefined && key !== 'standard') {
+        event.seatsLeft = Math.max(0, (parseInt(event.seatsLeft) || parseInt(event.seatsTotal) || 0) - qty);
+    }
+}
+
 async function confirmPurchase(eventId, quantity) {
     const event = events.find(e => e.id === eventId);
     if (!event) { alert(t('eventNotFound')); return; }
@@ -2629,9 +2717,8 @@ async function confirmPurchase(eventId, quantity) {
                         }
                     }
                     const purchaseDate = new Date().toISOString();
-                    event.standardSold = (event.standardSold || 0) + quantity;
-                    event.standardLeft = (event.standardSeats || 0) - event.standardSold;
-                    event.seatsLeft -= quantity;
+                    const purchasedCategory = 'standard';
+                    updateEventInventoryAfterPurchase(event, quantity, purchasedCategory);
                     event.boosts = (event.boosts || 0) + quantity;
                     
                     const existingTicketsForEvent = tickets.filter(t => t.eventId === event.id && t.ticketNumber !== undefined);
@@ -4368,6 +4455,7 @@ async function initApp() {
         calculateLoyaltyPoints();
         initFilters();
         renderEventsByCategory();
+        openSharedEventFromUrl();
         updateUserInfo();
         updateProfilePage();
         updateNotifBadgeHeader();
