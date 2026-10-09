@@ -1781,8 +1781,10 @@ function renderEventCard(event) {
             '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
             buyButtonHtml +
-            '<div class="event-share-row"><button class="event-share-btn" type="button" aria-label="Share event" title="Share event" onclick="event.stopPropagation(); shareEventPublication(\'' + event.id + '\')"><i class="fas fa-share-alt"></i></button></div>' +
-            '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
+            '<div class="event-bottom-meta">' +
+                '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
+                '<button class="event-share-btn" type="button" aria-label="Share event" title="Share event" onclick="event.stopPropagation(); shareEventPublication(\'' + event.id + '\')"><i class="fas fa-share-alt"></i></button>' +
+            '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
         '</div>' +
     '</div>';
