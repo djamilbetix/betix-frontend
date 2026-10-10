@@ -5791,13 +5791,29 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 }
 
 
-/* Ticket History: tickets already scanned are visibly marked and blurred */
-#historyList .history-ticket-used .ticket-card,
-#historyList .history-ticket-used .ticket-design,
-#historyList .history-ticket-used .ticket-body { filter: blur(1.4px); opacity: .62; transition: filter .2s ease, opacity .2s ease; }
-#historyList .history-ticket-used:hover .ticket-card,
-#historyList .history-ticket-used:hover .ticket-design,
-#historyList .history-ticket-used:hover .ticket-body { filter: blur(0); opacity: 1; }
-#historyList .history-ticket-used .badge-used { filter: none; }
-#historyList .history-ticket-used .ticket-overlay-container { filter: blur(1.6px); opacity: .58; transition: filter .2s ease, opacity .2s ease; }
-#historyList .history-ticket-used:hover .ticket-overlay-container { filter: blur(0); opacity: 1; }
+
+
+/* Betix desktop event layout: one aligned grid, no category staircase */
+@media (min-width: 1200px) {
+  #eventsByCategory { width: 100%; max-width: 1600px; margin-inline: auto; }
+  #eventsByCategory .events-grid-centered {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch !important; gap: 24px !important;
+    width: 100%; max-width: none; margin: 0;
+  }
+  #eventsByCategory .event-card-classic {
+    width: 100% !important; min-width: 0 !important; max-width: none !important;
+    height: 100%; align-self: stretch;
+  }
+  #eventsByCategory .card-content-classic { min-width: 0; }
+}
+@media (min-width: 1600px) {
+  #eventsByCategory .events-grid-centered { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  #eventsByCategory .events-grid-centered { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; align-items: stretch !important; }
+}
+@media (max-width: 767px) {
+  #eventsByCategory .events-grid-centered { grid-template-columns: minmax(0, 1fr) !important; }
+}
