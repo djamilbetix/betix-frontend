@@ -5817,3 +5817,43 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 @media (max-width: 767px) {
   #eventsByCategory .events-grid-centered { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+
+/* FINAL FIX: the events container must not itself be a one-cell grid.
+   The JavaScript inserts one inner .events-grid-centered containing every card. */
+#eventsByCategory {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+#eventsByCategory > .events-grid-centered {
+  display: grid !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+}
+#eventsByCategory > .events-grid-centered > .event-card-classic {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  align-self: stretch !important;
+}
+@media (min-width: 1600px) {
+  #eventsByCategory > .events-grid-centered { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  #eventsByCategory > .events-grid-centered { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 20px !important; }
+}
+@media (max-width: 767px) {
+  #eventsByCategory > .events-grid-centered { grid-template-columns: minmax(0, 1fr) !important; gap: 16px !important; }
+}
