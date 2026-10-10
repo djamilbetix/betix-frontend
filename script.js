@@ -956,9 +956,9 @@ async function loadTicketsFromSupabase(piUid) {
 // ============================================================
 // CHARGEMENT DES ÉVÉNEMENTS DEPUIS SUPABASE
 // ============================================================
-async function loadEventsFromSupabase() {
+async function loadEventsFromSupabase(forceRefresh = false) {
     const cacheKey = 'betix_cached_events';
-    const cached = getCachedData(cacheKey, CACHE_DURATION_EVENTS);
+    const cached = forceRefresh ? null : getCachedData(cacheKey, CACHE_DURATION_EVENTS);
     if (cached) { console.log('📦 Using cached events'); return cached; }
     try {
         const { data, error } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
@@ -1815,15 +1815,26 @@ function renderEventsByCategory() {
         const matchSearch = title.includes(searchQuery) || location.includes(searchQuery);
         return matchCategory && matchCountry && matchSearch;
     });
-    if (filtered.length === 0) { container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>'; return; }
-    const cats = ['Concert','Sport','Conference','Training','Cinema','Festival','Theatre','Dance','Exhibition','Gala','Seminar','Formation'];
-    let html = '';
-    if (currentFilter !== 'All') {
-        html = '<div class="category-section"><div class="events-grid-centered">'; filtered.forEach(e => html += renderEventCard(e)); html += '</div></div>';
-    } else cats.forEach(cat => { const catEvents = filtered.filter(e => e.category === cat); if (catEvents.length) { html += '<div class="category-section"><div class="category-header">' + cat + '</div><div class="events-grid-centered">'; catEvents.forEach(e => html += renderEventCard(e)); html += '</div></div>'; } });
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--gray);">' + t('noEvents') + '</p>';
+        return;
+    }
+    // One responsive grid: all event cards align in rows instead of restarting per category.
+    const ordered = filtered.slice().sort((a, b) => {
+        const da = new Date(a.date).getTime() || 0;
+        const db = new Date(b.date).getTime() || 0;
+        return da - db;
+    });
+    let html = '<div class="events-grid-centered">';
+    ordered.forEach(e => { html += renderEventCard(e); });
+    html += '</div>';
     container.innerHTML = html;
-    container.removeEventListener('click', handleEventCardClick); container.addEventListener('click', handleEventCardClick);
-    setTimeout(() => { applyStaggeredAnimation('#eventsByCategory .events-grid-centered'); initCarouselIndicators(); }, 50);
+    container.removeEventListener('click', handleEventCardClick);
+    container.addEventListener('click', handleEventCardClick);
+    setTimeout(() => {
+        applyStaggeredAnimation('#eventsByCategory .events-grid-centered');
+        initCarouselIndicators();
+    }, 50);
 }
 
 // ============================================================
@@ -2680,6 +2691,7 @@ async function confirmPurchase(eventId, quantity) {
                         tickets.push(ticket);
                         ticketsAdded.push(ticket);
                     }
+                    clearCache('betix_cached_events');
                     saveEvents();
                     saveTickets();
                     for (let j = 0; j < ticketsAdded.length; j++) {
@@ -2713,7 +2725,7 @@ async function confirmPurchase(eventId, quantity) {
                     renderHistory();
                     updateProfilePage();
                     clearCache('betix_cached_events');
-                    if (typeof refreshEventCounters === 'function') refreshEventCounters();
+                    if (typeof refreshEventCounters === 'function') await refreshEventCounters();
                     setTimeout(() => {
                         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
                     }, 300);
@@ -4795,12 +4807,32 @@ window.shareEventFromCard = shareEventFromCard;
 // Force un rafraîchissement manuel des compteurs (utile si Realtime n'est pas activé côté Supabase)
 async function refreshEventCounters() {
     try {
-        const fresh = await loadEventsFromSupabase();
-        if (fresh && fresh.length) {
-            events = fresh;
-            localStorage.setItem('betix_events', JSON.stringify(events));
-            renderEventsByCategory();
+        clearCache('betix_cached_events');
+        const fresh = await loadEventsFromSupabase(true);
+        if (!fresh || !fresh.length) return;
+        // Reconcile availability with persisted ticket rows, not a stale cached counter.
+        const { data: ticketRows, error: ticketError } = await supabaseClient
+            .from('tickets')
+            .select('event_id');
+        if (!ticketError && Array.isArray(ticketRows)) {
+            const soldByEvent = {};
+            ticketRows.forEach(row => {
+                const key = String(row.event_id || '');
+                if (key) soldByEvent[key] = (soldByEvent[key] || 0) + 1;
+            });
+            fresh.forEach(ev => {
+                const total = Number(ev.standardSeats || ev.seatsTotal || 0);
+                const sold = Number(soldByEvent[String(ev.id)] || 0);
+                ev.standardSold = sold;
+                ev.standardLeft = Math.max(0, total - sold);
+                ev.seatsTotal = Number(ev.seatsTotal || total);
+                ev.seatsLeft = Math.max(0, Number(ev.seatsTotal) - sold);
+            });
         }
+        events = fresh;
+        localStorage.setItem('betix_events', JSON.stringify(events));
+        setCachedData('betix_cached_events', events);
+        renderEventsByCategory();
     } catch (e) {
         console.warn('refreshEventCounters error', e);
     }
