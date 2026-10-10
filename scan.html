@@ -1953,7 +1953,7 @@ async function markTicketAsUsed(ticket) {
             buyerPhone: ticket.buyer_phone || '',
             ticketType: ticket.ticket_type || 'standard',
             price: ticket.price || 0,
-            status: 'valid', message: 'Accès autorisé'
+            status: 'used', message: 'Déjà utilisé — ticket marqué comme utilisé'
         });
 
         playSuccessSound();
