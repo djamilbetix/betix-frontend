@@ -1507,7 +1507,7 @@ function renderHistory() {
         const badgeHtml = isUsed
             ? '<span class="badge-status badge-used">🟢 UTILISÉ</span>'
             : '<span class="badge-status badge-expired">🔴 EXPIRÉ</span>';
-        html += '<div class="ticket-list-item">' + generateTicketHTML(ticket) +
+        html += '<div class="ticket-list-item history-ticket-item' + (isUsed ? ' history-ticket-used' : '') + '">' + generateTicketHTML(ticket) +
             '<div class="ticket-actions-wrapper">' +
                 badgeHtml +
                 '<button class="btn-action btn-pdf" onclick="downloadTicketPDF(\'' + ticket.id + '\')"><i class="fas fa-file-pdf"></i> PDF</button>' +
@@ -1719,7 +1719,7 @@ function renderEventCard(event) {
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
             '<div style="display:flex; gap:8px; align-items:center; margin-top:4px;">' +
                 '<button class="buy-btn-classic" type="button" style="flex:1;" onclick="event.stopPropagation(); ' + (eventEnded || remainingTickets <= 0 ? '' : "openQuantityPopup('" + event.id + "')") + '" ' + (eventEnded || remainingTickets <= 0 ? 'disabled' : '') + '>' + (eventEnded ? '<i class="fas fa-calendar-times"></i> Event ended' : remainingTickets <= 0 ? '<i class="fas fa-ticket-alt"></i> Sold out' : t('buyTicket')) + '</button>' +
-                '<button class="btn-share-event" type="button" title="Partager" onclick="event.stopPropagation(); shareEventFromCard(\'' + event.id + '\')" style="flex:0 0 auto; width:44px; height:44px; border:none; border-radius:50%; background:linear-gradient(135deg,#0B1F5C,#1a2a4a); color:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(11,31,92,0.25); transition:transform .25s ease;">' +
+                '<button class="btn-share-event" type="button" title="Partager" onclick="event.stopPropagation(); shareEventFromCard(\'' + event.id + '\')" style="flex:0 0 auto; width:44px; height:44px; border:none; border-radius:50%; background:#ffffff; color:#111827; border:1px solid #d1d5db; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(15,23,42,0.12); transition:transform .25s ease;">' +
                     '<i class="fas fa-share-alt" style="font-size:1rem;"></i>' +
                 '</button>' +
             '</div>' +
@@ -2712,6 +2712,8 @@ async function confirmPurchase(eventId, quantity) {
                     renderTickets();
                     renderHistory();
                     updateProfilePage();
+                    clearCache('betix_cached_events');
+                    if (typeof refreshEventCounters === 'function') refreshEventCounters();
                     setTimeout(() => {
                         if (typeof generateAllQRCodes === 'function') generateAllQRCodes();
                     }, 300);
@@ -4692,12 +4694,45 @@ function initRealtimeNotifications() {
             if (eventId) {
                 const ev = events.find(e => String(e.id) === String(eventId));
                 if (ev) {
-                    ev.standardSold = (ev.standardSold || 0) + 1;
-                    ev.standardLeft = Math.max(0, (ev.standardSeats || 0) - ev.standardSold);
+                    // A ticket row is one ticket; use max() to avoid double-counting local purchase updates.
+                    ev.standardSold = Math.max(Number(ev.standardSold) || 0, Number(ev.standardSold || 0) + 1);
+                    ev.standardLeft = Math.max(0, (Number(ev.standardSeats || ev.seatsTotal) || 0) - ev.standardSold);
                     ev.seatsLeft = ev.standardLeft;
                     renderEventsByCategory();
                     clearCache('betix_cached_events');
                 }
+                // Reconcile counters against the database so all connected clients converge on the same count.
+                supabaseClient.from('tickets').select('id', { count: 'exact', head: true })
+                    .eq('event_id', eventId).then(({ count, error }) => {
+                        if (error || count == null) return;
+                        const current = events.find(e => String(e.id) === String(eventId));
+                        if (!current) return;
+                        current.standardSold = count;
+                        current.standardLeft = Math.max(0, (Number(current.standardSeats || current.seatsTotal) || 0) - count);
+                        current.seatsLeft = current.standardLeft;
+                        clearCache('betix_cached_events');
+                        renderEventsByCategory();
+                    }).catch(err => console.warn('Ticket counter refresh failed:', err));
+            }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets' }, payload => {
+            const row = payload.new;
+            if (!row) return;
+            const ticketId = String(row.id);
+            const idx = tickets.findIndex(item => String(item.id) === ticketId);
+            if (idx !== -1) {
+                tickets[idx].status = row.status || tickets[idx].status;
+                tickets[idx].usedAt = row.used_at || tickets[idx].usedAt;
+                tickets[idx].scannedBy = row.scanned_by || tickets[idx].scannedBy;
+                localStorage.setItem('betix_tickets', JSON.stringify(tickets));
+                if (row.status === 'Used' && !usedTickets.includes(ticketId)) { usedTickets.push(ticketId); saveUsedTickets(); }
+                renderTickets();
+                renderHistory();
+                updateProfilePage();
+            }
+            const owner = currentUser.piUid || currentUser.wallet;
+            if (String(row.buyer_pi_uid || '') === String(owner || '')) {
+                clearCache('betix_cached_tickets_' + owner);
             }
         })
         .subscribe(status => {
