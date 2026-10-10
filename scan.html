@@ -789,17 +789,7 @@
             .scanning-box { width: 220px; height: 220px; }
         }
     
-        /* Ticket déjà utilisé → flouté dans l'historique */
-        .history-table tbody tr.scan-row-used {
-            filter: blur(1.6px);
-            opacity: 0.55;
-            transition: filter 0.25s ease, opacity 0.25s ease;
-        }
-        .history-table tbody tr.scan-row-used:hover {
-            filter: blur(0px);
-            opacity: 1;
-        }
-    </style>
+        </style>
 </head>
 <body>
 
@@ -1365,7 +1355,7 @@ function renderHistoryTable() {
         const codeShort = code.length > 20 ? code.substring(0, 18) + '…' : code;
         const buyer = buyerName.length > 18 ? buyerName.substring(0, 16) + '…' : buyerName;
         const event = eventTitle.length > 20 ? eventTitle.substring(0, 18) + '…' : eventTitle;
-        const rowClass = (h.status === 'used') ? ' class="scan-row-used"' : '';
+        const rowClass = '';
 
         return `
             <tr${rowClass} onclick="showDetailModal('${h.id}')">
@@ -1953,7 +1943,7 @@ async function markTicketAsUsed(ticket) {
             buyerPhone: ticket.buyer_phone || '',
             ticketType: ticket.ticket_type || 'standard',
             price: ticket.price || 0,
-            status: 'used', message: 'Déjà utilisé — ticket marqué comme utilisé'
+            status: 'valid', message: 'Accès autorisé'
         });
 
         playSuccessSound();
