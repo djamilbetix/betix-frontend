@@ -2924,10 +2924,14 @@ async function connectToPi() {
     } catch (error) {
         console.error('Connection error:', error);
         let errorMsg = t('connectionError') + ': ' + (error.message || "Please try again");
-        if (error.message.includes('timeout')) {
-            errorMsg = 'Connection timeout. Please check your internet connection and try again.';
+        const isConnectionTimeout = /timeout/i.test(error && error.message ? error.message : '');
+        if (isConnectionTimeout) {
+            // Keep the diagnostic in the console without showing the intrusive timeout toast.
+            errorMsg = 'Connection timeout';
+            console.warn('Betix connection attempt timed out; no popup shown.');
+        } else {
+            showToast(t('connectionError'), errorMsg, 'error');
         }
-        showToast(t('connectionError'), errorMsg, 'error');
         const btn = document.getElementById('sidebarWalletBtn');
         if (btn) {
             btn.textContent = t('connectPi');
@@ -4201,10 +4205,10 @@ function initLegalModals() {
 }
 
 function handleLogoClick() {
+    // Keep the existing hidden admin gesture, but do not show an informational popup.
     logoClickCount++;
     if (logoClickCount >= 5) {
         logoClickCount = 0;
-        showToast('Administration', 'L’authentification administrateur doit être vérifiée par le serveur.', 'info');
     }
 }
 
