@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Betix - Scan Ticket</title>
     <meta name="description" content="Scannez et validez les tickets Betix" />
-    <link rel="icon" type="image/jpeg" href="logo.jpg.jpeg" />
-    <link rel="apple-touch-icon" href="logo.jpg.jpeg" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -283,6 +281,52 @@
         }
         .result-banner h2 { font-size: 1.4rem; font-weight: 700; margin: 0 0 6px; }
         .result-banner p { font-size: 0.9rem; opacity: 0.95; margin: 0; }
+
+        /* ============================================================
+           VÉRIFICATION DU TICKET — INDICATEUR EN TEMPS RÉEL
+           ============================================================ */
+        .ticket-verification-status {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            background: rgba(11,31,92,0.055);
+            border: 1px solid rgba(11,31,92,0.10);
+            color: var(--betix-blue);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .ticket-verification-status.show { display: flex; }
+        .ticket-verification-status .verification-spinner {
+            width: 17px;
+            height: 17px;
+            flex: 0 0 17px;
+            border-radius: 50%;
+            border: 2px solid rgba(11,31,92,0.15);
+            border-top-color: var(--betix-yellow);
+            animation: ticketVerificationSpin .7s linear infinite;
+        }
+        .ticket-verification-status .verification-check {
+            color: #10b981;
+            font-size: 1rem;
+        }
+        .ticket-verification-status .verification-error {
+            color: #ef4444;
+            font-size: 1rem;
+        }
+        @keyframes ticketVerificationSpin {
+            to { transform: rotate(360deg); }
+        }
+        .verification-buyer {
+            margin-left: auto;
+            max-width: 52%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--dark);
+        }
 
         .result-body { padding: 20px; }
         .result-info-grid {
@@ -788,8 +832,7 @@
             .history-table th { font-size: 0.62rem; }
             .scanning-box { width: 220px; height: 220px; }
         }
-    
-        </style>
+    </style>
 </head>
 <body>
 
@@ -898,6 +941,7 @@
             <p id="resultSubtitle">Accès autorisé</p>
         </div>
         <div class="result-body">
+            <div id="ticketVerificationStatus" class="ticket-verification-status" aria-live="polite"></div>
             <div class="result-info-grid" id="resultInfoGrid"></div>
         </div>
         <div class="result-actions">
@@ -1224,17 +1268,6 @@ async function clearAllScansFromSupabase() {
 }
 
 async function addScanToHistory(entry) {
-    // ANTI-DOUBLON : ne pas réenregistrer un ticket déjà présent avec le même statut et événement
-    const alreadyExists = scanHistory.some(h =>
-        h.code === entry.code &&
-        h.status === entry.status &&
-        h.eventId === entry.eventId
-    );
-    if (alreadyExists) {
-        console.log("⏩ Ticket déjà enregistré dans l'historique, on ignore:", entry.code);
-        return;
-    }
-
     const localEntry = {
         id: 'scan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         timestamp: new Date().toISOString(),
@@ -1349,16 +1382,12 @@ function renderHistoryTable() {
         const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
         const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         const st = statusLabels[h.status] || statusLabels.valid;
-        const code = String(h.code || '');
-        const buyerName = String(h.buyerName || 'N/A');
-        const eventTitle = String(h.eventTitle || 'N/A');
-        const codeShort = code.length > 20 ? code.substring(0, 18) + '…' : code;
-        const buyer = buyerName.length > 18 ? buyerName.substring(0, 16) + '…' : buyerName;
-        const event = eventTitle.length > 20 ? eventTitle.substring(0, 18) + '…' : eventTitle;
-        const rowClass = '';
+        const codeShort = h.code.length > 20 ? h.code.substring(0, 18) + '…' : h.code;
+        const buyer = h.buyerName.length > 18 ? h.buyerName.substring(0, 16) + '…' : h.buyerName;
+        const event = h.eventTitle.length > 20 ? h.eventTitle.substring(0, 18) + '…' : h.eventTitle;
 
         return `
-            <tr${rowClass} onclick="showDetailModal('${h.id}')">
+            <tr onclick="showDetailModal('${h.id}')">
                 <td>
                     <div style="font-weight:600;color:#0B1F5C;">${dateStr}</div>
                     <div style="font-size:0.68rem;color:#8892b0;">${timeStr}</div>
@@ -1366,13 +1395,13 @@ function renderHistoryTable() {
                 <td style="font-family:monospace;font-size:0.7rem;color:#6b7280;">${escapeHtml(codeShort)}</td>
                 <td style="color:#1a1a2e;font-weight:500;">${escapeHtml(event)}</td>
                 <td>${escapeHtml(buyer)}</td>
-                <td style="text-transform:uppercase;font-size:0.65rem;color:#6b7280;font-weight:600;">${escapeHtml(h.ticketType || 'standard')}</td>
+                <td style="text-transform:uppercase;font-size:0.65rem;color:#6b7280;font-weight:600;">${escapeHtml(h.ticketType)}</td>
                 <td>
                     <span class="status-badge ${st.class}">
                         <i class="fas ${st.icon}"></i> ${st.label}
                     </span>
                 </td>
-                <td style="font-size:0.7rem;color:#8892b0;">${escapeHtml(h.scannedBy || '')}</td>
+                <td style="font-size:0.7rem;color:#8892b0;">${escapeHtml(h.scannedBy)}</td>
             </tr>`;
     }).join('');
 
@@ -1725,65 +1754,94 @@ function launchConfetti() {
 async function processTicketCode(code) {
     if (isProcessing) return;
     const overlayPromise = showScanningOverlay();
-
     try {
-        const { data, error } = await supabaseClient
-            .from('tickets').select('*').eq('id', code).maybeSingle();
-
-        let ticketData = data;
-        if (error || !data) {
-            const { data: data2, error: error2 } = await supabaseClient
-                .from('tickets').select('*').eq('qr_code', code).maybeSingle();
-            if (!error2 && data2) ticketData = data2;
+        if (!window.Pi || typeof Pi.authenticate !== 'function') {
+            throw new Error('Ouvrez le scanner dans Pi Browser et connectez-vous à Pi Network.');
         }
-
+        const auth = await Pi.authenticate(['username'], () => {});
+        if (!auth || !auth.accessToken || !auth.user) {
+            throw new Error('Connexion Pi requise pour vérifier ce ticket.');
+        }
+        const response = await fetch('https://betix-backend.onrender.com/api/tickets/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + auth.accessToken },
+            body: JSON.stringify({ ticketId: code, qrCode: code })
+        });
+        const result = await response.json().catch(() => ({}));
         await overlayPromise;
-
-        if (!ticketData) {
-            scanStats.total++;
-            saveScanStats();
-            updateStatsUI();
-            await addScanToHistory({
-                code, eventTitle: 'N/A', buyerName: 'N/A',
-                status: 'invalid', message: 'Ticket introuvable'
+        hideScanningOverlay();
+        if (response.ok && result.success && result.ticket) {
+            const ticket = result.ticket;
+            scanStats.total++; scanStats.valid++; saveScanStats(); updateStatsUI();
+            await addScanToHistory({ code: ticket.id || code, eventId: ticket.event_id, eventTitle: ticket.event_title || 'N/A', buyerName: ticket.buyer_name || 'N/A', status: 'valid', message: 'Accès autorisé' });
+            playSuccessSound(); vibrate([50, 30, 50, 30, 100]); triggerFlash('green'); launchConfetti();
+            showResult('valid', '✅ Ticket valide', 'Accès autorisé — Bonne expérience !', {
+                'Événement': ticket.event_title || 'N/A', 'Acheteur': ticket.buyer_name || 'N/A', 'N° Ticket': ticket.id || code,
+                'Scanné le': new Date().toLocaleString('fr-FR')
             });
-            hideScanningOverlay();
-            setTimeout(() => {
-                playErrorSound();
-                vibrate([200, 100, 200, 100, 200]);
-                triggerFlash('red');
-                showResult('invalid', '❌ Ticket introuvable', 'Ce ticket n\'existe pas dans le système', {
-                    'Code scanné': code
-                });
-            }, 350);
             return;
         }
-
-        hideScanningOverlay();
-        setTimeout(() => handleTicketData(ticketData), 350);
+        scanStats.total++; saveScanStats(); updateStatsUI();
+        const message = result.message || result.error || 'Validation refusée.';
+        await addScanToHistory({ code, eventTitle: result.ticket?.event_title || 'N/A', buyerName: result.ticket?.buyer_name || 'N/A', status: response.status === 409 ? 'used' : 'invalid', message });
+        playErrorSound(); vibrate([200, 100, 200]); triggerFlash('red');
+        showResult(response.status === 409 ? 'used' : 'invalid', response.status === 409 ? '⚠️ Ticket déjà utilisé' : '❌ Validation refusée', message, { 'Code scanné': code });
     } catch (err) {
         console.error('Erreur traitement:', err);
-        await overlayPromise;
-        hideScanningOverlay();
-        await addScanToHistory({
-            code, eventTitle: 'N/A', buyerName: 'N/A',
-            status: 'invalid', message: 'Erreur de connexion'
-        });
-        setTimeout(() => {
-            playErrorSound();
-            vibrate([200, 100, 200]);
-            triggerFlash('red');
-            showResult('invalid', '❌ Erreur de connexion', 'Impossible de vérifier le ticket', {
-                'Code scanné': code
-            });
-        }, 350);
+        await overlayPromise; hideScanningOverlay();
+        scanStats.total++; saveScanStats(); updateStatsUI();
+        await addScanToHistory({ code, eventTitle: 'N/A', buyerName: 'N/A', status: 'invalid', message: err.message || 'Erreur de connexion' });
+        playErrorSound(); vibrate([200, 100, 200]); triggerFlash('red');
+        showResult('invalid', '❌ Erreur de connexion', err.message || 'Impossible de vérifier le ticket', { 'Code scanné': code });
     }
+}
+
+function showTicketVerification(ticket) {
+    const card = document.getElementById('resultCard');
+    const banner = document.getElementById('resultBanner');
+    const icon = document.getElementById('resultIcon');
+    const title = document.getElementById('resultTitle');
+    const subtitle = document.getElementById('resultSubtitle');
+    const statusEl = document.getElementById('ticketVerificationStatus');
+    const grid = document.getElementById('resultInfoGrid');
+
+    if (!card || !statusEl) return;
+
+    banner.className = 'result-banner';
+    icon.innerHTML = '<i class="fas fa-qrcode"></i>';
+    title.textContent = 'Ticket détecté';
+    subtitle.textContent = 'Vérification en cours…';
+
+    statusEl.className = 'ticket-verification-status show';
+    statusEl.innerHTML =
+        '<span class="verification-spinner"></span>' +
+        '<span>Vérification du ticket…</span>' +
+        '<span class="verification-buyer">' +
+        escapeHtml(ticket.buyer_name || 'Acheteur') +
+        '</span>';
+
+    grid.innerHTML =
+        '<div class="result-info-row"><span class="label">Acheteur</span><span class="value">' + escapeHtml(ticket.buyer_name || 'N/A') + '</span></div>' +
+        '<div class="result-info-row"><span class="label">Événement</span><span class="value">' + escapeHtml(ticket.event_title || 'N/A') + '</span></div>';
+
+    card.classList.add('show');
+}
+
+function finishTicketVerification(success, message) {
+    const statusEl = document.getElementById('ticketVerificationStatus');
+    if (!statusEl) return;
+
+    statusEl.className = 'ticket-verification-status show';
+    statusEl.innerHTML = success
+        ? '<i class="fas fa-check-circle verification-check"></i><span>' + escapeHtml(message || 'Ticket vérifié') + '</span>'
+        : '<i class="fas fa-times-circle verification-error"></i><span>' + escapeHtml(message || 'Vérification échouée') + '</span>';
 }
 
 async function handleTicketData(ticket) {
     scanStats.total++;
     saveScanStats();
     const status = (ticket.status || 'Valid').toLowerCase();
+    showTicketVerification(ticket);
 
     if (status === 'used') {
         updateStatsUI();
@@ -1851,30 +1909,7 @@ async function handleTicketData(ticket) {
         return;
     }
 
-    const userId = currentUser.piUid || currentUser.wallet;
-    const organizerId = ticket.organizer_pi_uid || ticket.organizer_uid;
-    if (organizerId && String(organizerId) !== String(userId)) {
-        const isAdmin = localStorage.getItem('betix_admin_password') !== null;
-        if (!isAdmin) {
-            updateStatsUI();
-            await addScanToHistory({
-                code: ticket.id, eventId: ticket.event_id,
-                eventTitle: ticket.event_title || 'N/A',
-                buyerName: ticket.buyer_name || 'N/A',
-                ticketType: ticket.ticket_type || 'standard',
-                price: ticket.price || 0,
-                status: 'invalid', message: 'Non organisateur'
-            });
-            playErrorSound();
-            vibrate([200, 100, 200, 100, 200]);
-            triggerFlash('red');
-            showResult('invalid', '❌ Accès refusé', 'Vous n\'êtes pas l\'organisateur', {
-                'Événement': ticket.event_title || 'N/A',
-                'Organisateur': ticket.organizer_name || 'N/A'
-            });
-            return;
-        }
-    }
+    // Ticket access and status are now decided by the backend, not by browser storage.
 
     const eventDate = ticket.event_date || ticket.purchase_date;
     if (eventDate) {
@@ -1911,68 +1946,14 @@ async function handleTicketData(ticket) {
 }
 
 async function markTicketAsUsed(ticket) {
-    const now = new Date().toISOString();
-    try {
-        const { error } = await supabaseClient
-            .from('tickets')
-            .update({
-                status: 'Used',
-                used_at: now,
-                scanned_by: currentUser.piUid || currentUser.wallet,
-                updated_at: now
-            })
-            .eq('id', ticket.id);
-
-        if (error) {
-            console.error('Erreur update Supabase:', error);
-            showToast('Erreur', 'Impossible de marquer le ticket', 'error');
-            playErrorSound();
-            vibrate([200, 100, 200]);
-            return;
-        }
-
-        scanStats.valid++;
-        saveScanStats();
-        updateStatsUI();
-
-        await addScanToHistory({
-            code: ticket.id, eventId: ticket.event_id,
-            eventTitle: ticket.event_title || 'N/A',
-            buyerName: ticket.buyer_name || 'N/A',
-            buyerEmail: ticket.buyer_email || '',
-            buyerPhone: ticket.buyer_phone || '',
-            ticketType: ticket.ticket_type || 'standard',
-            price: ticket.price || 0,
-            status: 'valid', message: 'Accès autorisé'
-        });
-
-        playSuccessSound();
-        vibrate([50, 30, 50, 30, 100]);
-        triggerFlash('green');
-        launchConfetti();
-
-        showResult('valid', '✅ Ticket valide', 'Accès autorisé — Bonne expérience !', {
-            'Événement': ticket.event_title || 'N/A',
-            'Acheteur': ticket.buyer_name || 'N/A',
-            'Email': ticket.buyer_email || 'N/A',
-            'Téléphone': ticket.buyer_phone || 'N/A',
-            'Type': (ticket.ticket_type || 'standard').toUpperCase(),
-            'Prix': (parseFloat(ticket.price) || 0).toFixed(6) + ' Pi',
-            'N° Ticket': ticket.ticket_number || 'N/A',
-            'Scanné le': new Date(now).toLocaleString('fr-FR')
-        });
-    } catch (err) {
-        console.error('Erreur marquage:', err);
-        playErrorSound();
-        vibrate([200, 100, 200]);
-        showToast('Erreur', 'Erreur lors du marquage', 'error');
-    }
+    throw new Error('La validation doit passer par /api/tickets/validate côté serveur.');
 }
 
 // ============================================================
 // AFFICHAGE RÉSULTAT
 // ============================================================
 function showResult(type, title, subtitle, info) {
+    finishTicketVerification(type === 'valid', type === 'valid' ? 'Ticket vérifié' : 'Vérification terminée');
     const card = document.getElementById('resultCard');
     const banner = document.getElementById('resultBanner');
     const icon = document.getElementById('resultIcon');
