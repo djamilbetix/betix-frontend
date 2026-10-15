@@ -5857,3 +5857,10 @@ body.dark-mode .pc-close:hover { background:#374151; color:#f3f4f6; }
 @media (max-width: 767px) {
   #eventsByCategory > .events-grid-centered { grid-template-columns: minmax(0, 1fr) !important; gap: 16px !important; }
 }
+
+
+/* Betix event purchase row: Share stays beside Buy on the right. */
+.event-purchase-actions{display:flex;align-items:stretch;gap:8px;width:100%;margin-top:4px}
+.event-purchase-actions .buy-btn-classic{flex:1;min-width:0}
+.event-purchase-actions .btn-share-event{flex:0 0 44px;width:44px;height:44px;border:1px solid #d1d5db;border-radius:50%;background:#fff;color:#111827;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12)}
+.event-purchase-actions .btn-share-event:hover{background:#0b1f5c;color:#fff;border-color:#0b1f5c}
