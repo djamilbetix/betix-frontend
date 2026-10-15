@@ -1606,7 +1606,7 @@ function shareTicket(ticketId) {
 
 // ============================================================
 (function injectBetixManagementStyles(){if(document.getElementById('betix-management-fixes-style'))return;const style=document.createElement('style');style.id='betix-management-fixes-style';style.textContent=`
-.poster-wrapper-classic{position:relative}.betix-event-share-btn{position:absolute;z-index:5;top:12px;right:12px;width:40px;height:40px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(11,31,92,.94);color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.22);cursor:pointer;font-size:16px}.betix-event-share-btn:hover{background:#f5b400;color:#0b1f5c}
+.event-purchase-actions{display:flex;gap:8px;align-items:stretch;margin-top:4px;width:100%}.event-purchase-actions .buy-btn-classic{flex:1;min-width:0}.event-purchase-actions .btn-share-event{flex:0 0 44px;width:44px;height:44px;border:1px solid #d1d5db;border-radius:50%;background:#fff;color:#111827;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12)}.event-purchase-actions .btn-share-event:hover{background:#0b1f5c;color:#fff;border-color:#0b1f5c}
 .betix-admin-event-row{display:flex;align-items:center;gap:14px;padding:14px;margin:10px 0;border:1px solid #e5e7eb;border-radius:14px;background:#fff}.betix-admin-event-thumb{width:76px;height:76px;flex:0 0 76px;object-fit:cover;border-radius:10px;background:#f3f4f6}.betix-admin-event-thumb-empty{display:flex;align-items:center;justify-content:center;color:#0b1f5c;font-size:24px}.betix-admin-event-heading{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}.betix-admin-sales{display:block;color:#059669;font-weight:700;margin-top:4px}.betix-admin-id{display:block;color:#6b7280;font-size:.72rem;margin-top:3px;overflow-wrap:anywhere}.betix-admin-empty{padding:24px;text-align:center;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:#475569}.betix-admin-empty p{margin:8px 0 0;font-size:.9rem}.betix-admin-event-row .event-info{min-width:0;flex:1}.betix-admin-event-row .event-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}@media(max-width:640px){.betix-admin-event-row{align-items:flex-start;flex-wrap:wrap}.betix-admin-event-thumb{width:60px;height:60px;flex-basis:60px}.betix-admin-event-row .event-info{flex:1 1 calc(100% - 80px)}.betix-admin-event-row .event-actions{width:100%;padding-left:0}.betix-admin-event-row .event-actions button{flex:1;min-width:90px}}
 `;document.head.appendChild(style);})();
 
@@ -1699,7 +1699,6 @@ function renderEventCard(event) {
     return '<div class="event-card-classic" data-id="' + event.id + '">' +
         '<div class="poster-wrapper-classic">' +
             '<span class="category-badge-classic">' + escapeHtml(event.category) + '</span>' +
-            '<button type="button" class="betix-event-share-btn" aria-label="Share event" title="Share event" onclick="event.stopPropagation(); shareEvent(\'' + String(event.id).replace(/'/g, '\\u0027') + '\')"><i class="fas fa-share-alt"></i></button>' +
             carouselHtml +
             imageCountHtml +
         '</div>' +
@@ -1709,7 +1708,8 @@ function renderEventCard(event) {
             infoBoxHtml +
             '<div class="event-meta-row">' + (ratingDisplay ? '<div class="event-rating-classic">' + ratingDisplay + '</div>' : '') + '</div>' +
             '<div class="event-tickets-price-row">' + ticketsLabelHtml + priceRightHtml + '</div>' +
-            buyButtonHtml +
+            '<div class="event-purchase-actions">' + buyButtonHtml +
+            '<button type="button" class="btn-share-event" aria-label="Share event" title="Share event" onclick="event.stopPropagation(); shareEvent(\'' + String(event.id).replace(/'/g, '\\u0027') + '\')"><i class="fas fa-share-alt"></i></button></div>' +
             '<div class="event-organizer-classic"><span class="org-icon"><i class="fas fa-user"></i></span> ' + t('by') + ' ' + escapeHtml(organizerDisplay) + '</div>' +
             (publishDateDisplay ? '<div class="event-publish-date"><i class="far fa-clock"></i> ' + publishDateDisplay : '') +
         '</div>' +
@@ -4000,9 +4000,15 @@ async function loadAdminPage() {
     document.getElementById('adminEventCount').innerText=events.length;
     document.getElementById('adminLastLogin').textContent=localStorage.getItem('betix_admin_last_login')||'Never';
     document.getElementById('adminLoginCount').textContent=localStorage.getItem('betix_admin_login_count')||0;
-    document.getElementById('adminCurrentPasswordDisplay').textContent='••••••••';
-    document.getElementById('adminCommission').value=appSettings.commissionPercent; document.getElementById('adminServiceFee').value=appSettings.serviceFeePercent; document.getElementById('adminPiRate').value=appSettings.piRate;
-    await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
+    const passwordDisplay = document.getElementById('adminCurrentPasswordDisplay');
+    if (passwordDisplay) passwordDisplay.textContent = '••••••••';
+    const commissionField = document.getElementById('adminCommission');
+    const serviceFeeField = document.getElementById('adminServiceFee');
+    const piRateField = document.getElementById('adminPiRate');
+    if (commissionField) commissionField.value = appSettings.commissionPercent;
+    if (serviceFeeField) serviceFeeField.value = appSettings.serviceFeePercent;
+    if (piRateField) piRateField.value = appSettings.piRate;
+    await loadAdminTickets(); refreshAdminDashboard(); renderAdminSlides(); await renderAdminUsers(); renderAdminLogsFiltered(); renderAdminRefunds(); initAdminTabs(); if(!adminTimerInterval)startAdminSession();
     const eventSearch=document.getElementById('adminEventSearch'), eventSort=document.getElementById('adminEventSort');
     if(eventSearch&&!eventSearch._bound){eventSearch.addEventListener('input',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSearch._bound=true;}
     if(eventSort&&!eventSort._bound){eventSort.addEventListener('change',()=>{adminEventsCurrentPage=1;renderAdminEventsFiltered();});eventSort._bound=true;}
